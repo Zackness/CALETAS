@@ -18,7 +18,7 @@ const Input: React.FC<InputProps> = ({
     disable
 }) => {
     return (
-        <div className="relative ">
+        <div className="relative">
         <input 
         onChange={onChange}
         type={type}
@@ -33,12 +33,14 @@ const Input: React.FC<InputProps> = ({
             pb-1
             w-full
             text-md
-            bg-fm-blue-2
+            bg-gray-800
+            border-gray-700
+            text-white
+            placeholder-gray-500
             appearance-none
             focus:outline-none
             focus:ring-0
             peer
-            text-white
             "
             placeholder=" "
         />
@@ -46,7 +48,7 @@ const Input: React.FC<InputProps> = ({
         className="
         absolute
         text-md
-        text-white/80
+        text-gray-300
         duration-150
         transform
         -translate-y-3

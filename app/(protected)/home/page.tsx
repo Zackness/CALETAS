@@ -1,10 +1,7 @@
-import { getDashboardCourses } from "@/actions/get-dashboard-courses";
 import { auth } from "@/auth";
-import { CoursesList } from "@/components/courses-list";
 import { FaRegClock } from "react-icons/fa6";
 import { FaRegCheckCircle } from "react-icons/fa";
 import { redirect } from "next/navigation";
-import { InfoCard } from "../creator/_components/info-card";
 
 export default async function Home() {
   const session = await auth();
@@ -13,7 +10,6 @@ export default async function Home() {
     return redirect("/");
   }
 
-  const { completedCourses, coursesInProgress } = await getDashboardCourses(session.user.id);
 
   return (
     <div className="lg:p-6 p-3 flex flex-col items-center">
@@ -27,10 +23,7 @@ export default async function Home() {
               <FaRegClock />
             </div>
           </div>
-          <InfoCard
-            label="Cursos en progreso"
-            numberOfItems={coursesInProgress.length}
-          />
+
         </div>
         <div className="bg-fm-blue-3 p-3 rounded-xl w-full flex items-center gap-x-2">
           <div className='flex w-150'>
@@ -38,15 +31,10 @@ export default async function Home() {
               <FaRegCheckCircle />
             </div>
           </div>
-          <InfoCard
-            label="Cursos completados"
-            numberOfItems={completedCourses.length}
-          />
+
         </div>
       </div>
-      <CoursesList
-        items={[...coursesInProgress, ...completedCourses]}
-      />
+
     </div>
   );
 }

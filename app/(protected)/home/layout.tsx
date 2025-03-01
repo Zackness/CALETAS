@@ -1,6 +1,6 @@
 import { Header } from "@/components/header";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import { AppSidebar } from "@/components/app-sidebar"
+import { AppSidebar } from "@/components/app-sidebar";
 import { SessionProvider } from "next-auth/react";
 import { auth } from "@/auth";
 import "@/app/globals.css";

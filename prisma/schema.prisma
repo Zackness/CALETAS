@@ -17,9 +17,13 @@ model User {
   id                    String                 @id @default(cuid())
   name                  String                 @unique
   email                 String                 @unique
+  cedula                String                 @unique
+  telefono              String?
+  codigoEmpresa         String?
   emailVerified         DateTime?
   image                 String?                @default("/mascot.svg")
-  password              String?
+  password              String
+  empresa               String
   role                  UserRole               @default(CLIENT)
   isTwoFactorEnabled    Boolean                @default(false)
   createdAt             DateTime               @default(now())
@@ -28,6 +32,11 @@ model User {
   StripeCustomer        StripeCustomer?
   twoFactorConfirmation TwoFactorConfirmation?
   UserSubscription      UserSubscription[]
+  familiares            Familiar[]
+  solicitudes           Solicitud[]
+  empresas              Empresa                @relation(fields: [empresa], references: [id])
+  @@index([empresa])
+  @@index([role])
 }
 
 model Account {
@@ -108,7 +117,99 @@ model UserSubscription {
   @@index([subscriptionTypeId])
 }
 
+
+model Familiar {
+  id          String   @id @default(uuid())
+  usuarioId   String
+  usuario     User  @relation(fields: [usuarioId], references: [id])
+  nombre      String
+  cedula      String   @unique
+  parentesco  Parentesco
+  createdAt   DateTime @default(now())
+}
+
+model Servicio {
+  id          String      @id @default(uuid())
+  nombre      String
+  descripcion String?
+  documentos  Documento[]
+  createdAt   DateTime    @default(now())
+}
+
+model Documento {
+  id          String    @id @default(uuid())
+  nombre      String
+  servicioId  String
+  servicio    Servicio @relation(fields: [servicioId], references: [id])
+  createdAt   DateTime @default(now())
+  solicitud Solicitud []
+}
+
+model Solicitud {
+  id            String    @id @default(uuid())
+  numero        Int       @unique @default(autoincrement())
+  usuarioId     String
+  usuario       User   @relation(fields: [usuarioId], references: [id])
+  documentoId   String
+  documento     Documento @relation(fields: [documentoId], references: [id])
+  estado        Estado    @default(PENDIENTE) // PENDIENTE, APROBADA, EN_PROCESO, FINALIZADA
+  archivos      Archivo[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Archivo {
+  id          String    @id @default(uuid())
+  solicitudId String
+  solicitud   Solicitud @relation(fields: [solicitudId], references: [id])
+  url         String
+  tipo        TipoArchivo // PDF, IMAGEN
+  createdAt   DateTime @default(now())
+}
+
+model Empresa {
+  id          String    @id @default(uuid())
+  userId      String
+  nombre      String    @unique
+  direccion   String
+  telefono    String
+  createdAt   DateTime  @default(now())
+  RIF         String    @unique
+  persona_de_contacto String
+  email       String
+  tipo        TipoEmpresa
+  user        User[]
+}
+
+enum TipoEmpresa {
+  SEGURO
+  TELECOMUNICACIONES
+  BANCO
+  INDUSTRIAL
+  NINGUNO
+}
+
 enum UserRole {
   CLIENT
   ADMIN
+}
+
+enum Estado {
+  PENDIENTE
+  APROBADA
+  EN_PROCESO
+  FINALIZADA
+}
+
+enum Parentesco {
+  PADRE
+  MADRE
+  HIJO
+  ESPOSO
+  ESPOSA
+}
+
+enum TipoArchivo {
+  PDF
+  IMAGEN
 }

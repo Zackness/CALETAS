@@ -70,6 +70,18 @@ export const RegisterSchema = z.object ({
     name: z.string().min(1, {
         message: "Es necesario un nombre de usuario"
     }),
+    cedula: z.string().min(1, {
+        message: "Debe identificarse con un numero de cedula"
+    }),
+    telefono: z.string().min(1, {
+        message: "Debe agregar un numero de telefono"
+    }),
+    empresa: z.string().min(1, {
+        message: "Debe seleccionar una empresa"
+    }),
+    codigo: z.string().min(1, {
+        message: "Debe agregar el codigo de su empresa"
+    }),
 });
 
 
