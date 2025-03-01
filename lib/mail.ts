@@ -9,9 +9,9 @@ export const sendTwoFactorTokenEmail = async (
     token: string
 ) => {
     await resend.emails.send({
-        from: "onboarding@frankensmonster.com",
+        from: "onboarding@resend.dev",
         to: email,
-        subject: "Franky 2FA Code",
+        subject: "Global Legal 2FA Code",
         html: `<p>Tu codigo 2FA ${token}.</p>`
     });
 };
@@ -23,9 +23,9 @@ export const sendPasswordResetEmail = async (
     const resetLink = `${domain}/auth/new-password?token=${token}`;
 
     await resend.emails.send({
-        from: "onboarding@frankensmonster.com",
+        from: "onboarding@resend.dev",
         to: email,
-        subject: "Resetear contraseña en Franky",
+        subject: "Resetear contraseña en Global Legal",
         html: `<p>Click <a href="${resetLink}">aqui</a> para resetear tu contraseña.</p>`
     });
 };
@@ -37,9 +37,9 @@ export const sendVerificationEmail = async (
     const confirmLink = `${domain}/auth/new-verification?token=${token}`;
 
     await resend.emails.send({
-        from: "onboarding@frankensmonster.com",
+        from: "onboarding@resend.dev",
         to: email,
-        subject: "Correo de verificación Franky",
+        subject: "Correo de verificación Global Legal",
         html: `<p>Click <a href="${confirmLink}">aqui</a> para confirmar tu correo.</p>`
     });
 };
@@ -66,7 +66,7 @@ export const sendQuizResultsEmail = async (
 
     // Enviar correo al usuario
     await resend.emails.send({
-        from: "onboarding@frankensmonster.com",
+        from: "onboarding@resend.dev",
         to: email,
         subject: "Resultados del Cuestionario",
         html: `
@@ -78,7 +78,7 @@ export const sendQuizResultsEmail = async (
 
     // Enviar correo al equipo
     await resend.emails.send({
-        from: "onboarding@frankensmonster.com",
+        from: "onboarding@resend.dev",
         to: "frankensmonstersestudios@gmail.com",
         subject: "Resultados del Cuestionario - Usuario",
         html: `

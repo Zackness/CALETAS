@@ -3,7 +3,7 @@
 import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormControl, FormField, FormItem, FormMessage, } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { useState, useTransition } from "react";
 import Input from "@/components/input";
 import { CardWrapper } from "./card-wrapper";
@@ -198,9 +198,15 @@ export const RegisterForm = ({ companies }: RegisterFormProps) => {
                   Atrás
                 </Button>
               )}
-              <Button type="button" onClick={handleNextStep} className="bg-blue-600 hover:bg-blue-700 text-white transition-colors ml-auto">
-                {step < 3 ? "Siguiente" : "Registrarse"}
-              </Button>
+              {step < 3 ? (
+                <Button type="button" variant="form" onClick={handleNextStep}>
+                  Siguiente
+                </Button>
+              ) : (
+                <Button type="submit" variant="form" disabled={isPending}>
+                  Registrarse
+                </Button>
+              )}
             </div>
           </form>
         </Form>
