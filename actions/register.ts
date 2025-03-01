@@ -15,7 +15,7 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
         return { error: "Algo ha salido mal!" };
     }
 
-    const { email, password, name } = validatedFields.data;
+    const { email, password, name, cedula, telefono, empresa, codigo } = validatedFields.data;
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const existingMail = await getUserByEmail(email);
@@ -35,6 +35,10 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
             name,
             email,
             password: hashedPassword,
+            cedula,
+            telefono,
+            empresa,
+            codigoEmpresa: codigo,
         },
     });
 
