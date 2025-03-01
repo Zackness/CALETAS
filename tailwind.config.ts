@@ -22,6 +22,7 @@ const config = withUt ({
   			'global-red-2': '#AA2727',
   			'global-red-3': '#7E0202',
   			'global-yellow': '#EAD70E',
+			'gray-900': '#1a202c',
   			white: '#ffffff',
   			black: '#000000',
   			'monster-points': '#e8a923',

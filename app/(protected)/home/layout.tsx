@@ -27,8 +27,8 @@ export default async function DashboardLayout ({
           <SidebarProvider>
             <AppSidebar/>
             
-            <main>
-              <div className="flex flex-row bg-fm-blue-2 items-center pl-4">
+            <main className="relative h-full w-full min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
+              <div className="flex flex-row items-center pl-4 bg-gray-900 text-white">
                 <SidebarTrigger />
                 <Header/>
               </div>
