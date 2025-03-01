@@ -10,8 +10,6 @@ interface CardWrapperProps {
 
 export const CardWrapper = ({
     children,
-    headerLabel,
-    showSocial
 }: CardWrapperProps) => {
     return (
         <Card className="bg-fm-blue-1 p-16 self-center mt-2 md:w-2/3 sm:max-w-lg rounded-xl w-full">
