@@ -7,7 +7,7 @@ import { getUserByEmail, getUserById } from "@/data/user";
 import { currentUser } from "@/lib/auth"
 import { generateVerificationToken } from "@/lib/tokens";
 import { sendVerificationEmail } from "@/lib/mail";
-import bcrypt from "bcryptjs";
+import bcrypt from "bcrypt";
 
 export const settings = async (
     values: z.infer<typeof SettingsSchema>

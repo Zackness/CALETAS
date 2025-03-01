@@ -1,27 +1,25 @@
+const { prisma } = require('./lib/prisma'); // Asegúrate de que prisma esté configurado correctamente
+
 module.exports = {
   siteUrl: 'https://globalegal.org',
   generateRobotsTxt: true,
   exclude: ['/instructor/*', 'editor/*'],
   additionalPaths: async (config) => {
-    const { db } = require('./lib/db');
-
     // Recupera cursos, noticias y posts publicados
-    const courses = await db.course.findMany({
+    const courses = await prisma.course.findMany({
       where: { isPublished: true },
       select: { slug: true },
     });
-    const news = await db.newsArticle.findMany({
+    const news = await prisma.newsArticle.findMany({
       where: { isPublished: true },
       select: { slug: true },
     });
-    const blogPosts = await db.blogPost.findMany({
+    const blogPosts = await prisma.blogPost.findMany({
       where: { isPublished: true },
       select: { slug: true },
     });
 
     const paths = [
-      ...courses.map((course) => `/cursos/${course.slug}`),
-      ...news.map((article) => `/noticias/${article.slug}`),
       ...blogPosts.map((post) => `/blog/${post.slug}`),
     ];
 
