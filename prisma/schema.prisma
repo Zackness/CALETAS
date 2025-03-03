@@ -18,7 +18,7 @@ model User {
   name                  String                 @unique
   email                 String                 @unique
   cedula                String                 @unique
-  telefono              String?
+  telefono              String?                @unique
   codigoEmpresa         String?
   emailVerified         DateTime?
   image                 String?                @default("/mascot.svg")
@@ -117,56 +117,63 @@ model UserSubscription {
   @@index([subscriptionTypeId])
 }
 
-
+//Familiar que registra el usuario en cuestion
 model Familiar {
   id          String   @id @default(uuid())
-  usuarioId   String
-  usuario     User  @relation(fields: [usuarioId], references: [id])
   nombre      String
   cedula      String   @unique
+  telefono    String?                @unique
   parentesco  Parentesco
-  createdAt   DateTime @default(now())
+  usuarioId   String
+  usuario     User  @relation(fields: [usuarioId], references: [id])
+  solicitudes Solicitud[]
 }
 
+//Referencia principalmente para orden y para el ADMIN
 model Servicio {
   id          String      @id @default(uuid())
   nombre      String
   descripcion String?
   documentos  Documento[]
-  createdAt   DateTime    @default(now())
 }
 
+//Referencia a los 12 documentos o tipo de solicitud que se pueden hacer
 model Documento {
   id          String    @id @default(uuid())
   nombre      String
   servicioId  String
   servicio    Servicio @relation(fields: [servicioId], references: [id])
-  createdAt   DateTime @default(now())
   solicitud Solicitud []
 }
 
+//Referencia a los documentos que se pueden solicitar
 model Solicitud {
-  id            String    @id @default(uuid())
-  numero        Int       @unique @default(autoincrement())
-  usuarioId     String
-  usuario       User   @relation(fields: [usuarioId], references: [id])
+  id            Int     @id @default(autoincrement())
   documentoId   String
-  documento     Documento @relation(fields: [documentoId], references: [id])
-  estado        Estado    @default(PENDIENTE) // PENDIENTE, APROBADA, EN_PROCESO, FINALIZADA
-  archivos      Archivo[]
+  usuarioId     String
   createdAt     DateTime  @default(now())
+  estado        Estado    @default(PENDIENTE)
   updatedAt     DateTime  @updatedAt
+  familiarId    String?
+  detalle       Detalle?  // Relación 1:1 (sin fields/references aquí)
+  familiar      Familiar? @relation(fields: [familiarId], references: [id])
+  usuario       User      @relation(fields: [usuarioId], references: [id])
+  documento     Documento @relation(fields: [documentoId], references: [id])
 }
 
-model Archivo {
-  id          String    @id @default(uuid())
-  solicitudId String
+model Detalle {
+  id          String @id @default(uuid())
+  solicitudId Int    @unique // Campo único (pero no clave primaria)
+  Testigo1        String
+  Testigo2        String
+  Acta_de_nacimiento String
+  Acta_de_matrimonio String
+  Acta_de_defuncion String
+  Acta_de_divorcio  String
   solicitud   Solicitud @relation(fields: [solicitudId], references: [id])
-  url         String
-  tipo        TipoArchivo // PDF, IMAGEN
-  createdAt   DateTime @default(now())
 }
 
+//Empresa por la que contrato el servicio el usuario
 model Empresa {
   id          String    @id @default(uuid())
   userId      String
@@ -181,6 +188,7 @@ model Empresa {
   user        User[]
 }
 
+//Tipo de empresa con la que contrato el usuario, solo para nuesto control
 enum TipoEmpresa {
   SEGURO
   TELECOMUNICACIONES
@@ -189,11 +197,13 @@ enum TipoEmpresa {
   NINGUNO
 }
 
+//Tipos de usuario
 enum UserRole {
   CLIENT
   ADMIN
 }
 
+//Estado de la solicitud que hace el usuario
 enum Estado {
   PENDIENTE
   APROBADA
@@ -201,15 +211,11 @@ enum Estado {
   FINALIZADA
 }
 
+//Parentesco de la tabla familiares
 enum Parentesco {
   PADRE
   MADRE
   HIJO
   ESPOSO
   ESPOSA
-}
-
-enum TipoArchivo {
-  PDF
-  IMAGEN
 }
