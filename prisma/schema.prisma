@@ -164,12 +164,12 @@ model Solicitud {
 model Detalle {
   id          String @id @default(uuid())
   solicitudId Int    @unique // Campo único (pero no clave primaria)
-  Testigo1        String
-  Testigo2        String
-  Acta_de_nacimiento String
-  Acta_de_matrimonio String
-  Acta_de_defuncion String
-  Acta_de_divorcio  String
+  Testigo1        String?
+  Testigo2        String?
+  Acta_de_nacimiento String?
+  Acta_de_matrimonio String?
+  Acta_de_defuncion String?
+  Acta_de_divorcio  String?
   solicitud   Solicitud @relation(fields: [solicitudId], references: [id])
 }
 

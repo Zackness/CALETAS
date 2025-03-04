@@ -1,4 +1,4 @@
-import { Home, Newspaper, Settings, GraduationCap, Ticket, FileText, ChevronUp, PenLine, BookCopy, Plus, Flame } from "lucide-react";
+import { Home, Settings, Plane, FileText, ChevronUp, PenLine, BookCopy, Plus, Car, UserRound } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { auth } from "@/auth";
 import { MdOutlineColorLens } from "react-icons/md";
@@ -23,16 +23,6 @@ import { Button } from "./ui/button";
 // Menu items.
 const items = [
   {
-    title: "Experience",
-    url: "/eventos",
-    icon: Ticket,
-  },
-  {
-    title: "MonsterNews",
-    url: "/noticias",
-    icon: Newspaper,
-  },
-  {
     title: "Blog",
     url: "/blog",
     icon: FileText,
@@ -43,7 +33,7 @@ export async function AppSidebar() {
   const session = await auth();
 
   return (
-    <Sidebar collapsible="icon" className="bg-gray-900 border-none pt-3">
+    <Sidebar collapsible="icon" className="text-foreground">
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -55,8 +45,8 @@ export async function AppSidebar() {
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu className="text-white">
-              <SidebarMenuItem className="text-white">
+            <SidebarMenu>
+              <SidebarMenuItem>
                 <SidebarMenuButton asChild>
                   <a href={"/home"}>
                     <Home />
@@ -66,13 +56,11 @@ export async function AppSidebar() {
               </SidebarMenuItem>
 
               <Collapsible className="group/collapsible">
-                <SidebarMenuItem className="text-white">
+                <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton>
-                      <Flame />
-                      <a href="/creator">
-                        <span>Creator</span>
-                      </a>
+                      <Car />
+                        <p>Protección automovil</p>
                     </SidebarMenuButton>
                   </CollapsibleTrigger>
                   <CollapsibleContent>
@@ -80,17 +68,12 @@ export async function AppSidebar() {
                       <SidebarMenuSubItem>
                         <SidebarMenuButton asChild>
                           <a href={"/creator/analiticas"}>
-                            <span>Analiticas</span>
+                            <span>Compra de vehiculo</span>
                           </a>
                         </SidebarMenuButton>
                         <SidebarMenuButton asChild>
                           <a href={"/creator/comunidad"}>
-                            <span>Comunidad</span>
-                          </a>
-                        </SidebarMenuButton>
-                        <SidebarMenuButton asChild>
-                          <a href={"/creator/ingresos"}>
-                            <span>Ingresos</span>
+                            <span>Venta de vehiculo</span>
                           </a>
                         </SidebarMenuButton>
                       </SidebarMenuSubItem>
@@ -100,11 +83,11 @@ export async function AppSidebar() {
               </Collapsible>
 
               <Collapsible className="group/collapsible">
-                <SidebarMenuItem className="text-white">
+                <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton>
-                      <GraduationCap />
-                      <span>Academy</span>
+                      <Plane />
+                      <span>Protección viajero</span>
                     </SidebarMenuButton>
                   </CollapsibleTrigger>
                   <CollapsibleContent>
@@ -112,12 +95,39 @@ export async function AppSidebar() {
                       <SidebarMenuSubItem>
                         <SidebarMenuButton asChild>
                           <a href={"/juegos"}>
-                            <span>Juegos</span>
+                            <span>Viajes al exterior</span>
                           </a>
                         </SidebarMenuButton>
                         <SidebarMenuButton asChild>
                           <a href={"/cursos"}>
-                            <span>Cursos</span>
+                            <span>Viajes nacionales</span>
+                          </a>
+                        </SidebarMenuButton>
+                      </SidebarMenuSubItem>
+                    </SidebarMenuSub>
+                  </CollapsibleContent>
+                </SidebarMenuItem>
+              </Collapsible>
+
+              <Collapsible className="group/collapsible">
+                <SidebarMenuItem>
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuButton>
+                      <UserRound  />
+                      <span>Personal</span>
+                    </SidebarMenuButton>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <SidebarMenuSub>
+                      <SidebarMenuSubItem>
+                        <SidebarMenuButton asChild>
+                          <a href={"/solicitudes/personal/solteria"}>
+                            <span>Carta de soltería</span>
+                          </a>
+                        </SidebarMenuButton>
+                        <SidebarMenuButton asChild>
+                          <a href={"/cursos"}>
+                            <span>Viajes nacionales</span>
                           </a>
                         </SidebarMenuButton>
                       </SidebarMenuSubItem>
@@ -143,7 +153,7 @@ export async function AppSidebar() {
         {session ? (
           <SidebarGroup>
             <SidebarMenu>
-              <SidebarMenuItem className="text-white">
+              <SidebarMenuItem>
                 <SidebarMenuButton asChild>
                   <a href="/ajustes">
                     <Settings />
@@ -158,11 +168,11 @@ export async function AppSidebar() {
         )}
 
         <SidebarGroup>
-          <SidebarGroupLabel className="text-white">Herramientas</SidebarGroupLabel>
+          <SidebarGroupLabel>Herramientas</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <Collapsible className="group/collapsible">
-                <SidebarMenuItem className="text-white">
+                <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton>
                       <MdOutlineColorLens />
@@ -192,11 +202,11 @@ export async function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="text-white">Creadores de contenido</SidebarGroupLabel>
+          <SidebarGroupLabel>Creadores de contenido</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <Collapsible className="group/collapsible">
-                <SidebarMenuItem className="text-white">
+                <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton>
                       <PenLine />
@@ -215,7 +225,7 @@ export async function AppSidebar() {
                           <Button
                             variant="ghost"
                             size="rounded"
-                            className="hover:bg-fm-blue-3 hover:text-white h-5"
+                            className="hover:bg-background hover:text-background text-foreground h-5"
                           >
                             <a href={"/editor/crear/blog"}>
                               <Plus className="h-4" /> <span className="sr-only">Crear blog</span>
@@ -231,7 +241,7 @@ export async function AppSidebar() {
                           <Button
                             variant="ghost"
                             size="rounded"
-                            className="hover:bg-fm-blue-3 hover:text-white h-5"
+                            className="hover:bg-background hover:text-background h-5"
                           >
                             <a href={"/editor/crear/noticias"}>
                               <Plus className="h-4" /> <span className="sr-only">Crear articulo</span>
@@ -247,7 +257,7 @@ export async function AppSidebar() {
                           <Button
                             variant="ghost"
                             size="rounded"
-                            className="hover:bg-fm-blue-3 hover:text-white h-5"
+                            className="hover:bg-background hover:text-background h-5"
                           >
                             <a href={"/editor/crear/juegos"}>
                               <Plus className="h-4" /> <span className="sr-only">Crear nuevo juego</span>
@@ -262,7 +272,7 @@ export async function AppSidebar() {
             </SidebarMenu>
             <SidebarMenu>
               <Collapsible className="group/collapsible">
-                <SidebarMenuItem className="text-white">
+                <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton>
                       <BookCopy />
@@ -281,7 +291,7 @@ export async function AppSidebar() {
                           <Button
                             variant="ghost"
                             size="rounded"
-                            className="hover:bg-fm-blue-3 hover:text-white h-5"
+                            className="hover:bg-background hover:text-background h-5"
                           >
                             <a href={"/instructor/crear"}>
                               <Plus className="h-4" /> <span className="sr-only">Crear nuevo curso</span>
@@ -305,7 +315,7 @@ export async function AppSidebar() {
 
       <SidebarFooter>
         <SidebarMenu>
-          <SidebarMenuItem className="text-white">
+          <SidebarMenuItem>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton>
@@ -315,7 +325,7 @@ export async function AppSidebar() {
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 side="top"
-                className="w-[--radix-popper-anchor-width] rounded-xl bg-fm-blue-3 text-white"
+                className="w-[--radix-popper-anchor-width] rounded-xl bg-fm-blue-3 text-foreground"
               >
                 <DropdownMenuItem>
                   <a href={"/"} className="underline-offset-4 hover:underline">

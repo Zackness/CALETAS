@@ -17,11 +17,11 @@ export const UserButton = () => {
 
     return (
         <DropdownMenu>
-            <DropdownMenuTrigger className="border-none w-8 h-8 mt-2 mr-4 outline-none">
+            <DropdownMenuTrigger className="border-none w-8 h-8 mr-4 outline-none">
                 <Avatar className="w-8 h-8">
                     <AvatarImage src={user?.image || ""}/>
                     <AvatarFallback className="bg-fm-green">
-                        <FaUser className="text-white/90"/>
+                        <FaUser className="text-foreground/90"/>
                     </AvatarFallback>
                 </Avatar>
             </DropdownMenuTrigger>
