@@ -56,7 +56,7 @@ export const SolteriaForm = () => {
   const [isPending, startTransition] = useTransition();
   const [familiares, setFamiliares] = useState<Familiar[]>([]);
   const [user, setUser] = useState<User | null>(null);
-  const [selectedPersona, setSelectedPersona] = useState<string | null>(null);
+  const [selectedPersona, setSelectedPersona] = useState<string>("");
 
   const form = useForm<z.infer<typeof SolicitudSchema>>({
     resolver: zodResolver(SolicitudSchema),
@@ -148,8 +148,6 @@ export const SolteriaForm = () => {
                             label: familiar.nombre,
                           })),
                         ]}
-                        placeholder="Seleccione una persona"
-                        className="bg-gray-800 border-gray-700 text-white"
                       />
                     </FormControl>
                     <FormMessage />
@@ -162,7 +160,7 @@ export const SolteriaForm = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Input {...field} disabled={true} label="Cédula" id="cedula" />
+                      <Input {...field} disabled={true} id="cedula" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -174,7 +172,7 @@ export const SolteriaForm = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Input {...field} type="file" label="Testigo 1" id="testigo1" />
+                      <Input {...field} type="file" id="testigo1" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -186,7 +184,7 @@ export const SolteriaForm = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Input {...field} type="file" label="Testigo 2" id="testigo2" />
+                      <Input {...field} type="file" id="testigo2" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
