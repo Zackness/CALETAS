@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
       where: {
         OR: [
           { usuarioId },
-          { familiarId },
+          { familiarId }, // Verificar si el familiar también ha hecho una solicitud
         ],
         createdAt: {
           gte: new Date(new Date().setFullYear(new Date().getFullYear() - 1)),
