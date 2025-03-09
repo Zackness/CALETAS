@@ -5,29 +5,26 @@ import { UploadThingError } from "uploadthing/server";
 const f = createUploadthing();
 
 const handleAuth = async () => {
-    const session = await auth(); // Asegúrate de obtener la sesión de forma asíncrona
+  const session = await auth(); // Asegúrate de obtener la sesión de forma asíncrona
 
-    if (!session?.user?.id) {
-        throw new UploadThingError("No tienes autorización"); // Lanzar el error específico de UploadThing
-    }
+  if (!session?.user?.id) {
+    throw new UploadThingError("No tienes autorización"); // Lanzar el error específico de UploadThing
+  }
 
-    return { userId: session.user.id };
-}
+  return { userId: session.user.id };
+};
 
 export const ourFileRouter = {
-    courseImage: f({ image: { maxFileSize: "1MB", maxFileCount: 1 } })
-        .middleware(() => handleAuth()) 
-        .onUploadComplete(() => {}),
-
-    courseAttachment: f(["text", "image", "video", "audio", "pdf"])
-        .middleware(() => handleAuth()) 
-        .onUploadComplete(() => {}),
-        
-    chapterVideo: f({ video: { maxFileSize: "512GB", maxFileCount: 1 } })
-        .middleware(() => handleAuth()) 
-        .onUploadComplete(() => {}),
-        
+  Testigo1: f(["image", "pdf"])
+    .middleware(() => handleAuth())
+    .onUploadComplete(({ metadata }) => {
+      console.log("Upload complete for Testigo1:", metadata);
+    }),
+  Testigo2: f(["image", "pdf"])
+    .middleware(() => handleAuth())
+    .onUploadComplete(({ metadata }) => {
+      console.log("Upload complete for Testigo2:", metadata);
+    }),
 } satisfies FileRouter;
 
 export type OurFileRouter = typeof ourFileRouter;
-

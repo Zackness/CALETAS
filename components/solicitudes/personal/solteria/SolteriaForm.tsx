@@ -13,12 +13,18 @@ import { FormError } from "@/components/form-error";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
 import { Combobox } from "@/components/ui/combobox"; // Asegúrate de que la ruta sea correcta
+import { FileUpload } from "@/components/file-upload"; // Importar el componente de subida de archivos
+import { Progress } from "@/components/ui/progress"; // Importar el componente de progreso de shadcn
 
 const SolicitudSchema = z.object({
-  persona: z.string().nonempty("Debe seleccionar una persona"),
+  persona: z.string().optional(),
   cedula: z.string().nonempty("Debe seleccionar una persona"),
-  testigo1: z.string().nonempty("Debe subir el archivo del primer testigo"),
-  testigo2: z.string().nonempty("Debe subir el archivo del segundo testigo"),
+  testigo1: z.custom<File>((file) => file instanceof File, {
+    message: "Debe subir el archivo del primer testigo",
+  }),
+  testigo2: z.custom<File>((file) => file instanceof File, {
+    message: "Debe subir el archivo del segundo testigo",
+  }),
 });
 
 interface User {
@@ -57,14 +63,17 @@ export const SolteriaForm = () => {
   const [familiares, setFamiliares] = useState<Familiar[]>([]);
   const [user, setUser] = useState<User | null>(null);
   const [selectedPersona, setSelectedPersona] = useState<string>("");
+  const [testigo1File, setTestigo1File] = useState<File | undefined>(undefined);
+  const [testigo2File, setTestigo2File] = useState<File | undefined>(undefined);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
 
   const form = useForm<z.infer<typeof SolicitudSchema>>({
     resolver: zodResolver(SolicitudSchema),
     defaultValues: {
       persona: "",
       cedula: "",
-      testigo1: "",
-      testigo2: "",
+      testigo1: undefined,
+      testigo2: undefined,
     },
   });
 
@@ -88,30 +97,65 @@ export const SolteriaForm = () => {
   const onSubmit = async (values: z.infer<typeof SolicitudSchema>) => {
     setError("");
     setSucces("");
+    setUploadProgress(0);
 
-    const solicitudData = {
-      usuarioId: user!.id,
-      familiarId: selectedPersona !== user!.id ? selectedPersona : null,
-      testigo1: values.testigo1,
-      testigo2: values.testigo2,
-    };
-
-    startTransition(() => {
-      axios.post('/api/solicitudes/personal/solteria', solicitudData)
-        .then((response) => {
-          const data = response.data;
-          if (data.error) {
-            form.reset();
-            setError(data.error);
+    try {
+      const formData1 = new FormData();
+      formData1.append("file", testigo1File!);
+      const response1 = await axios.post(`/api/uploadthing/Testigo1`, formData1, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setUploadProgress(progress);
           }
+        },
+      });
+      const testigo1Url = response1.data.url;
 
-          if (data.succes) {
-            form.reset();
-            setSucces(data.succes);
+      const formData2 = new FormData();
+      formData2.append("file", testigo2File!);
+      const response2 = await axios.post(`/api/uploadthing/Testigo2`, formData2, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setUploadProgress(progress);
           }
-        })
-        .catch(() => setError("Algo ha salido mal!"));
-    });
+        },
+      });
+      const testigo2Url = response2.data.url;
+
+      const solicitudData = {
+        usuarioId: user!.id,
+        familiarId: selectedPersona !== user!.id ? selectedPersona : null,
+        testigo1: testigo1Url,
+        testigo2: testigo2Url,
+      };
+
+      startTransition(() => {
+        axios.post('/api/solicitudes/personal/solteria', solicitudData)
+          .then((response) => {
+            const data = response.data;
+            if (data.error) {
+              form.reset();
+              setError(data.error);
+            }
+
+            if (data.succes) {
+              form.reset();
+              setSucces(data.succes);
+            }
+          })
+          .catch(() => setError("Algo ha salido mal!"));
+      });
+    } catch (error) {
+      setError("Error al subir los archivos");
+    }
   };
 
   const handlePersonaChange = (value: string) => {
@@ -172,7 +216,14 @@ export const SolteriaForm = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Input {...field} type="file" id="testigo1" />
+                      <FileUpload
+                        onChange={(file) => {
+                          if (file) {
+                            setTestigo1File(file);
+                            form.setValue("testigo1", file);
+                          }
+                        }}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -184,13 +235,23 @@ export const SolteriaForm = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Input {...field} type="file" id="testigo2" />
+                      <FileUpload
+                        onChange={(file) => {
+                          if (file) {
+                            setTestigo2File(file);
+                            form.setValue("testigo2", file);
+                          }
+                        }}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
+            {uploadProgress > 0 && (
+              <Progress value={uploadProgress} />
+            )}
             <FormError message={error || urlError} />
             <FormSucces message={succes} />
             <Button disabled={isPending} className="w-full mt-4 text-white" size="lg" variant="form" type="submit">
