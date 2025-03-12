@@ -12,9 +12,8 @@ import { FormSucces } from "@/components/form-succes";
 import { FormError } from "@/components/form-error";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
-import { Combobox } from "@/components/ui/combobox"; // Asegúrate de que la ruta sea correcta
-import { FileUpload } from "@/components/file-upload"; // Importar el componente de subida de archivos
-import { Progress } from "@/components/ui/progress"; // Importar el componente de progreso de shadcn
+import { Combobox } from "@/components/ui/combobox"; 
+import { Progress } from "@/components/ui/progress";
 
 const SolicitudSchema = z.object({
   persona: z.string().optional(),
@@ -84,8 +83,8 @@ export const SolteriaForm = () => {
         const { user, familiares } = response.data;
         setUser(user);
         setFamiliares(familiares);
-        setSelectedPersona(user.id); // Seleccionar el usuario por defecto
-        form.setValue("cedula", user.cedula); // Establecer la cédula del usuario por defecto
+        setSelectedPersona(user.id); 
+        form.setValue("cedula", user.cedula); 
       } catch (error) {
         console.error("Error al obtener los datos de los familiares:", error);
         setError("Error al obtener los datos de los familiares");
@@ -94,42 +93,58 @@ export const SolteriaForm = () => {
     fetchData();
   }, [form]);
 
+  const uploadToBunny = async (file: File, fileName: string) => {
+    try {
+      // Obtener la URL de subida de Bunny.net
+      const { data: uploadConfig } = await axios.get('/api/bunny/getUploadUrl', {
+        params: { fileName }
+      });
+
+      // Para Bunny Storage, necesitamos enviar el archivo directamente
+      await axios.put(uploadConfig.url, file, {
+        headers: {
+          ...uploadConfig.headers,
+          // El Content-Type debe coincidir con el tipo del archivo
+          'Content-Type': file.type || 'application/octet-stream'
+        },
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setUploadProgress(progress);
+          }
+        }
+      });
+
+      return uploadConfig.fileUrl;
+    } catch (error: any) {
+      console.error('Error uploading to Bunny:', error.response?.data || error.message);
+      throw new Error(error.response?.data?.error || 'Error al subir el archivo a Bunny Storage');
+    }
+  };
+
   const onSubmit = async (values: z.infer<typeof SolicitudSchema>) => {
     setError("");
     setSucces("");
     setUploadProgress(0);
 
     try {
-      const formData1 = new FormData();
-      formData1.append("file", testigo1File!);
-      const response1 = await axios.post(`/api/uploadthing/Testigo1`, formData1, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        onUploadProgress: (progressEvent) => {
-          if (progressEvent.total) {
-            const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-            setUploadProgress(progress);
-          }
-        },
-      });
-      const testigo1Url = response1.data.url;
+      if (!testigo1File || !testigo2File) {
+        setError("Debe seleccionar ambos archivos de testigos");
+        return;
+      }
 
-      const formData2 = new FormData();
-      formData2.append("file", testigo2File!);
-      const response2 = await axios.post(`/api/uploadthing/Testigo2`, formData2, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        onUploadProgress: (progressEvent) => {
-          if (progressEvent.total) {
-            const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-            setUploadProgress(progress);
-          }
-        },
-      });
-      const testigo2Url = response2.data.url;
+      // Subir archivos uno por uno para mejor manejo de errores
+      const testigo1Url = await uploadToBunny(
+        testigo1File,
+        `testigo1-${Date.now()}-${testigo1File.name.replace(/[^a-zA-Z0-9.-]/g, '')}`
+      );
 
+      const testigo2Url = await uploadToBunny(
+        testigo2File,
+        `testigo2-${Date.now()}-${testigo2File.name.replace(/[^a-zA-Z0-9.-]/g, '')}`
+      );
+
+      // Crear la solicitud con las URLs de Bunny.net
       const solicitudData = {
         usuarioId: user!.id,
         familiarId: selectedPersona !== user!.id ? selectedPersona : null,
@@ -142,19 +157,24 @@ export const SolteriaForm = () => {
           .then((response) => {
             const data = response.data;
             if (data.error) {
-              form.reset();
               setError(data.error);
             }
-
             if (data.succes) {
               form.reset();
               setSucces(data.succes);
+              // Limpiar los archivos seleccionados
+              setTestigo1File(undefined);
+              setTestigo2File(undefined);
             }
           })
-          .catch(() => setError("Algo ha salido mal!"));
+          .catch((error) => {
+            console.error('Error creating solicitud:', error);
+            setError("Error al crear la solicitud");
+          });
       });
-    } catch (error) {
-      setError("Error al subir los archivos");
+    } catch (error: any) {
+      console.error('Error in form submission:', error);
+      setError(error.message || "Error al subir los archivos");
     }
   };
 
@@ -164,7 +184,7 @@ export const SolteriaForm = () => {
     if (persona) {
       form.setValue("cedula", persona.cedula);
     } else {
-      form.setValue("cedula", ""); // Dejar en blanco si no se selecciona ningún familiar
+      form.setValue("cedula", ""); 
     }
   };
 
@@ -186,7 +206,7 @@ export const SolteriaForm = () => {
                         value={selectedPersona}
                         onChange={handlePersonaChange}
                         options={[
-                          { value: user?.id || "", label: user?.name || "Usuario" }, // Opción para el usuario logueado
+                          { value: user?.id || "", label: user?.name || "Usuario" },
                           ...familiares.map((familiar) => ({
                             value: familiar.id,
                             label: familiar.nombre,
@@ -213,11 +233,15 @@ export const SolteriaForm = () => {
               <FormField
                 control={form.control}
                 name="testigo1"
-                render={({ field }) => (
+                render={() => (
                   <FormItem>
+                    <FormLabel>Documento del Testigo 1</FormLabel>
                     <FormControl>
-                      <FileUpload
-                        onChange={(file) => {
+                      <Input
+                        type="file"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
                           if (file) {
                             setTestigo1File(file);
                             form.setValue("testigo1", file);
@@ -232,11 +256,15 @@ export const SolteriaForm = () => {
               <FormField
                 control={form.control}
                 name="testigo2"
-                render={({ field }) => (
+                render={() => (
                   <FormItem>
+                    <FormLabel>Documento del Testigo 2</FormLabel>
                     <FormControl>
-                      <FileUpload
-                        onChange={(file) => {
+                      <Input
+                        type="file"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
                           if (file) {
                             setTestigo2File(file);
                             form.setValue("testigo2", file);
@@ -249,13 +277,28 @@ export const SolteriaForm = () => {
                 )}
               />
             </div>
-            {uploadProgress > 0 && (
-              <Progress value={uploadProgress} />
+            {uploadProgress > 0 && uploadProgress < 100 && (
+              <div className="w-full">
+                <Progress value={uploadProgress} className="w-full" />
+                <p className="text-sm text-center mt-2">Subiendo archivos: {uploadProgress}%</p>
+              </div>
             )}
             <FormError message={error || urlError} />
             <FormSucces message={succes} />
-            <Button disabled={isPending} className="w-full mt-4 text-white" size="lg" variant="form" type="submit">
-              Enviar Solicitud
+            <Button
+              disabled={isPending}
+              type="submit"
+              className="w-full"
+            >
+              {isPending ? (
+                <div className="flex items-center gap-2">
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  Procesando...
+                </div>
+              ) : "Crear Solicitud"}
             </Button>
           </form>
         </Form>
