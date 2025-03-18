@@ -21,7 +21,7 @@ export function Header() {
           <Link href="/admin" className="flex items-center gap-2">
               <img
                 src="/LaraFest.svg"
-                alt="Lara Fest Logo"
+                alt="Global Logo"
                 width={126}
                 height={31}
               />
