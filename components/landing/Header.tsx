@@ -9,8 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ModeToggle } from "../mode-toggle";
-
+import { ThemeToggle } from "../theme-toggle";
 
 export function Header() {
   return (
@@ -35,7 +34,7 @@ export function Header() {
           <div className="flex items-center gap-2">
 
             <div className="hidden md:flex items-center gap-4">
-            <ModeToggle />
+            <ThemeToggle />
 
               <Link href="/auth/login">
                 <Button variant="ghost" className="flex items-center gap-2">
@@ -52,7 +51,7 @@ export function Header() {
 
           {/* Botones en pequeño */}
           <div className="md:hidden">
-            <ModeToggle />
+            <ThemeToggle />
 
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
