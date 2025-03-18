@@ -1,9 +1,9 @@
-import { Header } from "@/components/landing/Header";
 import { SessionProvider } from "next-auth/react";
 import { auth } from "@/auth";
 import "@/app/globals.css";
 import type { Metadata } from "next";
 import { ThemeProvider } from 'next-themes';
+import { Header } from "@/components/landing/Header";
 
 export const metadata: Metadata = {
   title: "Home | Global Legal",
