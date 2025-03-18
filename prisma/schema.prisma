@@ -35,6 +35,7 @@ model User {
   familiares            Familiar[]
   solicitudes           Solicitud[]
   empresas              Empresa                @relation(fields: [empresa], references: [id])
+  blogPosts             BlogPost[]
   @@index([empresa])
   @@index([role])
 }
@@ -166,6 +167,14 @@ model Detalle {
   solicitudId Int    @unique // Campo único (pero no clave primaria)
   Testigo1        String?
   Testigo2        String?
+  Testigo3        String?
+  Testigo4        String? // Para la cédula del esposo/a en caso de no existir en la DB
+  bienes_generico1 String?
+  bienes_generico2 String?
+  bienes_generico3 String?
+  bienes_generico4 String?
+  bienes_generico5 String?
+  generic_text     String? // Para el tipo de poder especial
   Acta_de_nacimiento String?
   Acta_de_matrimonio String?
   Acta_de_defuncion String?
@@ -186,6 +195,32 @@ model Empresa {
   email       String
   tipo        TipoEmpresa
   user        User[]
+}
+
+model BlogPost {
+  id          String        @id @default(cuid())
+  title       String
+  slug        String?       @unique
+  content     String?       @db.Text
+  imageUrl    String?
+  isPublished Boolean       @default(false)
+  authorId    String
+  categoryId  String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  description String?
+  titleMeta   String?
+  author      User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  category    BlogCategory? @relation(fields: [categoryId], references: [id])
+
+  @@index([authorId], map: "BlogPost_authorId_fkey")
+  @@index([categoryId], map: "BlogPost_categoryId_fkey")
+}
+
+model BlogCategory {
+  id    String     @id @default(cuid())
+  name  String     @unique
+  posts BlogPost[]
 }
 
 //Tipo de empresa con la que contrato el usuario, solo para nuesto control
