@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import {
   FileText,
   FileSignature,
@@ -16,8 +16,16 @@ import {
   Search,
   Filter,
   Plus,
-} from "lucide-react"
-import { Input } from "@/components/ui/input"
+  Car,
+  Building,
+  Plane,
+  HeartHandshake,
+  User,
+  Briefcase,
+  Globe,
+  CreditCard,
+} from "lucide-react";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,16 +33,16 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+} from "@/components/ui/dropdown-menu";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 // ----- Datos y funciones de ejemplo -----
 const documentCategories = [
   {
     id: "automovil",
     name: "Automóvil",
-    icon: /* icono importado: */ require("lucide-react").Car,
+    icon: Car,
     color: "text-blue-500 dark:text-blue-400",
     bgColor: "bg-blue-500/10 dark:bg-blue-500/20",
     documents: [{ id: "compra-venta-vehiculos", name: "Compra-venta de vehículos" }],
@@ -42,7 +50,7 @@ const documentCategories = [
   {
     id: "vivienda",
     name: "Vivienda",
-    icon: require("lucide-react").Building,
+    icon: Building,
     color: "text-green-500 dark:text-green-400",
     bgColor: "bg-green-500/10 dark:bg-green-500/20",
     documents: [
@@ -53,7 +61,7 @@ const documentCategories = [
   {
     id: "viajero",
     name: "Viajero",
-    icon: require("lucide-react").Plane,
+    icon: Plane,
     color: "text-purple-500 dark:text-purple-400",
     bgColor: "bg-purple-500/10 dark:bg-purple-500/20",
     documents: [
@@ -64,7 +72,7 @@ const documentCategories = [
   {
     id: "herencia",
     name: "Herencia",
-    icon: require("lucide-react").HeartHandshake,
+    icon: HeartHandshake,
     color: "text-amber-500 dark:text-amber-400",
     bgColor: "bg-amber-500/10 dark:bg-amber-500/20",
     documents: [{ id: "declaracion-sucesiones", name: "Declaración de Sucesiones" }],
@@ -72,7 +80,7 @@ const documentCategories = [
   {
     id: "personal",
     name: "Personal",
-    icon: require("lucide-react").User,
+    icon: User,
     color: "text-pink-500 dark:text-pink-400",
     bgColor: "bg-pink-500/10 dark:bg-pink-500/20",
     documents: [
@@ -83,7 +91,7 @@ const documentCategories = [
   {
     id: "empresarial",
     name: "Empresarial",
-    icon: require("lucide-react").Briefcase,
+    icon: Briefcase,
     color: "text-indigo-500 dark:text-indigo-400",
     bgColor: "bg-indigo-500/10 dark:bg-indigo-500/20",
     documents: [
@@ -94,7 +102,7 @@ const documentCategories = [
   {
     id: "migrante",
     name: "Migrante",
-    icon: require("lucide-react").Globe,
+    icon: Globe,
     color: "text-teal-500 dark:text-teal-400",
     bgColor: "bg-teal-500/10 dark:bg-teal-500/20",
     documents: [{ id: "poder-desde-exterior", name: "Poder desde el exterior" }],
@@ -102,7 +110,7 @@ const documentCategories = [
   {
     id: "financiera",
     name: "Financiera",
-    icon: require("lucide-react").CreditCard,
+    icon: CreditCard,
     color: "text-emerald-500 dark:text-emerald-400",
     bgColor: "bg-emerald-500/10 dark:bg-emerald-500/20",
     documents: [
@@ -110,7 +118,7 @@ const documentCategories = [
       { id: "balance-personal", name: "Balance personal" },
     ],
   },
-]
+];
 
 const requestsByCategory: Record<string, any[]> = {
   automovil: [
@@ -248,93 +256,105 @@ const requestsByCategory: Record<string, any[]> = {
       priority: "normal",
     },
   ],
-}
+};
 
 const getStatusBadge = (status: string) => {
   switch (status) {
     case "completed":
-      return <span className="bg-green-500 hover:bg-green-600 text-white rounded px-2 py-1 text-xs">Completado</span>
+      return (
+        <span className="bg-green-500 hover:bg-green-600 text-white rounded px-2 py-1 text-xs">
+          Completado
+        </span>
+      );
     case "in-progress":
-      return <span className="bg-blue-500 hover:bg-blue-600 text-white rounded px-2 py-1 text-xs">En progreso</span>
+      return (
+        <span className="bg-blue-500 hover:bg-blue-600 text-white rounded px-2 py-1 text-xs">
+          En progreso
+        </span>
+      );
     case "pending":
-      return <span className="bg-amber-500 hover:bg-amber-600 text-white rounded px-2 py-1 text-xs">Pendiente</span>
+      return (
+        <span className="bg-amber-500 hover:bg-amber-600 text-white rounded px-2 py-1 text-xs">
+          Pendiente
+        </span>
+      );
     default:
-      return <span className="border rounded px-2 py-1 text-xs">Desconocido</span>
+      return <span className="border rounded px-2 py-1 text-xs">Desconocido</span>;
   }
-}
+};
 
 const getPriorityIcon = (priority: string) => {
   switch (priority) {
     case "high":
-      return <AlertCircle className="h-4 w-4 text-red-500" />
+      return <AlertCircle className="h-4 w-4 text-red-500" />;
     case "normal":
-      return <CheckCircle2 className="h-4 w-4 text-blue-500" />
+      return <CheckCircle2 className="h-4 w-4 text-blue-500" />;
     case "low":
-      return <HelpCircle className="h-4 w-4 text-gray-500" />
+      return <HelpCircle className="h-4 w-4 text-gray-500" />;
     default:
-      return null
+      return null;
   }
-}
+};
 
 const countAllRequests = () => {
-  let count = 0
+  let count = 0;
   Object.values(requestsByCategory).forEach((requests) => {
-    count += requests.length
-  })
-  return count
-}
+    count += requests.length;
+  });
+  return count;
+};
 
 const countCompletedRequests = () => {
-  let count = 0
+  let count = 0;
   Object.values(requestsByCategory).forEach((requests) => {
-    count += requests.filter((r) => r.status === "completed").length
-  })
-  return count
-}
+    count += requests.filter((r) => r.status === "completed").length;
+  });
+  return count;
+};
 
 const countPendingRequests = () => {
-  let count = 0
+  let count = 0;
   Object.values(requestsByCategory).forEach((requests) => {
-    count += requests.filter((r) => r.status === "pending" || r.status === "in-progress").length
-  })
-  return count
-}
+    count += requests.filter((r) => r.status === "pending" || r.status === "in-progress").length;
+  });
+  return count;
+};
 
 // ----- Componente de la página -----
 export default function DashboardPage() {
-  const [mounted, setMounted] = useState(false)
-  const [activeCategory, setActiveCategory] = useState(documentCategories[0].id)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [filteredRequests, setFilteredRequests] = useState<any[]>([])
-  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({})
+  const [mounted, setMounted] = useState(false);
+  const [activeCategory, setActiveCategory] = useState(documentCategories[0].id);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredRequests, setFilteredRequests] = useState<any[]>([]);
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
-    const requests = requestsByCategory[activeCategory] || []
+    const requests = requestsByCategory[activeCategory] || [];
     const filtered = requests.filter((request) =>
       request.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       request.client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      request.documentType.toLowerCase().includes(searchTerm.toLowerCase()),
-    )
-    setFilteredRequests(filtered)
-  }, [searchTerm, activeCategory])
+      request.documentType.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredRequests(filtered);
+  }, [searchTerm, activeCategory]);
 
   const toggleCategory = (categoryId: string) => {
     setExpandedCategories((prev) => ({
       ...prev,
       [categoryId]: !prev[categoryId],
-    }))
-  }
+    }));
+  };
 
   const navigateToDocumentForm = (categoryId: string, documentId: string) => {
-    console.log(`Navegando a formulario: categoría ${categoryId}, documento ${documentId}`)
-    setActiveCategory(categoryId)
-  }
+    console.log(`Navegando a formulario: categoría ${categoryId}, documento ${documentId}`);
+    setActiveCategory(categoryId);
+  };
 
-  if (!mounted) return null
+  if (!mounted) return null;
 
   return (
 
@@ -522,5 +542,5 @@ export default function DashboardPage() {
         </div>
       </motion.div>
 
-  )
+  );
 }
