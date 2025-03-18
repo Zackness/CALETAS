@@ -1,4 +1,4 @@
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar";
 import { SessionProvider } from "next-auth/react";
 import { auth } from "@/auth";
@@ -35,10 +35,7 @@ export default async function DashboardLayout ({
             <AppSidebar/>
             
             <main className="relative h-full w-full min-h-screen bg-background">
-              <div className="flex flex-row items-center pl-4 text-foreground h-16 bg-background">
-                <SidebarTrigger />
                 <DashboardHeader/>
-              </div>
 
               {children}
             </main>
