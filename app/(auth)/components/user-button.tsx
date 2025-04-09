@@ -5,8 +5,8 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { FaUser } from "react-icons/fa";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { logout } from "@/actions/logout";
-import { Button } from "../ui/button";
 import { ExitIcon } from "@radix-ui/react-icons";
+import { Button } from "@/components/ui/button";
 
 const onClick = () => {
     logout();

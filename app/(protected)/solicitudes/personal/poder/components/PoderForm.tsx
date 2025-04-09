@@ -214,7 +214,7 @@ export const PoderForm = () => {
       }
     }
     fetchData();
-  }, [form]);
+  }, [form, updateConyugeInfo]);
 
   const uploadToBunny = async (file: File, fileName: string) => {
     try {

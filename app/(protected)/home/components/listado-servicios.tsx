@@ -118,7 +118,7 @@ export const ListadoServicios = ({ servicios, solicitudes }: ListadoServiciosPro
         <span className="font-medium">Filtros activos:</span>
         {filterState !== "Todos" && <span className="ml-2">Estado: {filterState}</span>}
         {filterPriority !== "Todas" && <span className="ml-2">Prioridad: {filterPriority}</span>}
-        {searchTerm !== "" && <span className="ml-2">Búsqueda: "{searchTerm}"</span>}
+        {searchTerm !== "" && <span className="ml-2">Búsqueda: &quot;{searchTerm}&quot;</span>}
         {!hasActiveFilters && <span className="ml-2 text-muted-foreground">Ningún filtro activo</span>}
       </div>
 
