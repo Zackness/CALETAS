@@ -251,6 +251,7 @@ enum Parentesco {
   PADRE
   MADRE
   HIJO
+  HIJA
   ESPOSO
   ESPOSA
 }

@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { NewPasswordForm } from "@/components/auth/new-password-form";
+import { NewPasswordForm } from "@/app/(auth)/components/new-password-form";
 
 const NewPasswordPage = () => {
   return (

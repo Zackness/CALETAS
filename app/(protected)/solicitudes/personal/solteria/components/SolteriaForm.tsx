@@ -6,7 +6,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useState, useTransition, useEffect } from "react";
 import { Input } from "@/components/ui/input";
-import { CardWrapper } from "@/components/auth/card-wrapper";
 import { Button } from "@/components/ui/button";
 import { FormSucces } from "@/components/form-succes";
 import { FormError } from "@/components/form-error";
@@ -14,6 +13,7 @@ import { useSearchParams } from "next/navigation";
 import axios from "axios";
 import { Combobox } from "@/components/ui/combobox"; 
 import { Progress } from "@/components/ui/progress";
+import { CardWrapper } from "@/components/card-wrapper";
 
 const SolicitudSchema = z.object({
   persona: z.string().optional(),
@@ -286,6 +286,7 @@ export const SolteriaForm = () => {
             <FormError message={error || urlError} />
             <FormSucces message={succes} />
             <Button
+              variant="default"
               disabled={isPending}
               type="submit"
               className="w-full"

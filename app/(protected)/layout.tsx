@@ -1,5 +1,5 @@
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/app-sidebar";
+import { AppSidebar } from "@/app/(protected)/components/app-sidebar";
 import { SessionProvider } from "next-auth/react";
 import { auth } from "@/auth";
 import "@/app/globals.css";
@@ -35,7 +35,7 @@ export default async function DashboardLayout({
             <SidebarProvider>
               <div className="flex h-screen w-full">
                 {/* Sidebar */}
-                <AppSidebar />
+                <AppSidebar session={session} />
 
                 {/* Main Content */}
                 <main className="flex-1 flex flex-col min-h-screen bg-background overflow-hidden">

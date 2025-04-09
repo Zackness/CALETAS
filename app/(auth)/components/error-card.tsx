@@ -1,6 +1,6 @@
 "use client";
 
-import { CardWrapper } from "./card-wrapper";
+import { CardWrapper } from "../../../components/card-wrapper";
 
 export const ErrorCard = () => {
   return (

@@ -69,6 +69,7 @@ export const ListadoServicios = ({ servicios, solicitudes }: ListadoServiciosPro
   const [searchTerm, setSearchTerm] = useState("");
   const [filterState, setFilterState] = useState("Todos");
   const [filterPriority, setFilterPriority] = useState("Todas");
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   // Transformar solicitudes en el formato esperado por CategoryTable
   const requestsByCategory = servicios.reduce((acc, servicio) => {
@@ -102,6 +103,9 @@ export const ListadoServicios = ({ servicios, solicitudes }: ListadoServiciosPro
     return matchesSearch && matchesState && matchesPriority;
   }) || [];
 
+  // Verificar si hay filtros activos
+  const hasActiveFilters = filterState !== "Todos" || filterPriority !== "Todas" || searchTerm !== "";
+
   return (
     <Tabs
       defaultValue={activeCategory}
@@ -109,6 +113,15 @@ export const ListadoServicios = ({ servicios, solicitudes }: ListadoServiciosPro
       onValueChange={setActiveCategory}
       className="w-full"
     >
+      {/* Sección de filtros activos - siempre visible */}
+      <div className="mb-4 p-2 bg-muted/30 rounded-md text-sm">
+        <span className="font-medium">Filtros activos:</span>
+        {filterState !== "Todos" && <span className="ml-2">Estado: {filterState}</span>}
+        {filterPriority !== "Todas" && <span className="ml-2">Prioridad: {filterPriority}</span>}
+        {searchTerm !== "" && <span className="ml-2">Búsqueda: "{searchTerm}"</span>}
+        {!hasActiveFilters && <span className="ml-2 text-muted-foreground">Ningún filtro activo</span>}
+      </div>
+
       <div className="flex items-center justify-between mb-6 gap-2">
         {/* Componente CategoriasServicios */}
         <CategoriaServicio
@@ -121,7 +134,7 @@ export const ListadoServicios = ({ servicios, solicitudes }: ListadoServiciosPro
         />
 
         {/* Campo de búsqueda y filtrado */}
-        <div className="flex items-center gap-2 pb-4">
+        <div className="flex items-center gap-2 pt-2">
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -132,9 +145,13 @@ export const ListadoServicios = ({ servicios, solicitudes }: ListadoServiciosPro
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <DropdownMenu>
+          <DropdownMenu open={isFilterOpen} onOpenChange={setIsFilterOpen}>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" className="h-9 w-9">
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className={`h-9 w-9 ${hasActiveFilters ? "bg-foreground text-background" : ""}`}
+              >
                 <Filter className="h-4 w-4" />
                 <span className="sr-only">Filtrar</span>
               </Button>

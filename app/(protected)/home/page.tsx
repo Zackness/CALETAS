@@ -2,7 +2,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import {
   FileText,
-  FileSignature,
 } from "lucide-react";
 import { InfoCard } from "./components/info-card";
 import { auth } from "@/auth";
@@ -104,10 +103,6 @@ export default async function DashboardPage() {
                   <Button variant="outline" size="sm">
                     <FileText className="h-4 w-4 mr-2" />
                     Exportar
-                  </Button>
-                  <Button size="sm">
-                    <FileSignature className="h-4 w-4 mr-2" />
-                    Nueva solicitud
                   </Button>
                 </div>
               </div>

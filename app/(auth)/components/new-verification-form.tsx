@@ -2,10 +2,10 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { CardWrapper } from "./card-wrapper";
+import { CardWrapper } from "../../../components/card-wrapper";
 import { newVerification } from "@/actions/new-verification";
-import { FormError } from "../form-error";
-import { FormSucces } from "../form-succes";
+import { FormError } from "../../../components/form-error";
+import { FormSucces } from "../../../components/form-succes";
 import { BeatLoader } from "react-spinners";
 
 export const NewVerificationForm = () => {

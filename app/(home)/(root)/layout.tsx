@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 import "@/app/globals.css";
 import type { Metadata } from "next";
 import { ThemeProvider } from 'next-themes';
-import { Header } from "@/components/landing/Header";
+import { Header } from "./components/Header";
 
 export const metadata: Metadata = {
   title: "Home | Global Legal",

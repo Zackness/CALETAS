@@ -9,7 +9,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-fm-green font-bold text-white hover:bg-fm-blue-3",
+        default: "bg-blue-600 font-bold text-white hover:bg-fm-blue-3",
         form: "bg-blue-600 hover:bg-blue-700 text-white transition-colors ml-auto",
         form2: "bg-fm-red font-md text-white hover:bg-fm-blue-3",
         destructive:
