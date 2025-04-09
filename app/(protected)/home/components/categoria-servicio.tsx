@@ -32,15 +32,21 @@ export const CategoriaServicio = ({
     onCategoryChange,
 }: CategoriaServicioProps) => {
     return (
-        <TabsList className="bg-muted/50 p-1 rounded-lg">
+        <TabsList className="flex
+        justify-start overflow-x-auto overflow-y-clip bg-background py-8 px-1 rounded-lg gap-x-2 ">
             {categories.map((category) => {
                 const Icon = iconMap[category.nombre]; //Obtener el icono correspondiente
+                const isActive = category.id === activeCategory;
                 return (
                     <TabsTrigger
                         key={category.id}
                         value={category.nombre}
                         onClick={() => onCategoryChange(category.id)}
-                        className="flex items-center space-x-2 rounded-lg p-2"
+                        className={`flex items-center space-x-2 rounded-lg p-2 border-2 ${
+                            isActive 
+                                ? "bg-foreground dark:bg-foreground text-background" 
+                                : "bg-muted/50"
+                        }`}
                     >
                         {Icon && <Icon className="h-4 w-4" />} {/* Renderizar el icono si existe */}
                         <span className="text-sm font-medium">{category.nombre}</span>

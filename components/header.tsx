@@ -6,8 +6,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 export function DashboardHeader() {
   return (
-    <header className="sticky top-0 z-10 bg-background border-b border-border">
-      <div className="container flex justify-between items-center h-16 px-4">
+    <header className="border-b border-border w-full h-16">
+      <div className="flex h-full items-center justify-between px-4">
         <div className="flex items-center gap-2">
           <SidebarTrigger />
           <h1 className="text-xl font-bold">Dashboard</h1>

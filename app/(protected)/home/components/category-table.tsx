@@ -58,11 +58,18 @@ export const CategoryTable = ({
   requestsByCategory,
   getPriorityIcon,
 }: CategoryTableProps) => {
+  // Log para depuración
+  console.log(`Categoría ${categoryId}:`, {
+    total: requestsByCategory[categoryId]?.length || 0,
+    filtradas: filteredRequests.length,
+    ids: filteredRequests.map(r => r.id)
+  });
+
   return (
-    <div className="mt-0">
-      <div className="rounded-md border">
+    <div className="h-[400px] flex flex-col">
+      <div className="rounded-md border flex-1 overflow-auto">
         <Table>
-          <TableHeader>
+          <TableHeader className="sticky top-0 bg-background z-10">
             <TableRow>
               <TableHead>ID</TableHead>
               <TableHead>Cliente</TableHead>
@@ -128,10 +135,19 @@ export const CategoryTable = ({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-6 text-muted-foreground">
-                  {requestsByCategory[categoryId]?.length === 0
-                    ? "No hay solicitudes en esta categoría."
-                    : "No se encontraron solicitudes que coincidan con la búsqueda."}
+                <TableCell colSpan={7} className="h-[300px] text-center py-6 text-muted-foreground">
+                  <div className="flex flex-col items-center justify-center h-full">
+                    <p className="text-lg font-medium mb-2">
+                      {requestsByCategory[categoryId]?.length === 0
+                        ? "No hay solicitudes en esta categoría."
+                        : "No se encontraron solicitudes que coincidan con la búsqueda."}
+                    </p>
+                    <p className="text-sm">
+                      {requestsByCategory[categoryId]?.length === 0
+                        ? "Las solicitudes aparecerán aquí cuando las crees."
+                        : "Intenta con otros filtros o términos de búsqueda."}
+                    </p>
+                  </div>
                 </TableCell>
               </TableRow>
             )}

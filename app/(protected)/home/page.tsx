@@ -32,10 +32,50 @@ export default async function DashboardPage() {
     },
   });
 
-  return (
+  // Obtener todas las solicitudes del usuario
+  const solicitudes = await db.solicitud.findMany({
+    where: {
+      usuarioId: session.user.id,
+    },
+    include: {
+      documento: {
+        include: {
+          servicio: true,
+        },
+      },
+      usuario: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
 
-      <MotionWrapper>
-<div className="flex flex-row justify-center md:grid-cols-3 gap-6 mb-8 mt-8 px-8">
+  // Transformar las solicitudes al formato esperado por ListadoServicios
+  const solicitudesFormateadas = solicitudes.map(solicitud => ({
+    id: solicitud.id.toString(),
+    estado: solicitud.estado,
+    fecha: solicitud.createdAt.toISOString(),
+    prioridad: "NORMAL", // Valor por defecto, ajustar según tu modelo
+    documento: {
+      id: solicitud.documento.id,
+      nombre: solicitud.documento.nombre,
+      servicio: {
+        id: solicitud.documento.servicio.id,
+        nombre: solicitud.documento.servicio.nombre,
+      },
+    },
+    usuario: {
+      id: solicitud.usuario.id,
+      name: solicitud.usuario.name || "Usuario",
+      email: solicitud.usuario.email || "usuario@example.com",
+      image: solicitud.usuario.image || "/default-avatar.png",
+    },
+  }));
+
+  return (
+    <MotionWrapper>
+      <div className="h-full w-full p-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <InfoCard
             label="Total de solicitudes"
             numberOfItems={completedSolicitudes.length + pendingSolicitudes.length}
@@ -50,7 +90,7 @@ export default async function DashboardPage() {
           />
         </div>
 
-        <div className="mb-6 px-8">
+        <div className="w-full">
           <Card className="w-full border-2">
             <CardHeader>
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -73,12 +113,11 @@ export default async function DashboardPage() {
               </div>
             </CardHeader>
             <CardContent>
-            {/* Renderizar el componente ListadoServicios */}
-            <ListadoServicios servicios={servicios} />
+              <ListadoServicios servicios={servicios} solicitudes={solicitudesFormateadas} />
             </CardContent>
           </Card>
         </div>
-      </MotionWrapper>
-
+      </div>
+    </MotionWrapper>
   );
 }

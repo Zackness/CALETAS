@@ -33,14 +33,16 @@ export default async function DashboardLayout({
             disableTransitionOnChange
           >
             <SidebarProvider>
-              <div className="flex">
+              <div className="flex h-screen w-full">
                 {/* Sidebar */}
                 <AppSidebar />
 
                 {/* Main Content */}
-                <main className="relative h-full w-full min-h-screen bg-background">
+                <main className="flex-1 flex flex-col min-h-screen bg-background overflow-hidden">
                   <DashboardHeader />
-                  <div className="container mx-auto px-4">{children}</div>
+                  <div className="flex-1 overflow-auto">
+                    {children}
+                  </div>
                 </main>
               </div>
             </SidebarProvider>

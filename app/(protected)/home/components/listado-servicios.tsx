@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { CategoriaServicio } from "./categoria-servicio"; // Importar el componente CategoriasServicios
-import { CategoryTable } from "./category-table"; // Importar el nuevo componente
+import { CategoriaServicio } from "./categoria-servicio";
+import { CategoryTable } from "./category-table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,18 +21,18 @@ import {
 
 // Definir un tipo personalizado para las solicitudes
 interface CustomRequest {
-    id: string;
-    client: {
-      avatar: string;
-      name: string;
-      email: string;
-    };
-    documentType: string;
-    status: string;
-    date: string;
-    priority: string;
-  }
-  
+  id: string;
+  client: {
+    avatar: string;
+    name: string;
+    email: string;
+  };
+  documentType: string;
+  status: string;
+  date: string;
+  priority: string;
+}
+
 interface ListadoServiciosProps {
   servicios: {
     id: string;
@@ -42,27 +42,53 @@ interface ListadoServiciosProps {
       nombre: string;
     }[];
   }[];
+  solicitudes: {
+    id: string;
+    estado: string;
+    fecha: string;
+    prioridad: string;
+    documento: {
+      id: string;
+      nombre: string;
+      servicio: {
+        id: string;
+        nombre: string;
+      };
+    };
+    usuario: {
+      id: string;
+      name: string;
+      email: string;
+      image: string;
+    };
+  }[];
 }
 
-export const ListadoServicios = ({ servicios }: ListadoServiciosProps) => {
+export const ListadoServicios = ({ servicios, solicitudes }: ListadoServiciosProps) => {
   const [activeCategory, setActiveCategory] = useState(servicios[0]?.id || "");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterState, setFilterState] = useState("Todos");
   const [filterPriority, setFilterPriority] = useState("Todas");
 
-  // Transformar servicios en solicitudes (CustomRequest[])
+  // Transformar solicitudes en el formato esperado por CategoryTable
   const requestsByCategory = servicios.reduce((acc, servicio) => {
-    acc[servicio.id] = servicio.documentos.map((documento) => ({
-      id: documento.id,
+    // Filtrar solicitudes para esta categoría
+    const solicitudesCategoria = solicitudes.filter(
+      (solicitud) => solicitud.documento.servicio.id === servicio.id
+    );
+    
+    // Transformar a formato CustomRequest
+    acc[servicio.id] = solicitudesCategoria.map((solicitud) => ({
+      id: solicitud.id,
       client: {
-        avatar: "/default-avatar.png", // Placeholder para avatar
-        name: "Cliente genérico", // Placeholder para nombre del cliente
-        email: "cliente@example.com", // Placeholder para email del cliente
+        avatar: solicitud.usuario.image || "/default-avatar.png",
+        name: solicitud.usuario.name || "Usuario",
+        email: solicitud.usuario.email || "usuario@example.com",
       },
-      documentType: documento.nombre,
-      status: "Pendiente", // Placeholder para estado
-      date: new Date().toISOString(), // Placeholder para fecha
-      priority: "Normal", // Placeholder para prioridad
+      documentType: solicitud.documento.nombre,
+      status: solicitud.estado,
+      date: solicitud.fecha,
+      priority: solicitud.prioridad,
     }));
     return acc;
   }, {} as Record<string, CustomRequest[]>);
@@ -83,7 +109,7 @@ export const ListadoServicios = ({ servicios }: ListadoServiciosProps) => {
       onValueChange={setActiveCategory}
       className="w-full"
     >
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 gap-2">
         {/* Componente CategoriasServicios */}
         <CategoriaServicio
           categories={servicios.map((servicio) => ({
@@ -95,8 +121,7 @@ export const ListadoServicios = ({ servicios }: ListadoServiciosProps) => {
         />
 
         {/* Campo de búsqueda y filtrado */}
-        {/* Campo de búsqueda y filtrado */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 pb-4">
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -114,34 +139,47 @@ export const ListadoServicios = ({ servicios }: ListadoServiciosProps) => {
                 <span className="sr-only">Filtrar</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent className="bg-background" align="end">
               <DropdownMenuLabel>Filtrar por estado</DropdownMenuLabel>
               <DropdownMenuItem onClick={() => setFilterState("Todos")}>Todos</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setFilterState("Completados")}>Completados</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setFilterState("En progreso")}>En progreso</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setFilterState("Pendientes")}>Pendientes</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setFilterState("FINALIZADA")}>Finalizadas</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setFilterState("EN_PROGRESO")}>En progreso</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setFilterState("PENDIENTE")}>Pendientes</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuLabel>Filtrar por prioridad</DropdownMenuLabel>
               <DropdownMenuItem onClick={() => setFilterPriority("Todas")}>Todas</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setFilterPriority("Alta")}>Alta</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setFilterPriority("Normal")}>Normal</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setFilterPriority("Baja")}>Baja</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setFilterPriority("ALTA")}>Alta</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setFilterPriority("NORMAL")}>Normal</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setFilterPriority("BAJA")}>Baja</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
 
       {/* Contenido de las categorías */}
-      {servicios.map((servicio) => (
-        <TabsContent key={servicio.id} value={servicio.id} className="mt-0">
-          <CategoryTable
-            categoryId={servicio.id}
-            filteredRequests={filteredRequests}
-            requestsByCategory={requestsByCategory}
-            getPriorityIcon={(priority) => <span>{priority}</span>} // Placeholder para getPriorityIcon
-          />
-        </TabsContent>
-      ))}
+      <div className="min-h-[400px]">
+        {servicios.map((servicio) => (
+          <TabsContent key={servicio.id} value={servicio.id} className="mt-0">
+            <CategoryTable
+              categoryId={servicio.id}
+              filteredRequests={filteredRequests}
+              requestsByCategory={requestsByCategory}
+              getPriorityIcon={(priority) => {
+                switch (priority) {
+                  case "ALTA":
+                    return <span className="text-red-500">●</span>;
+                  case "NORMAL":
+                    return <span className="text-yellow-500">●</span>;
+                  case "BAJA":
+                    return <span className="text-green-500">●</span>;
+                  default:
+                    return <span>●</span>;
+                }
+              }}
+            />
+          </TabsContent>
+        ))}
+      </div>
     </Tabs>
   );
 };
