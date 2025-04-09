@@ -194,10 +194,15 @@ export const PoderForm = () => {
     setTestigo3File(undefined);
   };
 
+  // Cargar datos iniciales solo una vez
   useEffect(() => {
+    let isMounted = true;
+    
     async function fetchData() {
       try {
         const response = await axios.get('/api/user');
+        if (!isMounted) return;
+        
         const { user, familiares } = response.data;
         setUser(user);
         setFamiliares(familiares);
@@ -206,15 +211,30 @@ export const PoderForm = () => {
         
         // Inicializar la información del cónyuge para el usuario principal
         setTimeout(() => {
-          updateConyugeInfo(user.id);
+          if (isMounted) {
+            const conyugeEncontrado = findConyuge(user.id);
+            setConyugeInfo(conyugeEncontrado);
+            
+            if (conyugeEncontrado) {
+              form.setValue("nombreConyuge", conyugeEncontrado.nombre);
+              form.setValue("cedulaConyuge", conyugeEncontrado.cedula);
+            }
+          }
         }, 100);
       } catch (error) {
-        console.error("Error al obtener los datos de los familiares:", error);
-        setError("Error al obtener los datos de los familiares");
+        if (isMounted) {
+          console.error("Error al obtener los datos de los familiares:", error);
+          setError("Error al obtener los datos de los familiares");
+        }
       }
     }
+    
     fetchData();
-  }, [form, updateConyugeInfo]);
+    
+    return () => {
+      isMounted = false;
+    };
+  }, []); // Sin dependencias para que solo se ejecute una vez
 
   const uploadToBunny = async (file: File, fileName: string) => {
     try {
