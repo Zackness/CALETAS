@@ -169,12 +169,12 @@ model Detalle {
   Testigo2        String?
   Testigo3        String?
   Testigo4        String? // Para la cédula del esposo/a en caso de no existir en la DB
+  generic_text     String? // Para el tipo de poder especial
   bienes_generico1 String?
   bienes_generico2 String?
   bienes_generico3 String?
   bienes_generico4 String?
   bienes_generico5 String?
-  generic_text     String? // Para el tipo de poder especial
   Acta_de_nacimiento String?
   Acta_de_matrimonio String?
   Acta_de_defuncion String?

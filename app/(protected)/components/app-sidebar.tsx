@@ -55,7 +55,7 @@ export function AppSidebar({ session }: AppSidebarProps) {
                 <SidebarMenuButton asChild>
                   <a 
                     href={"/home"} 
-                    className={isActiveRoute("/home") ? "bg-foreground text-background" : ""}
+                    className={`${isActiveRoute("/home") ? "bg-foreground/50 text-background hover:bg-foreground/80" : "hover:bg-foreground/50"}`}
                   >
                     <Home />
                     <span>Home</span>
@@ -69,7 +69,7 @@ export function AppSidebar({ session }: AppSidebarProps) {
               >
                 <SidebarMenuItem className={isInSection("/solicitudes/automovil") ? "bg-gradient-to-r from-blue-500 to-cyan-500 dark:from-blue-600 dark:to-cyan-600 text-foreground rounded-xl pb-2" : ""}>
                   <CollapsibleTrigger asChild>
-                    <SidebarMenuButton>
+                    <SidebarMenuButton className={`${isInSection("/solicitudes/automovil") ? "text-foreground hover:bg-transparent" : "hover:bg-foreground/50"}`}>
                       <Car />
                       <p>Protección automovil</p>
                     </SidebarMenuButton>
@@ -80,7 +80,7 @@ export function AppSidebar({ session }: AppSidebarProps) {
                         <SidebarMenuButton asChild>
                           <a 
                             href={"/solicitudes/automovil/compra"} 
-                            className={isActiveRoute("/solicitudes/automovil/compra") ? "bg-foreground text-background" : ""}
+                            className={`${isActiveRoute("/solicitudes/automovil/compra") ? "bg-foreground/50 text-background hover:bg-foreground/80" : "hover:bg-foreground/50"}`}
                           >
                             <span>Compra de vehiculo</span>
                           </a>
@@ -88,7 +88,7 @@ export function AppSidebar({ session }: AppSidebarProps) {
                         <SidebarMenuButton asChild>
                           <a 
                             href={"/solicitudes/automovil/venta"} 
-                            className={isActiveRoute("/solicitudes/automovil/venta") ? "bg-foreground text-background" : ""}
+                            className={`${isActiveRoute("/solicitudes/automovil/venta") ? "bg-foreground/50 text-background hover:bg-foreground/80" : "hover:bg-foreground/50"}`}
                           >
                             <span>Venta de vehiculo</span>
                           </a>
@@ -105,7 +105,7 @@ export function AppSidebar({ session }: AppSidebarProps) {
               >
                 <SidebarMenuItem className={isInSection("/solicitudes/vivienda") ? "bg-gradient-to-r from-green-500 to-emerald-500 dark:from-green-600 dark:to-emerald-600 text-foreground rounded-xl pb-2" : ""}>
                   <CollapsibleTrigger asChild>
-                    <SidebarMenuButton>
+                    <SidebarMenuButton className={`${isInSection("/solicitudes/vivienda") ? "text-foreground hover:bg-transparent" : "hover:bg-foreground/50"}`}>
                       <Building />
                       <span>Protección vivienda</span>
                     </SidebarMenuButton>
@@ -116,7 +116,7 @@ export function AppSidebar({ session }: AppSidebarProps) {
                         <SidebarMenuButton asChild>
                           <a 
                             href={"/solicitudes/vivienda/declaracion"} 
-                            className={isActiveRoute("/solicitudes/vivienda/declaracion") ? "bg-foreground text-background" : ""}
+                            className={`${isActiveRoute("/solicitudes/vivienda/declaracion") ? "bg-foreground/50 text-background hover:bg-foreground/80" : "hover:bg-foreground/50"}`}
                           >
                             <span>Declaración de no poseer vivienda</span>
                           </a>
@@ -124,7 +124,7 @@ export function AppSidebar({ session }: AppSidebarProps) {
                         <SidebarMenuButton asChild>
                           <a 
                             href={"/solicitudes/vivienda/compra-venta"} 
-                            className={isActiveRoute("/solicitudes/vivienda/compra-venta") ? "bg-foreground text-background" : ""}
+                            className={`${isActiveRoute("/solicitudes/vivienda/compra-venta") ? "bg-foreground/50 text-background hover:bg-foreground/80" : "hover:bg-foreground/50"}`}
                           >
                             <span>Compra-venta de vivienda</span>
                           </a>
@@ -141,7 +141,7 @@ export function AppSidebar({ session }: AppSidebarProps) {
               >
                 <SidebarMenuItem className={isInSection("/solicitudes/viajero") ? "bg-gradient-to-r from-purple-500 to-indigo-500 dark:from-purple-600 dark:to-indigo-600 text-foreground rounded-xl pb-2" : ""}>
                   <CollapsibleTrigger asChild>
-                    <SidebarMenuButton>
+                    <SidebarMenuButton className={`${isInSection("/solicitudes/viajero") ? "text-foreground hover:bg-transparent" : "hover:bg-foreground/50"}`}>
                       <Plane />
                       <span>Protección viajero</span>
                     </SidebarMenuButton>
@@ -152,7 +152,7 @@ export function AppSidebar({ session }: AppSidebarProps) {
                         <SidebarMenuButton asChild>
                           <a 
                             href={"/solicitudes/viajero/exterior"} 
-                            className={isActiveRoute("/solicitudes/viajero/exterior") ? "bg-foreground text-background" : ""}
+                            className={`${isActiveRoute("/solicitudes/viajero/exterior") ? "bg-foreground/50 text-background hover:bg-foreground/80" : "hover:bg-foreground/50"}`}
                           >
                             <span>Viajes al exterior</span>
                           </a>
@@ -160,7 +160,7 @@ export function AppSidebar({ session }: AppSidebarProps) {
                         <SidebarMenuButton asChild>
                           <a 
                             href={"/solicitudes/viajero/nacional"} 
-                            className={isActiveRoute("/solicitudes/viajero/nacional") ? "bg-foreground text-background" : ""}
+                            className={`${isActiveRoute("/solicitudes/viajero/nacional") ? "bg-foreground/50 text-background hover:bg-foreground/80" : "hover:bg-foreground/50"}`}
                           >
                             <span>Viajes nacionales</span>
                           </a>
@@ -177,7 +177,7 @@ export function AppSidebar({ session }: AppSidebarProps) {
               >
                 <SidebarMenuItem className={isInSection("/solicitudes/herencia") ? "bg-gradient-to-r from-amber-500 to-orange-500 dark:from-amber-600 dark:to-orange-600 text-foreground rounded-xl pb-2" : ""}>
                   <CollapsibleTrigger asChild>
-                    <SidebarMenuButton>
+                    <SidebarMenuButton className={`${isInSection("/solicitudes/herencia") ? "text-foreground hover:bg-transparent" : "hover:bg-foreground/50"}`}>
                       <HeartHandshake />
                       <span>Protección herencia</span>
                     </SidebarMenuButton>
@@ -188,7 +188,7 @@ export function AppSidebar({ session }: AppSidebarProps) {
                         <SidebarMenuButton asChild>
                           <a 
                             href={"/solicitudes/herencia/declaracion"} 
-                            className={isActiveRoute("/solicitudes/herencia/declaracion") ? "bg-foreground text-background" : ""}
+                            className={`${isActiveRoute("/solicitudes/herencia/declaracion") ? "bg-foreground/50 text-background hover:bg-foreground/80" : "hover:bg-foreground/50"}`}
                           >
                             <span>Declaración de Sucesiones</span>
                           </a>
@@ -205,7 +205,7 @@ export function AppSidebar({ session }: AppSidebarProps) {
               >
                 <SidebarMenuItem className={isInSection("/solicitudes/personal") ? "bg-gradient-to-r from-pink-500 to-rose-500 dark:from-pink-600 dark:to-rose-600 text-foreground rounded-xl pb-2" : ""}>
                   <CollapsibleTrigger asChild>
-                    <SidebarMenuButton>
+                    <SidebarMenuButton className={`${isInSection("/solicitudes/personal") ? "text-foreground hover:bg-transparent" : "hover:bg-foreground/50"}`}>
                       <UserRound />
                       <span>Personal</span>
                     </SidebarMenuButton>
@@ -216,7 +216,7 @@ export function AppSidebar({ session }: AppSidebarProps) {
                         <SidebarMenuButton asChild>
                           <a 
                             href={"/solicitudes/personal/solteria"} 
-                            className={isActiveRoute("/solicitudes/personal/solteria") ? "bg-foreground text-background" : ""}
+                            className={`${isActiveRoute("/solicitudes/personal/solteria") ? "bg-foreground/50 text-background hover:bg-foreground/80" : "hover:bg-foreground/50"}`}
                           >
                             <span>Carta de soltería</span>
                           </a>
@@ -224,7 +224,7 @@ export function AppSidebar({ session }: AppSidebarProps) {
                         <SidebarMenuButton asChild>
                           <a 
                             href={"/solicitudes/personal/poder"} 
-                            className={isActiveRoute("/solicitudes/personal/poder") ? "bg-foreground text-background" : ""}
+                            className={`${isActiveRoute("/solicitudes/personal/poder") ? "bg-foreground/50 text-background hover:bg-foreground/80" : "hover:bg-foreground/50"}`}
                           >
                             <span>Poder especial o general</span>
                           </a>
@@ -241,7 +241,7 @@ export function AppSidebar({ session }: AppSidebarProps) {
               >
                 <SidebarMenuItem className={isInSection("/solicitudes/empresarial") ? "bg-gradient-to-r from-blue-600 to-violet-600 dark:from-blue-700 dark:to-violet-700 text-foreground rounded-xl pb-2" : ""}>
                   <CollapsibleTrigger asChild>
-                    <SidebarMenuButton>
+                    <SidebarMenuButton className={`${isInSection("/solicitudes/empresarial") ? "text-foreground hover:bg-transparent" : "hover:bg-foreground/50"}`}>
                       <Briefcase />
                       <span>Empresarial</span>
                     </SidebarMenuButton>
@@ -252,7 +252,7 @@ export function AppSidebar({ session }: AppSidebarProps) {
                         <SidebarMenuButton asChild>
                           <a 
                             href={"/solicitudes/empresarial/constitucion"} 
-                            className={isActiveRoute("/solicitudes/empresarial/constitucion") ? "bg-foreground text-background" : ""}
+                            className={`${isActiveRoute("/solicitudes/empresarial/constitucion") ? "bg-foreground/50 text-background hover:bg-foreground/80" : "hover:bg-foreground/50"}`}
                           >
                             <span>Constitución de empresa PYME</span>
                           </a>
@@ -260,7 +260,7 @@ export function AppSidebar({ session }: AppSidebarProps) {
                         <SidebarMenuButton asChild>
                           <a 
                             href={"/solicitudes/empresarial/asamblea"} 
-                            className={isActiveRoute("/solicitudes/empresarial/asamblea") ? "bg-foreground text-background" : ""}
+                            className={`${isActiveRoute("/solicitudes/empresarial/asamblea") ? "bg-foreground/50 text-background hover:bg-foreground/80" : "hover:bg-foreground/50"}`}
                           >
                             <span>Acta de Asamblea de Accionistas</span>
                           </a>
@@ -277,7 +277,7 @@ export function AppSidebar({ session }: AppSidebarProps) {
               >
                 <SidebarMenuItem className={isInSection("/solicitudes/migrante") ? "bg-gradient-to-r from-teal-500 to-cyan-500 dark:from-teal-600 dark:to-cyan-600 text-foreground rounded-xl pb-2" : ""}>
                   <CollapsibleTrigger asChild>
-                    <SidebarMenuButton>
+                    <SidebarMenuButton className={`${isInSection("/solicitudes/migrante") ? "text-foreground hover:bg-transparent" : "hover:bg-foreground/50"}`}>
                       <Globe />
                       <span>Migrante</span>
                     </SidebarMenuButton>
@@ -288,7 +288,7 @@ export function AppSidebar({ session }: AppSidebarProps) {
                         <SidebarMenuButton asChild>
                           <a 
                             href={"/solicitudes/migrante/poder"} 
-                            className={isActiveRoute("/solicitudes/migrante/poder") ? "bg-foreground text-background" : ""}
+                            className={`${isActiveRoute("/solicitudes/migrante/poder") ? "bg-foreground/50 text-background hover:bg-foreground/80" : "hover:bg-foreground/50"}`}
                           >
                             <span>Poder desde el exterior</span>
                           </a>
@@ -305,7 +305,7 @@ export function AppSidebar({ session }: AppSidebarProps) {
               >
                 <SidebarMenuItem className={isInSection("/solicitudes/financiera") ? "bg-gradient-to-r from-emerald-500 to-green-600 dark:from-emerald-600 dark:to-green-700 text-foreground rounded-xl pb-2" : ""}>
                   <CollapsibleTrigger asChild>
-                    <SidebarMenuButton>
+                    <SidebarMenuButton className={`${isInSection("/solicitudes/financiera") ? "text-foreground hover:bg-transparent" : "hover:bg-foreground/50"}`}>
                       <CreditCard />
                       <span>Financiera</span>
                     </SidebarMenuButton>
@@ -316,7 +316,7 @@ export function AppSidebar({ session }: AppSidebarProps) {
                         <SidebarMenuButton asChild>
                           <a 
                             href={"/solicitudes/financiera/certificacion"} 
-                            className={isActiveRoute("/solicitudes/financiera/certificacion") ? "bg-foreground text-background" : ""}
+                            className={`${isActiveRoute("/solicitudes/financiera/certificacion") ? "bg-foreground/50 text-background hover:bg-foreground/80" : "hover:bg-foreground/50"}`}
                           >
                             <span>Certificación de ingresos</span>
                           </a>
@@ -324,7 +324,7 @@ export function AppSidebar({ session }: AppSidebarProps) {
                         <SidebarMenuButton asChild>
                           <a 
                             href={"/solicitudes/financiera/balance"} 
-                            className={isActiveRoute("/solicitudes/financiera/balance") ? "bg-foreground text-background" : ""}
+                            className={`${isActiveRoute("/solicitudes/financiera/balance") ? "bg-foreground/50 text-background hover:bg-foreground/80" : "hover:bg-foreground/50"}`}
                           >
                             <span>Balance personal</span>
                           </a>
@@ -347,7 +347,7 @@ export function AppSidebar({ session }: AppSidebarProps) {
                   defaultOpen={isInSection("/ajustes")}
                 >
                   <CollapsibleTrigger asChild>
-                    <SidebarMenuButton className={isInSection("/ajustes") ? "bg-foreground text-background" : ""}>
+                    <SidebarMenuButton className={`${isInSection("/ajustes") ? "text-foreground hover:bg-transparent" : "hover:bg-foreground/50"}`}>
                       <Settings />
                       <p>Ajustes</p>
                     </SidebarMenuButton>
@@ -358,7 +358,7 @@ export function AppSidebar({ session }: AppSidebarProps) {
                         <SidebarMenuButton asChild>
                           <a 
                             href={"/ajustes/cuenta"} 
-                            className={isActiveRoute("/ajustes/cuenta") ? "bg-foreground text-background" : ""}
+                            className={`${isActiveRoute("/ajustes/cuenta") ? "bg-foreground/50 text-background hover:bg-foreground/80" : "hover:bg-foreground/50"}`}
                           >
                             <span>Ajustes de la cuenta</span>
                           </a>
@@ -366,7 +366,7 @@ export function AppSidebar({ session }: AppSidebarProps) {
                         <SidebarMenuButton asChild>
                           <a 
                             href={"/ajustes/familiares"} 
-                            className={isActiveRoute("/ajustes/familiares") ? "bg-foreground text-background" : ""}
+                            className={`${isActiveRoute("/ajustes/familiares") ? "bg-foreground/50 text-background hover:bg-foreground/80" : "hover:bg-foreground/50"}`}
                           >
                             <span>Administrar familiares</span>
                           </a>
@@ -379,7 +379,7 @@ export function AppSidebar({ session }: AppSidebarProps) {
                 <SidebarMenuButton asChild>
                   <a 
                     href="/blog"
-                    className={isActiveRoute("/blog") ? "bg-foreground text-background" : ""}
+                    className={`${isActiveRoute("/blog") ? "bg-foreground/50 text-background hover:bg-foreground/80" : "hover:bg-foreground/50"}`}
                   >
                     <FileText />
                     <span>Blog</span>

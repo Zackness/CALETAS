@@ -317,11 +317,11 @@ export const PoderForm = () => {
         familiarId: selectedPersona !== user!.id ? selectedPersona : null,
         testigo3: testigo3Url,
         testigo4: testigo4Url,
-        bien1: bienesUrls[0],
-        bien2: bienesUrls[1],
-        bien3: bienesUrls[2],
-        bien4: bienesUrls[3],
-        bien5: bienesUrls[4],
+        bienes_generico1: bienesUrls[0],
+        bienes_generico2: bienesUrls[1],
+        bienes_generico3: bienesUrls[2],
+        bienes_generico4: bienesUrls[3],
+        bienes_generico5: bienesUrls[4],
         genericText: values.esPoderEspecial ? values.genericText : null,
       };
 
@@ -524,14 +524,15 @@ export const PoderForm = () => {
               
               {/* Campos para bienes */}
               <div className="mt-6">
-                <h3 className="text-lg font-medium mb-4">Propiedades, bienes o inmuebles</h3>
+                <h3 className="text-lg font-medium">Propiedades, bienes o inmuebles</h3>
+                <p className="text-sm text-foreground/50 mb-4">Suba los documentos de propiedad de sus bienes o inmuebles</p>
                 <div className="space-y-4">
                   <FormField
                     control={form.control}
                     name="bien1"
                     render={() => (
                       <FormItem>
-                        <FormLabel>Propiedad o bien 1</FormLabel>
+                        <FormLabel>Propiedad 1</FormLabel>
                         <FormControl>
                           <Input
                             type="file"
@@ -554,7 +555,7 @@ export const PoderForm = () => {
                     name="bien2"
                     render={() => (
                       <FormItem>
-                        <FormLabel>Propiedad o bien 2</FormLabel>
+                        <FormLabel>Propiedad 2</FormLabel>
                         <FormControl>
                           <Input
                             type="file"
@@ -577,7 +578,7 @@ export const PoderForm = () => {
                     name="bien3"
                     render={() => (
                       <FormItem>
-                        <FormLabel>Propiedad o bien 3</FormLabel>
+                        <FormLabel>Propiedad 3</FormLabel>
                         <FormControl>
                           <Input
                             type="file"
@@ -600,7 +601,7 @@ export const PoderForm = () => {
                     name="bien4"
                     render={() => (
                       <FormItem>
-                        <FormLabel>Propiedad o bien 4</FormLabel>
+                        <FormLabel>Propiedad 4</FormLabel>
                         <FormControl>
                           <Input
                             type="file"
@@ -623,7 +624,7 @@ export const PoderForm = () => {
                     name="bien5"
                     render={() => (
                       <FormItem>
-                        <FormLabel>Propiedad o bien 5</FormLabel>
+                        <FormLabel>Propiedad 5</FormLabel>
                         <FormControl>
                           <Input
                             type="file"
