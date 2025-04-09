@@ -134,7 +134,7 @@ export async function AppSidebar() {
               <SidebarMenuItem>
 
               <Collapsible className="group/collapsible">
-                <SidebarMenuItem>
+
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton>
                       <Settings />
@@ -157,7 +157,7 @@ export async function AppSidebar() {
                       </SidebarMenuSubItem>
                     </SidebarMenuSub>
                   </CollapsibleContent>
-                </SidebarMenuItem>
+
               </Collapsible>
 
                 <SidebarMenuButton asChild>
