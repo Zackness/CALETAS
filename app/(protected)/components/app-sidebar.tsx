@@ -52,10 +52,9 @@ export function AppSidebar({ session }: AppSidebarProps) {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild>
+                <SidebarMenuButton className={`${isActiveRoute("/home") ? "bg-foreground/50 text-foreground hover:bg-foreground/80" : "hover:bg-foreground/50"}`} asChild>
                   <a 
                     href={"/home"} 
-                    className={`${isActiveRoute("/home") ? "bg-foreground/50 text-background hover:bg-foreground/80" : "hover:bg-foreground/50"}`}
                   >
                     <Home />
                     <span>Home</span>

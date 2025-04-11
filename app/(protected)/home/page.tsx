@@ -19,7 +19,7 @@ export default async function DashboardPage() {
     return redirect("/");
   }
   
-  const { completedSolicitudes, pendingSolicitudes } = await getSolicitudWithCount(session.user.id);
+  const { pendingSolicitudes, aprovedSolicitudes, inProgressSolicitudes, completedSolicitudes, regectedSolicitudes } = await getSolicitudWithCount(session.user.id);
 
   // Obtener los servicios desde la base de datos
   const servicios = await db.servicio.findMany({
@@ -74,18 +74,38 @@ export default async function DashboardPage() {
   return (
     <MotionWrapper>
       <div className="h-full w-full p-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
           <InfoCard
             label="Total de solicitudes"
-            numberOfItems={completedSolicitudes.length + pendingSolicitudes.length}
+            numberOfItems={completedSolicitudes.length + pendingSolicitudes.length + aprovedSolicitudes.length + inProgressSolicitudes.length + regectedSolicitudes.length}
+            type={"none"}
           />
           <InfoCard
-            label="Solicitudes completadas"
-            numberOfItems={completedSolicitudes.length}
-          />
+            label="Solicitudes rechazadas"
+            numberOfItems={regectedSolicitudes.length}
+            type="rejected"
+          />          
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <InfoCard
             label="Solicitudes pendientes"
             numberOfItems={pendingSolicitudes.length}
+            type="pending"
+          />
+          <InfoCard
+            label="Solicitudes aprobadas"
+            numberOfItems={aprovedSolicitudes.length}
+            type="approved"
+          />
+          <InfoCard
+            label="Solicitudes en proceso"
+            numberOfItems={inProgressSolicitudes.length}
+            type="inProcess"
+          />          
+          <InfoCard
+            label="Solicitudes finalizadas"
+            numberOfItems={completedSolicitudes.length}
+            type="completed"
           />
         </div>
 
@@ -94,9 +114,9 @@ export default async function DashboardPage() {
             <CardHeader>
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
-                  <CardTitle>Solicitudes de documentos</CardTitle>
+                  <CardTitle className="mb-2">Documentos solicitados</CardTitle>
                   <CardDescription>
-                    Gestiona las solicitudes de documentos legales de tus clientes
+                    Gestiona los documentos legales solicitados por ti o tus familiares
                   </CardDescription>
                 </div>
                 <div className="flex items-center gap-2">

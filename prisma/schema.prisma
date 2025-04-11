@@ -242,8 +242,9 @@ enum UserRole {
 enum Estado {
   PENDIENTE
   APROBADA
-  EN_PROCESO
+  EN_PROGRESO
   FINALIZADA
+  RECHAZADA
 }
 
 //Parentesco de la tabla familiares

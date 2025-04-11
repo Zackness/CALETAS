@@ -47,6 +47,18 @@ const getStatusBadge = (status: string) => {
           Pendiente
         </span>
       );
+    case "APROBADA":
+      return (
+        <span className="bg-purple-500 hover:bg-purple-600 text-white rounded px-2 py-1 text-xs">
+          Aprobada
+        </span>
+      );
+    case "RECHAZADA":
+      return (
+        <span className="bg-red-500 hover:bg-red-600 text-white rounded px-2 py-1 text-xs">
+          Rechazada
+        </span>
+      );
     default:
       return <span className="border rounded px-2 py-1 text-xs">Desconocido</span>;
   }
