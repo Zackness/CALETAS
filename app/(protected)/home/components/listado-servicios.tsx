@@ -31,6 +31,27 @@ interface CustomRequest {
   status: string;
   date: string;
   priority: string;
+  detalle?: {
+    Testigo1?: string;
+    Testigo2?: string;
+    Testigo3?: string;
+    Testigo4?: string;
+    generic_text?: string;
+    bienes_generico1?: string;
+    bienes_generico2?: string;
+    bienes_generico3?: string;
+    bienes_generico4?: string;
+    bienes_generico5?: string;
+    Acta_de_nacimiento?: string;
+    Acta_de_matrimonio?: string;
+    Acta_de_defuncion?: string;
+    Acta_de_divorcio?: string;
+  } | null;
+  notas?: {
+    id: string;
+    contenido: string;
+    createdAt: string;
+  }[];
 }
 
 interface ListadoServiciosProps {
@@ -67,6 +88,27 @@ interface ListadoServiciosProps {
       email: string;
       avatar: string;
     } | null;
+    detalle?: {
+      Testigo1?: string;
+      Testigo2?: string;
+      Testigo3?: string;
+      Testigo4?: string;
+      generic_text?: string;
+      bienes_generico1?: string;
+      bienes_generico2?: string;
+      bienes_generico3?: string;
+      bienes_generico4?: string;
+      bienes_generico5?: string;
+      Acta_de_nacimiento?: string;
+      Acta_de_matrimonio?: string;
+      Acta_de_defuncion?: string;
+      Acta_de_divorcio?: string;
+    } | null;
+    notas?: {
+      id: string;
+      contenido: string;
+      createdAt: string;
+    }[];
   }[];
 }
 
@@ -105,6 +147,8 @@ export const ListadoServicios = ({ servicios, solicitudes }: ListadoServiciosPro
       status: solicitud.estado,
       date: solicitud.fecha,
       priority: solicitud.prioridad,
+      detalle: solicitud.detalle || null,
+      notas: solicitud.notas || [],
     }));
     return acc;
   }, {} as Record<string, CustomRequest[]>);

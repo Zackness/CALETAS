@@ -2,9 +2,10 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Calendar, MoreHorizontal } from "lucide-react";
+import { Calendar, Eye } from "lucide-react";
+import { useState } from "react";
+import { SolicitudDialog } from "./solicitud-dialog";
 
 interface Request {
   id: string;
@@ -75,6 +76,16 @@ export const CategoryTable = ({
   requestsByCategory,
   getPriorityIcon,
 }: CategoryTableProps) => {
+  // Estado para controlar el diálogo de detalles
+  const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  // Función para abrir el diálogo con los detalles de la solicitud
+  const handleViewDetails = (request: Request) => {
+    setSelectedRequest(request);
+    setDialogOpen(true);
+  };
+
   // Log para depuración
   console.log(`Categoría ${categoryId}:`, {
     total: requestsByCategory[categoryId]?.length || 0,
@@ -140,22 +151,15 @@ export const CategoryTable = ({
                     </div>
                   </TableCell>
                   <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Abrir menú</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>Ver detalles</DropdownMenuItem>
-                        <DropdownMenuItem>Editar solicitud</DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-destructive">
-                          Eliminar solicitud
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      onClick={() => handleViewDetails(request)}
+                      title="Ver detalles"
+                    >
+                      <Eye className="h-4 w-4" />
+                      <span className="sr-only">Ver detalles</span>
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))
@@ -180,6 +184,13 @@ export const CategoryTable = ({
           </TableBody>
         </Table>
       </div>
+
+      {/* Diálogo de detalles de la solicitud */}
+      <SolicitudDialog 
+        solicitud={selectedRequest as any} 
+        open={dialogOpen} 
+        onOpenChange={setDialogOpen} 
+      />
     </div>
   );
 };
