@@ -13,6 +13,11 @@ interface Request {
     name: string;
     email: string;
   };
+  familiar?: {
+    avatar: string;
+    name: string;
+    email: string;
+  } | null;
   documentType: string;
   status: string;
   date: string;
@@ -100,14 +105,23 @@ export const CategoryTable = ({
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={request.client.avatar} alt={request.client.name} />
+                        <AvatarImage 
+                          src={request.familiar ? request.familiar.avatar : request.client.avatar} 
+                          alt={request.familiar ? request.familiar.name : request.client.name} 
+                        />
                         <AvatarFallback>
-                          {request.client.name.substring(0, 2).toUpperCase()}
+                          {(request.familiar ? request.familiar.name : request.client.name)
+                            .substring(0, 2)
+                            .toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <div className="font-medium">{request.client.name}</div>
-                        <div className="text-xs text-muted-foreground">{request.client.email}</div>
+                        <div className="font-medium">
+                          {request.familiar ? request.familiar.name : request.client.name}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {request.familiar ? request.familiar.email : request.client.email}
+                        </div>
                       </div>
                     </div>
                   </TableCell>
@@ -151,7 +165,7 @@ export const CategoryTable = ({
                   <div className="flex flex-col items-center justify-center h-full">
                     <p className="text-lg font-medium mb-2">
                       {requestsByCategory[categoryId]?.length === 0
-                        ? "No hay solicitudes en esta categoría."
+                        ? "No hay solicitudes en este servicio."
                         : "No se encontraron solicitudes que coincidan con la búsqueda."}
                     </p>
                     <p className="text-sm">

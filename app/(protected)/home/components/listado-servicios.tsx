@@ -55,17 +55,28 @@ interface ListadoServiciosProps {
         nombre: string;
       };
     };
-    usuario: {
+    client: {
       id: string;
       name: string;
       email: string;
-      image: string;
+      avatar: string;
     };
+    familiar?: {
+      id: string;
+      name: string;
+      email: string;
+      avatar: string;
+    } | null;
   }[];
 }
 
 export const ListadoServicios = ({ servicios, solicitudes }: ListadoServiciosProps) => {
-  const [activeCategory, setActiveCategory] = useState(servicios[0]?.id || "");
+  // Encontrar la primera categoría que tenga solicitudes
+  const firstCategoryWithRequests = servicios.find(servicio => 
+    solicitudes.some(solicitud => solicitud.documento.servicio.id === servicio.id)
+  );
+
+  const [activeCategory, setActiveCategory] = useState(firstCategoryWithRequests?.id || servicios[0]?.id || "");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterState, setFilterState] = useState("Todos");
   const [filterPriority, setFilterPriority] = useState("Todas");
@@ -81,10 +92,14 @@ export const ListadoServicios = ({ servicios, solicitudes }: ListadoServiciosPro
     // Transformar a formato CustomRequest
     acc[servicio.id] = solicitudesCategoria.map((solicitud) => ({
       id: solicitud.id,
-      client: {
-        avatar: solicitud.usuario.image || "/default-avatar.png",
-        name: solicitud.usuario.name || "Usuario",
-        email: solicitud.usuario.email || "usuario@example.com",
+      client: solicitud.familiar ? {
+        avatar: solicitud.familiar.avatar || "/default-avatar.png",
+        name: solicitud.familiar.name || "Familiar",
+        email: solicitud.familiar.email || "Sin teléfono",
+      } : {
+        avatar: solicitud.client.avatar || "/default-avatar.png",
+        name: solicitud.client.name || "Usuario",
+        email: solicitud.client.email || "usuario@example.com",
       },
       documentType: solicitud.documento.nombre,
       status: solicitud.estado,

@@ -43,6 +43,7 @@ export default async function DashboardPage() {
         },
       },
       usuario: true,
+      familiar: true,
     },
     orderBy: {
       createdAt: "desc",
@@ -63,12 +64,18 @@ export default async function DashboardPage() {
         nombre: solicitud.documento.servicio.nombre,
       },
     },
-    usuario: {
+    client: {
       id: solicitud.usuario.id,
       name: solicitud.usuario.name || "Usuario",
       email: solicitud.usuario.email || "usuario@example.com",
-      image: solicitud.usuario.image || "/default-avatar.png",
+      avatar: solicitud.usuario.image || "/default-avatar.png",
     },
+    familiar: solicitud.familiarId ? {
+      id: solicitud.familiar?.id || "",
+      name: solicitud.familiar?.nombre || "",
+      email: solicitud.familiar?.telefono || "Sin teléfono",
+      avatar: "/default-avatar.png", // Podemos usar un avatar por defecto para familiares
+    } : null,
   }));
 
   return (
