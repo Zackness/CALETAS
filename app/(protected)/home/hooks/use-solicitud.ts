@@ -14,17 +14,21 @@ interface SolicitudData {
       nombre: string;
     };
   };
-  usuario: {
+  client: {
     id: string;
     name: string;
     email: string;
     avatar: string;
+    telefono?: string;
+    cedula?: string;
   };
   familiar?: {
     id: string;
     name: string;
     email: string;
     avatar: string;
+    telefono?: string;
+    cedula?: string;
   } | null;
   detalle?: {
     Testigo1?: string;
@@ -32,6 +36,20 @@ interface SolicitudData {
     Testigo3?: string;
     Testigo4?: string;
     generic_text?: string;
+    bienes_generico1?: string;
+    bienes_generico2?: string;
+    bienes_generico3?: string;
+    bienes_generico4?: string;
+    bienes_generico5?: string;
+    Acta_de_nacimiento?: string;
+    Acta_de_matrimonio?: string;
+    Acta_de_defuncion?: string;
+    Acta_de_divorcio?: string;
+  } | null;
+  nota?: {
+    id: string;
+    contenido: string;
+    createdAt: string;
   } | null;
 }
 

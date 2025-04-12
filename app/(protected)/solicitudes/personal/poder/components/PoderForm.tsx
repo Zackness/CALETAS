@@ -175,14 +175,6 @@ export const PoderForm = () => {
     return null;
   }, [user, familiares]);
 
-  // Función para actualizar la información del cónyuge
-  const updateConyugeInfo = useCallback((selectedId: string) => {
-    const conyugeInfo = findConyuge(selectedId);
-    if (conyugeInfo) {
-      setConyugeInfo(conyugeInfo);
-    }
-  }, [findConyuge]);
-
   // Cargar datos iniciales solo una vez
   useEffect(() => {
     let isMounted = true;
@@ -198,18 +190,33 @@ export const PoderForm = () => {
         setSelectedPersona(user.id); 
         form.setValue("cedula", user.cedula);
         
-        // Inicializar la información del cónyuge para el usuario principal
-        setTimeout(() => {
-          if (isMounted) {
-            const conyugeEncontrado = findConyuge(user.id);
-            setConyugeInfo(conyugeEncontrado);
-            
-            if (conyugeEncontrado) {
-              form.setValue("nombreConyuge", conyugeEncontrado.nombre);
-              form.setValue("cedulaConyuge", conyugeEncontrado.cedula);
-            }
-          }
-        }, 100);
+        // Buscar si existe un cónyuge entre los familiares
+        const conyugeFamiliar = familiares.find((f: Familiar) => 
+          f.parentesco.toLowerCase() === "esposo" || 
+          f.parentesco.toLowerCase() === "esposa"
+        );
+        
+        if (conyugeFamiliar && isMounted) {
+          // Si existe un cónyuge, configurar la información
+          setConyugeInfo({
+            nombre: conyugeFamiliar.nombre,
+            cedula: conyugeFamiliar.cedula,
+            tipo: 'familiar' as const,
+            requiereDocumento: false
+          });
+          
+          // Establecer los valores en el formulario
+          form.setValue("nombreConyuge", conyugeFamiliar.nombre);
+          form.setValue("cedulaConyuge", conyugeFamiliar.cedula);
+        } else if (isMounted) {
+          // Si no existe un cónyuge, configurar para subir documento
+          setConyugeInfo({
+            nombre: "No registrado",
+            cedula: "No registrado",
+            tipo: 'ninguno' as const,
+            requiereDocumento: true
+          });
+        }
       } catch (error) {
         if (isMounted) {
           console.error("Error al obtener los datos de los familiares:", error);
@@ -223,7 +230,7 @@ export const PoderForm = () => {
     return () => {
       isMounted = false;
     };
-  }, [findConyuge, form]);
+  }, []); // Solo se ejecuta una vez al montar el componente
 
   const uploadToBunny = async (file: File, fileName: string) => {
     try {
@@ -349,13 +356,20 @@ export const PoderForm = () => {
     setSelectedPersona(value);
     const persona = value === user?.id ? user : familiares.find((f) => f.id === value);
     if (persona) {
-      form.setValue("cedula", persona.cedula);
+      if ('cedula' in persona) {
+        form.setValue("cedula", persona.cedula);
+      }
     } else {
       form.setValue("cedula", ""); 
     }
 
     // Actualizar la información del cónyuge
-    updateConyugeInfo(value);
+    const conyugeEncontrado = findConyuge(value);
+    if (conyugeEncontrado) {
+      setConyugeInfo(conyugeEncontrado);
+      form.setValue("nombreConyuge", conyugeEncontrado.nombre);
+      form.setValue("cedulaConyuge", conyugeEncontrado.cedula);
+    }
   };
 
   return (

@@ -56,13 +56,17 @@ export async function GET(req: Request) {
         id: solicitud.usuario.id,
         name: solicitud.usuario.name || "",
         email: solicitud.usuario.email || "",
-        avatar: solicitud.usuario.image || "/default-avatar.png"
+        avatar: solicitud.usuario.image || "/default-avatar.png",
+        telefono: solicitud.usuario.telefono || "",
+        cedula: solicitud.usuario.cedula || ""
       },
       familiar: solicitud.familiar ? {
         id: solicitud.familiar.id,
         name: solicitud.familiar.nombre,
         email: solicitud.familiar.telefono || "",
-        avatar: "/default-avatar.png"
+        avatar: "/default-avatar.png",
+        telefono: solicitud.familiar.telefono || "",
+        cedula: solicitud.familiar.cedula || ""
       } : null,
       detalle: solicitud.detalle ? {
         Testigo1: solicitud.detalle.Testigo1 || undefined,

@@ -11,12 +11,13 @@ export async function POST(req: NextRequest) {
       familiarId, 
       nombreConyuge, 
       cedulaConyuge, 
-      testigo3, 
-      bien1, 
-      bien2, 
-      bien3, 
-      bien4, 
-      bien5,
+      testigo3,
+      testigo4,
+      bienes_generico1, 
+      bienes_generico2, 
+      bienes_generico3, 
+      bienes_generico4, 
+      bienes_generico5,
       genericText
     } = body;
 
@@ -27,7 +28,8 @@ export async function POST(req: NextRequest) {
       hasNombreConyuge: !!nombreConyuge,
       hasCedulaConyuge: !!cedulaConyuge,
       hasTestigo3: !!testigo3,
-      hasBienes: !!(bien1 || bien2 || bien3 || bien4 || bien5),
+      hasTestigo4: !!testigo4,
+      hasBienes: !!(bienes_generico1 || bienes_generico2 || bienes_generico3 || bienes_generico4 || bienes_generico5),
       hasGenericText: !!genericText
     });
 
@@ -76,11 +78,12 @@ export async function POST(req: NextRequest) {
       nombreConyuge,
       cedulaConyuge,
       testigo3,
-      bien1,
-      bien2,
-      bien3,
-      bien4,
-      bien5,
+      testigo4,
+      bienes_generico1,
+      bienes_generico2,
+      bienes_generico3,
+      bienes_generico4,
+      bienes_generico5,
       genericText
     });
 
@@ -88,11 +91,12 @@ export async function POST(req: NextRequest) {
     const detalleData = {
       solicitudId: solicitud.id,
       Testigo3: testigo3 || null,
-      bienes_generico1: bien1 || null,
-      bienes_generico2: bien2 || null,
-      bienes_generico3: bien3 || null,
-      bienes_generico4: bien4 || null,
-      bienes_generico5: bien5 || null,
+      Testigo4: testigo4 || null,
+      bienes_generico1: bienes_generico1 || null,
+      bienes_generico2: bienes_generico2 || null,
+      bienes_generico3: bienes_generico3 || null,
+      bienes_generico4: bienes_generico4 || null,
+      bienes_generico5: bienes_generico5 || null,
       generic_text: genericText || null,
     };
     

@@ -11,6 +11,9 @@ interface PersonalDocumentFormProps {
     Testigo3?: string;
     Testigo4?: string;
     generic_text?: string;
+    documento?: {
+      nombre?: string;
+    };
   } | null;
   onSave: (data: any) => void;
   onCancel: () => void;
@@ -37,6 +40,33 @@ export const PersonalDocumentForm = ({
     }));
   };
 
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, testigo: string) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await fetch('/api/bunny/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error('Error al subir el archivo');
+        }
+
+        const data = await response.json();
+        setFormData((prev) => ({
+          ...prev,
+          [testigo]: data.url,
+        }));
+      } catch (error) {
+        console.error('Error al subir el archivo:', error);
+      }
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave(formData);
@@ -50,9 +80,9 @@ export const PersonalDocumentForm = ({
           <Input
             id="Testigo1"
             name="Testigo1"
-            value={formData.Testigo1}
-            onChange={handleChange}
-            placeholder="URL del documento del testigo 1"
+            type="file"
+            onChange={(e) => handleFileChange(e, 'Testigo1')}
+            placeholder="Subir archivo del testigo 1"
           />
         </div>
         <div className="space-y-2">
@@ -60,43 +90,11 @@ export const PersonalDocumentForm = ({
           <Input
             id="Testigo2"
             name="Testigo2"
-            value={formData.Testigo2}
-            onChange={handleChange}
-            placeholder="URL del documento del testigo 2"
+            type="file"
+            onChange={(e) => handleFileChange(e, 'Testigo2')}
+            placeholder="Subir archivo del testigo 2"
           />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="Testigo3">Testigo 3</Label>
-          <Input
-            id="Testigo3"
-            name="Testigo3"
-            value={formData.Testigo3}
-            onChange={handleChange}
-            placeholder="URL del documento del testigo 3"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="Testigo4">Testigo 4</Label>
-          <Input
-            id="Testigo4"
-            name="Testigo4"
-            value={formData.Testigo4}
-            onChange={handleChange}
-            placeholder="URL del documento del testigo 4"
-          />
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="generic_text">Texto adicional</Label>
-        <Textarea
-          id="generic_text"
-          name="generic_text"
-          value={formData.generic_text}
-          onChange={handleChange}
-          placeholder="Información adicional sobre los documentos"
-          rows={4}
-        />
       </div>
 
       <div className="flex justify-end gap-2">

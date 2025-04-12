@@ -11,7 +11,7 @@ export const ClientInfo = ({ name, email, avatar }: ClientInfoProps) => {
     <div className="flex items-center gap-4 p-4 border rounded-lg">
       <Avatar>
         <AvatarImage src={avatar} alt={name} />
-        <AvatarFallback>{name.charAt(0)}</AvatarFallback>
+        <AvatarFallback>{name.substring(0, 2).toUpperCase()}</AvatarFallback>
       </Avatar>
       <div>
         <h3 className="font-medium">{name}</h3>

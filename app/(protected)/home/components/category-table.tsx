@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Calendar, Eye } from "lucide-react";
 import { useState } from "react";
-import { SolicitudDialog } from "./solicitud-dialog";
+import { PersonalDialog } from "./dialogs/personal/personal-dialog";
 
 interface Request {
   id: string;
@@ -77,13 +77,20 @@ export const CategoryTable = ({
   getPriorityIcon,
 }: CategoryTableProps) => {
   // Estado para controlar el diálogo de detalles
-  const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
+  const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
   // Función para abrir el diálogo con los detalles de la solicitud
   const handleViewDetails = (request: Request) => {
-    setSelectedRequest(request);
+    console.log("Abriendo solicitud:", request.id);
+    setSelectedRequestId(request.id);
     setDialogOpen(true);
+  };
+
+  // Función para cerrar el diálogo
+  const handleCloseDialog = () => {
+    console.log("Cerrando diálogo");
+    setDialogOpen(false);
   };
 
   // Log para depuración
@@ -186,11 +193,13 @@ export const CategoryTable = ({
       </div>
 
       {/* Diálogo de detalles de la solicitud */}
-      <SolicitudDialog 
-        solicitud={selectedRequest as any} 
-        open={dialogOpen} 
-        onOpenChange={setDialogOpen} 
-      />
+      {selectedRequestId && (
+        <PersonalDialog 
+          solicitudId={selectedRequestId} 
+          isOpen={dialogOpen} 
+          onClose={handleCloseDialog} 
+        />
+      )}
     </div>
   );
 };
