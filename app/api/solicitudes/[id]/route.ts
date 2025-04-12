@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
+import { UserRole } from "@prisma/client";
 
 // GET /api/solicitudes/[id]
 export async function GET(req: Request) {
@@ -16,11 +17,28 @@ export async function GET(req: Request) {
     const pathParts = url.pathname.split('/');
     const id = pathParts[pathParts.length - 1]; // El ID es el último segmento de la URL
 
-    const solicitud = await db.solicitud.findUnique({
+    // Verificar el rol del usuario
+    const user = await db.user.findUnique({
       where: {
-        id: parseInt(id),
-        usuarioId: session.user.id
+        id: session.user.id
       },
+      select: {
+        role: true
+      }
+    });
+
+    // Construir la consulta base
+    let whereClause: any = {
+      id: parseInt(id)
+    };
+
+    // Si el usuario es cliente, solo puede ver sus propias solicitudes
+    if (user?.role === UserRole.CLIENT) {
+      whereClause.usuarioId = session.user.id;
+    }
+
+    const solicitud = await db.solicitud.findUnique({
+      where: whereClause,
       include: {
         documento: {
           include: {
@@ -112,16 +130,40 @@ export async function PUT(req: Request) {
     const pathParts = url.pathname.split('/');
     const id = pathParts[pathParts.length - 1]; // El ID es el último segmento de la URL
 
+    // Verificar el rol del usuario
+    const user = await db.user.findUnique({
+      where: {
+        id: session.user.id
+      },
+      select: {
+        role: true
+      }
+    });
+
+    // Solo los abogados y administradores pueden cambiar el estado
+    if (user?.role !== UserRole.ABOGADO && user?.role !== UserRole.ADMIN) {
+      return new NextResponse("No autorizado", { status: 403 });
+    }
+
     const body = await req.json();
     const { estado } = body;
 
+    // Validar que el estado sea uno de los permitidos
+    const estadosPermitidos = ["PENDIENTE", "APROBADA", "EN_PROGRESO", "FINALIZADA", "RECHAZADA"];
+    if (!estadosPermitidos.includes(estado)) {
+      return new NextResponse("Estado no válido", { status: 400 });
+    }
+
     const solicitud = await db.solicitud.update({
       where: {
-        id: parseInt(id),
-        usuarioId: session.user.id
+        id: parseInt(id)
       },
       data: {
         estado
+      },
+      include: {
+        detalle: true,
+        nota: true
       }
     });
 

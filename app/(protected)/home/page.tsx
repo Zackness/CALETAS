@@ -48,6 +48,7 @@ export default async function DashboardPage() {
   // Obtener todas las solicitudes del usuario
   const solicitudes = await db.solicitud.findMany({
     where: {
+      usuarioId: session.user.id,
       estado: {
         not: "FINALIZADA"
       }

@@ -75,15 +75,27 @@ export async function POST(req: NextRequest) {
 
     console.log("Detalle creado:", detalle);
 
-    // Obtener la solicitud completa con su detalle
-    const solicitudCompleta = await db.solicitud.findUnique({
+    // Actualizar la solicitud para usar la nota predefinida
+    const solicitudActualizada = await db.solicitud.update({
       where: { id: solicitud.id },
-      include: { detalle: true }
+      data: {
+        nota: {
+          connect: {
+            id: "bfed5e88-b5c6-415f-981e-f5e798c5e943"
+          }
+        }
+      },
+      include: { 
+        detalle: true,
+        nota: true
+      }
     });
+
+    console.log("Solicitud actualizada con nota predefinida:", solicitudActualizada);
 
     return NextResponse.json({ 
       succes: "Solicitud creada exitosamente.", 
-      solicitud: solicitudCompleta 
+      solicitud: solicitudActualizada 
     }, { status: 200 });
   } catch (error: any) {
     console.error("Error interno del servidor:", {

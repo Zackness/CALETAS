@@ -180,17 +180,26 @@ model Detalle {
   Acta_de_matrimonio String?
   Acta_de_defuncion String?
   Acta_de_divorcio  String?
-  solicitud   Solicitud @relation(fields: [solicitudId], references: [id])
+  solicitud_finalizada String? // URL del documento finalizado que el abogado devuelve al cliente
+  solicitud   Solicitud? @relation(fields: [solicitudId], references: [id])
 }
 
 // Notas que los abogados pueden agregar a las solicitudes
 model Nota {
   id          String   @id @default(uuid())
-  solicitudId Int      @unique // Campo único (pero no clave primaria)
+  solicitudId Int?      @unique // Campo único (pero no clave primaria)
   contenido   String   @db.Text
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  solicitud   Solicitud @relation(fields: [solicitudId], references: [id])
+  solicitud   Solicitud? @relation(fields: [solicitudId], references: [id])
+}
+
+// Notas predefinidas que los abogados pueden seleccionar
+model NotaPredefinida {
+  id          String   @id @default(uuid())
+  contenido   String   @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 //Empresa por la que contrato el servicio el usuario
@@ -247,6 +256,7 @@ enum TipoEmpresa {
 enum UserRole {
   CLIENT
   ADMIN
+  ABOGADO
 }
 
 //Estado de la solicitud que hace el usuario

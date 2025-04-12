@@ -2,16 +2,16 @@ import { db } from "@/lib/db";
 import { Solicitud } from "@prisma/client";
 
 type SolicitudWithCount = {
-  completedSolicitudes: Solicitud[]; // Cambié el tipo a Solicitud[]
-  pendingSolicitudes: Solicitud[];   // Cambié el tipo a Solicitud[]
-  aprovedSolicitudes: Solicitud[];   // Cambié el tipo a Solicitud[]
-  inProgressSolicitudes: Solicitud[];   // Cambié el tipo a Solicitud[]
-  regectedSolicitudes: Solicitud[];   // Cambié el tipo a Solicitud[]
+  completedSolicitudes: Solicitud[]; 
+  pendingSolicitudes: Solicitud[];   
+  aprovedSolicitudes: Solicitud[];   
+  inProgressSolicitudes: Solicitud[];   
+  regectedSolicitudes: Solicitud[];   
 };
 
 export const getSolicitudWithCount = async (userId: string): Promise<SolicitudWithCount> => {
   try {
-    // Obtener solicitudes pendientes
+    // Obtener solicitudes pendientes del usuario
     const pendingSolicitudes = await db.solicitud.findMany({
       where: {
         usuarioId: userId,
@@ -19,7 +19,7 @@ export const getSolicitudWithCount = async (userId: string): Promise<SolicitudWi
       },
     });
     
-    // Obtener solicitudes pendientes
+    // Obtener solicitudes aprobadas del usuario
     const aprovedSolicitudes = await db.solicitud.findMany({
       where: {
         usuarioId: userId,
@@ -27,7 +27,7 @@ export const getSolicitudWithCount = async (userId: string): Promise<SolicitudWi
       },
     });
     
-    // Obtener solicitudes pendientes
+    // Obtener solicitudes en proceso del usuario
     const inProgressSolicitudes = await db.solicitud.findMany({
       where: {
         usuarioId: userId,
@@ -35,7 +35,7 @@ export const getSolicitudWithCount = async (userId: string): Promise<SolicitudWi
       },
     });
 
-    // Obtener solicitudes finalizadas
+    // Obtener solicitudes finalizadas del usuario
     const completedSolicitudes = await db.solicitud.findMany({
       where: {
         usuarioId: userId,
@@ -43,14 +43,13 @@ export const getSolicitudWithCount = async (userId: string): Promise<SolicitudWi
       },
     });
 
-    // Obtener solicitudes finalizadas
+    // Obtener solicitudes rechazadas del usuario
     const regectedSolicitudes = await db.solicitud.findMany({
       where: {
         usuarioId: userId,
-        estado: "FINALIZADA",
+        estado: "RECHAZADA",
       },
     });    
-
 
     // Devolver los datos en el formato esperado
     return {
