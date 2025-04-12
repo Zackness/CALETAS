@@ -4,7 +4,7 @@ import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { useState, useTransition, useEffect } from "react";
+import { useState, useTransition, useEffect, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { FormSucces } from "@/components/form-succes";
@@ -119,7 +119,7 @@ export const PoderForm = () => {
   });
 
   // Función para buscar el cónyuge
-  const findConyuge = (selectedId: string) => {
+  const findConyuge = useCallback((selectedId: string) => {
     if (!user || !familiares.length) return null;
     
     // Si se seleccionó el usuario principal
@@ -173,26 +173,15 @@ export const PoderForm = () => {
     }
     
     return null;
-  };
+  }, [user, familiares]);
 
   // Función para actualizar la información del cónyuge
-  const updateConyugeInfo = (selectedId: string) => {
-    const conyugeEncontrado = findConyuge(selectedId);
-    setConyugeInfo(conyugeEncontrado);
-    
-    // Actualizar los campos de nombre y cédula del cónyuge
-    if (conyugeEncontrado) {
-      form.setValue("nombreConyuge", conyugeEncontrado.nombre);
-      form.setValue("cedulaConyuge", conyugeEncontrado.cedula);
-    } else {
-      form.setValue("nombreConyuge", "");
-      form.setValue("cedulaConyuge", "");
+  const updateConyugeInfo = useCallback((selectedId: string) => {
+    const conyugeInfo = findConyuge(selectedId);
+    if (conyugeInfo) {
+      setConyugeInfo(conyugeInfo);
     }
-    
-    // Limpiar los campos de archivos
-    form.setValue("testigo3", undefined);
-    setTestigo3File(undefined);
-  };
+  }, [findConyuge]);
 
   // Cargar datos iniciales solo una vez
   useEffect(() => {
@@ -234,7 +223,7 @@ export const PoderForm = () => {
     return () => {
       isMounted = false;
     };
-  }, []); // Sin dependencias para que solo se ejecute una vez
+  }, [findConyuge, form]);
 
   const uploadToBunny = async (file: File, fileName: string) => {
     try {

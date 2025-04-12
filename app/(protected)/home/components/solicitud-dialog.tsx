@@ -129,18 +129,29 @@ export const SolicitudDialog = ({
 
   const [nota, setNota] = useState<string>("");
   const [isEditing, setIsEditing] = useState(false);
+  const [lastLoadedId, setLastLoadedId] = useState<string | null>(null);
 
   useEffect(() => {
     const loadNota = async () => {
-      if (solicitud?.id) {
+      if (solicitud?.id && open && solicitud.id !== lastLoadedId) {
         const notaData = await getNota();
         if (notaData) {
           setNota(notaData.contenido);
         }
+        setLastLoadedId(solicitud.id);
       }
     };
     loadNota();
-  }, [solicitud?.id]);
+  }, [solicitud?.id, open, getNota, lastLoadedId]);
+
+  // Resetear el estado cuando se cierra el diálogo
+  useEffect(() => {
+    if (!open) {
+      setNota("");
+      setIsEditing(false);
+      setLastLoadedId(null);
+    }
+  }, [open]);
 
   const handleSaveNota = async () => {
     if (nota.trim()) {
@@ -254,75 +265,101 @@ export const SolicitudDialog = ({
         {/* Detalles específicos del documento */}
         {solicitud.detalle && (
           <div className="border-t pt-4 mt-4">
-            <h3 className="font-medium text-lg mb-3">Detalles del documento</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {solicitud.detalle.Testigo1 && (
-                <div className="flex items-center gap-2">
-                  <User className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Testigo 1: {solicitud.detalle.Testigo1}</span>
-                </div>
-              )}
-              {solicitud.detalle.Testigo2 && (
-                <div className="flex items-center gap-2">
-                  <User className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Testigo 2: {solicitud.detalle.Testigo2}</span>
-                </div>
-              )}
-              {solicitud.detalle.Testigo3 && (
-                <div className="flex items-center gap-2">
-                  <User className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Testigo 3: {solicitud.detalle.Testigo3}</span>
-                </div>
-              )}
-              {solicitud.detalle.Testigo4 && (
-                <div className="flex items-center gap-2">
-                  <User className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Testigo 4: {solicitud.detalle.Testigo4}</span>
-                </div>
-              )}
-              {solicitud.detalle.generic_text && (
-                <div className="col-span-2">
-                  <p className="text-sm font-medium">Texto genérico:</p>
-                  <p className="text-sm">{solicitud.detalle.generic_text}</p>
-                </div>
-              )}
-              {solicitud.detalle.bienes_generico1 && (
-                <div className="col-span-2">
-                  <p className="text-sm font-medium">Bienes:</p>
-                  <ul className="text-sm list-disc pl-5">
-                    {solicitud.detalle.bienes_generico1 && <li>{solicitud.detalle.bienes_generico1}</li>}
-                    {solicitud.detalle.bienes_generico2 && <li>{solicitud.detalle.bienes_generico2}</li>}
-                    {solicitud.detalle.bienes_generico3 && <li>{solicitud.detalle.bienes_generico3}</li>}
-                    {solicitud.detalle.bienes_generico4 && <li>{solicitud.detalle.bienes_generico4}</li>}
-                    {solicitud.detalle.bienes_generico5 && <li>{solicitud.detalle.bienes_generico5}</li>}
-                  </ul>
-                </div>
-              )}
-              {solicitud.detalle.Acta_de_nacimiento && (
-                <div className="flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Acta de nacimiento: {solicitud.detalle.Acta_de_nacimiento}</span>
-                </div>
-              )}
-              {solicitud.detalle.Acta_de_matrimonio && (
-                <div className="flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Acta de matrimonio: {solicitud.detalle.Acta_de_matrimonio}</span>
-                </div>
-              )}
-              {solicitud.detalle.Acta_de_defuncion && (
-                <div className="flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Acta de defunción: {solicitud.detalle.Acta_de_defuncion}</span>
-                </div>
-              )}
-              {solicitud.detalle.Acta_de_divorcio && (
-                <div className="flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Acta de divorcio: {solicitud.detalle.Acta_de_divorcio}</span>
-                </div>
-              )}
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-medium text-lg">Detalles del documento</h3>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsEditing(!isEditing)}
+              >
+                {isEditing ? "Cancelar" : "Editar"}
+              </Button>
             </div>
+            {isEditing ? (
+              <div className="space-y-2">
+                <Textarea
+                  value={nota}
+                  onChange={(e) => setNota(e.target.value)}
+                  placeholder="Escribe una nota..."
+                  className="min-h-[100px]"
+                />
+                <Button
+                  onClick={handleSaveNota}
+                  disabled={isLoading || !nota.trim()}
+                >
+                  Guardar
+                </Button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {solicitud.detalle.Testigo1 && (
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">Testigo 1: {solicitud.detalle.Testigo1}</span>
+                  </div>
+                )}
+                {solicitud.detalle.Testigo2 && (
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">Testigo 2: {solicitud.detalle.Testigo2}</span>
+                  </div>
+                )}
+                {solicitud.detalle.Testigo3 && (
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">Testigo 3: {solicitud.detalle.Testigo3}</span>
+                  </div>
+                )}
+                {solicitud.detalle.Testigo4 && (
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">Testigo 4: {solicitud.detalle.Testigo4}</span>
+                  </div>
+                )}
+                {solicitud.detalle.generic_text && (
+                  <div className="col-span-2">
+                    <p className="text-sm font-medium">Texto genérico:</p>
+                    <p className="text-sm">{solicitud.detalle.generic_text}</p>
+                  </div>
+                )}
+                {solicitud.detalle.bienes_generico1 && (
+                  <div className="col-span-2">
+                    <p className="text-sm font-medium">Bienes:</p>
+                    <ul className="text-sm list-disc pl-5">
+                      {solicitud.detalle.bienes_generico1 && <li>{solicitud.detalle.bienes_generico1}</li>}
+                      {solicitud.detalle.bienes_generico2 && <li>{solicitud.detalle.bienes_generico2}</li>}
+                      {solicitud.detalle.bienes_generico3 && <li>{solicitud.detalle.bienes_generico3}</li>}
+                      {solicitud.detalle.bienes_generico4 && <li>{solicitud.detalle.bienes_generico4}</li>}
+                      {solicitud.detalle.bienes_generico5 && <li>{solicitud.detalle.bienes_generico5}</li>}
+                    </ul>
+                  </div>
+                )}
+                {solicitud.detalle.Acta_de_nacimiento && (
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">Acta de nacimiento: {solicitud.detalle.Acta_de_nacimiento}</span>
+                  </div>
+                )}
+                {solicitud.detalle.Acta_de_matrimonio && (
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">Acta de matrimonio: {solicitud.detalle.Acta_de_matrimonio}</span>
+                  </div>
+                )}
+                {solicitud.detalle.Acta_de_defuncion && (
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">Acta de defunción: {solicitud.detalle.Acta_de_defuncion}</span>
+                  </div>
+                )}
+                {solicitud.detalle.Acta_de_divorcio && (
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">Acta de divorcio: {solicitud.detalle.Acta_de_divorcio}</span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -343,53 +380,14 @@ export const SolicitudDialog = ({
           </div>
         )}
 
-        {/* Sección de notas con título y botón de editar alineados */}
+        {/* Sección de notas */}
         <div className="border-t pt-4 mt-4">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-semibold">Notas</h3>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsEditing(!isEditing)}
-              >
-                {isEditing ? "Cancelar" : "Editar"}
-              </Button>
-              {nota && (
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={handleDeleteNota}
-                  disabled={isLoading}
-                >
-                  Eliminar
-                </Button>
-              )}
-            </div>
+          <h3 className="text-lg font-semibold mb-2">Notas</h3>
+          <div className="p-4 bg-muted rounded-md">
+            {nota || "No hay notas para esta solicitud"}
           </div>
-          
-          {isEditing ? (
-            <div className="space-y-2">
-              <Textarea
-                value={nota}
-                onChange={(e) => setNota(e.target.value)}
-                placeholder="Escribe una nota..."
-                className="min-h-[100px]"
-              />
-              <Button
-                onClick={handleSaveNota}
-                disabled={isLoading || !nota.trim()}
-              >
-                Guardar
-              </Button>
-            </div>
-          ) : (
-            <div className="p-4 bg-muted rounded-md">
-              {nota || "No hay notas para esta solicitud"}
-            </div>
-          )}
         </div>
       </DialogContent>
     </Dialog>
   );
-}; 
+};

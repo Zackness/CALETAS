@@ -3,10 +3,7 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 
 // GET /api/solicitudes/[id]
-export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET(req: Request) {
   try {
     const session = await auth();
 
@@ -14,9 +11,14 @@ export async function GET(
       return new NextResponse("No autorizado", { status: 401 });
     }
 
+    // Extraer el ID de la URL
+    const url = new URL(req.url);
+    const pathParts = url.pathname.split('/');
+    const id = pathParts[pathParts.length - 1]; // El ID es el último segmento de la URL
+
     const solicitud = await db.solicitud.findUnique({
       where: {
-        id: parseInt(params.id),
+        id: parseInt(id),
         usuarioId: session.user.id
       },
       include: {
@@ -93,10 +95,7 @@ export async function GET(
 }
 
 // PUT /api/solicitudes/[id]
-export async function PUT(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(req: Request) {
   try {
     const session = await auth();
 
@@ -104,12 +103,17 @@ export async function PUT(
       return new NextResponse("No autorizado", { status: 401 });
     }
 
+    // Extraer el ID de la URL
+    const url = new URL(req.url);
+    const pathParts = url.pathname.split('/');
+    const id = pathParts[pathParts.length - 1]; // El ID es el último segmento de la URL
+
     const body = await req.json();
     const { estado } = body;
 
     const solicitud = await db.solicitud.update({
       where: {
-        id: parseInt(params.id),
+        id: parseInt(id),
         usuarioId: session.user.id
       },
       data: {

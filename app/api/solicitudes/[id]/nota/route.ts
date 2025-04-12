@@ -3,10 +3,7 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 
 // GET /api/solicitudes/[id]/nota
-export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET(req: Request) {
   try {
     const session = await auth();
 
@@ -14,10 +11,15 @@ export async function GET(
       return new NextResponse("No autorizado", { status: 401 });
     }
 
+    // Extraer el ID de la URL
+    const url = new URL(req.url);
+    const pathParts = url.pathname.split('/');
+    const id = pathParts[pathParts.length - 2]; // El ID está antes de 'nota' en la URL
+
     const nota = await db.nota.findUnique({
       where: {
-        solicitudId: parseInt(params.id)
-      }
+        solicitudId: parseInt(id),
+      },
     });
 
     return NextResponse.json(nota);
@@ -28,16 +30,18 @@ export async function GET(
 }
 
 // POST /api/solicitudes/[id]/nota
-export async function POST(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
+export async function POST(req: Request) {
   try {
     const session = await auth();
 
     if (!session?.user?.id) {
       return new NextResponse("No autorizado", { status: 401 });
     }
+
+    // Extraer el ID de la URL
+    const url = new URL(req.url);
+    const pathParts = url.pathname.split('/');
+    const id = pathParts[pathParts.length - 2]; // El ID está antes de 'nota' en la URL
 
     const body = await req.json();
     const { contenido } = body;
@@ -49,8 +53,8 @@ export async function POST(
     const nota = await db.nota.create({
       data: {
         contenido,
-        solicitudId: parseInt(params.id)
-      }
+        solicitudId: parseInt(id),
+      },
     });
 
     return NextResponse.json(nota);
@@ -60,61 +64,24 @@ export async function POST(
   }
 }
 
-// PUT /api/solicitudes/[id]/nota
-export async function PUT(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const session = await auth();
-
-    if (!session?.user?.id) {
-      return new NextResponse("No autorizado", { status: 401 });
-    }
-
-    const body = await req.json();
-    const { contenido } = body;
-
-    if (!contenido) {
-      return new NextResponse("El contenido es requerido", { status: 400 });
-    }
-
-    const nota = await db.nota.upsert({
-      where: {
-        solicitudId: parseInt(params.id)
-      },
-      update: {
-        contenido
-      },
-      create: {
-        contenido,
-        solicitudId: parseInt(params.id)
-      }
-    });
-
-    return NextResponse.json(nota);
-  } catch (error) {
-    console.error("[NOTA_PUT]", error);
-    return new NextResponse("Error interno", { status: 500 });
-  }
-}
-
 // DELETE /api/solicitudes/[id]/nota
-export async function DELETE(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(req: Request) {
   try {
     const session = await auth();
 
     if (!session?.user?.id) {
       return new NextResponse("No autorizado", { status: 401 });
     }
+
+    // Extraer el ID de la URL
+    const url = new URL(req.url);
+    const pathParts = url.pathname.split('/');
+    const id = pathParts[pathParts.length - 2]; // El ID está antes de 'nota' en la URL
 
     await db.nota.delete({
       where: {
-        solicitudId: parseInt(params.id)
-      }
+        solicitudId: parseInt(id),
+      },
     });
 
     return new NextResponse(null, { status: 204 });
