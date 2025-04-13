@@ -205,7 +205,6 @@ export const PoderForm = () => {
             requiereDocumento: false
           });
           
-          // Establecer los valores en el formulario
           form.setValue("nombreConyuge", conyugeFamiliar.nombre);
           form.setValue("cedulaConyuge", conyugeFamiliar.cedula);
         } else if (isMounted) {
@@ -218,9 +217,9 @@ export const PoderForm = () => {
           });
         }
       } catch (error) {
+        console.error("Error al cargar datos:", error);
         if (isMounted) {
-          console.error("Error al obtener los datos de los familiares:", error);
-          setError("Error al obtener los datos de los familiares");
+          setError("Error al cargar los datos del usuario");
         }
       }
     }
@@ -230,7 +229,7 @@ export const PoderForm = () => {
     return () => {
       isMounted = false;
     };
-  }, []); // Solo se ejecuta una vez al montar el componente
+  }, [form]); // Agregamos form como dependencia
 
   const uploadToBunny = async (file: File, fileName: string) => {
     try {

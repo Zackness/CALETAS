@@ -36,6 +36,10 @@ model User {
   solicitudes           Solicitud[]
   empresas              Empresa                @relation(fields: [empresa], references: [id])
   blogPosts             BlogPost[]
+  solicitudesAsignadas  SolicitudAbogado[]    // Solicitudes asignadas a este abogado
+  documentosHabilitados DocumentoEditable[]    // Documentos que este admin/abogado ha habilitado para edición
+  notificaciones        Notificacion[]         // Notificaciones del usuario
+  asignacionesRealizadas SolicitudAbogado[]    @relation("Asignador") // Asignaciones realizadas por este admin
   @@index([empresa])
   @@index([role])
 }
@@ -161,6 +165,68 @@ model Solicitud {
   familiar      Familiar? @relation(fields: [familiarId], references: [id])
   usuario       User      @relation(fields: [usuarioId], references: [id])
   documento     Documento @relation(fields: [documentoId], references: [id])
+  abogadosAsignados SolicitudAbogado[] // Relación muchos a muchos con abogados
+  documentosEditables DocumentoEditable[] // Documentos que el usuario puede editar
+  notificaciones Notificacion[] // Notificaciones relacionadas con esta solicitud
+}
+
+// Tabla de relación entre solicitudes y abogados
+model SolicitudAbogado {
+  id          String   @id @default(uuid())
+  solicitudId Int
+  abogadoId   String
+  asignadoPor String   // ID del admin que asignó el abogado
+  asignadoEn  DateTime @default(now())
+  solicitud   Solicitud @relation(fields: [solicitudId], references: [id], onDelete: Cascade)
+  abogado     User     @relation(fields: [abogadoId], references: [id], onDelete: Cascade)
+  asignador   User     @relation("Asignador", fields: [asignadoPor], references: [id], onDelete: Cascade)
+
+  @@unique([solicitudId, abogadoId])
+  @@index([solicitudId])
+  @@index([abogadoId])
+  @@index([asignadoPor])
+}
+
+// Tabla para controlar qué documentos puede editar el usuario
+model DocumentoEditable {
+  id            String   @id @default(uuid())
+  solicitudId   Int
+  nombreDocumento String // Nombre del documento que se puede editar
+  editable      Boolean  @default(false)
+  habilitadoPor String   // ID del admin/abogado que habilitó la edición
+  habilitadoEn  DateTime @default(now())
+  solicitud     Solicitud @relation(fields: [solicitudId], references: [id], onDelete: Cascade)
+  habilitador   User     @relation(fields: [habilitadoPor], references: [id], onDelete: Cascade)
+
+  @@unique([solicitudId, nombreDocumento])
+  @@index([solicitudId])
+  @@index([habilitadoPor])
+}
+
+// Sistema de notificaciones
+model Notificacion {
+  id            String   @id @default(uuid())
+  titulo        String
+  mensaje       String   @db.Text
+  leida         Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  tipo          TipoNotificacion
+  solicitudId   Int?
+  usuarioId     String
+  solicitud     Solicitud? @relation(fields: [solicitudId], references: [id], onDelete: SetNull)
+  usuario       User     @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId])
+  @@index([solicitudId])
+}
+
+// Tipos de notificaciones
+enum TipoNotificacion {
+  ASIGNACION
+  ESTADO_CAMBIO
+  DOCUMENTO_EDITABLE
+  NOTA_NUEVA
+  GENERAL
 }
 
 model Detalle {

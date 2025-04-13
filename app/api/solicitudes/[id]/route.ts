@@ -19,16 +19,12 @@ export async function GET(req: Request) {
 
     // Verificar el rol del usuario
     const user = await db.user.findUnique({
-      where: {
-        id: session.user.id
-      },
-      select: {
-        role: true
-      }
+      where: { id: session.user.id },
+      select: { role: true }
     });
 
     // Construir la consulta base
-    let whereClause: any = {
+    const whereClause: { id: number; usuarioId?: string } = {
       id: parseInt(id)
     };
 
@@ -132,12 +128,8 @@ export async function PUT(req: Request) {
 
     // Verificar el rol del usuario
     const user = await db.user.findUnique({
-      where: {
-        id: session.user.id
-      },
-      select: {
-        role: true
-      }
+      where: { id: session.user.id },
+      select: { role: true }
     });
 
     // Solo los abogados y administradores pueden cambiar el estado
@@ -155,12 +147,8 @@ export async function PUT(req: Request) {
     }
 
     const solicitud = await db.solicitud.update({
-      where: {
-        id: parseInt(id)
-      },
-      data: {
-        estado
-      },
+      where: { id: parseInt(id) },
+      data: { estado },
       include: {
         detalle: true,
         nota: true

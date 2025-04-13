@@ -19,16 +19,12 @@ export async function GET(req: Request) {
 
     // Verificar el rol del usuario
     const user = await db.user.findUnique({
-      where: {
-        id: session.user.id
-      },
-      select: {
-        role: true
-      }
+      where: { id: session.user.id },
+      select: { role: true }
     });
 
     // Construir la consulta base
-    let whereClause: any = {
+    const whereClause: { id: number; usuarioId?: string } = {
       id: parseInt(id)
     };
 
@@ -39,9 +35,7 @@ export async function GET(req: Request) {
 
     const solicitud = await db.solicitud.findUnique({
       where: whereClause,
-      include: {
-        nota: true
-      }
+      include: { nota: true }
     });
 
     if (!solicitud) {
@@ -79,12 +73,8 @@ export async function POST(req: Request) {
 
     // Verificar el rol del usuario
     const user = await db.user.findUnique({
-      where: {
-        id: session.user.id
-      },
-      select: {
-        role: true
-      }
+      where: { id: session.user.id },
+      select: { role: true }
     });
 
     // Solo los administradores y abogados pueden crear notas
@@ -92,8 +82,7 @@ export async function POST(req: Request) {
       return new NextResponse("No autorizado", { status: 403 });
     }
 
-    // Construir la consulta base
-    let whereClause: any = {
+    const whereClause = {
       id: parseInt(id)
     };
 
@@ -116,7 +105,6 @@ export async function POST(req: Request) {
       return new NextResponse("Ya existe una nota para esta solicitud", { status: 400 });
     }
 
-    // Obtener el contenido de la nota del cuerpo de la solicitud
     const body = await req.json();
     const { contenido } = body;
 
@@ -159,12 +147,8 @@ export async function PUT(req: Request) {
 
     // Verificar el rol del usuario
     const user = await db.user.findUnique({
-      where: {
-        id: session.user.id
-      },
-      select: {
-        role: true
-      }
+      where: { id: session.user.id },
+      select: { role: true }
     });
 
     // Solo los administradores y abogados pueden actualizar notas
@@ -172,16 +156,13 @@ export async function PUT(req: Request) {
       return new NextResponse("No autorizado", { status: 403 });
     }
 
-    // Construir la consulta base
-    let whereClause: any = {
+    const whereClause = {
       id: parseInt(id)
     };
 
     const solicitud = await db.solicitud.findUnique({
       where: whereClause,
-      include: {
-        nota: true
-      }
+      include: { nota: true }
     });
 
     if (!solicitud) {
@@ -192,7 +173,6 @@ export async function PUT(req: Request) {
       return new NextResponse("Nota no encontrada", { status: 404 });
     }
 
-    // Obtener el contenido de la nota del cuerpo de la solicitud
     const body = await req.json();
     const { contenido } = body;
 
@@ -202,12 +182,8 @@ export async function PUT(req: Request) {
 
     // Actualizar la nota
     const nota = await db.nota.update({
-      where: {
-        id: solicitud.nota.id
-      },
-      data: {
-        contenido
-      }
+      where: { id: solicitud.nota.id },
+      data: { contenido }
     });
 
     return NextResponse.json({
@@ -237,12 +213,8 @@ export async function DELETE(req: Request) {
 
     // Verificar el rol del usuario
     const user = await db.user.findUnique({
-      where: {
-        id: session.user.id
-      },
-      select: {
-        role: true
-      }
+      where: { id: session.user.id },
+      select: { role: true }
     });
 
     // Solo los administradores y abogados pueden eliminar notas
@@ -250,16 +222,13 @@ export async function DELETE(req: Request) {
       return new NextResponse("No autorizado", { status: 403 });
     }
 
-    // Construir la consulta base
-    let whereClause: any = {
+    const whereClause = {
       id: parseInt(id)
     };
 
     const solicitud = await db.solicitud.findUnique({
       where: whereClause,
-      include: {
-        nota: true
-      }
+      include: { nota: true }
     });
 
     if (!solicitud) {
@@ -272,9 +241,7 @@ export async function DELETE(req: Request) {
 
     // Eliminar la nota
     await db.nota.delete({
-      where: {
-        id: solicitud.nota.id
-      }
+      where: { id: solicitud.nota.id }
     });
 
     return new NextResponse(null, { status: 204 });
