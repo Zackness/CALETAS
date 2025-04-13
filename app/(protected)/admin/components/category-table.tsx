@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Calendar, Eye } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PersonalDialog } from "./dialogs/personal/personal-dialog";
 
 interface Request {
@@ -30,6 +30,7 @@ interface CategoryTableProps {
   filteredRequests: Request[];
   requestsByCategory: Record<string, Request[]>;
   getPriorityIcon: (priority: string) => React.ReactNode;
+  onStatusChange?: (requestId: string, newStatus: string) => void;
 }
 
 // Función para obtener el badge estilizado según el estado
@@ -75,10 +76,29 @@ export const CategoryTable = ({
   filteredRequests,
   requestsByCategory,
   getPriorityIcon,
+  onStatusChange,
 }: CategoryTableProps) => {
   // Estado para controlar el diálogo de detalles
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [localRequests, setLocalRequests] = useState<Request[]>(filteredRequests);
+
+  // Actualizar solicitudes locales cuando cambien las filtradas
+  useEffect(() => {
+    setLocalRequests(filteredRequests);
+  }, [filteredRequests]);
+
+  // Función para manejar cambios de estado
+  const handleStatusChange = (requestId: string, newStatus: string) => {
+    setLocalRequests(prevRequests => 
+      prevRequests.map(request => 
+        request.id === requestId 
+          ? { ...request, status: newStatus }
+          : request
+      )
+    );
+    onStatusChange?.(requestId, newStatus);
+  };
 
   // Función para abrir el diálogo con los detalles de la solicitud
   const handleViewDetails = (request: Request) => {
@@ -96,8 +116,8 @@ export const CategoryTable = ({
   // Log para depuración
   console.log(`Categoría ${categoryId}:`, {
     total: requestsByCategory[categoryId]?.length || 0,
-    filtradas: filteredRequests.length,
-    ids: filteredRequests.map(r => r.id)
+    filtradas: localRequests.length,
+    ids: localRequests.map(r => r.id)
   });
 
   return (
@@ -116,8 +136,8 @@ export const CategoryTable = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredRequests.length > 0 ? (
-              filteredRequests.map((request) => (
+            {localRequests.length > 0 ? (
+              localRequests.map((request) => (
                 <TableRow key={request.id}>
                   <TableCell className="font-medium">{request.id}</TableCell>
                   <TableCell>
@@ -197,7 +217,8 @@ export const CategoryTable = ({
         <PersonalDialog 
           solicitudId={selectedRequestId} 
           isOpen={dialogOpen} 
-          onClose={handleCloseDialog} 
+          onClose={handleCloseDialog}
+          onStatusChange={handleStatusChange}
         />
       )}
     </div>

@@ -165,6 +165,8 @@ export const PersonalDialog = ({
   const [selectedNotaId, setSelectedNotaId] = useState<string>("");
   const [isLoadingEstado, setIsLoadingEstado] = useState(false);
   const [localEstado, setLocalEstado] = useState<string>("");
+  // Estado para controlar el estado mostrado en el badge
+  const [displayEstado, setDisplayEstado] = useState<string>("");
 
   const documentoNombre = solicitud?.documento?.nombre || "Documento no disponible";
   const servicioNombre = solicitud?.documento?.servicio?.nombre || "Servicio no disponible";
@@ -230,6 +232,7 @@ export const PersonalDialog = ({
   useEffect(() => {
     if (solicitud?.estado) {
       setLocalEstado(solicitud.estado);
+      setDisplayEstado(solicitud.estado);
     }
   }, [solicitud?.estado]);
 
@@ -303,6 +306,9 @@ export const PersonalDialog = ({
     
     setIsLoadingEstado(true);
     try {
+      // Actualizar inmediatamente el estado mostrado en el badge
+      setDisplayEstado(estado);
+      
       const response = await fetch(`/api/solicitudes/${solicitudId}`, {
         method: 'PUT',
         headers: {
@@ -322,6 +328,8 @@ export const PersonalDialog = ({
     } catch (error) {
       console.error("Error al actualizar el estado:", error);
       toast.error("Error al actualizar el estado");
+      // Revertir el estado mostrado en caso de error
+      setDisplayEstado(localEstado);
     } finally {
       setIsLoadingEstado(false);
     }
@@ -398,7 +406,7 @@ export const PersonalDialog = ({
                 <Clock className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">Estado:</span>
               </div>
-              {getStatusBadge(solicitud.estado)}
+              {getStatusBadge(displayEstado)}
             </div>
 
             <div className="flex items-center gap-2">
