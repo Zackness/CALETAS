@@ -18,6 +18,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import axios from "axios";
 import { useNotasPredefinidas } from "@/app/(protected)/admin/hooks/use-notas-predefinidas";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Combobox } from "@/components/ui/combobox";
 
 // Configurar el worker de PDF.js
 if (typeof window !== 'undefined') {
@@ -158,75 +159,60 @@ export const PersonalDialog = ({
   const [lastLoadedId, setLastLoadedId] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<string | null>(null);
-  const [isEditingNota, setIsEditingNota] = useState(false);
   const [isLoadingNotaState, setIsLoadingNotaState] = useState(false);
   const [notasPredefinidas, setNotasPredefinidas] = useState<Array<{ id: string; contenido: string }>>([]);
   const [notasPredefinidasLoaded, setNotasPredefinidasLoaded] = useState(false);
   const [selectedNotaId, setSelectedNotaId] = useState<string>("");
+  const [notaPorDefecto, setNotaPorDefecto] = useState<{ id: string; contenido: string } | null>(null);
   const [isLoadingEstado, setIsLoadingEstado] = useState(false);
   const [localEstado, setLocalEstado] = useState<string>("");
-  // Estado para controlar el estado mostrado en el badge
   const [displayEstado, setDisplayEstado] = useState<string>("");
+  const [localNota, setLocalNota] = useState<string>("");
 
   const documentoNombre = solicitud?.documento?.nombre || "Documento no disponible";
   const servicioNombre = solicitud?.documento?.servicio?.nombre || "Servicio no disponible";
-  const fechaFormateada = solicitud?.fecha ? format(new Date(solicitud.fecha), "PPP", { locale: es }) : "Fecha no disponible";
+  const fechaFormateada = solicitud?.createdAt ? format(new Date(solicitud.createdAt), "PPP", { locale: es }) : "Fecha no disponible";
 
+  // Efecto para cargar las notas predefinidas solo cuando el diálogo se abre
   useEffect(() => {
-    const fetchNota = async () => {
-      if (solicitudId && isOpen && solicitudId !== lastLoadedId) {
-        setIsLoadingNotaState(true);
+    if (isOpen && !notasPredefinidasLoaded) {
+      loadNotasPredefinidas();
+    }
+  }, [isOpen, notasPredefinidasLoaded]);
+
+  // Efecto para cargar la nota actual cuando se abre el diálogo
+  useEffect(() => {
+    if (isOpen && solicitudId) {
+      const fetchNota = async () => {
         try {
-          const notaData = await getNota();
-          if (notaData) {
-            setNota(notaData.contenido);
-          } else {
-            // Si no hay nota, establecer un valor vacío
-            setNota("");
+          const response = await fetch(`/api/solicitudes/${solicitudId}/nota`);
+          if (response.ok) {
+            const data = await response.json();
+            if (data.nota) {
+              setLocalNota(data.nota.contenido);
+              setSelectedNotaId(data.nota.id);
+            } else {
+              // Si no hay nota, usar la nota por defecto
+              setSelectedNotaId(notaPorDefecto?.id || "");
+              setLocalNota(notaPorDefecto?.contenido || "");
+            }
           }
         } catch (error) {
           console.error("Error al cargar la nota:", error);
-          setNota("");
-        } finally {
-          setIsLoadingNotaState(false);
-          setLastLoadedId(solicitudId);
         }
-      }
-    };
-    fetchNota();
-  }, [solicitudId, isOpen, getNota, lastLoadedId]);
+      };
+      fetchNota();
+    }
+  }, [isOpen, solicitudId]);
 
+  // Efecto para limpiar el estado cuando se cierra el diálogo
   useEffect(() => {
     if (!isOpen) {
-      setNota("");
-      setLastLoadedId(null);
-      setIsEditingNota(false);
+      setNotasPredefinidasLoaded(false);
+      setSelectedNotaId("");
+      setLocalNota("");
     }
   }, [isOpen]);
-
-  useEffect(() => {
-    const loadNotasPredefinidas = async () => {
-      console.log("Intentando cargar notas predefinidas...");
-      if (!notasPredefinidasLoaded) {
-        try {
-          const notas = await getNotasPredefinidas();
-          console.log("Notas predefinidas cargadas:", notas);
-          setNotasPredefinidas(notas);
-          setNotasPredefinidasLoaded(true);
-          
-          // Buscar la nota por defecto
-          const notaPorDefecto = notas.find(n => n.id === "bfed5e88-b5c6-415f-981e-f5e798c5e943");
-          if (notaPorDefecto) {
-            setSelectedNotaId(notaPorDefecto.id);
-            setNota(notaPorDefecto.contenido);
-          }
-        } catch (error) {
-          console.error("Error al cargar notas predefinidas:", error);
-        }
-      }
-    };
-    loadNotasPredefinidas();
-  }, [getNotasPredefinidas, notasPredefinidasLoaded]);
 
   // Actualizar el estado local cuando cambie la solicitud
   useEffect(() => {
@@ -276,10 +262,19 @@ export const PersonalDialog = ({
 
   const handleNotaPredefinidaChange = async (notaId: string) => {
     setSelectedNotaId(notaId);
+    
+    // Si se selecciona la opción vacía, usar la nota por defecto
+    if (notaId === "") {
+      if (notaPorDefecto) {
+        setLocalNota(notaPorDefecto.contenido);
+      }
+      return;
+    }
+    
+    // Buscar la nota seleccionada
     const notaSeleccionada = notasPredefinidas.find(n => n.id === notaId);
     if (notaSeleccionada) {
-      setNota(notaSeleccionada.contenido);
-      await handleSaveNota(notaSeleccionada.contenido);
+      setLocalNota(notaSeleccionada.contenido);
     }
   };
 
@@ -294,7 +289,6 @@ export const PersonalDialog = ({
         await createNota(contenidoNota);
       }
       toast.success("Nota guardada correctamente");
-      setIsEditingNota(false);
     } catch (error) {
       console.error("Error al guardar la nota:", error);
       toast.error("Error al guardar la nota");
@@ -335,13 +329,56 @@ export const PersonalDialog = ({
     }
   };
 
+  const loadNotasPredefinidas = async () => {
+    try {
+      setIsLoadingNotaState(true);
+      const notas = await getNotasPredefinidas();
+      
+      if (Array.isArray(notas)) {
+        // Encontrar la nota por defecto
+        const notaDefecto = notas.find(n => n.id === "e20313fa-a6a3-4585-8b1f-9151452976a1");
+        if (notaDefecto) {
+          setNotaPorDefecto(notaDefecto);
+          // Si no hay una nota asignada, usar la nota por defecto
+          if (!solicitud?.notaId) {
+            setLocalNota(notaDefecto.contenido);
+            await handleSaveNota(notaDefecto.contenido);
+          }
+        }
+        
+        // Filtrar la nota por defecto del listado
+        const notasFiltradas = notas.filter(n => n.id !== "e20313fa-a6a3-4585-8b1f-9151452976a1");
+        setNotasPredefinidas(notasFiltradas);
+        setNotasPredefinidasLoaded(true);
+      } else {
+        console.error("Las notas predefinidas no son un array:", notas);
+        setNotasPredefinidas([]);
+      }
+    } catch (error) {
+      console.error("Error al cargar notas predefinidas:", error);
+      setNotasPredefinidas([]);
+    } finally {
+      setIsLoadingNotaState(false);
+    }
+  };
+
   const renderContent = () => {
     if (loading) {
-      return <div>Cargando...</div>;
+      return (
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        </div>
+      );
     }
 
     if (!solicitud) {
-      return <div>No se encontró la solicitud</div>;
+      return (
+        <div className="text-center p-4">
+          <AlertCircle className="h-8 w-8 text-red-500 mx-auto mb-2" />
+          <p className="text-lg font-medium">Solicitud no encontrada</p>
+          <p className="text-sm text-muted-foreground">No se pudo encontrar la solicitud solicitada.</p>
+        </div>
+      );
     }
 
     const solicitante: Solicitante = solicitud.familiar || (solicitud.client && {
@@ -455,6 +492,39 @@ export const PersonalDialog = ({
           )}
         </div>
 
+        {/* Sección de notas */}
+        <div className="pb-5 mt-4">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-lg font-semibold">Notas del estado de la solicitud</h3>
+          </div>
+
+          {isLoadingNotaState ? (
+            <div className="flex items-center justify-center p-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {/* Combobox de notas predefinidas */}
+              <div className="space-y-2">
+                <Label>Seleccionar nota predefinida</Label>
+                <div className="w-full">
+                  <Combobox
+                    options={[
+                      { value: "", label: notaPorDefecto?.contenido || "Nota por defecto" },
+                      ...notasPredefinidas.map(nota => ({
+                        value: nota.id,
+                        label: nota.contenido
+                      }))
+                    ]}
+                    value={selectedNotaId}
+                    onChange={handleNotaPredefinidaChange}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Formulario para subir documento finalizado */}
         <Card className="border-2 border-blue-200">
           <CardHeader className="bg-blue-500">
@@ -520,7 +590,7 @@ export const PersonalDialog = ({
         
         {/* Sección de testigos (solo para soltería) */}
         {isSolteria && (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="border-t pt-4 mt-4 grid grid-cols-2 gap-4">
             {solicitud.detalle?.Testigo1 && (
               <div>
                 <h4 className="font-medium mb-2">Testigo 1</h4>
@@ -556,7 +626,7 @@ export const PersonalDialog = ({
 
         {/* Sección de poder (solo para poder especial o general) */}
         {isPoder && (
-          <div className="space-y-4">
+          <div className=" border-t pt-4 mt-4 space-y-4">
             {/* Texto genérico para poder especial */}
             {solicitud.detalle?.generic_text && (
               <div className="border rounded p-4">
@@ -655,67 +725,7 @@ export const PersonalDialog = ({
             </div>
           </div>
         )}
-
-        {/* Sección de notas */}
-        <div className="border-t pt-4 mt-4">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-semibold">Notas</h3>
-            {!isEditingNota && (
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => setIsEditingNota(true)}
-                className="flex items-center gap-1"
-              >
-                <Pencil className="h-4 w-4" />
-                Gestionar nota
-              </Button>
-            )}
-          </div>
-          
-          {isLoadingNotaState ? (
-            <div className="flex items-center justify-center p-4">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-            </div>
-          ) : isEditingNota ? (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Seleccionar nota predefinida</Label>
-                <Select 
-                  value={selectedNotaId} 
-                  onValueChange={handleNotaPredefinidaChange}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecciona una nota predefinida" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {notasPredefinidas.length > 0 ? (
-                      notasPredefinidas.map((nota) => (
-                        <SelectItem key={nota.id} value={nota.id}>
-                          {nota.contenido}
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <div className="p-2 text-sm text-muted-foreground">
-                        No hay notas predefinidas disponibles
-                      </div>
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setIsEditingNota(false)}>
-                  Cancelar
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <div className="p-4 bg-muted rounded-md">
-              {nota || "No hay notas para esta solicitud"}
-            </div>
-          )}
         </div>
-      </div>
     );
   };
 

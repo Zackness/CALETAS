@@ -36,7 +36,7 @@ export const Combobox = ({
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0 m-0 border-none text-foreground">
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 m-0 border-none text-foreground">
         <Command className="w-full p-0 m-0 border-none text-black rounded-xl">
           <CommandInput className="p-5" placeholder="Buscar miembro de la familia..." />
           <CommandList>

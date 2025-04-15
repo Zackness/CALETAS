@@ -62,7 +62,13 @@ export default async function DashboardPage() {
       usuario: true,
       familiar: true,
       detalle: true,
-      nota: true
+      nota: {
+        select: {
+          id: true,
+          contenido: true,
+          createdAt: true
+        }
+      }
     },
     orderBy: {
       createdAt: 'desc'

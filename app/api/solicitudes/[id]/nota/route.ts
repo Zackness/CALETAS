@@ -95,13 +95,12 @@ export async function POST(req: Request) {
     }
 
     // Verificar si ya existe una nota
-    const existingNota = await db.nota.findUnique({
-      where: {
-        solicitudId: parseInt(id)
-      }
+    const existingNota = await db.solicitud.findUnique({
+      where: { id: parseInt(id) },
+      select: { nota: true }
     });
 
-    if (existingNota) {
+    if (existingNota?.nota) {
       return new NextResponse("Ya existe una nota para esta solicitud", { status: 400 });
     }
 
@@ -112,11 +111,15 @@ export async function POST(req: Request) {
       return new NextResponse("El contenido de la nota es requerido", { status: 400 });
     }
 
-    // Crear la nota
+    // Crear la nota y asociarla a la solicitud
     const nota = await db.nota.create({
       data: {
         contenido,
-        solicitudId: parseInt(id)
+        solicitudes: {
+          connect: {
+            id: parseInt(id)
+          }
+        }
       }
     });
 

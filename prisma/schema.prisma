@@ -160,7 +160,8 @@ model Solicitud {
   estado        Estado    @default(PENDIENTE)
   updatedAt     DateTime  @updatedAt
   familiarId    String?
-  nota          Nota?  // Relación 1:1 (sin fields/references aquí)
+  notaId        String?  // Campo para la relación con Nota
+  nota          Nota?    @relation(fields: [notaId], references: [id]) // Relación con Nota
   detalle       Detalle?  // Relación 1:1 (sin fields/references aquí)
   familiar      Familiar? @relation(fields: [familiarId], references: [id])
   usuario       User      @relation(fields: [usuarioId], references: [id])
@@ -253,11 +254,10 @@ model Detalle {
 // Notas que los abogados pueden agregar a las solicitudes
 model Nota {
   id          String   @id @default(uuid())
-  solicitudId Int?      @unique // Campo único (pero no clave primaria)
   contenido   String   @db.Text
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  solicitud   Solicitud? @relation(fields: [solicitudId], references: [id])
+  solicitudes Solicitud[] // Cambiado de @unique a array para relación uno a muchos
 }
 
 // Notas predefinidas que los abogados pueden seleccionar

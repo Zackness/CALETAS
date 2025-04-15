@@ -32,9 +32,6 @@ export async function GET() {
 
     console.log("Buscando notas predefinidas...");
     const notasPredefinidas = await db.nota.findMany({
-      where: {
-        solicitudId: null // Solo obtener notas que no están asociadas a una solicitud
-      },
       orderBy: {
         contenido: 'asc'
       }
