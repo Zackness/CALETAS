@@ -1,4 +1,4 @@
-import { RegisterForm } from "@/app/(auth)/components/register-form";
+import { RegisterForm } from "./components/register-form";
 import { Suspense } from 'react';
 import { db } from "@/lib/db"; // Asegúrate de tener configurado prisma
 

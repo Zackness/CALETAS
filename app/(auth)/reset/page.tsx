@@ -1,4 +1,4 @@
-import { ResetForm } from "@/app/(auth)/components/reset-form";
+import { ResetForm } from "./components/reset-form";
 import { Suspense } from 'react';
 
 const Reset = () => {

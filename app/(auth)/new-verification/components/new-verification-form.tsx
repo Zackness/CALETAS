@@ -2,10 +2,10 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { CardWrapper } from "../../../components/card-wrapper";
+import { CardWrapper } from "@/components/card-wrapper";
 import { newVerification } from "@/actions/new-verification";
-import { FormError } from "../../../components/form-error";
-import { FormSucces } from "../../../components/form-succes";
+import { FormError } from "@/components/form-error";
+import { FormSucces } from "@/components/form-succes";
 import { BeatLoader } from "react-spinners";
 
 export const NewVerificationForm = () => {
@@ -57,12 +57,12 @@ export const NewVerificationForm = () => {
         )}
         {succes && !error && (
           <span className="ml-2 hover:underline cursor-pointer font-semibold text-sm text-white">
-            <a href="/auth/login">Inicia aquí</a>
+            <a href="/login">Inicia aquí</a>
           </span>
         )}
         {!succes && error && (
           <span className="ml-2 hover:underline cursor-pointer font-semibold text-sm text-white">
-            <a href="/auth/register">Obtener un token</a>
+            <a href="/register">Obtener un token</a>
           </span>
         )}
       </div>

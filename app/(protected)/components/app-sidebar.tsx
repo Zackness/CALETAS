@@ -81,15 +81,7 @@ export function AppSidebar({ session }: AppSidebarProps) {
                             href={"/solicitudes/automovil/compra"} 
                             className={`${isActiveRoute("/solicitudes/automovil/compra") ? "bg-foreground/50 text-background hover:bg-foreground/80" : "hover:bg-foreground/50"}`}
                           >
-                            <span>Compra de vehiculo</span>
-                          </a>
-                        </SidebarMenuButton>
-                        <SidebarMenuButton asChild>
-                          <a 
-                            href={"/solicitudes/automovil/venta"} 
-                            className={`${isActiveRoute("/solicitudes/automovil/venta") ? "bg-foreground/50 text-background hover:bg-foreground/80" : "hover:bg-foreground/50"}`}
-                          >
-                            <span>Venta de vehiculo</span>
+                            <span>Compra-venta de vehiculo</span>
                           </a>
                         </SidebarMenuButton>
                       </SidebarMenuSubItem>

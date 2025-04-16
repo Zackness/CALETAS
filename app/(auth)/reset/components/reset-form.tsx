@@ -6,11 +6,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { useState, useTransition } from "react";
 import Input from "@/components/input";
-import { CardWrapper } from "../../../components/card-wrapper";
-import { Button } from "../../../components/ui/button";
+import { CardWrapper } from "@/components/card-wrapper";
+import { Button } from "@/components/ui/button";
 import { ResetSchema } from "@/schemas";
-import { FormError } from "../../../components/form-error";
-import { FormSucces } from "../../../components/form-succes";
+import { FormError } from "@/components/form-error";
+import { FormSucces } from "@/components/form-succes";
 import { reset } from "@/actions/reset";
 
 export const ResetForm = () => {
@@ -76,7 +76,7 @@ export const ResetForm = () => {
       <div className="flex items-baseline">
         <p className="mt-12 text-sm text-white">¿Ya conoces el camino?</p>
         <span className="ml-2 hover:underline cursor-pointer font-semibold text-sm text-white">
-          <a href="/auth/login">Inicia sesión ahora</a>
+          <a href="/login">Inicia sesión ahora</a>
         </span>
       </div>
     </CardWrapper>

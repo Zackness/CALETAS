@@ -20,7 +20,7 @@ export function Header() {
           {/* Logo */}
           <Link href="/admin" className="flex items-center gap-2">
               <img
-                src="/LaraFest.svg"
+                src="/images/full-logo.png"
                 alt="Global Logo"
                 width={126}
                 height={31}
@@ -36,12 +36,12 @@ export function Header() {
             <div className="hidden md:flex items-center gap-4">
             <ThemeToggle />
 
-              <Link href="/auth/login">
+              <Link href="/login">
                 <Button variant="ghost" className="flex items-center gap-2">
                   iniciar sesion
                 </Button>
               </Link>
-              <Link href="/auth/register">
+              <Link href="/register">
                 <Button variant="form" className="flex items-center gap-2">
                   Registrarse
                 </Button>
@@ -61,10 +61,10 @@ export function Header() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem asChild>
-                    <Link href="/auth/login">Iniciar sesion</Link>
+                    <Link href="/login">Iniciar sesion</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/auth/register">Registrarse</Link>
+                    <Link href="/register">Registrarse</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/contacto">Contacto</Link>

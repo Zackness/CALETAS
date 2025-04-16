@@ -6,11 +6,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { useState, useTransition } from "react";
 import Input from "@/components/input";
-import { CardWrapper } from "../../../components/card-wrapper";
-import { Button } from "../../../components/ui/button";
+import { CardWrapper } from "@/components/card-wrapper";
+import { Button } from "@/components/ui/button";
 import { LoginSchema } from "@/schemas";
-import { FormError } from "../../../components/form-error";
-import { FormSucces } from "../../../components/form-succes";
+import { FormError } from "@/components/form-error";
+import { FormSucces } from "@/components/form-succes";
 import { login } from "@/actions/login";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -135,7 +135,7 @@ export const LoginForm = () => {
                 ¿Olvidaste la contraseña? 
               </p>
               <Button className="ml-2 px-0 text-white" size="sm" variant="link" asChild>
-                <Link href="/auth/reset">
+                <Link href="/reset">
                   Recuperar contraseña
                 </Link>
               </Button>
@@ -153,7 +153,7 @@ export const LoginForm = () => {
           ¿No tienes una cuenta?
         </p>
         <span className="ml-2 hover:underline cursor-pointer font-semibold text-sm text-white">
-          <a href="/auth/register">Regístrate ahora</a>
+          <a href="/register">Regístrate ahora</a>
         </span>
       </div>
     </CardWrapper>

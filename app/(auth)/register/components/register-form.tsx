@@ -6,11 +6,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { useState, useTransition } from "react";
 import Input from "@/components/input";
-import { CardWrapper } from "../../../components/card-wrapper";
-import { Button } from "../../../components/ui/button";
+import { CardWrapper } from "@/components/card-wrapper";
+import { Button } from "@/components/ui/button";
 import { RegisterSchema } from "@/schemas";
-import { FormError } from "../../../components/form-error";
-import { FormSucces } from "../../../components/form-succes";
+import { FormError } from "@/components/form-error";
+import { FormSucces } from "@/components/form-succes";
 import { register } from "@/actions/register";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { motion } from "framer-motion";
@@ -214,7 +214,7 @@ export const RegisterForm = ({ companies }: RegisterFormProps) => {
       <div className="flex items-baseline">
         <p className="mt-12 text-sm text-white">¿Ya tienes una cuenta?</p>
         <span className="ml-2 hover:underline cursor-pointer font-semibold text-sm text-white">
-          <a href="/auth/login">Inicia sesión ahora</a>
+          <a href="/login">Inicia sesión ahora</a>
         </span>
       </div>
     </CardWrapper>

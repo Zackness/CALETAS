@@ -6,11 +6,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { useState, useTransition } from "react";
 import Input from "@/components/input";
-import { CardWrapper } from "../../../components/card-wrapper";
-import { Button } from "../../../components/ui/button";
+import { CardWrapper } from "@/components/card-wrapper";
+import { Button } from "@/components/ui/button";
 import { NewPasswordSchema } from "@/schemas";
-import { FormError } from "../../../components/form-error";
-import { FormSucces } from "../../../components/form-succes";
+import { FormError } from "@/components/form-error";
+import { FormSucces } from "@/components/form-succes";
 import { newPassword } from "@/actions/new-password";
 import { useSearchParams } from "next/navigation";
 
@@ -80,7 +80,7 @@ export const NewPasswordForm = () => {
       <div className="flex items-baseline text-white">
         <p className="mt-12 text-sm">¿Camino incorrecto?</p>
         <span className="ml-2 hover:underline cursor-pointer font-semibold text-sm">
-          <a href="/auth/login">Inicia sesión ahora</a>
+          <a href="/login">Inicia sesión ahora</a>
         </span>
       </div>
     </CardWrapper>

@@ -1,6 +1,6 @@
 "use client";
 
-import { CardWrapper } from "../../../components/card-wrapper";
+import { CardWrapper } from "@/components/card-wrapper";
 
 export const ErrorCard = () => {
   return (
@@ -15,7 +15,7 @@ export const ErrorCard = () => {
       <div className="flex items-baseline justify-center">
         <p className="mt-12 text-sm text-white">¿Necesitas ayuda?</p>
         <span className="ml-2 hover:underline cursor-pointer font-semibold text-sm text-white">
-          <a href="/auth/support">Contacta con soporte</a>
+          <a href="/support">Contacta con soporte</a>
         </span>
       </div>
     </CardWrapper>
