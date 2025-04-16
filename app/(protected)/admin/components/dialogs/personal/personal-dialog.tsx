@@ -185,20 +185,33 @@ export const PersonalDialog = ({
     if (isOpen && solicitudId) {
       const fetchNota = async () => {
         try {
+          setIsLoadingNotaState(true);
           const response = await fetch(`/api/solicitudes/${solicitudId}/nota`);
+          
           if (response.ok) {
             const data = await response.json();
-            if (data.nota) {
-              setLocalNota(data.nota.contenido);
-              setSelectedNotaId(data.nota.id);
+            if (data && data.id) {
+              setSelectedNotaId(data.id);
+              setLocalNota(data.contenido);
+              console.log("Nota cargada:", data);
             } else {
               // Si no hay nota, usar la nota por defecto
-              setSelectedNotaId(notaPorDefecto?.id || "");
-              setLocalNota(notaPorDefecto?.contenido || "");
+              setSelectedNotaId("");
+              setLocalNota("");
+              console.log("No hay nota asociada a esta solicitud");
             }
+          } else if (response.status === 404) {
+            // Si no hay nota, usar la nota por defecto
+            setSelectedNotaId("");
+            setLocalNota("");
+            console.log("No hay nota asociada a esta solicitud (404)");
+          } else {
+            console.error("Error al cargar la nota:", response.status);
           }
         } catch (error) {
           console.error("Error al cargar la nota:", error);
+        } finally {
+          setIsLoadingNotaState(false);
         }
       };
       fetchNota();
@@ -263,18 +276,32 @@ export const PersonalDialog = ({
   const handleNotaPredefinidaChange = async (notaId: string) => {
     setSelectedNotaId(notaId);
     
-    // Si se selecciona la opción vacía, usar la nota por defecto
-    if (notaId === "") {
-      if (notaPorDefecto) {
-        setLocalNota(notaPorDefecto.contenido);
-      }
-      return;
-    }
-    
     // Buscar la nota seleccionada
     const notaSeleccionada = notasPredefinidas.find(n => n.id === notaId);
     if (notaSeleccionada) {
       setLocalNota(notaSeleccionada.contenido);
+      
+      // Actualizar la relación en la base de datos
+      try {
+        const response = await fetch(`/api/solicitudes/${solicitudId}/nota`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ notaId }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Error al actualizar la nota');
+        }
+
+        const data = await response.json();
+        console.log("Nota actualizada:", data);
+        toast.success("Nota actualizada correctamente");
+      } catch (error) {
+        console.error("Error al actualizar la nota:", error);
+        toast.error("Error al actualizar la nota");
+      }
     }
   };
 
@@ -335,20 +362,7 @@ export const PersonalDialog = ({
       const notas = await getNotasPredefinidas();
       
       if (Array.isArray(notas)) {
-        // Encontrar la nota por defecto
-        const notaDefecto = notas.find(n => n.id === "e20313fa-a6a3-4585-8b1f-9151452976a1");
-        if (notaDefecto) {
-          setNotaPorDefecto(notaDefecto);
-          // Si no hay una nota asignada, usar la nota por defecto
-          if (!solicitud?.notaId) {
-            setLocalNota(notaDefecto.contenido);
-            await handleSaveNota(notaDefecto.contenido);
-          }
-        }
-        
-        // Filtrar la nota por defecto del listado
-        const notasFiltradas = notas.filter(n => n.id !== "e20313fa-a6a3-4585-8b1f-9151452976a1");
-        setNotasPredefinidas(notasFiltradas);
+        setNotasPredefinidas(notas);
         setNotasPredefinidasLoaded(true);
       } else {
         console.error("Las notas predefinidas no son un array:", notas);
@@ -509,13 +523,10 @@ export const PersonalDialog = ({
                 <Label>Seleccionar nota predefinida</Label>
                 <div className="w-full">
                   <Combobox
-                    options={[
-                      { value: "", label: notaPorDefecto?.contenido || "Nota por defecto" },
-                      ...notasPredefinidas.map(nota => ({
-                        value: nota.id,
-                        label: nota.contenido
-                      }))
-                    ]}
+                    options={notasPredefinidas.map(nota => ({
+                      value: nota.id,
+                      label: nota.contenido
+                    }))}
                     value={selectedNotaId}
                     onChange={handleNotaPredefinidaChange}
                   />

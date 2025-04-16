@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
       data: {
         nota: {
           connect: {
-            id: "bfed5e88-b5c6-415f-981e-f5e798c5e943"
+            id: "e20313fa-a6a3-4585-8b1f-9151452976a1"
           }
         }
       },

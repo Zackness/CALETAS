@@ -172,27 +172,32 @@ export async function PUT(req: Request) {
       return new NextResponse("Solicitud no encontrada", { status: 404 });
     }
 
-    if (!solicitud.nota) {
-      return new NextResponse("Nota no encontrada", { status: 404 });
-    }
-
     const body = await req.json();
-    const { contenido } = body;
+    const { notaId } = body;
 
-    if (!contenido) {
-      return new NextResponse("El contenido de la nota es requerido", { status: 400 });
+    if (!notaId) {
+      return new NextResponse("El ID de la nota es requerido", { status: 400 });
     }
 
-    // Actualizar la nota
-    const nota = await db.nota.update({
-      where: { id: solicitud.nota.id },
-      data: { contenido }
+    // Actualizar la relación entre la solicitud y la nota
+    const updatedSolicitud = await db.solicitud.update({
+      where: { id: parseInt(id) },
+      data: {
+        nota: {
+          connect: { id: notaId }
+        }
+      },
+      include: { nota: true }
     });
 
+    if (!updatedSolicitud.nota) {
+      return new NextResponse("Error al actualizar la nota", { status: 500 });
+    }
+
     return NextResponse.json({
-      id: nota.id,
-      contenido: nota.contenido,
-      createdAt: nota.createdAt.toISOString()
+      id: updatedSolicitud.nota.id,
+      contenido: updatedSolicitud.nota.contenido,
+      createdAt: updatedSolicitud.nota.createdAt.toISOString()
     });
   } catch (error) {
     console.error("[NOTA_PUT]", error);
