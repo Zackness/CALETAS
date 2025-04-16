@@ -19,6 +19,8 @@ import axios from "axios";
 import { useNotasPredefinidas } from "@/app/(protected)/admin/hooks/use-notas-predefinidas";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Combobox } from "@/components/ui/combobox";
+import { useAbogados } from "@/app/(protected)/admin/hooks/use-abogados";
+import { AdminConfig } from "@/app/(protected)/admin/components/admin-config";
 
 // Configurar el worker de PDF.js
 if (typeof window !== 'undefined') {
@@ -155,19 +157,18 @@ export const PersonalDialog = ({
     solicitudId: solicitudId || "",
   });
   const { getNotasPredefinidas, isLoading: isLoadingNotasPredefinidas } = useNotasPredefinidas();
-  const [nota, setNota] = useState<string>("");
-  const [lastLoadedId, setLastLoadedId] = useState<string | null>(null);
+  const { abogados, isLoading: isLoadingAbogados } = useAbogados();
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<string | null>(null);
   const [isLoadingNotaState, setIsLoadingNotaState] = useState(false);
   const [notasPredefinidas, setNotasPredefinidas] = useState<Array<{ id: string; contenido: string }>>([]);
   const [notasPredefinidasLoaded, setNotasPredefinidasLoaded] = useState(false);
   const [selectedNotaId, setSelectedNotaId] = useState<string>("");
-  const [notaPorDefecto, setNotaPorDefecto] = useState<{ id: string; contenido: string } | null>(null);
   const [isLoadingEstado, setIsLoadingEstado] = useState(false);
   const [localEstado, setLocalEstado] = useState<string>("");
   const [displayEstado, setDisplayEstado] = useState<string>("");
   const [localNota, setLocalNota] = useState<string>("");
+  const [selectedAbogadoId, setSelectedAbogadoId] = useState<string>("");
 
   const documentoNombre = solicitud?.documento?.nombre || "Documento no disponible";
   const servicioNombre = solicitud?.documento?.servicio?.nombre || "Servicio no disponible";
@@ -376,6 +377,23 @@ export const PersonalDialog = ({
     }
   };
 
+  const handleAbogadoChange = async (abogadoId: string) => {
+    try {
+      setSelectedAbogadoId(abogadoId);
+      // Aquí puedes agregar la lógica para asignar el abogado a la solicitud
+      const response = await axios.post(`/api/solicitudes/${solicitudId}/asignar-abogado`, {
+        abogadoId
+      });
+      
+      if (response.status === 200) {
+        toast.success("Abogado asignado correctamente");
+      }
+    } catch (error) {
+      console.error("Error al asignar abogado:", error);
+      toast.error("Error al asignar abogado");
+    }
+  };
+
   const renderContent = () => {
     if (loading) {
       return (
@@ -405,7 +423,7 @@ export const PersonalDialog = ({
 
     // Determinar el tipo de documento
     const isSolteria = solicitud.documento?.nombre?.toLowerCase().includes("soltería") || 
-                       solicitud.documento?.nombre?.toLowerCase().includes("solteria");
+                       solicitud.documento?.nombre?.includes("solteria");
     const isPoder = solicitud.documento?.nombre?.toLowerCase().includes("poder");
 
     return (
@@ -472,68 +490,14 @@ export const PersonalDialog = ({
             </div>
         </div>
 
-        {/* Sección de estado */}
+        {/* Componente AdminConfig */}
         <div className="border-t pt-4 mt-4">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-semibold">Estado de la solicitud</h3>
-          </div>
-          
-          {isLoadingEstado ? (
-            <div className="flex items-center justify-center p-4">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Estado actual</Label>
-                <Select 
-                  value={localEstado} 
-                  onValueChange={handleEstadoChange}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecciona un estado" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="PENDIENTE">Pendiente</SelectItem>
-                    <SelectItem value="APROBADA">Aprobada</SelectItem>
-                    <SelectItem value="EN_PROGRESO">En progreso</SelectItem>
-                    <SelectItem value="FINALIZADA">Finalizada</SelectItem>
-                    <SelectItem value="RECHAZADA">Rechazada</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Sección de notas */}
-        <div className="pb-5 mt-4">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-semibold">Notas del estado de la solicitud</h3>
-          </div>
-
-          {isLoadingNotaState ? (
-            <div className="flex items-center justify-center p-4">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {/* Combobox de notas predefinidas */}
-              <div className="space-y-2">
-                <Label>Seleccionar nota predefinida</Label>
-                <div className="w-full">
-                  <Combobox
-                    options={notasPredefinidas.map(nota => ({
-                      value: nota.id,
-                      label: nota.contenido
-                    }))}
-                    value={selectedNotaId}
-                    onChange={handleNotaPredefinidaChange}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
+          <AdminConfig 
+            solicitudId={solicitudId}
+            estadoActual={localEstado}
+            onEstadoChange={handleEstadoChange}
+            isLoadingEstado={isLoadingEstado}
+          />
         </div>
 
         {/* Formulario para subir documento finalizado */}

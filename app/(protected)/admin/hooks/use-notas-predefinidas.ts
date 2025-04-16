@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { toast } from "sonner";
 
 interface NotaPredefinida {
@@ -8,20 +8,25 @@ interface NotaPredefinida {
 
 export const useNotasPredefinidas = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [notasCache, setNotasCache] = useState<NotaPredefinida[] | null>(null);
 
-  const getNotasPredefinidas = async (): Promise<NotaPredefinida[]> => {
+  const getNotasPredefinidas = useCallback(async (): Promise<NotaPredefinida[]> => {
+    // Si ya tenemos las notas en caché, las devolvemos
+    if (notasCache) {
+      return notasCache;
+    }
+
     try {
       setIsLoading(true);
-      console.log("Obteniendo notas predefinidas...");
       const response = await fetch("/api/notas-predefinidas");
       
       if (!response.ok) {
-        console.error("Error al obtener notas predefinidas:", response.status, response.statusText);
         throw new Error("Error al obtener las notas predefinidas");
       }
 
       const data = await response.json();
-      console.log("Notas predefinidas obtenidas:", data);
+      // Guardamos las notas en caché
+      setNotasCache(data);
       return data;
     } catch (error) {
       console.error("Error en getNotasPredefinidas:", error);
@@ -30,7 +35,7 @@ export const useNotasPredefinidas = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [notasCache]);
 
   return {
     getNotasPredefinidas,

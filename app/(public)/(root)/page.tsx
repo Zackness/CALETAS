@@ -228,13 +228,13 @@ export default function LandingPage() {
           </p>
           <p className="text-xl mb-10 max-w-2xl mx-auto text-muted-foreground/80">
             ¿Necesitas gestionar documentos legales de manera rápida, segura y sin complicaciones? Con nuestro servicio,
-            obtienes 12 documentos legales al año por solo $360.
+            obtienes 12 documentos legales al año.
           </p>
           <Button
             size="lg"
             className="bg-primary hover:bg-primary/90 text-primary-foreground text-lg px-8 py-6 rounded-full transition-colors"
           >
-            Comienza ahora por solo $30/mes <ArrowRight className="ml-2" />
+            Comienza ahora <ArrowRight className="ml-2" />
           </Button>
           <p className="text-sm text-muted-foreground mt-2">Ciertas condiciones aplican</p>
         </motion.div>

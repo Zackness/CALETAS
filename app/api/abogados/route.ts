@@ -21,24 +21,31 @@ export async function GET() {
       }
     });
 
-    // Solo los administradores y abogados pueden ver las notas predefinidas
-    if (user?.role === UserRole.CLIENT) {
+    // Solo los administradores pueden ver la lista de abogados
+    if (user?.role !== UserRole.ADMIN) {
       return new NextResponse("No autorizado", { status: 403 });
     }
 
-    const notasPredefinidas = await db.nota.findMany({
+    // Obtener todos los usuarios con rol de abogado
+    const abogados = await db.user.findMany({
+      where: {
+        role: UserRole.ABOGADO
+      },
       select: {
         id: true,
-        contenido: true
+        name: true,
+        email: true,
+        cedula: true,
+        telefono: true
       },
       orderBy: {
-        contenido: 'asc'
+        name: 'asc'
       }
     });
 
-    return NextResponse.json(notasPredefinidas);
+    return NextResponse.json(abogados);
   } catch (error) {
-    console.error("[NOTAS_PREDEFINIDAS_GET]", error);
+    console.error("[ABOGADOS_GET]", error);
     return new NextResponse("Error interno", { status: 500 });
   }
 } 

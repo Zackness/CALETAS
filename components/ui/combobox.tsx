@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { Check, ChevronsUpDown } from "lucide-react"
+import { usePathname } from "next/navigation"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -20,6 +21,8 @@ export const Combobox = ({
     onChange,
 }: ComboboxProps) => {
   const [open, setOpen] = React.useState(false)
+  const pathname = usePathname()
+  const isAdminRoute = pathname?.includes('/admin')
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -32,13 +35,15 @@ export const Combobox = ({
         >
           {value
             ? options.find((option) => option.value === value)?.label
-            : "¿Quien solicita el documento?"}
+            : isAdminRoute 
+              ? "¿Qué abogado trabajará en este documento?"
+              : "¿Quien solicita el documento?"}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 m-0 border-none text-foreground">
         <Command className="w-full p-0 m-0 border-none text-black rounded-xl">
-          <CommandInput className="p-5" placeholder="Buscar miembro de la familia..." />
+          <CommandInput className="p-5" placeholder={isAdminRoute ? "Buscar abogado..." : "Buscar miembro de la familia..."} />
           <CommandList>
             <CommandEmpty className="p-3">No se han encontrado resultados.</CommandEmpty>
             <CommandGroup className="p-0">
