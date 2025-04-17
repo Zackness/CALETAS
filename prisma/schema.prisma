@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,32 +8,33 @@ datasource db {
 }
 
 model User {
-  id                    String                 @id @default(cuid())
-  name                  String                 @unique
-  email                 String                 @unique
-  cedula                String                 @unique
-  telefono              String?                @unique
-  codigoEmpresa         String?
-  emailVerified         DateTime?
-  image                 String?                @default("/mascot.svg")
-  password              String
-  empresa               String
-  role                  UserRole               @default(CLIENT)
-  isTwoFactorEnabled    Boolean                @default(false)
-  createdAt             DateTime               @default(now())
-  updatedAt             DateTime               @updatedAt
-  accounts              Account[]
-  StripeCustomer        StripeCustomer?
-  twoFactorConfirmation TwoFactorConfirmation?
-  UserSubscription      UserSubscription[]
-  familiares            Familiar[]
-  solicitudes           Solicitud[]
-  empresas              Empresa                @relation(fields: [empresa], references: [id])
-  blogPosts             BlogPost[]
-  solicitudesAsignadas  SolicitudAbogado[]    // Solicitudes asignadas a este abogado
-  documentosHabilitados DocumentoEditable[]    // Documentos que este admin/abogado ha habilitado para edición
-  notificaciones        Notificacion[]         // Notificaciones del usuario
-  asignacionesRealizadas SolicitudAbogado[]    @relation("Asignador") // Asignaciones realizadas por este admin
+  id                     String                 @id @default(cuid())
+  name                   String                 @unique
+  email                  String                 @unique
+  cedula                 String                 @unique
+  telefono               String?                @unique
+  codigoEmpresa          String?
+  emailVerified          DateTime?
+  image                  String?                @default("/mascot.svg")
+  password               String
+  empresa                String
+  role                   UserRole               @default(CLIENT)
+  isTwoFactorEnabled     Boolean                @default(false)
+  createdAt              DateTime               @default(now())
+  updatedAt              DateTime               @updatedAt
+  accounts               Account[]
+  blogPosts              BlogPost[]
+  documentosHabilitados  DocumentoEditable[]
+  familiares             Familiar[]
+  notificaciones         Notificacion[]
+  solicitudes            Solicitud[]
+  solicitudesAsignadas   SolicitudAbogado[]
+  asignacionesRealizadas SolicitudAbogado[]     @relation("Asignador")
+  StripeCustomer         StripeCustomer?
+  twoFactorConfirmation  TwoFactorConfirmation?
+  empresas               Empresa                @relation(fields: [empresa], references: [id])
+  UserSubscription       UserSubscription[]
+
   @@index([empresa])
   @@index([role])
 }
@@ -107,34 +102,34 @@ model StripeCustomer {
 }
 
 model UserSubscription {
-  id                     String               @id @default(cuid())
+  id                     String   @id @default(cuid())
   userId                 String
-  stripeCustomerId       String               @unique
-  stripeSubscriptionId   String               @unique
+  stripeCustomerId       String   @unique
+  stripeSubscriptionId   String   @unique
   stripePriceId          String
   stripeCurrentPeriodEnd DateTime
-  createdAt              DateTime             @default(now())
-  updatedAt              DateTime             @updatedAt
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
   subscriptionTypeId     String
-  user                   User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([subscriptionTypeId])
 }
 
-//Familiar que registra el usuario en cuestion
 model Familiar {
-  id          String   @id @default(uuid())
+  id          String      @id @default(uuid())
   nombre      String
-  cedula      String   @unique
-  telefono    String?                @unique
+  cedula      String      @unique
+  telefono    String?     @unique
   parentesco  Parentesco
   usuarioId   String
-  usuario     User  @relation(fields: [usuarioId], references: [id])
+  usuario     User        @relation(fields: [usuarioId], references: [id])
   solicitudes Solicitud[]
+
+  @@index([usuarioId], map: "Familiar_usuarioId_fkey")
 }
 
-//Referencia principalmente para orden y para el ADMIN
 model Servicio {
   id          String      @id @default(uuid())
   nombre      String
@@ -142,45 +137,49 @@ model Servicio {
   documentos  Documento[]
 }
 
-//Referencia a los 12 documentos o tipo de solicitud que se pueden hacer
 model Documento {
-  id          String    @id @default(uuid())
-  nombre      String
-  servicioId  String
-  servicio    Servicio @relation(fields: [servicioId], references: [id])
-  solicitud Solicitud []
+  id         String      @id @default(uuid())
+  nombre     String
+  servicioId String
+  servicio   Servicio    @relation(fields: [servicioId], references: [id])
+  solicitud  Solicitud[]
+
+  @@index([servicioId], map: "Documento_servicioId_fkey")
 }
 
-//Referencia a los documentos que se pueden solicitar
 model Solicitud {
-  id            Int     @id @default(autoincrement())
-  documentoId   String
-  usuarioId     String
-  createdAt     DateTime  @default(now())
-  estado        Estado    @default(PENDIENTE)
-  updatedAt     DateTime  @updatedAt
-  familiarId    String?
-  notaId        String?  // Campo para la relación con Nota
-  nota          Nota?    @relation(fields: [notaId], references: [id]) // Relación con Nota
-  detalle       Detalle?  // Relación 1:1 (sin fields/references aquí)
-  familiar      Familiar? @relation(fields: [familiarId], references: [id])
-  usuario       User      @relation(fields: [usuarioId], references: [id])
-  documento     Documento @relation(fields: [documentoId], references: [id])
-  abogadosAsignados SolicitudAbogado[] // Relación muchos a muchos con abogados
-  documentosEditables DocumentoEditable[] // Documentos que el usuario puede editar
-  notificaciones Notificacion[] // Notificaciones relacionadas con esta solicitud
+  id                  Int                 @id @default(autoincrement())
+  documentoId         String
+  usuarioId           String
+  createdAt           DateTime            @default(now())
+  estado              Estado              @default(PENDIENTE)
+  updatedAt           DateTime            @updatedAt
+  familiarId          String?
+  notaId              String?
+  detalle             Detalle?
+  documentosEditables DocumentoEditable[]
+  notificaciones      Notificacion[]
+  documento           Documento           @relation(fields: [documentoId], references: [id])
+  familiar            Familiar?           @relation(fields: [familiarId], references: [id])
+  nota                Nota?               @relation(fields: [notaId], references: [id])
+  usuario             User                @relation(fields: [usuarioId], references: [id])
+  abogadosAsignados   SolicitudAbogado[]
+
+  @@index([documentoId], map: "Solicitud_documentoId_fkey")
+  @@index([familiarId], map: "Solicitud_familiarId_fkey")
+  @@index([notaId], map: "Solicitud_notaId_fkey")
+  @@index([usuarioId], map: "Solicitud_usuarioId_fkey")
 }
 
-// Tabla de relación entre solicitudes y abogados
 model SolicitudAbogado {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   solicitudId Int
   abogadoId   String
-  asignadoPor String   // ID del admin que asignó el abogado
-  asignadoEn  DateTime @default(now())
+  asignadoPor String
+  asignadoEn  DateTime  @default(now())
+  abogado     User      @relation(fields: [abogadoId], references: [id], onDelete: Cascade)
+  asignador   User      @relation("Asignador", fields: [asignadoPor], references: [id], onDelete: Cascade)
   solicitud   Solicitud @relation(fields: [solicitudId], references: [id], onDelete: Cascade)
-  abogado     User     @relation(fields: [abogadoId], references: [id], onDelete: Cascade)
-  asignador   User     @relation("Asignador", fields: [asignadoPor], references: [id], onDelete: Cascade)
 
   @@unique([solicitudId, abogadoId])
   @@index([solicitudId])
@@ -188,99 +187,85 @@ model SolicitudAbogado {
   @@index([asignadoPor])
 }
 
-// Tabla para controlar qué documentos puede editar el usuario
 model DocumentoEditable {
-  id            String   @id @default(uuid())
-  solicitudId   Int
-  nombreDocumento String // Nombre del documento que se puede editar
-  editable      Boolean  @default(false)
-  habilitadoPor String   // ID del admin/abogado que habilitó la edición
-  habilitadoEn  DateTime @default(now())
-  solicitud     Solicitud @relation(fields: [solicitudId], references: [id], onDelete: Cascade)
-  habilitador   User     @relation(fields: [habilitadoPor], references: [id], onDelete: Cascade)
+  id              String    @id @default(uuid())
+  solicitudId     Int
+  nombreDocumento String
+  editable        Boolean   @default(false)
+  habilitadoPor   String
+  habilitadoEn    DateTime  @default(now())
+  habilitador     User      @relation(fields: [habilitadoPor], references: [id], onDelete: Cascade)
+  solicitud       Solicitud @relation(fields: [solicitudId], references: [id], onDelete: Cascade)
 
   @@unique([solicitudId, nombreDocumento])
   @@index([solicitudId])
   @@index([habilitadoPor])
 }
 
-// Sistema de notificaciones
 model Notificacion {
-  id            String   @id @default(uuid())
-  titulo        String
-  mensaje       String   @db.Text
-  leida         Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  tipo          TipoNotificacion
-  solicitudId   Int?
-  usuarioId     String
-  solicitud     Solicitud? @relation(fields: [solicitudId], references: [id], onDelete: SetNull)
-  usuario       User     @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  id          String           @id @default(uuid())
+  titulo      String
+  mensaje     String           @db.Text
+  leida       Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+  tipo        TipoNotificacion
+  solicitudId Int?
+  usuarioId   String
+  solicitud   Solicitud?       @relation(fields: [solicitudId], references: [id])
+  usuario     User             @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 
   @@index([usuarioId])
   @@index([solicitudId])
 }
 
-// Tipos de notificaciones
-enum TipoNotificacion {
-  ASIGNACION
-  ESTADO_CAMBIO
-  DOCUMENTO_EDITABLE
-  NOTA_NUEVA
-  GENERAL
-}
-
 model Detalle {
-  id          String @id @default(uuid())
-  solicitudId Int    @unique // Campo único (pero no clave primaria)
-  Testigo1        String?
-  Testigo2        String?
-  Testigo3        String?
-  Testigo4        String? // Para la cédula del esposo/a en caso de no existir en la DB
-  generic_text     String? // Para el tipo de poder especial
-  bienes_generico1 String?
-  bienes_generico2 String?
-  bienes_generico3 String?
-  bienes_generico4 String?
-  bienes_generico5 String?
-  Acta_de_nacimiento String?
-  Acta_de_matrimonio String?
-  Acta_de_defuncion String?
-  Acta_de_divorcio  String?
-  solicitud_finalizada String? // URL del documento finalizado que el abogado devuelve al cliente
-  solicitud   Solicitud? @relation(fields: [solicitudId], references: [id])
+  id                   String    @id @default(uuid())
+  solicitudId          Int       @unique
+  Testigo1             String?
+  Testigo2             String?
+  Acta_de_nacimiento   String?
+  Acta_de_matrimonio   String?
+  Acta_de_defuncion    String?
+  Acta_de_divorcio     String?
+  Testigo3             String?
+  Testigo4             String?
+  generic_text         String?
+  bienes_generico1     String?
+  bienes_generico2     String?
+  bienes_generico3     String?
+  bienes_generico4     String?
+  bienes_generico5     String?
+  solicitud_finalizada String?
+  solicitud            Solicitud @relation(fields: [solicitudId], references: [id])
 }
 
-// Notas que los abogados pueden agregar a las solicitudes
 model Nota {
-  id          String   @id @default(uuid())
-  contenido   String   @db.Text
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  solicitudes Solicitud[] // Cambiado de @unique a array para relación uno a muchos
+  id          String      @id @default(uuid())
+  contenido   String      @db.Text
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  solicitudes Solicitud[]
 }
 
-// Notas predefinidas que los abogados pueden seleccionar
 model NotaPredefinida {
-  id          String   @id @default(uuid())
-  contenido   String   @db.Text
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(uuid())
+  contenido String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-//Empresa por la que contrato el servicio el usuario
 model Empresa {
-  id          String    @id @default(uuid())
-  userId      String
-  nombre      String    @unique
-  direccion   String
-  telefono    String
-  createdAt   DateTime  @default(now())
-  RIF         String    @unique
+  id                  String      @id @default(uuid())
+  userId              String
+  nombre              String      @unique
+  direccion           String
+  telefono            String
+  createdAt           DateTime    @default(now())
+  RIF                 String      @unique
   persona_de_contacto String
-  email       String
-  tipo        TipoEmpresa
-  user        User[]
+  email               String
+  tipo                TipoEmpresa
+  user                User[]
 }
 
 model BlogPost {
@@ -309,7 +294,14 @@ model BlogCategory {
   posts BlogPost[]
 }
 
-//Tipo de empresa con la que contrato el usuario, solo para nuesto control
+enum TipoNotificacion {
+  ASIGNACION
+  ESTADO_CAMBIO
+  DOCUMENTO_EDITABLE
+  NOTA_NUEVA
+  GENERAL
+}
+
 enum TipoEmpresa {
   SEGURO
   TELECOMUNICACIONES
@@ -318,14 +310,12 @@ enum TipoEmpresa {
   NINGUNO
 }
 
-//Tipos de usuario
 enum UserRole {
   CLIENT
   ADMIN
   ABOGADO
 }
 
-//Estado de la solicitud que hace el usuario
 enum Estado {
   PENDIENTE
   APROBADA
@@ -334,7 +324,6 @@ enum Estado {
   RECHAZADA
 }
 
-//Parentesco de la tabla familiares
 enum Parentesco {
   PADRE
   MADRE
