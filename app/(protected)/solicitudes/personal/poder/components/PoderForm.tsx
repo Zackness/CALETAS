@@ -382,7 +382,7 @@ export const PoderForm = () => {
                 name="persona"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Quien solicita</FormLabel>
+                    <FormLabel className="text-foreground">Quien solicita</FormLabel>
                     <FormControl>
                       <Combobox
                         {...field}
@@ -406,7 +406,7 @@ export const PoderForm = () => {
                 name="cedula"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Cédula del solicitante</FormLabel>
+                    <FormLabel className="text-foreground">Cédula del solicitante</FormLabel>
                     <FormControl>
                       <Input {...field} disabled={true} id="cedula" />
                     </FormControl>
@@ -426,7 +426,7 @@ export const PoderForm = () => {
                         name="nombreConyuge"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Nombre del cónyuge</FormLabel>
+                            <FormLabel className="text-foreground">Nombre del cónyuge</FormLabel>
                             <FormControl>
                               <Input {...field} disabled={true} id="nombreConyuge" />
                             </FormControl>
@@ -439,6 +439,7 @@ export const PoderForm = () => {
                         name="cedulaConyuge"
                         render={({ field }) => (
                           <FormItem>
+                            <FormLabel className="text-foreground">Cédula del cónyuge</FormLabel>
                             <FormControl>
                               <Input {...field} disabled={true} id="cedulaConyuge" />
                             </FormControl>
@@ -456,7 +457,7 @@ export const PoderForm = () => {
                       name="testigo3"
                       render={() => (
                         <FormItem>
-                          <FormLabel>Documento del cónyuge</FormLabel>
+                          <FormLabel className="text-foreground">Documento del cónyuge</FormLabel>
                           <FormControl>
                             <Input
                               type="file"
@@ -495,7 +496,7 @@ export const PoderForm = () => {
                       />
                     </FormControl>
                     <div className="space-y-1 leading-none">
-                      <FormLabel>
+                      <FormLabel className="text-foreground">
                         ¿Esto es un poder especial?
                       </FormLabel>
                     </div>
@@ -510,7 +511,7 @@ export const PoderForm = () => {
                   name="genericText"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Especifique los detalles del poder especial</FormLabel>
+                      <FormLabel className="text-foreground">Especifique los detalles del poder especial</FormLabel>
                       <FormControl>
                         <Textarea
                           placeholder="Describa los detalles del poder especial..."
@@ -526,7 +527,7 @@ export const PoderForm = () => {
               
               {/* Campos para bienes */}
               <div className="mt-6">
-                <h3 className="text-lg font-medium">Propiedades, bienes o inmuebles</h3>
+                <h3 className="text-lg font-medium text-foreground">Propiedades, bienes o inmuebles</h3>
                 <p className="text-sm text-foreground/50 mb-4">Suba los documentos de propiedad de sus bienes o inmuebles</p>
                 <div className="space-y-4">
                   <FormField
@@ -534,7 +535,7 @@ export const PoderForm = () => {
                     name="bien1"
                     render={() => (
                       <FormItem>
-                        <FormLabel>Propiedad 1</FormLabel>
+                        <FormLabel className="text-foreground">Propiedad 1</FormLabel>
                         <FormControl>
                           <Input
                             type="file"
@@ -557,7 +558,7 @@ export const PoderForm = () => {
                     name="bien2"
                     render={() => (
                       <FormItem>
-                        <FormLabel>Propiedad 2</FormLabel>
+                        <FormLabel className="text-foreground">Propiedad 2</FormLabel>
                         <FormControl>
                           <Input
                             type="file"
@@ -580,7 +581,7 @@ export const PoderForm = () => {
                     name="bien3"
                     render={() => (
                       <FormItem>
-                        <FormLabel>Propiedad 3</FormLabel>
+                        <FormLabel className="text-foreground">Propiedad 3</FormLabel>
                         <FormControl>
                           <Input
                             type="file"
@@ -603,7 +604,7 @@ export const PoderForm = () => {
                     name="bien4"
                     render={() => (
                       <FormItem>
-                        <FormLabel>Propiedad 4</FormLabel>
+                        <FormLabel className="text-foreground">Propiedad 4</FormLabel>
                         <FormControl>
                           <Input
                             type="file"
@@ -626,7 +627,7 @@ export const PoderForm = () => {
                     name="bien5"
                     render={() => (
                       <FormItem>
-                        <FormLabel>Propiedad 5</FormLabel>
+                        <FormLabel className="text-foreground">Propiedad 5</FormLabel>
                         <FormControl>
                           <Input
                             type="file"

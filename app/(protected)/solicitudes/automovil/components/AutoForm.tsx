@@ -257,7 +257,7 @@ export const AutoForm = () => {
                 name="persona"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Quien solicita o vende</FormLabel>
+                    <FormLabel className="text-foreground">Quien solicita o vende</FormLabel>
                     <FormControl>
                       <Combobox
                         {...field}
@@ -281,6 +281,7 @@ export const AutoForm = () => {
                 name="cedula"
                 render={({ field }) => (
                   <FormItem>
+                    <FormLabel className="text-foreground">Cédula del solicitante</FormLabel>
                     <FormControl>
                       <Input {...field} disabled={true} id="cedula" />
                     </FormControl>
@@ -295,7 +296,7 @@ export const AutoForm = () => {
                 name="testigo1"
                 render={() => (
                   <FormItem>
-                    <FormLabel>Documento del comprador</FormLabel>
+                    <FormLabel className="text-foreground">Documento del comprador</FormLabel>
                     <FormControl>
                       <Input
                         type="file"
@@ -320,7 +321,7 @@ export const AutoForm = () => {
                 name="bienes_generico1"
                 render={() => (
                   <FormItem>
-                    <FormLabel>Título de propiedad del vehículo</FormLabel>
+                    <FormLabel className="text-foreground">Título de propiedad del vehículo</FormLabel>
                     <FormControl>
                       <Input
                         type="file"
@@ -345,7 +346,7 @@ export const AutoForm = () => {
                 name="bienes_generico2"
                 render={() => (
                   <FormItem>
-                    <FormLabel>Revisión de tránsito</FormLabel>
+                    <FormLabel className="text-foreground">Revisión de tránsito</FormLabel>
                     <FormControl>
                       <Input
                         type="file"
@@ -370,7 +371,7 @@ export const AutoForm = () => {
                 name="bienes_generico3"
                 render={() => (
                   <FormItem>
-                    <FormLabel>Comprobante de pagos municipales</FormLabel>
+                    <FormLabel className="text-foreground">Comprobante de pagos municipales</FormLabel>
                     <FormControl>
                       <Input
                         type="file"
@@ -395,7 +396,7 @@ export const AutoForm = () => {
                 name="generic_text"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Monto</FormLabel>
+                    <FormLabel className="text-foreground">Monto</FormLabel>
                     <FormControl>
                       <Input {...field} type="text" placeholder="Ingrese el monto" />
                     </FormControl>
@@ -410,7 +411,7 @@ export const AutoForm = () => {
                 name="formaPago"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Forma de pago</FormLabel>
+                    <FormLabel className="text-foreground">Forma de pago</FormLabel>
                     <FormControl>
                       <div className="flex space-x-4">
                         <div className="flex items-center space-x-2">
@@ -423,7 +424,7 @@ export const AutoForm = () => {
                               }
                             }}
                           />
-                          <label htmlFor="cheque">Cheque</label>
+                          <label htmlFor="cheque" className="text-foreground">Cheque</label>
                         </div>
                         <div className="flex items-center space-x-2">
                           <Checkbox 
@@ -435,7 +436,7 @@ export const AutoForm = () => {
                               }
                             }}
                           />
-                          <label htmlFor="efectivo">Efectivo</label>
+                          <label htmlFor="efectivo" className="text-foreground">Efectivo</label>
                         </div>
                         <div className="flex items-center space-x-2">
                           <Checkbox 
@@ -447,7 +448,7 @@ export const AutoForm = () => {
                               }
                             }}
                           />
-                          <label htmlFor="transferencia">Transferencia</label>
+                          <label htmlFor="transferencia" className="text-foreground">Transferencia</label>
                         </div>
                       </div>
                     </FormControl>
@@ -462,7 +463,7 @@ export const AutoForm = () => {
                 name="moneda"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Moneda de la transacción</FormLabel>
+                    <FormLabel className="text-foreground">Moneda de la transacción</FormLabel>
                     <FormControl>
                       <div className="flex space-x-4">
                         <div className="flex items-center space-x-2">
@@ -475,7 +476,7 @@ export const AutoForm = () => {
                               }
                             }}
                           />
-                          <label htmlFor="bolivares">Bolívares</label>
+                          <label htmlFor="bolivares" className="text-foreground">Bolívares</label>
                         </div>
                         <div className="flex items-center space-x-2">
                           <Checkbox 
@@ -487,7 +488,7 @@ export const AutoForm = () => {
                               }
                             }}
                           />
-                          <label htmlFor="divisa">Divisa</label>
+                          <label htmlFor="divisa" className="text-foreground">Divisa</label>
                         </div>
                       </div>
                     </FormControl>
@@ -502,7 +503,7 @@ export const AutoForm = () => {
                 name="bienes_generico4"
                 render={() => (
                   <FormItem>
-                    <FormLabel>Declaración jurada del vendedor (destino de los fondos son lícitos)</FormLabel>
+                    <FormLabel className="text-foreground">Declaración jurada del vendedor (destino de los fondos son lícitos)</FormLabel>
                     <FormControl>
                       <Input
                         type="file"
@@ -527,7 +528,7 @@ export const AutoForm = () => {
                 name="bienes_generico5"
                 render={() => (
                   <FormItem>
-                    <FormLabel>Declaración jurada del comprador (origen de los fondos son lícitos)</FormLabel>
+                    <FormLabel className="text-foreground">Declaración jurada del comprador (origen de los fondos son lícitos)</FormLabel>
                     <FormControl>
                       <Input
                         type="file"

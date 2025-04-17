@@ -199,7 +199,7 @@ export const SolteriaForm = () => {
                 name="persona"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Quien solicita</FormLabel>
+                    <FormLabel className="text-foreground">Quien solicita</FormLabel>
                     <FormControl>
                       <Combobox
                         {...field}
@@ -223,6 +223,7 @@ export const SolteriaForm = () => {
                 name="cedula"
                 render={({ field }) => (
                   <FormItem>
+                    <FormLabel className="text-foreground">Cédula del solicitante</FormLabel>
                     <FormControl>
                       <Input {...field} disabled={true} id="cedula" />
                     </FormControl>
@@ -235,7 +236,7 @@ export const SolteriaForm = () => {
                 name="testigo1"
                 render={() => (
                   <FormItem>
-                    <FormLabel>Documento del Testigo 1</FormLabel>
+                    <FormLabel className="text-foreground">Documento del Testigo 1</FormLabel>
                     <FormControl>
                       <Input
                         type="file"
@@ -258,7 +259,7 @@ export const SolteriaForm = () => {
                 name="testigo2"
                 render={() => (
                   <FormItem>
-                    <FormLabel>Documento del Testigo 2</FormLabel>
+                    <FormLabel className="text-foreground">Documento del Testigo 2</FormLabel>
                     <FormControl>
                       <Input
                         type="file"
