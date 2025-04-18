@@ -60,7 +60,7 @@ export default function LandingPage() {
         {
           title: "Compra-venta de vehículos",
           description:
-            "Documento legal para la compra o venta de cualquier vehículo automotor, incluyendo transacciones familiares con padres o hijos.",
+            "Compra de vehículo, para el beneficiario del servicio, con valor hasta de quince mil dólares de los estados unidos de norte américa (15.000 U.S $) como moneda de cuenta o su equivalente en bolívares a la tasa oficial del Banco Central de Venezuela.",
         },
       ],
     },
@@ -72,12 +72,12 @@ export default function LandingPage() {
         {
           title: "Declaración de no poseer vivienda",
           description:
-            "Documento requerido por organismos públicos para otorgar créditos de adquisición, ampliación o remodelación de vivienda.",
+            "Declaraciones juradas o justificativos de no poseer vivienda, para el beneficiario del servicio, requerido por los organismos competentes para la adquisición de vivienda.",
         },
         {
           title: "Compra-venta de vivienda",
           description:
-            "Documento legal para la compra o venta de casas o apartamentos, incluyendo transacciones familiares con padres o hijos.",
+            "Compra de vivienda: casas o apartamentos, para el beneficiario del servicio, destinado a vivienda principal, con valor hasta de treinta mil dólares de los estados unidos de norte américa (30.000 U.S $) como moneda de cuenta o su equivalente en bolívares a la tasa oficial del Banco Central de Venezuela.",
         },
       ],
     },
@@ -89,12 +89,12 @@ export default function LandingPage() {
         {
           title: "Autorizaciones de viaje",
           description:
-            "Permisos para que niños y adolescentes viajen dentro o fuera del país, solos o acompañados por uno de sus padres o terceras personas.",
+            "Autorizaciones de viajes de niños, niñas y/o adolescentes, hijos del beneficiario del servicio, que viajen al exterior, por avión con boleto ida y vuelta y/o viaje nacional, vía terrestre, aérea y fluvial.",
         },
         {
           title: "Poder para representación durante viajes",
           description:
-            "Autorización a personas de confianza para que le representen y se encarguen de sus asuntos durante su ausencia por viaje.",
+            "Documento poder o mandato, otorgado por el beneficiario del servicio, para que un tercero le represente durante el viaje. Puede ser poder general, es decir para todos los asuntos y administración de todos los bienes,  o poder especial,  para asuntos específicos  o administración de determinado(s) bien(es).",
         },
       ],
     },
@@ -106,7 +106,7 @@ export default function LandingPage() {
         {
           title: "Declaración de Sucesiones",
           description:
-            "Asistencia completa para el trámite de declaración de sucesiones ante el SENIAT, incluyendo revisión de documentos, orientación y presentación de la declaración.",
+            "Declaraciones de sucesiones, por fallecimiento del beneficiario del servicio, requerida por sus herederos, quienes reciben orientación y asistencia para su presentación en línea. El patrimonio neto hasta de setenta y cinco mil dólares de los estados unidos de norte américa (75.000 U.S $) como moneda de cuenta o su equivalente en bolívares a la tasa oficial del Banco Central de Venezuela.",
         },
       ],
     },
@@ -118,12 +118,7 @@ export default function LandingPage() {
         {
           title: "Justificativo de soltería",
           description:
-            "Documento requerido para contraer matrimonio, válido tanto en territorio nacional como en el exterior a través de consulados.",
-        },
-        {
-          title: "Poder especial o general",
-          description:
-            "Autorización para que una persona de confianza le represente en asuntos específicos o generales, incluyendo contratos y gestiones legales.",
+            "Justificativos o cartas de soltería para el beneficiario del servicio.",
         },
       ],
     },
@@ -135,12 +130,12 @@ export default function LandingPage() {
         {
           title: "Constitución de empresa PYME",
           description:
-            "Documento para la creación y registro de pequeñas y medianas empresas donde usted, su cónyuge, padres o hijos sean accionistas.",
+            "Constitución de empresa PYME, con capital social hasta de tres mil dólares de los estados unidos de norte américa (3.000 U.S $) como moneda de cuenta o su equivalente en bolívares a la tasa oficial del Banco Central de Venezuela,  donde el accionista sea el beneficiario del servicio.",
         },
         {
           title: "Acta de Asamblea de Accionistas",
           description:
-            "Documento para formalizar decisiones de accionistas, como aumentos de capital por reconversiones monetarias en Venezuela.",
+            "Acta de aumento de capital social de empresa PYME por efectos de reconversiones monetarias, con capital social  hasta de tres mil dólares de los estados unidos de norte américa (3.000 U.S $) como moneda de cuenta o su equivalente en bolívares a la tasa oficial del Banco Central de Venezuela, donde el accionista sea el beneficiario del servicio.",
         },
       ],
     },
@@ -152,7 +147,7 @@ export default function LandingPage() {
         {
           title: "Poder desde el exterior",
           description:
-            "Autorización otorgada desde el exterior para que personas de confianza le representen legalmente en Venezuela, gestionando sus bienes y trámites.",
+            "Documento poder o mandato, otorgado por el beneficiario del servicio que se encuentra fuera del territorio nacional. Puede ser poder general, es decir para todos los asuntos y administración de todos los bienes, o poder especial,  para asuntos específicos  o administración de determinado(s) bien(es).",
         },
       ],
     },
@@ -164,12 +159,12 @@ export default function LandingPage() {
         {
           title: "Certificación de ingresos",
           description:
-            "Documento que certifica sus ingresos como profesional independiente o comerciante para trámites con bancos, instituciones financieras o entes gubernamentales.",
+            "Certificación de ingresos, para el beneficiario del servicio, nominada para el organismo o ente requirente, con ingreso mensual de hasta  un mil quinientos dólares de los estados unidos de norte américa (1.500 U.S $) como moneda de cuenta o su equivalente en bolívares a la tasa oficial del Banco Central de Venezuela.",
         },
         {
           title: "Balance personal",
           description:
-            "Estado financiero personal requerido por bancos, instituciones financieras, cajas de ahorro u otros entes para diversos trámites.",
+            "Balance personal del beneficiario del servicio, nominado para el organismo o ente requirente, con patrimonio de  hasta de setenta y cinco mil dólares de los estados unidos de norte américa (75.000 U.S $) como moneda de cuenta o su equivalente en bolívares a la tasa oficial del Banco Central de Venezuela.",
         },
       ],
     },
@@ -200,10 +195,10 @@ export default function LandingPage() {
 
   // Datos de aliados
   const partners = [
-    { name: "Empresa Legal A", logo: "/placeholder.svg?height=40&width=120" },
-    { name: "Consultora B", logo: "/placeholder.svg?height=40&width=120" },
-    { name: "Aseguradora C", logo: "/placeholder.svg?height=40&width=120" },
-    { name: "Firma Legal D", logo: "/placeholder.svg?height=40&width=120" },
+    { name: "LS", logo: "/logos/ls.png" },
+    { name: "STARTUPVEN", logo: "/logos/startupven.png" },
+    { name: "Proadsa", logo: "/logos/proadsa.png" },
+    { name: "Temis Global", logo: "/logos/temis_global.png" },
   ]
 
   // Estado para la categoría activa en la vista móvil
@@ -331,8 +326,7 @@ export default function LandingPage() {
               <h3 className="text-lg font-semibold">1. Compra-venta de vehículos</h3>
             </div>
             <p className="text-muted-foreground text-sm">
-              Documento legal para la compra o venta de cualquier vehículo automotor, incluyendo transacciones
-              familiares con padres o hijos.
+              Compra de vehículo, para el beneficiario del servicio, con valor hasta de quince mil dólares de los estados unidos de norte américa (15.000 U.S $) como moneda de cuenta o su equivalente en bolívares a la tasa oficial del Banco Central de Venezuela.
             </p>
           </motion.div>
 
@@ -349,8 +343,7 @@ export default function LandingPage() {
               <h3 className="text-lg font-semibold">2. Declaración de no poseer vivienda</h3>
             </div>
             <p className="text-muted-foreground text-sm">
-              Documento requerido por organismos públicos para otorgar créditos de adquisición, ampliación o
-              remodelación de vivienda.
+              Declaraciones juradas o justificativos de no poseer vivienda, para el beneficiario del servicio, requerido por los organismos competentes para la adquisición de vivienda.
             </p>
           </motion.div>
 
@@ -367,8 +360,7 @@ export default function LandingPage() {
               <h3 className="text-lg font-semibold">3. Compra-venta de vivienda</h3>
             </div>
             <p className="text-muted-foreground text-sm">
-              Documento legal para la compra o venta de casas o apartamentos, incluyendo transacciones familiares con
-              padres o hijos.
+              Compra de vivienda: casas o apartamentos, para el beneficiario del servicio, destinado a vivienda principal, con valor hasta de treinta mil dólares de los estados unidos de norte américa (30.000 U.S $) como moneda de cuenta o su equivalente en bolívares a la tasa oficial del Banco Central de Venezuela.
             </p>
           </motion.div>
 
@@ -385,8 +377,7 @@ export default function LandingPage() {
               <h3 className="text-lg font-semibold">4. Autorizaciones de viaje</h3>
             </div>
             <p className="text-muted-foreground text-sm">
-              Permisos para que niños y adolescentes viajen dentro o fuera del país, solos o acompañados por uno de sus
-              padres o terceras personas.
+              Autorizaciones de viajes de niños, niñas y/o adolescentes, hijos del beneficiario del servicio, que viajen al exterior, por avión con boleto ida y vuelta y/o viaje nacional, vía terrestre, aérea y fluvial.
             </p>
           </motion.div>
 
@@ -403,8 +394,7 @@ export default function LandingPage() {
               <h3 className="text-lg font-semibold">5. Poder para representación durante viajes</h3>
             </div>
             <p className="text-muted-foreground text-sm">
-              Autorización a personas de confianza para que le representen y se encarguen de sus asuntos durante su
-              ausencia por viaje.
+              Documento poder o mandato, otorgado por el beneficiario del servicio, para que un tercero le represente durante el viaje. Puede ser poder general, es decir para todos los asuntos y administración de todos los bienes,  o poder especial,  para asuntos específicos  o administración de determinado(s) bien(es).
             </p>
           </motion.div>
 
@@ -421,8 +411,7 @@ export default function LandingPage() {
               <h3 className="text-lg font-semibold">6. Declaración de Sucesiones</h3>
             </div>
             <p className="text-muted-foreground text-sm">
-              Asistencia completa para el trámite de declaración de sucesiones ante el SENIAT, incluyendo revisión de
-              documentos y orientación.
+              Declaraciones de sucesiones, por fallecimiento del beneficiario del servicio, requerida por sus herederos, quienes reciben orientación y asistencia para su presentación en línea. El patrimonio neto hasta de setenta y cinco mil dólares de los estados unidos de norte américa (75.000 U.S $) como moneda de cuenta o su equivalente en bolívares a la tasa oficial del Banco Central de Venezuela.
             </p>
           </motion.div>
 
@@ -439,26 +428,24 @@ export default function LandingPage() {
               <h3 className="text-lg font-semibold">7. Justificativo de soltería</h3>
             </div>
             <p className="text-muted-foreground text-sm">
-              Documento requerido para contraer matrimonio, válido tanto en territorio nacional como en el exterior a
-              través de consulados.
+              Justificativos o cartas de soltería para el beneficiario del servicio.
             </p>
           </motion.div>
 
           <motion.div
-            className="bg-gradient-to-br from-pink-500/10 to-rose-500/10 dark:from-pink-500/20 dark:to-rose-500/20 p-6 rounded-xl border border-pink-200/20 dark:border-pink-500/30"
+            className="bg-gradient-to-br from-blue-600/10 to-violet-600/10 dark:from-blue-600/20 dark:to-violet-600/20 p-6 rounded-xl border border-blue-300/20 dark:border-blue-600/30"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.8 }}
           >
             <div className="flex items-center mb-4">
-              <div className="bg-pink-500/20 dark:bg-pink-500/30 p-2 rounded-full mr-3">
-                <User className="w-5 h-5 text-pink-600 dark:text-pink-400" />
+              <div className="bg-blue-600/20 dark:bg-blue-600/30 p-2 rounded-full mr-3">
+                <Briefcase className="w-5 h-5 text-blue-700 dark:text-blue-400" />
               </div>
-              <h3 className="text-lg font-semibold">8. Poder especial o general</h3>
+              <h3 className="text-lg font-semibold">8. Constitución de empresa PYME</h3>
             </div>
             <p className="text-muted-foreground text-sm">
-              Autorización para que una persona de confianza le represente en asuntos específicos o generales,
-              incluyendo contratos y gestiones legales.
+              Constitución de empresa PYME, con capital social hasta de tres mil dólares de los estados unidos de norte américa (3.000 U.S $) como moneda de cuenta o su equivalente en bolívares a la tasa oficial del Banco Central de Venezuela,  donde el accionista sea el beneficiario del servicio.
             </p>
           </motion.div>
 
@@ -472,29 +459,10 @@ export default function LandingPage() {
               <div className="bg-blue-600/20 dark:bg-blue-600/30 p-2 rounded-full mr-3">
                 <Briefcase className="w-5 h-5 text-blue-700 dark:text-blue-400" />
               </div>
-              <h3 className="text-lg font-semibold">9. Constitución de empresa PYME</h3>
+              <h3 className="text-lg font-semibold">9. Acta de Asamblea de Accionistas</h3>
             </div>
             <p className="text-muted-foreground text-sm">
-              Documento para la creación y registro de pequeñas y medianas empresas donde usted, su cónyuge, padres o
-              hijos sean accionistas.
-            </p>
-          </motion.div>
-
-          <motion.div
-            className="bg-gradient-to-br from-blue-600/10 to-violet-600/10 dark:from-blue-600/20 dark:to-violet-600/20 p-6 rounded-xl border border-blue-300/20 dark:border-blue-600/30"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 1.0 }}
-          >
-            <div className="flex items-center mb-4">
-              <div className="bg-blue-600/20 dark:bg-blue-600/30 p-2 rounded-full mr-3">
-                <Briefcase className="w-5 h-5 text-blue-700 dark:text-blue-400" />
-              </div>
-              <h3 className="text-lg font-semibold">10. Acta de Asamblea de Accionistas</h3>
-            </div>
-            <p className="text-muted-foreground text-sm">
-              Documento para formalizar decisiones de accionistas, como aumentos de capital por reconversiones
-              monetarias en Venezuela.
+              Acta de aumento de capital social de empresa PYME por efectos de reconversiones monetarias, con capital social  hasta de tres mil dólares de los estados unidos de norte américa (3.000 U.S $) como moneda de cuenta o su equivalente en bolívares a la tasa oficial del Banco Central de Venezuela, donde el accionista sea el beneficiario del servicio.
             </p>
           </motion.div>
 
@@ -502,17 +470,33 @@ export default function LandingPage() {
             className="bg-gradient-to-br from-teal-500/10 to-cyan-500/10 dark:from-teal-500/20 dark:to-cyan-500/20 p-6 rounded-xl border border-teal-200/20 dark:border-teal-500/30"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 1.1 }}
+            transition={{ duration: 0.3, delay: 1.0 }}
           >
             <div className="flex items-center mb-4">
               <div className="bg-teal-500/20 dark:bg-teal-500/30 p-2 rounded-full mr-3">
                 <Globe className="w-5 h-5 text-teal-600 dark:text-teal-400" />
               </div>
-              <h3 className="text-lg font-semibold">11. Poder desde el exterior</h3>
+              <h3 className="text-lg font-semibold">10. Poder desde el exterior</h3>
             </div>
             <p className="text-muted-foreground text-sm">
-              Autorización otorgada desde el exterior para que personas de confianza le representen legalmente en
-              Venezuela, gestionando sus bienes y trámites.
+              Documento poder o mandato, otorgado por el beneficiario del servicio que se encuentra fuera del territorio nacional. Puede ser poder general, es decir para todos los asuntos y administración de todos los bienes, o poder especial,  para asuntos específicos  o administración de determinado(s) bien(es).
+            </p>
+          </motion.div>
+
+          <motion.div
+            className="bg-gradient-to-br from-emerald-500/10 to-green-600/10 dark:from-emerald-500/20 dark:to-green-600/20 p-6 rounded-xl border border-emerald-200/20 dark:border-emerald-500/30"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 1.1 }}
+          >
+            <div className="flex items-center mb-4">
+              <div className="bg-emerald-500/20 dark:bg-emerald-500/30 p-2 rounded-full mr-3">
+                <CreditCard className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <h3 className="text-lg font-semibold">11. Certificación de ingresos</h3>
+            </div>
+            <p className="text-muted-foreground text-sm">
+              Certificación de ingresos, para el beneficiario del servicio, nominada para el organismo o ente requirente, con ingreso mensual de hasta  un mil quinientos dólares de los estados unidos de norte américa (1.500 U.S $) como moneda de cuenta o su equivalente en bolívares a la tasa oficial del Banco Central de Venezuela.
             </p>
           </motion.div>
 
@@ -526,11 +510,10 @@ export default function LandingPage() {
               <div className="bg-emerald-500/20 dark:bg-emerald-500/30 p-2 rounded-full mr-3">
                 <CreditCard className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
               </div>
-              <h3 className="text-lg font-semibold">12. Certificación de ingresos y Balance personal</h3>
+              <h3 className="text-lg font-semibold">12. Balance personal</h3>
             </div>
             <p className="text-muted-foreground text-sm">
-              Documentos que certifican su situación financiera como profesional independiente o comerciante para
-              trámites con instituciones financieras y entes gubernamentales.
+              Balance personal del beneficiario del servicio, nominado para el organismo o ente requirente, con patrimonio de  hasta de setenta y cinco mil dólares de los estados unidos de norte américa (75.000 U.S $) como moneda de cuenta o su equivalente en bolívares a la tasa oficial del Banco Central de Venezuela.
             </p>
           </motion.div>
         </div>
@@ -548,7 +531,7 @@ export default function LandingPage() {
             Documentos por categoría
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-            Explora nuestros documentos organizados por tipo de protección
+            Explora nuestros documentos organizados por categoría
           </p>
         </motion.div>
 
@@ -578,10 +561,10 @@ export default function LandingPage() {
                   <div className="bg-background/30 p-3 rounded-full mr-4">
                     <category.icon className="w-8 h-8" />
                   </div>
-                  <h3 className="text-2xl font-bold">Protección {category.category}</h3>
+                  <h3 className="text-2xl font-bold">{category.category}</h3>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-[repeat(auto-fit,minmax(min(100%,400px),1fr))] gap-6">
                   {category.documents.map((doc, idx) => (
                     <motion.div
                       key={idx}
@@ -590,7 +573,7 @@ export default function LandingPage() {
                       transition={{ type: "spring", stiffness: 300 }}
                     >
                       <h4 className="text-xl font-semibold mb-2">{doc.title}</h4>
-                      <p className="text-muted-foreground">{doc.description}</p>
+                      <p className="text-muted-background">{doc.description}</p>
                     </motion.div>
                   ))}
                 </div>
@@ -612,7 +595,7 @@ export default function LandingPage() {
             Documentos por categoría
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-            Explora nuestros documentos organizados por tipo de protección
+            Explora nuestros documentos organizados por categoría
           </p>
         </motion.div>
 
@@ -624,7 +607,7 @@ export default function LandingPage() {
                   <div className={`bg-gradient-to-r ${category.color} p-2 rounded-full mr-3`}>
                     <category.icon className="w-5 h-5" />
                   </div>
-                  <span>Protección {category.category}</span>
+                  <span>{category.category}</span>
                 </div>
               </AccordionTrigger>
               <AccordionContent>
@@ -632,7 +615,7 @@ export default function LandingPage() {
                   {category.documents.map((doc, docIdx) => (
                     <div key={docIdx} className="bg-card/50 p-4 rounded-lg border border-border">
                       <h4 className="text-lg font-medium mb-2">{doc.title}</h4>
-                      <p className="text-muted-foreground text-sm">{doc.description}</p>
+                      <p className="text-muted-background text-sm">{doc.description}</p>
                     </div>
                   ))}
                 </div>
@@ -665,7 +648,7 @@ export default function LandingPage() {
             {
               icon: DollarSign,
               title: "Precio único y sin sorpresas",
-              description: "Todo incluido por solo $36 al año, equivalente a $3 al mes.",
+              description: "Todo incluido por un porcentaje del costo en el mercado.",
             },
             {
               icon: Clock,
@@ -824,7 +807,7 @@ export default function LandingPage() {
         >
           <h2 className="text-3xl font-bold mb-4">¡No esperes más!</h2>
           <p className="text-xl mb-8 max-w-2xl mx-auto">
-            Simplifica tu vida legal hoy mismo. Por solo $3 al mes, tendrás la tranquilidad de contar con un aliado
+            Simplifica tu vida legal hoy mismo. Tendrás la tranquilidad de contar con un aliado
             legal confiable y accesible.
           </p>
           <Button
