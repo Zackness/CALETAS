@@ -14,7 +14,7 @@ model User {
   apellido               String?
   apellido2              String?
   email                  String                 @unique
-  cedula                 String                 @unique
+  cedula                 String?                 @unique
   telefono               String?                @unique
   codigoEmpresa          String?
   emailVerified          DateTime?
@@ -37,7 +37,7 @@ model User {
   asignacionesRealizadas SolicitudAbogado[]     @relation("Asignador")
   StripeCustomer         StripeCustomer?
   twoFactorConfirmation  TwoFactorConfirmation?
-  empresas               Empresa                @relation(fields: [empresa], references: [id])
+  empresas               Empresa?                @relation(fields: [empresa], references: [id])
   UserSubscription       UserSubscription[]
 
   @@index([empresa])
