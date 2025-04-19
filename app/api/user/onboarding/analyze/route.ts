@@ -29,9 +29,9 @@ export async function POST(req: Request) {
     const prompt = `Analiza esta imagen de una cédula de identidad venezolana y extrae la siguiente información en formato JSON:
     {
       "cedula": "número de cédula",
-      "nombre": "nombre completo",
-      "nombre2": "segundo nombre si existe",
-      "apellido": "primer apellido",
+      "nombre": "primer nombre (todo el texto que está en el campo nombre hasta el primer espacio, incluyendo nombres compuestos como DUGLIANYELI)",
+      "nombre2": "segundo nombre (el texto que viene después del primer espacio en el campo nombre, si existe)",
+      "apellido": "primer apellido (todo lo que está arriba del nombre)",
       "apellido2": "segundo apellido si existe",
       "fechaNacimiento": "fecha de nacimiento en formato YYYY-MM-DD",
       "estadoCivil": "estado civil (soltero/casado)",
@@ -42,7 +42,17 @@ export async function POST(req: Request) {
     1. La fecha de vencimiento sea precisa
     2. El estado civil sea "soltero" o "casado"
     3. El formato de las fechas sea YYYY-MM-DD
-    4. El número de cédula sea exacto`;
+    4. El número de cédula sea exacto
+    5. Para los nombres:
+       - El primer nombre es todo el texto hasta el primer espacio en el campo nombre
+       - El segundo nombre es todo el texto después del primer espacio
+       - NO agregues texto adicional que no esté en la cédula
+       - NO repitas partes del nombre
+       - Ejemplo: Si el campo nombre dice "DUGLIANYELI MARIANA", entonces:
+         * nombre = "DUGLIANYELI"
+         * nombre2 = "MARIANA"
+    6. No hagas suposiciones sobre nombres raros o poco comunes, extrae exactamente lo que aparece en la cédula
+    7. NO dupliques el segundo nombre, debe aparecer una sola vez en el campo nombre2`;
 
     try {
       // Llamar a la API de OpenAI
@@ -71,12 +81,20 @@ export async function POST(req: Request) {
         throw new Error("No se pudo extraer información del documento");
       }
 
+      // Limpiar la respuesta de OpenAI
+      const cleanContent = content
+        .replace(/```json\n?/g, '') // Eliminar ```json
+        .replace(/```\n?/g, '')     // Eliminar ```
+        .trim();                    // Eliminar espacios en blanco
+
       // Intentar parsear el JSON de la respuesta
       let extractedData;
       try {
-        extractedData = JSON.parse(content);
+        extractedData = JSON.parse(cleanContent);
       } catch (error) {
         console.error("Error al parsear la respuesta de OpenAI:", error);
+        console.error("Contenido original:", content);
+        console.error("Contenido limpio:", cleanContent);
         return new NextResponse("Error al procesar la información del documento", { status: 500 });
       }
 

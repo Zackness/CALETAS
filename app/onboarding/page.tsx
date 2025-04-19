@@ -12,10 +12,13 @@ import { OnboardingStatus } from "@prisma/client";
 import { useToast } from "@/components/ui/use-toast";
 import axios from "axios";
 
+type Step = 'titular' | 'conyuge' | 'direccion';
+
 export default function OnboardingPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [currentStep, setCurrentStep] = useState<Step>('titular');
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [extractedData, setExtractedData] = useState<{
@@ -28,7 +31,6 @@ export default function OnboardingPage() {
     estadoCivil?: string;
     fechaVencimiento?: string;
   } | null>(null);
-  const [needsSpouseId, setNeedsSpouseId] = useState(false);
   const [spouseFile, setSpouseFile] = useState<File | null>(null);
   const [spouseData, setSpouseData] = useState<{
     cedula?: string;
@@ -38,10 +40,10 @@ export default function OnboardingPage() {
     apellido2?: string;
     fechaNacimiento?: string;
   } | null>(null);
+  const [direccion, setDireccion] = useState("");
   const { onboardingStatus, isLoading: isLoadingStatus } = useOnboarding();
 
   useEffect(() => {
-    // Si el onboarding ya está finalizado, redirigir a la página principal
     if (onboardingStatus === OnboardingStatus.FINALIZADO) {
       router.push("/home");
     }
@@ -76,11 +78,31 @@ export default function OnboardingPage() {
         },
       });
 
-      setExtractedData(response.data);
+      const data = response.data;
+
+      // Verificar si el usuario es menor de edad
+      const fechaNacimiento = new Date(data.fechaNacimiento);
+      const hoy = new Date();
+      const edad = hoy.getFullYear() - fechaNacimiento.getFullYear();
+      const mes = hoy.getMonth() - fechaNacimiento.getMonth();
+      
+      const edadAjustada = mes < 0 || (mes === 0 && hoy.getDate() < fechaNacimiento.getDate()) 
+        ? edad - 1 
+        : edad;
+
+      if (edadAjustada < 18) {
+        toast({
+          title: "Usuario menor de edad",
+          description: `Estimado/a ${data.nombre}, lamentamos informarte que debes ser mayor de edad para utilizar este servicio. Por favor, vuelve cuando tengas 18 años o más.`,
+          variant: "destructive",
+        });
+        setError("Debes ser mayor de edad para utilizar este servicio");
+        return;
+      }
 
       // Verificar si la cédula está vencida
-      if (response.data.fechaVencimiento) {
-        const vencimiento = new Date(response.data.fechaVencimiento);
+      if (data.fechaVencimiento) {
+        const vencimiento = new Date(data.fechaVencimiento);
         const hoy = new Date();
         
         if (vencimiento < hoy) {
@@ -89,18 +111,13 @@ export default function OnboardingPage() {
             description: "Tu cédula de identidad está vencida. Por favor, renueva tu documento.",
             variant: "destructive",
           });
+          setError("Tu cédula de identidad está vencida. Por favor, renueva tu documento.");
           return;
         }
       }
 
-      // Si está casado, solicitar cédula del cónyuge
-      if (response.data.estadoCivil?.toLowerCase() === "casado") {
-        setNeedsSpouseId(true);
-        toast({
-          title: "Documento del cónyuge requerido",
-          description: "Por favor, sube la cédula de identidad de tu cónyuge.",
-        });
-      }
+      // Si pasa todas las validaciones, mostrar los datos
+      setExtractedData(data);
     } catch (error) {
       console.error("Error analyzing document:", error);
       setError("Error al analizar el documento. Por favor, intenta de nuevo.");
@@ -126,11 +143,11 @@ export default function OnboardingPage() {
         },
       });
 
-      setSpouseData(response.data);
+      const data = response.data;
 
       // Verificar si la cédula del cónyuge está vencida
-      if (response.data.fechaVencimiento) {
-        const vencimiento = new Date(response.data.fechaVencimiento);
+      if (data.fechaVencimiento) {
+        const vencimiento = new Date(data.fechaVencimiento);
         const hoy = new Date();
         
         if (vencimiento < hoy) {
@@ -139,9 +156,13 @@ export default function OnboardingPage() {
             description: "La cédula de identidad de tu cónyuge está vencida. Por favor, renueva el documento.",
             variant: "destructive",
           });
+          setError("La cédula de identidad de tu cónyuge está vencida. Por favor, renueva el documento.");
           return;
         }
       }
+
+      // Si pasa la validación, mostrar los datos
+      setSpouseData(data);
     } catch (error) {
       console.error("Error analyzing spouse document:", error);
       setError("Error al analizar el documento del cónyuge. Por favor, intenta de nuevo.");
@@ -168,6 +189,18 @@ export default function OnboardingPage() {
     }
   };
 
+  const handleNext = () => {
+    if (currentStep === 'titular') {
+      if (extractedData?.estadoCivil?.toLowerCase() === "casado") {
+        setCurrentStep('conyuge');
+      } else {
+        setCurrentStep('direccion');
+      }
+    } else if (currentStep === 'conyuge') {
+      setCurrentStep('direccion');
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -178,14 +211,18 @@ export default function OnboardingPage() {
         throw new Error("Por favor, selecciona un documento");
       }
 
-      if (needsSpouseId && !spouseFile) {
+      if (extractedData?.estadoCivil?.toLowerCase() === "casado" && !spouseFile) {
         throw new Error("Por favor, sube la cédula de tu cónyuge");
       }
 
-      // Completar el onboarding con los datos extraídos
+      if (!direccion) {
+        throw new Error("Por favor, ingresa tu dirección");
+      }
+
       await axios.post("/api/user/onboarding/complete", {
         userData: extractedData,
         spouseData: spouseData,
+        direccion: direccion
       });
 
       toast({
@@ -210,17 +247,11 @@ export default function OnboardingPage() {
     );
   }
 
-  return (
-    <div className="flex items-center justify-center min-h-screen text-foreground">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Bienvenido a Global Legal</CardTitle>
-          <CardDescription>
-            Para comenzar, por favor sube tu documento de identificación.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 'titular':
+        return (
+          <>
             <div className="space-y-2">
               <Label htmlFor="document" className="text-foreground">
                 Documento de Identificación
@@ -234,21 +265,6 @@ export default function OnboardingPage() {
               />
             </div>
 
-            {needsSpouseId && (
-              <div className="space-y-2">
-                <Label htmlFor="spouseDocument" className="text-foreground">
-                  Documento de Identificación del Cónyuge
-                </Label>
-                <Input
-                  id="spouseDocument"
-                  type="file"
-                  accept="image/*,.pdf"
-                  onChange={handleSpouseFileChange}
-                  disabled={isLoading}
-                />
-              </div>
-            )}
-
             {extractedData && (
               <div className="space-y-2 p-4 bg-muted rounded-lg">
                 <h3 className="font-medium">Datos extraídos:</h3>
@@ -259,6 +275,23 @@ export default function OnboardingPage() {
                 <p>Estado Civil: {extractedData.estadoCivil}</p>
               </div>
             )}
+          </>
+        );
+      case 'conyuge':
+        return (
+          <>
+            <div className="space-y-2">
+              <Label htmlFor="spouseDocument" className="text-foreground">
+                Documento de Identificación del Cónyuge
+              </Label>
+              <Input
+                id="spouseDocument"
+                type="file"
+                accept="image/*,.pdf"
+                onChange={handleSpouseFileChange}
+                disabled={isLoading}
+              />
+            </div>
 
             {spouseData && (
               <div className="space-y-2 p-4 bg-muted rounded-lg">
@@ -269,20 +302,64 @@ export default function OnboardingPage() {
                 <p>Fecha de Nacimiento: {spouseData.fechaNacimiento}</p>
               </div>
             )}
+          </>
+        );
+      case 'direccion':
+        return (
+          <div className="space-y-2">
+            <Label htmlFor="direccion" className="text-foreground">
+              Dirección de Residencia
+            </Label>
+            <Input
+              id="direccion"
+              type="text"
+              value={direccion}
+              onChange={(e) => setDireccion(e.target.value)}
+              placeholder="Ingresa tu dirección completa"
+              disabled={isLoading}
+            />
+          </div>
+        );
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-center min-h-screen text-foreground">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>Bienvenido a Global Legal</CardTitle>
+          <CardDescription>
+            {currentStep === 'titular' && "Para comenzar, por favor sube tu documento de identificación."}
+            {currentStep === 'conyuge' && "Por favor, sube el documento de identificación de tu cónyuge."}
+            {currentStep === 'direccion' && "Por último, ingresa tu dirección de residencia."}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {renderStepContent()}
 
             {error && (
               <p className="text-sm text-red-500">{error}</p>
             )}
 
             <div className="flex flex-col gap-2">
-              <Button type="submit" disabled={isLoading || !file || (needsSpouseId && !spouseFile)}>
+              <Button 
+                type={currentStep === 'direccion' ? "submit" : "button"}
+                onClick={currentStep !== 'direccion' ? handleNext : undefined}
+                disabled={isLoading || 
+                  (currentStep === 'titular' && !file) || 
+                  (currentStep === 'conyuge' && !spouseFile) ||
+                  (currentStep === 'direccion' && !direccion)}
+              >
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Procesando...
                   </>
-                ) : (
+                ) : currentStep === 'direccion' ? (
                   "Completar Onboarding"
+                ) : (
+                  "Siguiente"
                 )}
               </Button>
               <Button
