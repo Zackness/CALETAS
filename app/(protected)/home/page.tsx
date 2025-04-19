@@ -1,128 +1,80 @@
+"use client";
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   FileText,
+  Loader2
 } from "lucide-react";
 import { InfoCard } from "./components/info-card";
-import { auth } from "@/auth";
-import { redirect } from "next/navigation";
-import { db } from "@/lib/db";
 import { MotionWrapper } from "./components/wrapped.";
-import { getSolicitudWithCount } from "./hooks/get-solicitudes";
 import { ListadoServicios } from "./components/listado-servicios";
-import { Solicitud, User, Familiar, Documento, Detalle, Nota } from "@prisma/client";
+import { useOnboarding } from "./hooks/use-onboarding";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { OnboardingStatus } from "@prisma/client";
 
-type SolicitudWithRelations = Solicitud & {
-  documento: Documento & {
-    servicio: {
-      id: string;
-      nombre: string;
-    };
-  };
-  usuario: User;
-  familiar: Familiar | null;
-  detalle: Detalle | null;
-  nota: Nota | null;
-};
-
-export default async function DashboardPage() {
-  
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    return redirect("/");
-  }
-  
-  const { pendingSolicitudes, aprovedSolicitudes, inProgressSolicitudes, completedSolicitudes, regectedSolicitudes } = await getSolicitudWithCount(session.user.id);
-
-  // Obtener los servicios desde la base de datos
-  const servicios = await db.servicio.findMany({
-    orderBy: {
-      nombre: "asc",
-    },
-    include: {
-      documentos: true, // Incluir los documentos relacionados con cada servicio
-    },
+export default function DashboardPage() {
+  const { isLoading: isLoadingOnboarding } = useOnboarding();
+  const [isLoading, setIsLoading] = useState(true);
+  const [servicios, setServicios] = useState([]);
+  const [solicitudes, setSolicitudes] = useState([]);
+  const [stats, setStats] = useState({
+    pendingSolicitudes: 0,
+    aprovedSolicitudes: 0,
+    inProgressSolicitudes: 0,
+    completedSolicitudes: 0,
+    regectedSolicitudes: 0
   });
+  const router = useRouter();
 
-  // Obtener todas las solicitudes del usuario
-  const solicitudes = await db.solicitud.findMany({
-    where: {
-      usuarioId: session.user.id,
-      estado: {
-        not: "FINALIZADA"
-      }
-    },
-    include: {
-      documento: {
-        include: {
-          servicio: true
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Obtener las solicitudes
+        const response = await fetch('/api/solicitudes/count');
+        if (response.ok) {
+          const data = await response.json();
+          setStats({
+            pendingSolicitudes: data.pendingSolicitudes?.length || 0,
+            aprovedSolicitudes: data.aprovedSolicitudes?.length || 0,
+            inProgressSolicitudes: data.inProgressSolicitudes?.length || 0,
+            completedSolicitudes: data.completedSolicitudes?.length || 0,
+            regectedSolicitudes: data.regectedSolicitudes?.length || 0
+          });
         }
-      },
-      usuario: true,
-      familiar: true,
-      detalle: true,
-      nota: {
-        select: {
-          id: true,
-          contenido: true,
-          createdAt: true
-        }
-      }
-    },
-    orderBy: {
-      createdAt: 'desc'
-    }
-  }) as SolicitudWithRelations[];
 
-  // Transformar las solicitudes para el formato esperado
-  const transformedSolicitudes = solicitudes.map(solicitud => ({
-    id: solicitud.id.toString(),
-    estado: solicitud.estado,
-    fecha: solicitud.createdAt.toISOString(),
-    prioridad: "NORMAL",
-    documento: {
-      id: solicitud.documento.id,
-      nombre: solicitud.documento.nombre,
-      servicio: {
-        id: solicitud.documento.servicio.id,
-        nombre: solicitud.documento.servicio.nombre
+        // Obtener las solicitudes
+        const solicitudesResponse = await fetch('/api/solicitudes');
+        if (solicitudesResponse.ok) {
+          const solicitudesData = await solicitudesResponse.json();
+          setSolicitudes(solicitudesData || []);
+        }
+
+        // Obtener los servicios
+        const serviciosResponse = await fetch('/api/servicios');
+        if (serviciosResponse.ok) {
+          const serviciosData = await serviciosResponse.json();
+          setServicios(serviciosData || []);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setIsLoading(false);
       }
-    },
-    client: {
-      id: solicitud.usuario.id,
-      name: solicitud.usuario.name || "",
-      email: solicitud.usuario.email || "",
-      avatar: solicitud.usuario.image || "/default-avatar.png"
-    },
-    familiar: solicitud.familiar ? {
-      id: solicitud.familiar.id,
-      name: solicitud.familiar.nombre,
-      email: solicitud.familiar.telefono || "",
-      avatar: "/default-avatar.png"
-    } : null,
-    detalle: solicitud.detalle ? {
-      Testigo1: solicitud.detalle.Testigo1 || undefined,
-      Testigo2: solicitud.detalle.Testigo2 || undefined,
-      Testigo3: solicitud.detalle.Testigo3 || undefined,
-      Testigo4: solicitud.detalle.Testigo4 || undefined,
-      generic_text: solicitud.detalle.generic_text || undefined,
-      bienes_generico1: solicitud.detalle.bienes_generico1 || undefined,
-      bienes_generico2: solicitud.detalle.bienes_generico2 || undefined,
-      bienes_generico3: solicitud.detalle.bienes_generico3 || undefined,
-      bienes_generico4: solicitud.detalle.bienes_generico4 || undefined,
-      bienes_generico5: solicitud.detalle.bienes_generico5 || undefined,
-      Acta_de_nacimiento: solicitud.detalle.Acta_de_nacimiento || undefined,
-      Acta_de_matrimonio: solicitud.detalle.Acta_de_matrimonio || undefined,
-      Acta_de_defuncion: solicitud.detalle.Acta_de_defuncion || undefined,
-      Acta_de_divorcio: solicitud.detalle.Acta_de_divorcio || undefined
-    } : null,
-    nota: solicitud.nota ? {
-      id: solicitud.nota.id,
-      contenido: solicitud.nota.contenido,
-      createdAt: solicitud.nota.createdAt.toISOString()
-    } : null
-  }));
+    };
+
+    fetchData();
+  }, []);
+
+  if (isLoading || isLoadingOnboarding) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-4">
+        <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+        <p className="text-lg">Cargando...</p>
+      </div>
+    );
+  }
 
   return (
     <MotionWrapper>
@@ -130,34 +82,34 @@ export default async function DashboardPage() {
         <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
           <InfoCard
             label="Total de solicitudes"
-            numberOfItems={completedSolicitudes.length + pendingSolicitudes.length + aprovedSolicitudes.length + inProgressSolicitudes.length + regectedSolicitudes.length}
+            numberOfItems={stats.completedSolicitudes + stats.pendingSolicitudes + stats.aprovedSolicitudes + stats.inProgressSolicitudes + stats.regectedSolicitudes}
             type={"none"}
           />
           <InfoCard
             label="Solicitudes rechazadas"
-            numberOfItems={regectedSolicitudes.length}
+            numberOfItems={stats.regectedSolicitudes}
             type="rejected"
           />          
         </div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <InfoCard
             label="Solicitudes pendientes"
-            numberOfItems={pendingSolicitudes.length}
+            numberOfItems={stats.pendingSolicitudes}
             type="pending"
           />
           <InfoCard
             label="Solicitudes aprobadas"
-            numberOfItems={aprovedSolicitudes.length}
+            numberOfItems={stats.aprovedSolicitudes}
             type="approved"
           />
           <InfoCard
             label="Solicitudes en proceso"
-            numberOfItems={inProgressSolicitudes.length}
+            numberOfItems={stats.inProgressSolicitudes}
             type="inProcess"
           />          
           <InfoCard
             label="Solicitudes finalizadas"
-            numberOfItems={completedSolicitudes.length}
+            numberOfItems={stats.completedSolicitudes}
             type="completed"
           />
         </div>
@@ -181,7 +133,7 @@ export default async function DashboardPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <ListadoServicios servicios={servicios} solicitudes={transformedSolicitudes} />
+              <ListadoServicios servicios={servicios} solicitudes={solicitudes} />
             </CardContent>
           </Card>
         </div>

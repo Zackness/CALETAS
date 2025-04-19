@@ -12,17 +12,11 @@ import { RegisterSchema } from "@/schemas";
 import { FormError } from "@/components/form-error";
 import { FormSucces } from "@/components/form-succes";
 import { register } from "@/actions/register";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { motion } from "framer-motion";
 
-interface RegisterFormProps {
-  companies: { id: string; nombre: string }[];
-}
-
-export const RegisterForm = ({ companies }: RegisterFormProps) => {
+export const RegisterForm = () => {
   const [error, setError] = useState<string | undefined>("");
   const [succes, setSucces] = useState<string | undefined>("");
-  const [step, setStep] = useState(1);
   const [isPending, startTransition] = useTransition();
 
   const form = useForm<z.infer<typeof RegisterSchema>>({
@@ -31,10 +25,6 @@ export const RegisterForm = ({ companies }: RegisterFormProps) => {
       email: "",
       password: "",
       name: "",
-      cedula: "",
-      telefono: "",
-      empresa: "",
-      codigo: "",
     },
   });
 
@@ -50,26 +40,6 @@ export const RegisterForm = ({ companies }: RegisterFormProps) => {
     });
   };
 
-  const handleNextStep = async () => {
-    if (step === 1) {
-      const isValid = await form.trigger(["name", "email", "password"]);
-      if (isValid) {
-        setStep(step + 1);
-      }
-    } else if (step === 2) {
-      const isValid = await form.trigger(["empresa", "codigo"]);
-      if (isValid) {
-        setStep(step + 1);
-      }
-    }
-  };
-
-  const handlePrevStep = () => {
-    if (step > 1) {
-      setStep(step - 1);
-    }
-  };
-
   return (
     <CardWrapper headerLabel="Bienvenido" showSocial>
       <motion.h2
@@ -78,136 +48,54 @@ export const RegisterForm = ({ companies }: RegisterFormProps) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        Registro - Paso {step} de 3
+        Registro
       </motion.h2>
       <div className="flex flex-col gap-4">
         <Form {...form}>
           <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
-            {step === 1 && (
-              <div className="flex flex-col gap-4 text-white">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input {...field} disable={isPending} label="Nombre de usuario" id="name" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input {...field} disable={isPending} label="Email" id="email" type="email" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input {...field} disable={isPending} label="Contraseña" id="password" type="password" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            )}
-            {step === 2 && (
-              <div className="flex flex-col gap-4 text-white">
-                <FormField
-                  control={form.control}
-                  name="empresa"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
-                            <SelectValue placeholder="Selecciona una empresa" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {companies.map((company) => (
-                              <SelectItem key={company.id} value={company.id}>
-                                {company.nombre}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="codigo"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input {...field} disable={isPending} label="Código" id="codigo" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            )}
-            {step === 3 && (
-              <div className="flex flex-col gap-4 text-white">
-                <FormField
-                  control={form.control}
-                  name="cedula"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input {...field} disable={isPending} label="Cédula" id="cedula" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="telefono"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input {...field} disable={isPending} label="Teléfono" id="telefono" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            )}
+            <div className="flex flex-col gap-4 text-white">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input {...field} disable={isPending} label="Nombre de usuario" id="name" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input {...field} disable={isPending} label="Email" id="email" type="email" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input {...field} disable={isPending} label="Contraseña" id="password" type="password" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
             <FormError message={error} />
             <FormSucces message={succes} />
-            <div className="flex justify-between">
-              {step > 1 && (
-                <Button type="button" variant="outline" onClick={handlePrevStep} className="bg-gray-800 text-white hover:bg-gray-700 border-gray-700">
-                  Atrás
-                </Button>
-              )}
-              {step < 3 ? (
-                <Button type="button" variant="form" onClick={handleNextStep}>
-                  Siguiente
-                </Button>
-              ) : (
-                <Button type="submit" variant="form" disabled={isPending}>
-                  Registrarse
-                </Button>
-              )}
-            </div>
+            <Button type="submit" variant="form" disabled={isPending} className="w-full">
+              Registrarse
+            </Button>
           </form>
         </Form>
       </div>

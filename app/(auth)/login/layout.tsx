@@ -1,8 +1,8 @@
 import "@/app/globals.css";
 
 export const metadata = {
-  title: 'Login en Franky',
-  description: 'Inicia sesión en tu cuenta de Franky',
+  title: 'Login en Global Legal',
+  description: 'Inicia sesión en tu cuenta de Global Legal',
 }
 
 export default function RootLayout({

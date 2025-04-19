@@ -38,50 +38,74 @@ export const SettingsSchema = z.object ({
         path: ["password"]
     })
 
-export const NewPasswordSchema = z.object ({
-    password: z.string().min(6, {
-        message: "La contraseña debe tener al menos 6 caracteres"
-    }),
+export const NewPasswordSchema = z.object({
+    password: z.string()
+        .min(6, {
+            message: "La contraseña debe tener al menos 6 caracteres"
+        })
+        .max(100, {
+            message: "La contraseña no puede tener más de 100 caracteres"
+        })
+        .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, {
+            message: "La contraseña debe contener al menos una mayúscula, una minúscula y un número"
+        }),
 });
 
-export const ResetSchema = z.object ({
-    email: z.string().email({
-        message: "Por favor, coloca un correo electronico"
-    }),
+export const ResetSchema = z.object({
+    email: z.string()
+        .email({
+            message: "Por favor, coloca un correo electronico"
+        })
+        .transform(email => email.toLowerCase().trim()),
 });
 
-export const LoginSchema = z.object ({
-    email: z.string().email({
-        message: "Por favor, coloca un correo electronico"
-    }),
-    password: z.string().min(1, {
-        message: "Por favor, ingresa una contraseña valida"
-    }),
-    code: z.optional(z.string()),
+export const LoginSchema = z.object({
+    email: z.string()
+        .email({
+            message: "Por favor, coloca un correo electronico"
+        })
+        .transform(email => email.toLowerCase().trim()),
+    password: z.string()
+        .min(1, {
+            message: "Por favor, ingresa una contraseña valida"
+        })
+        .max(100, {
+            message: "La contraseña no puede tener más de 100 caracteres"
+        }),
+    code: z.optional(z.string()
+        .max(6, {
+            message: "El código no puede tener más de 6 caracteres"
+        })
+        .regex(/^[0-9]+$/, {
+            message: "El código solo puede contener números"
+        })
+    ),
 });
 
-export const RegisterSchema = z.object ({
-    email: z.string().email({
-        message: "Por favor, coloca un correo electronico"
-    }),
-    password: z.string().min(6, {
-        message: "La contraseña debe tener al menos 6 caracteres"
-    }),
-    name: z.string().min(1, {
-        message: "Es necesario un nombre de usuario"
-    }),
-    cedula: z.string().min(1, {
-        message: "Debe identificarse con un numero de cedula"
-    }),
-    telefono: z.string().min(1, {
-        message: "Debe agregar un numero de telefono"
-    }),
-    empresa: z.string().min(1, {
-        message: "Debe seleccionar una empresa"
-    }),
-    codigo: z.string().min(1, {
-        message: "Debe agregar el codigo de su empresa"
-    }),
+export const RegisterSchema = z.object({
+    email: z.string()
+        .email({
+            message: "Por favor, coloca un correo electronico"
+        })
+        .transform(email => email.toLowerCase().trim()),
+    password: z.string()
+        .min(6, {
+            message: "La contraseña debe tener al menos 6 caracteres"
+        })
+        .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, {
+            message: "La contraseña debe contener al menos una mayúscula, una minúscula y un número"
+        }),
+    name: z.string()
+        .min(1, {
+            message: "Es necesario un nombre de usuario"
+        })
+        .max(50, {
+            message: "El nombre de usuario no puede tener más de 50 caracteres"
+        })
+        .regex(/^[a-zA-Z0-9_-]+$/, {
+            message: "El nombre de usuario solo puede contener letras, números, guiones y guiones bajos"
+        })
+        .transform(name => name.trim()),
 });
 
 

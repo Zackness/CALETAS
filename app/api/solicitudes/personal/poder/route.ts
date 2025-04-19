@@ -90,8 +90,7 @@ export async function POST(req: NextRequest) {
     // Crear el detalle usando el ID de la solicitud
     const detalleData = {
       solicitudId: solicitud.id,
-      Testigo3: testigo3 || null,
-      Testigo4: testigo4 || null,
+      Testigo1: testigo3 || null,
       bienes_generico1: bienes_generico1 || null,
       bienes_generico2: bienes_generico2 || null,
       bienes_generico3: bienes_generico3 || null,

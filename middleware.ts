@@ -1,8 +1,5 @@
-import NextAuth from "next-auth";
-import authConfig from "./auth.config";
-
-const { auth } = NextAuth(authConfig);
-
+import { auth } from "@/auth";
+import { NextResponse } from "next/server";
 import { DEFAULT_LOGIN_REDIRECT, apiAuthPrefix, authRoutes, publicRoutes } from "@/routes";
 
 export default auth((req) => {
@@ -17,6 +14,7 @@ export default auth((req) => {
   const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
   const isPublicRoute = publicRoutes.some(route => new RegExp(`^${route}$`).test(nextUrl.pathname));
   const isAuthRoute = authRoutes.includes(nextUrl.pathname);
+  const isOnboardingRoute = nextUrl.pathname === '/onboarding';
 
   if (isApiAuthRoute) {
     return;
@@ -42,6 +40,10 @@ export default auth((req) => {
       nextUrl
     ));
   }
+
+  // No verificamos el estado del onboarding en el middleware para evitar problemas con Prisma en Edge Runtime
+  // En su lugar, lo manejaremos en el componente de página
+
   return;
 });
 

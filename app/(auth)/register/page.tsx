@@ -1,19 +1,7 @@
 import { RegisterForm } from "./components/register-form";
 import { Suspense } from 'react';
-import { db } from "@/lib/db"; // Asegúrate de tener configurado prisma
-
-const getCompanies = async () => {
-  const companies = await db.empresa.findMany({
-    select: {
-      id: true,
-      nombre: true,
-    },
-  });
-  return companies;
-};
 
 const Register = async () => {
-  const companies = await getCompanies();
 
   return (
     <main className="relative h-full w-full min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
@@ -27,7 +15,7 @@ const Register = async () => {
         </nav>
         <section className="flex justify-center w-full">
           <Suspense fallback={<div>Loading...</div>}>
-            <RegisterForm companies={companies} />
+            <RegisterForm />
           </Suspense>
         </section>
       </div>

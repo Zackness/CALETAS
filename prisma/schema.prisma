@@ -10,6 +10,9 @@ datasource db {
 model User {
   id                     String                 @id @default(cuid())
   name                   String                 @unique
+  name2                  String?
+  apellido               String?
+  apellido2              String?
   email                  String                 @unique
   cedula                 String                 @unique
   telefono               String?                @unique
@@ -20,6 +23,8 @@ model User {
   empresa                String
   role                   UserRole               @default(CLIENT)
   isTwoFactorEnabled     Boolean                @default(false)
+  onboardingStatus       OnboardingStatus       @default(PENDIENTE)
+  fechaNacimiento        DateTime?
   createdAt              DateTime               @default(now())
   updatedAt              DateTime               @updatedAt
   accounts               Account[]
@@ -118,14 +123,18 @@ model UserSubscription {
 }
 
 model Familiar {
-  id          String      @id @default(uuid())
-  nombre      String
-  cedula      String      @unique
-  telefono    String?     @unique
-  parentesco  Parentesco
-  usuarioId   String
-  usuario     User        @relation(fields: [usuarioId], references: [id])
-  solicitudes Solicitud[]
+  id              String      @id @default(uuid())
+  nombre          String
+  nombre2         String?
+  apellido        String?
+  apellido2       String?
+  cedula          String      @unique
+  telefono        String?     @unique
+  parentesco      Parentesco
+  fechaNacimiento DateTime?
+  usuarioId       String
+  usuario         User        @relation(fields: [usuarioId], references: [id])
+  solicitudes     Solicitud[]
 
   @@index([usuarioId], map: "Familiar_usuarioId_fkey")
 }
@@ -331,4 +340,10 @@ enum Parentesco {
   HIJA
   ESPOSO
   ESPOSA
+}
+
+enum OnboardingStatus {
+  PENDIENTE
+  FINALIZADO
+  CANCELADO
 }

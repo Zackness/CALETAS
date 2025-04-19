@@ -3,7 +3,7 @@
 import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { useState, useTransition, useEffect, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -16,17 +16,16 @@ import { Progress } from "@/components/ui/progress";
 import { CardWrapper } from "@/components/card-wrapper";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 const SolicitudSchema = z.object({
   persona: z.string().optional(),
   cedula: z.string().nonempty("Debe seleccionar una persona"),
   nombreConyuge: z.string().optional(),
   cedulaConyuge: z.string().optional(),
-  testigo3: z.custom<File>((file) => file instanceof File, {
+  documentoConyuge: z.custom<File>((file) => file instanceof File, {
     message: "Debe subir el documento del cónyuge",
-  }).optional(),
-  testigo4: z.custom<File>((file) => file instanceof File, {
-    message: "Debe subir el archivo de cédula del cónyuge",
   }).optional(),
   bien1: z.custom<File>((file) => file instanceof File, {
     message: "Debe subir el archivo del primer bien",
@@ -80,11 +79,11 @@ export const PoderForm = () => {
   const [error, setError] = useState<string | undefined>("");
   const [succes, setSucces] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [familiares, setFamiliares] = useState<Familiar[]>([]);
   const [user, setUser] = useState<User | null>(null);
   const [selectedPersona, setSelectedPersona] = useState<string>("");
-  const [testigo3File, setTestigo3File] = useState<File | undefined>(undefined);
-  const [testigo4File, setTestigo4File] = useState<File | undefined>(undefined);
+  const [documentoConyugeFile, setDocumentoConyugeFile] = useState<File | null>(null);
   const [bien1File, setBien1File] = useState<File | undefined>(undefined);
   const [bien2File, setBien2File] = useState<File | undefined>(undefined);
   const [bien3File, setBien3File] = useState<File | undefined>(undefined);
@@ -98,6 +97,7 @@ export const PoderForm = () => {
     requiereDocumento: boolean;
   } | null>(null);
   const [isPoderEspecial, setIsPoderEspecial] = useState<boolean>(false);
+  const router = useRouter();
 
   const form = useForm<z.infer<typeof SolicitudSchema>>({
     resolver: zodResolver(SolicitudSchema),
@@ -106,8 +106,7 @@ export const PoderForm = () => {
       cedula: "",
       nombreConyuge: "",
       cedulaConyuge: "",
-      testigo3: undefined,
-      testigo4: undefined,
+      documentoConyuge: undefined,
       bien1: undefined,
       bien2: undefined,
       bien3: undefined,
@@ -260,94 +259,66 @@ export const PoderForm = () => {
     }
   };
 
-  const onSubmit = async (values: z.infer<typeof SolicitudSchema>) => {
-    setError("");
-    setSucces("");
-    setUploadProgress(0);
-
+  const onSubmit = async (data: z.infer<typeof SolicitudSchema>) => {
     try {
-      // Verificar si se requiere subir documento del cónyuge
-      if (conyugeInfo?.requiereDocumento && !testigo3File) {
-        setError("Debe subir el documento del cónyuge");
-        return;
-      }
+      setIsSubmitting(true);
+      setError("");
 
-      // Subir archivo del cónyuge si existe y es requerido
-      let testigo3Url = null;
-      if (testigo3File) {
-        testigo3Url = await uploadToBunny(
-          testigo3File,
-          `testigo3-${Date.now()}-${testigo3File.name.replace(/[^a-zA-Z0-9.-]/g, '')}`
+      // Subir documento del cónyuge
+      let documentoConyugeUrl = null;
+      if (documentoConyugeFile) {
+        const formData = new FormData();
+        formData.append('file', documentoConyugeFile);
+        formData.append('upload_preset', 'ml_default');
+        
+        const response = await fetch(
+          `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/auto/upload`,
+          {
+            method: 'POST',
+            body: formData,
+          }
         );
-      }
 
-      // Subir archivo de cédula del cónyuge si existe
-      let testigo4Url = null;
-      if (testigo4File) {
-        testigo4Url = await uploadToBunny(
-          testigo4File,
-          `testigo4-${Date.now()}-${testigo4File.name.replace(/[^a-zA-Z0-9.-]/g, '')}`
-        );
-      }
-
-      // Subir archivos de bienes si existen
-      const bienesUrls = [];
-      const bienesFiles = [bien1File, bien2File, bien3File, bien4File, bien5File];
-      
-      for (let i = 0; i < bienesFiles.length; i++) {
-        if (bienesFiles[i]) {
-          const bienUrl = await uploadToBunny(
-            bienesFiles[i]!,
-            `bien${i+1}-${Date.now()}-${bienesFiles[i]!.name.replace(/[^a-zA-Z0-9.-]/g, '')}`
-          );
-          bienesUrls.push(bienUrl);
-        } else {
-          bienesUrls.push(null);
+        if (!response.ok) {
+          throw new Error('Error al subir el documento del cónyuge');
         }
+
+        const result = await response.json();
+        documentoConyugeUrl = result.secure_url;
       }
 
-      // Crear la solicitud con las URLs de Bunny.net
-      const solicitudData = {
-        usuarioId: user!.id,
-        familiarId: selectedPersona !== user!.id ? selectedPersona : null,
-        testigo3: testigo3Url,
-        testigo4: testigo4Url,
-        bienes_generico1: bienesUrls[0],
-        bienes_generico2: bienesUrls[1],
-        bienes_generico3: bienesUrls[2],
-        bienes_generico4: bienesUrls[3],
-        bienes_generico5: bienesUrls[4],
-        genericText: values.esPoderEspecial ? values.genericText : null,
+      // Preparar datos para la API
+      const requestData = {
+        ...data,
+        usuarioId: user?.id,
+        familiarId: selectedPersona !== user?.id ? selectedPersona : null,
+        testigo3: documentoConyugeUrl,
+        testigo4: documentoConyugeUrl, // Usamos la misma URL para mantener compatibilidad
       };
 
-      startTransition(() => {
-        axios.post('/api/solicitudes/personal/poder', solicitudData)
-          .then((response) => {
-            const data = response.data;
-            if (data.error) {
-              setError(data.error);
-            }
-            if (data.succes) {
-              form.reset();
-              setSucces(data.succes);
-              // Limpiar los archivos seleccionados
-              setTestigo3File(undefined);
-              setTestigo4File(undefined);
-              setBien1File(undefined);
-              setBien2File(undefined);
-              setBien3File(undefined);
-              setBien4File(undefined);
-              setBien5File(undefined);
-            }
-          })
-          .catch((error) => {
-            console.error('Error creating solicitud:', error);
-            setError("Error al crear la solicitud");
-          });
+      // Enviar solicitud a la API
+      const response = await fetch('/api/solicitudes/personal/poder', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData),
       });
-    } catch (error: any) {
-      console.error('Error in form submission:', error);
-      setError(error.message || "Error al subir los archivos");
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al crear la solicitud');
+      }
+
+      const result = await response.json();
+      toast.success('Solicitud creada exitosamente');
+      router.push('/solicitudes');
+    } catch (error) {
+      console.error('Error al crear la solicitud:', error);
+      setError(error instanceof Error ? error.message : 'Error al crear la solicitud');
+      toast.error('Error al crear la solicitud');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -426,7 +397,7 @@ export const PoderForm = () => {
                         name="nombreConyuge"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-foreground">Nombre del cónyuge</FormLabel>
+                            <FormLabel className="text-foreground">Nombre del o la cónyuge</FormLabel>
                             <FormControl>
                               <Input {...field} disabled={true} id="nombreConyuge" />
                             </FormControl>
@@ -439,7 +410,7 @@ export const PoderForm = () => {
                         name="cedulaConyuge"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-foreground">Cédula del cónyuge</FormLabel>
+                            <FormLabel className="text-foreground">Cédula del o la cónyuge</FormLabel>
                             <FormControl>
                               <Input {...field} disabled={true} id="cedulaConyuge" />
                             </FormControl>
@@ -454,10 +425,10 @@ export const PoderForm = () => {
                   {conyugeInfo.requiereDocumento && (
                     <FormField
                       control={form.control}
-                      name="testigo3"
-                      render={() => (
+                      name="documentoConyuge"
+                      render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-foreground">Documento del cónyuge</FormLabel>
+                          <FormLabel className="text-foreground">Cédula del o la Cónyuge (Opcional)</FormLabel>
                           <FormControl>
                             <Input
                               type="file"
@@ -465,12 +436,15 @@ export const PoderForm = () => {
                               onChange={(e) => {
                                 const file = e.target.files?.[0];
                                 if (file) {
-                                  setTestigo3File(file);
-                                  form.setValue("testigo3", file);
+                                  setDocumentoConyugeFile(file);
+                                  field.onChange(file.name);
                                 }
                               }}
                             />
                           </FormControl>
+                          <FormDescription>
+                            Sube el documento de identidad del cónyuge (PDF, JPG, JPEG, PNG)
+                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -515,7 +489,7 @@ export const PoderForm = () => {
                       <FormControl>
                         <Textarea
                           placeholder="Describa los detalles del poder especial..."
-                          className="min-h-[100px]"
+                          className="min-h-[100px] text-foreground"
                           {...field}
                         />
                       </FormControl>
