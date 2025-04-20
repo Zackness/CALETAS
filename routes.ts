@@ -10,7 +10,7 @@ export const publicRoutes = [
     "/blog/.*",      // Patrones dinámicos
     "/api/webhook",
     "/api/stripe-url",
-
+    "/new-verification",
 ];
 
 /**
@@ -23,8 +23,7 @@ export const authRoutes = [
     "/register",
     "/error",
     "/reset",
-    "/new-password",
-    "/new-verification",
+    "/new-password"
 ];
 
 /**

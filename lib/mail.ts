@@ -39,10 +39,11 @@ const baseTemplate = (content: string) => `
             display: inline-block;
             padding: 12px 24px;
             background-color: #2563eb;
-            color: white;
+            color: white !important;
             text-decoration: none;
             border-radius: 6px;
             margin: 20px 0;
+            font-weight: bold;
         }
         .footer {
             text-align: center;
@@ -105,7 +106,7 @@ export const sendPasswordResetEmail = async (
     email: string, 
     token: string
 ) => {
-    const resetLink = `${domain}/auth/new-password?token=${token}`;
+    const resetLink = `${domain}/new-password?token=${token}`;
     
     const content = `
         <h2>Restablecer tu contraseña</h2>
@@ -113,7 +114,7 @@ export const sendPasswordResetEmail = async (
         <p>Has solicitado restablecer tu contraseña en Global Legal.</p>
         <p>Haz clic en el siguiente botón para crear una nueva contraseña:</p>
         <p style="text-align: center;">
-            <a href="${resetLink}" class="button">Restablecer Contraseña</a>
+            <a href="${resetLink}" class="button" style="color: white !important;">Restablecer Contraseña</a>
         </p>
         <p>Este enlace expirará en 1 hora.</p>
         <p>Si no has solicitado restablecer tu contraseña, por favor ignora este correo y contacta a soporte inmediatamente.</p>
@@ -131,7 +132,7 @@ export const sendVerificationEmail = async (
     email: string, 
     token: string
 ) => {
-    const confirmLink = `${domain}/auth/new-verification?token=${token}`;
+    const confirmLink = `${domain}/new-verification?token=${token}`;
     
     const content = `
         <h2>Verifica tu correo electrónico</h2>
@@ -139,7 +140,7 @@ export const sendVerificationEmail = async (
         <p>Gracias por registrarte en Global Legal. Para completar tu registro, por favor verifica tu correo electrónico.</p>
         <p>Haz clic en el siguiente botón para verificar tu correo:</p>
         <p style="text-align: center;">
-            <a href="${confirmLink}" class="button">Verificar Correo</a>
+            <a href="${confirmLink}" class="button" style="color: white !important;">Verificar Correo</a>
         </p>
         <p>Este enlace expirará en 24 horas.</p>
         <p>Si no has creado una cuenta en Global Legal, por favor ignora este correo.</p>
