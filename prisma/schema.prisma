@@ -20,7 +20,7 @@ model User {
   emailVerified          DateTime?
   image                  String?                @default("/mascot.svg")
   password               String
-  empresa                String
+  empresa                String?
   role                   UserRole               @default(CLIENT)
   isTwoFactorEnabled     Boolean                @default(false)
   onboardingStatus       OnboardingStatus       @default(PENDIENTE)

@@ -29,7 +29,7 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
         return { error: "Este nombre de usuario ya fue asignado"}
     }
 
-    // Crear el usuario sin empresa
+    // Crear el usuario sin empresa (ahora es opcional)
     await db.user.create({
         data: {
             name,
