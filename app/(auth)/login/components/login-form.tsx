@@ -4,7 +4,7 @@ import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import Input from "@/components/input";
 import { CardWrapper } from "@/components/card-wrapper";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,12 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 export const LoginForm = () => {
+  const [isMounted, setIsMounted] = useState(false);
+  
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+  
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl");
   const urlError = searchParams.get("error") === "OAuthAccountNotLinked"
@@ -60,8 +66,12 @@ export const LoginForm = () => {
     });
   };
 
+  if (!isMounted) {
+    return null;
+  }
+
   return (
-    <CardWrapper headerLabel="Bienvenido" showSocial>
+    <CardWrapper showSocial>
       <h2 className="text-3xl font-bold mb-6 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
         Iniciar sesión
       </h2>

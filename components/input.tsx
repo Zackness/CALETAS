@@ -1,22 +1,27 @@
-import React, { ChangeEventHandler } from "react";
+import React, { ChangeEventHandler, forwardRef } from "react";
 
 interface InputProps {
   id: string;
-  onChange: ChangeEventHandler<HTMLInputElement>;
-  value: string;
+  onChange?: ChangeEventHandler<HTMLInputElement>;
+  value?: string;
   label: string;
   type?: string;
   disable?: boolean;
+  name?: string;
+  onBlur?: () => void;
+  ref?: React.Ref<HTMLInputElement>;
 }
 
-const Input: React.FC<InputProps> = ({
+const Input = forwardRef<HTMLInputElement, InputProps>(({
   id,
   onChange,
   value,
   label,
-  type,
-  disable
-}) => {
+  type = "text",
+  disable = false,
+  name,
+  onBlur
+}, ref) => {
   return (
     <div className="relative">
       <input
@@ -24,6 +29,9 @@ const Input: React.FC<InputProps> = ({
         type={type}
         value={value}
         id={id}
+        name={name}
+        ref={ref}
+        onBlur={onBlur}
         disabled={disable}
         className="
           block
@@ -68,6 +76,8 @@ const Input: React.FC<InputProps> = ({
       </label>
     </div>
   );
-};
+});
+
+Input.displayName = "Input";
 
 export default Input;

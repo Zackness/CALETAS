@@ -9,6 +9,7 @@ import { FormSucces } from "@/components/form-succes";
 import { BeatLoader } from "react-spinners";
 
 export const NewVerificationForm = () => {
+  const [isMounted, setIsMounted] = useState(false);
   const [error, setError] = useState<string | undefined>();
   const [succes, setSucces] = useState<string | undefined>();
 
@@ -34,11 +35,21 @@ export const NewVerificationForm = () => {
   }, [token, succes, error]);
 
   useEffect(() => {
-    onSubmit();
-  }, [onSubmit]);
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (isMounted) {
+      onSubmit();
+    }
+  }, [onSubmit, isMounted]);
+
+  if (!isMounted) {
+    return null;
+  }
 
   return (
-    <CardWrapper headerLabel="Verificando tu correo">
+    <CardWrapper showSocial>
       <div className="flex items-baseline flex-col">
         <img src="/images/meme2.png" className="w-full mb-[-100px] mt-[-80px]" alt="Logo" />
         <h2 className="text-3xl font-bold mb-6 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">Verificando tu correo</h2>
