@@ -60,11 +60,11 @@ export const { auth, handlers, signIn, signOut }
             }
     
             if (session.user) {
-                session.user.name = token.name ?? "";
-                session.user.name2 = token.name2 ?? "";
-                session.user.apellido = token.apellido ?? "";
-                session.user.apellido2 = token.apellido2 ?? "";
-                session.user.email = token.email ?? "";
+                session.user.name = token.name || "";
+                session.user.name2 = token.name2;
+                session.user.apellido = token.apellido;
+                session.user.apellido2 = token.apellido2;
+                session.user.email = token.email || "";
                 session.user.isOAuth = token.isOAuth as boolean;
             }
     
@@ -80,11 +80,11 @@ export const { auth, handlers, signIn, signOut }
             const existingAccount = await getAccountByUserId(existingUser.id);
     
             token.isOAuth = !!existingAccount;
-            token.name = existingUser.name;
+            token.name = existingUser.name || "";
             token.name2 = existingUser.name2;
             token.apellido = existingUser.apellido;
             token.apellido2 = existingUser.apellido2;
-            token.email = existingUser.email;
+            token.email = existingUser.email || "";
             token.role = existingUser.role;
             token.isTwoFactorEnabled = existingUser.isTwoFactorEnabled;    
             return token;

@@ -5,10 +5,10 @@ export type ExtendedUser = DefaultSession["user"] & {
     role: UserRole;
     isTwoFactorEnabled: boolean;
     isOAuth: boolean;
-    name?: string | null;
-    name2?: string | null;
-    apellido?: string | null;
-    apellido2?: string | null;
+    name: string;
+    name2: any;
+    apellido: any;
+    apellido2: any;
 };
 
 declare module "next-auth" {
@@ -22,9 +22,9 @@ declare module "next-auth/jwt" {
         role?: UserRole;
         isTwoFactorEnabled?: boolean;
         isOAuth?: boolean;
-        name?: string | null;
-        name2?: string | null;
-        apellido?: string | null;
-        apellido2?: string | null;
+        name?: string;
+        name2?: any;
+        apellido?: any;
+        apellido2?: any;
     }
 }
