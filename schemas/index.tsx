@@ -4,8 +4,11 @@ import * as z from "zod";
 
 export const SettingsSchema = z.object ({
     name: z.optional(z.string()),
+    name2: z.optional(z.string()),
+    apellido: z.optional(z.string()),
+    apellido2: z.optional(z.string()),
     isTwoFactorEnabled: z.optional(z.boolean()),
-    role: z.enum([ UserRole.ADMIN, UserRole.CLIENT ]),
+    role: z.enum([ UserRole.ADMIN, UserRole.CLIENT, UserRole.ABOGADO ]),
     email: z.optional(z.string().email({
         message: "Por favor, ingresa un correo electrónico válido"
     })),
@@ -97,13 +100,13 @@ export const RegisterSchema = z.object({
         }),
     name: z.string()
         .min(1, {
-            message: "Es necesario un nombre de usuario"
+            message: "Es necesario un primer nombre"
         })
         .max(50, {
-            message: "El nombre de usuario no puede tener más de 50 caracteres"
+            message: "El nombre no puede tener más de 50 caracteres"
         })
-        .regex(/^[a-zA-Z0-9_-]+$/, {
-            message: "El nombre de usuario solo puede contener letras, números, guiones y guiones bajos"
+        .regex(/[a-zA-Z]/, {
+            message: "El nombre del usuario solo puede contener letras"
         })
         .transform(name => name.trim()),
 });

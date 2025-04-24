@@ -26,7 +26,7 @@ export function DashboardHeader() {
             <AvatarImage src="/placeholder.svg?height=32&width=32" alt="Usuario" />
             <AvatarFallback>US</AvatarFallback>
           </Avatar>
-          <Button onClick={onClick} className="w-full" type="submit" size="default" variant="outline">
+          <Button onClick={onClick} className="w-full text-foreground" type="submit" size="default" variant="outline">
               <ExitIcon className="h-4 w-4 mr-2"/>
                 salir
           </Button>

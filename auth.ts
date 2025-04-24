@@ -60,12 +60,12 @@ export const { auth, handlers, signIn, signOut }
             }
     
             if (session.user) {
-                session.user.name = token.name ?? ""; // Evitar undefined
+                session.user.name = token.name ?? "";
+                session.user.name2 = token.name2 ?? "";
+                session.user.apellido = token.apellido ?? "";
+                session.user.apellido2 = token.apellido2 ?? "";
                 session.user.email = token.email ?? "";
                 session.user.isOAuth = token.isOAuth as boolean;
-    
-                // Asegúrate de que nickname sea string o null
-                session.user.nickname = typeof token.nickname === "string" ? token.nickname : null;
             }
     
             return session;
@@ -81,11 +81,12 @@ export const { auth, handlers, signIn, signOut }
     
             token.isOAuth = !!existingAccount;
             token.name = existingUser.name;
+            token.name2 = existingUser.name2;
+            token.apellido = existingUser.apellido;
+            token.apellido2 = existingUser.apellido2;
             token.email = existingUser.email;
             token.role = existingUser.role;
-            token.isTwoFactorEnabled = existingUser.isTwoFactorEnabled;
-            token.nickname = existingUser.name ?? null; // nickname debe ser string o null
-    
+            token.isTwoFactorEnabled = existingUser.isTwoFactorEnabled;    
             return token;
         },
     },

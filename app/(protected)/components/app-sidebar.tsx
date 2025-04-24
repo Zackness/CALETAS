@@ -150,10 +150,10 @@ export function AppSidebar({ session }: AppSidebarProps) {
                         </SidebarMenuButton>
                         <SidebarMenuButton asChild>
                           <a 
-                            href={"/solicitudes/viajero/nacional"} 
-                            className={`${isActiveRoute("/solicitudes/viajero/nacional") ? "bg-foreground/50 text-background hover:bg-foreground/80" : "hover:bg-foreground/50"}`}
+                            href={"/solicitudes/viajero/poder"} 
+                            className={`${isActiveRoute("/solicitudes/viajero/poder") ? "bg-foreground/50 text-background hover:bg-foreground/80" : "hover:bg-foreground/50"}`}
                           >
-                            <span>Viajes nacionales</span>
+                            <span>Poder para representación</span>
                           </a>
                         </SidebarMenuButton>
                       </SidebarMenuSubItem>

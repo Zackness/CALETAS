@@ -297,7 +297,7 @@ export const PoderForm = () => {
       };
 
       // Enviar solicitud a la API
-      const response = await fetch('/api/solicitudes/personal/poder', {
+      const response = await fetch('/api/solicitudes/migrante/poder', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -343,8 +343,9 @@ export const PoderForm = () => {
   };
 
   return (
-    <CardWrapper headerLabel="Solicitud de Poder">
+    <CardWrapper>
       <div className="flex flex-col gap-4">
+        <h2 className="text-2xl font-bold text-center mb-4">Solicitud de Poder</h2>
         <Form {...form}>
           <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
             <div className="flex flex-col gap-4 text-white">
