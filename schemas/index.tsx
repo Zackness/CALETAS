@@ -8,7 +8,6 @@ export const SettingsSchema = z.object ({
     apellido: z.optional(z.string()),
     apellido2: z.optional(z.string()),
     isTwoFactorEnabled: z.optional(z.boolean()),
-    role: z.enum([ UserRole.ADMIN, UserRole.CLIENT, UserRole.ABOGADO ]),
     email: z.optional(z.string().email({
         message: "Por favor, ingresa un correo electrónico válido"
     })),

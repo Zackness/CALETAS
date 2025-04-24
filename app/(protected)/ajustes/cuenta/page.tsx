@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { settings } from "@/actions/settings";
 import { Button } from "@/components/ui/button";
-import { useTransition, useState } from "react";
+import { useTransition, useState, useEffect } from "react";
 import { SettingsSchema } from "@/schemas";
 import { Form, FormField, FormControl, FormItem, FormLabel, FormDescription, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,7 @@ import { useCurrentUser } from "@/hooks/use-current-user";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UserRole } from "@prisma/client";
 import { Switch } from "@/components/ui/switch";
+import { toast } from "react-hot-toast";
 
 export default function Ajustes() {
   const user = useCurrentUser();
@@ -23,6 +24,8 @@ export default function Ajustes() {
 
   const [error, setError] = useState<string | undefined>();
   const [succes, setSucces] = useState<string | undefined>();
+  const [hasChanges, setHasChanges] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [isPending, startTransition] = useTransition();
 
@@ -40,25 +43,58 @@ export default function Ajustes() {
     }
   });
 
+  // Detectar cambios en el formulario
+  useEffect(() => {
+    const subscription = form.watch((value, { name, type }) => {
+      if (type === "change") {
+        setHasChanges(true);
+      }
+    });
+    
+    return () => subscription.unsubscribe();
+  }, [form.watch]);
+
   const onSubmit = (values: z.infer<typeof SettingsSchema>) => {
+    setError(undefined);
+    setSucces(undefined);
+    setIsSubmitting(true);
+    
+    console.log("Enviando valores:", values);
+    
     startTransition(() => {
       settings(values)
-      .then((data) => {
+      .then(async (data) => {
+        setIsSubmitting(false);
+        
         if (data.error) {
+          console.error("Error al guardar:", data.error);
           setError(data.error);
+          toast.error(data.error);
         }
 
         if (data.succes) {
-          update();
+          console.log("Éxito al guardar:", data.succes);
+          await update();
           setSucces(data.succes);
+          toast.success(data.succes);
+          setHasChanges(false);
+          
+          // Recargar la página después de actualizar la sesión
+          window.location.reload();
         }
       })
-      .catch(() => setError("Algo ha salido mal!"));
+      .catch((error) => {
+        setIsSubmitting(false);
+        console.error("Error al guardar:", error);
+        const errorMsg = "Algo ha salido mal!";
+        setError(errorMsg);
+        toast.error(errorMsg);
+      });
     });
   }
 
   return (
-    <div className="w-full flex flex-col items-center text-foreground h-full">
+    <div className="w-full flex flex-col items-center text-foreground py-10">
       <h1 className="text-4xl md:text-5xl font-bold mb-8 text-center bg-gradient-to-r from-[#4cac27] to-[#EAD70E] text-white/0 bg-clip-text">
         Ajustes de la cuenta
       </h1>
@@ -78,7 +114,7 @@ export default function Ajustes() {
                     <Input
                       className="text-foreground border-none bg-fm-blue-3 rounded-xl"
                       {...field}
-                      disabled={isPending}
+                      disabled={isPending || isSubmitting}
                     />
                   </FormControl>
                   <FormMessage />
@@ -95,7 +131,7 @@ export default function Ajustes() {
                     <Input
                       className="border-none bg-fm-blue-3 rounded-xl text-foreground"
                       {...field}
-                      disabled={isPending}
+                      disabled={isPending || isSubmitting}
                     />
                   </FormControl>
                   <FormMessage />
@@ -112,7 +148,7 @@ export default function Ajustes() {
                     <Input
                       className="border-none bg-fm-blue-3 rounded-xl text-foreground"
                       {...field}
-                      disabled={isPending}
+                      disabled={isPending || isSubmitting}
                     />
                   </FormControl>
                   <FormMessage />
@@ -129,7 +165,7 @@ export default function Ajustes() {
                     <Input
                       className="border-none bg-fm-blue-3 rounded-xl text-foreground"
                       {...field}
-                      disabled={isPending}
+                      disabled={isPending || isSubmitting}
                     />
                   </FormControl>
                   <FormMessage />
@@ -148,7 +184,7 @@ export default function Ajustes() {
                       <Input
                         className="border-none bg-fm-blue-3 rounded-xl text-foreground"
                         {...field}
-                        disabled={isPending}
+                        disabled={isPending || isSubmitting}
                         type="email"
                       />
                     </FormControl>
@@ -166,7 +202,7 @@ export default function Ajustes() {
                       <Input
                         className="border-none bg-fm-blue-3 rounded-xl text-foreground"
                         {...field}
-                        disabled={isPending}
+                        disabled={isPending || isSubmitting}
                         type="password"
                         placeholder="******"
                       />
@@ -185,7 +221,7 @@ export default function Ajustes() {
                       <Input
                         className="border-none bg-fm-blue-3 rounded-xl text-foreground"
                         {...field}
-                        disabled={isPending}
+                        disabled={isPending || isSubmitting}
                         type="password"
                         placeholder="******"
                       />
@@ -211,7 +247,7 @@ export default function Ajustes() {
                     </div>
                     <FormControl>
                       <Switch 
-                        disabled={isPending}
+                        disabled={isPending || isSubmitting}
                         checked={field.value}
                         onCheckedChange={field.onChange}
                       />
@@ -224,11 +260,20 @@ export default function Ajustes() {
           <FormError message={error}/>
           <FormSucces message={succes}/>
           <Button 
-            disabled={isPending} 
+            disabled={isPending || isSubmitting || !hasChanges} 
             type="submit"
             variant="form"
-            >
-            Guardar ajustes
+            className="w-full mb-8"
+          >
+            {isPending || isSubmitting ? (
+              <div className="flex items-center gap-2">
+                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                Guardando...
+              </div>
+            ) : "Guardar ajustes"}
           </Button>
         </form>
       </Form>
