@@ -263,29 +263,51 @@ export const PoderForm = () => {
     try {
       setIsSubmitting(true);
       setError("");
+      startTransition(() => {
+        setError("");
+        setSucces("");
+      });
+      setUploadProgress(0);
 
       // Subir documento del cónyuge
       let documentoConyugeUrl = null;
       if (documentoConyugeFile) {
-        const formData = new FormData();
-        formData.append('file', documentoConyugeFile);
-        formData.append('upload_preset', 'ml_default');
-        
-        const response = await fetch(
-          `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/auto/upload`,
-          {
-            method: 'POST',
-            body: formData,
-          }
+        documentoConyugeUrl = await uploadToBunny(
+          documentoConyugeFile,
+          `conyuge-${Date.now()}-${documentoConyugeFile.name.replace(/[^a-zA-Z0-9.-]/g, '')}`
         );
-
-        if (!response.ok) {
-          throw new Error('Error al subir el documento del cónyuge');
-        }
-
-        const result = await response.json();
-        documentoConyugeUrl = result.secure_url;
       }
+
+      // Subir archivos de bienes
+      const bienesUrls = {
+        bienes_generico1: null,
+        bienes_generico2: null,
+        bienes_generico3: null,
+        bienes_generico4: null,
+        bienes_generico5: null,
+      };
+
+      // Subir cada archivo de bien si existe
+      if (bien1File) bienesUrls.bienes_generico1 = await uploadToBunny(
+        bien1File,
+        `bien1-${Date.now()}-${bien1File.name.replace(/[^a-zA-Z0-9.-]/g, '')}`
+      );
+      if (bien2File) bienesUrls.bienes_generico2 = await uploadToBunny(
+        bien2File,
+        `bien2-${Date.now()}-${bien2File.name.replace(/[^a-zA-Z0-9.-]/g, '')}`
+      );
+      if (bien3File) bienesUrls.bienes_generico3 = await uploadToBunny(
+        bien3File,
+        `bien3-${Date.now()}-${bien3File.name.replace(/[^a-zA-Z0-9.-]/g, '')}`
+      );
+      if (bien4File) bienesUrls.bienes_generico4 = await uploadToBunny(
+        bien4File,
+        `bien4-${Date.now()}-${bien4File.name.replace(/[^a-zA-Z0-9.-]/g, '')}`
+      );
+      if (bien5File) bienesUrls.bienes_generico5 = await uploadToBunny(
+        bien5File,
+        `bien5-${Date.now()}-${bien5File.name.replace(/[^a-zA-Z0-9.-]/g, '')}`
+      );
 
       // Preparar datos para la API
       const requestData = {
@@ -294,7 +316,11 @@ export const PoderForm = () => {
         familiarId: selectedPersona !== user?.id ? selectedPersona : null,
         testigo3: documentoConyugeUrl,
         testigo4: documentoConyugeUrl, // Usamos la misma URL para mantener compatibilidad
+        ...bienesUrls,
+        genericText: data.genericText || null,
       };
+
+      console.log("Enviando datos a la API:", requestData);
 
       // Enviar solicitud a la API
       const response = await fetch('/api/solicitudes/migrante/poder', {
@@ -311,8 +337,20 @@ export const PoderForm = () => {
       }
 
       const result = await response.json();
-      toast.success('Solicitud creada exitosamente');
-      router.push('/solicitudes');
+      
+      // Mostrar mensaje de éxito y resetear el formulario
+      if (result.succes) {
+        form.reset();
+        setSucces(result.succes);
+        // Limpiar los archivos seleccionados
+        setDocumentoConyugeFile(null);
+        setBien1File(undefined);
+        setBien2File(undefined);
+        setBien3File(undefined);
+        setBien4File(undefined);
+        setBien5File(undefined);
+        toast.success('Solicitud creada exitosamente');
+      }
     } catch (error) {
       console.error('Error al crear la solicitud:', error);
       setError(error instanceof Error ? error.message : 'Error al crear la solicitud');
@@ -633,11 +671,11 @@ export const PoderForm = () => {
             <FormSucces message={succes} />
             <Button
               variant="default"
-              disabled={isPending}
+              disabled={isPending || isSubmitting}
               type="submit"
               className="w-full"
             >
-              {isPending ? (
+              {isPending || isSubmitting ? (
                 <div className="flex items-center gap-2">
                   <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />

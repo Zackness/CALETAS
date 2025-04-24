@@ -109,19 +109,19 @@ export async function POST(req: NextRequest) {
 
     // Actualizar la solicitud para usar la nota predefinida
     const solicitudActualizada = await db.solicitud.update({
-      where: { id: solicitud.id },
-      data: {
-        nota: {
-          connect: {
-            id: "e20313fa-a6a3-4585-8b1f-9151452976a1"
+        where: { id: solicitud.id },
+        data: {
+          nota: {
+            connect: {
+              id: "e20313fa-a6a3-4585-8b1f-9151452976a1"
+            }
           }
+        },
+        include: { 
+          detalle: true,
+          nota: true
         }
-      },
-      include: { 
-        detalle: true,
-        nota: true
-      }
-    });
+      });
 
     console.log("Solicitud actualizada con nota predefinida:", solicitudActualizada);
 

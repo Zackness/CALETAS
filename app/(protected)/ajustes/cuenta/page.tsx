@@ -246,11 +246,19 @@ export default function Ajustes() {
                       </FormDescription>
                     </div>
                     <FormControl>
-                      <Switch 
-                        disabled={isPending || isSubmitting}
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
+                      <div className="flex items-center gap-2">
+                        <span className={`text-sm font-medium ${field.value ? 'text-green-500' : 'text-gray-500'}`}>
+                          {field.value ? "Activado" : "Desactivado"}
+                        </span>
+                        <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${field.value ? 'bg-green-500' : 'bg-gray-400'}`}>
+                          <Switch 
+                            disabled={isPending || isSubmitting}
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            className="absolute inset-0"
+                          />
+                        </div>
+                      </div>
                     </FormControl>
                   </FormItem>
                 )}

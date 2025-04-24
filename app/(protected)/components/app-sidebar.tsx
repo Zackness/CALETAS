@@ -212,14 +212,6 @@ export function AppSidebar({ session }: AppSidebarProps) {
                             <span>Carta de soltería</span>
                           </a>
                         </SidebarMenuButton>
-                        <SidebarMenuButton asChild>
-                          <a 
-                            href={"/solicitudes/personal/poder"} 
-                            className={`${isActiveRoute("/solicitudes/personal/poder") ? "bg-foreground/50 text-background hover:bg-foreground/80" : "hover:bg-foreground/50"}`}
-                          >
-                            <span>Poder especial o general</span>
-                          </a>
-                        </SidebarMenuButton>
                       </SidebarMenuSubItem>
                     </SidebarMenuSub>
                   </CollapsibleContent>
