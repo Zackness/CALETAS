@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useSolicitud } from "@/app/(protected)/home/hooks/use-solicitud";
-import { useNota } from "@/app/(protected)/home/hooks/use-nota";
-import { PersonalDocumentForm } from "./document-form";
-import { FileText, User, Phone, Mail, IdCard, Clock, AlertCircle, Calendar } from "lucide-react";
+import { useSolicitud } from "@/app/(protected)/admin/hooks/use-solicitud";
+import { useNota } from "@/app/(protected)/admin/hooks/use-nota";
+import { FileText, User, Phone, Mail, IdCard, Clock, AlertCircle, Calendar, Upload, Pencil } from "lucide-react";
 import { CustomDialogHeader } from "../common/dialog-header";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -12,6 +11,16 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
+import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import axios from "axios";
+import { useNotasPredefinidas } from "@/app/(protected)/admin/hooks/use-notas-predefinidas";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Combobox } from "@/components/ui/combobox";
+import { useAbogados } from "@/app/(protected)/admin/hooks/use-abogados";
+import { AdminConfig } from "@/app/(protected)/admin/components/admin-config";
 
 // Configurar el worker de PDF.js
 if (typeof window !== 'undefined') {
@@ -22,6 +31,7 @@ interface PersonalDialogProps {
   solicitudId: string;
   isOpen: boolean;
   onClose: () => void;
+  onStatusChange?: (solicitudId: string, newStatus: string) => void;
 }
 
 interface Solicitante {
@@ -140,79 +150,266 @@ export const PersonalDialog = ({
   solicitudId,
   isOpen,
   onClose,
+  onStatusChange,
 }: PersonalDialogProps) => {
   const { solicitud, loading } = useSolicitud(solicitudId);
-  const { isLoading, getNota, createNota, updateNota, deleteNota } = useNota({
-    solicitudId: solicitudId,
+  const { getNota, createNota, updateNota, deleteNota, isLoading: isLoadingNota } = useNota({
+    solicitudId: solicitudId || "",
   });
-  const [isEditing, setIsEditing] = useState(false);
-  const [nota, setNota] = useState<string>("");
-  const [isEditingNota, setIsEditingNota] = useState(false);
-  const [lastLoadedId, setLastLoadedId] = useState<string | null>(null);
+  const { getNotasPredefinidas, isLoading: isLoadingNotasPredefinidas } = useNotasPredefinidas();
+  const { abogados, isLoading: isLoadingAbogados } = useAbogados();
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<string | null>(null);
+  const [isLoadingNotaState, setIsLoadingNotaState] = useState(false);
+  const [notasPredefinidas, setNotasPredefinidas] = useState<Array<{ id: string; contenido: string }>>([]);
+  const [notasPredefinidasLoaded, setNotasPredefinidasLoaded] = useState(false);
+  const [selectedNotaId, setSelectedNotaId] = useState<string>("");
+  const [isLoadingEstado, setIsLoadingEstado] = useState(false);
+  const [localEstado, setLocalEstado] = useState<string>("");
+  const [displayEstado, setDisplayEstado] = useState<string>("");
+  const [localNota, setLocalNota] = useState<string>("");
+  const [selectedAbogadoId, setSelectedAbogadoId] = useState<string>("");
 
   const documentoNombre = solicitud?.documento?.nombre || "Documento no disponible";
   const servicioNombre = solicitud?.documento?.servicio?.nombre || "Servicio no disponible";
-  const fechaFormateada = solicitud?.fecha ? format(new Date(solicitud.fecha), "PPP", { locale: es }) : "Fecha no disponible";
+  const fechaFormateada = solicitud?.createdAt ? format(new Date(solicitud.createdAt), "PPP", { locale: es }) : "Fecha no disponible";
 
+  // Efecto para cargar las notas predefinidas solo cuando el diálogo se abre
   useEffect(() => {
-    const loadNota = async () => {
-      if (solicitudId && isOpen && solicitudId !== lastLoadedId) {
-        const notaData = await getNota();
-        if (notaData) {
-          setNota(notaData.contenido);
-        }
-        setLastLoadedId(solicitudId);
-      }
-    };
-    loadNota();
-  }, [solicitudId, isOpen, getNota, lastLoadedId]);
+    if (isOpen && !notasPredefinidasLoaded) {
+      loadNotasPredefinidas();
+    }
+  }, [isOpen, notasPredefinidasLoaded]);
 
+  // Efecto para cargar la nota actual cuando se abre el diálogo
+  useEffect(() => {
+    if (isOpen && solicitudId) {
+      const fetchNota = async () => {
+        try {
+          setIsLoadingNotaState(true);
+          const response = await fetch(`/api/solicitudes/${solicitudId}/nota`);
+          
+          if (response.ok) {
+            const data = await response.json();
+            if (data && data.id) {
+              setSelectedNotaId(data.id);
+              setLocalNota(data.contenido);
+              console.log("Nota cargada:", data);
+            } else {
+              // Si no hay nota, usar la nota por defecto
+              setSelectedNotaId("");
+              setLocalNota("");
+              console.log("No hay nota asociada a esta solicitud");
+            }
+          } else if (response.status === 404) {
+            // Si no hay nota, usar la nota por defecto
+            setSelectedNotaId("");
+            setLocalNota("");
+            console.log("No hay nota asociada a esta solicitud (404)");
+          } else {
+            console.error("Error al cargar la nota:", response.status);
+          }
+        } catch (error) {
+          console.error("Error al cargar la nota:", error);
+        } finally {
+          setIsLoadingNotaState(false);
+        }
+      };
+      fetchNota();
+    }
+  }, [isOpen, solicitudId]);
+
+  // Efecto para limpiar el estado cuando se cierra el diálogo
   useEffect(() => {
     if (!isOpen) {
-      setNota("");
-      setIsEditingNota(false);
-      setLastLoadedId(null);
+      setNotasPredefinidasLoaded(false);
+      setSelectedNotaId("");
+      setLocalNota("");
     }
   }, [isOpen]);
 
-  const handleSaveNota = async () => {
-    if (nota.trim()) {
-      if (isEditingNota) {
-        await updateNota(nota);
+  // Actualizar el estado local cuando cambie la solicitud
+  useEffect(() => {
+    if (solicitud?.estado) {
+      setLocalEstado(solicitud.estado);
+      setDisplayEstado(solicitud.estado);
+    }
+  }, [solicitud?.estado]);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Verificar que sea un PDF
+    if (file.type !== 'application/pdf') {
+      toast.error("Solo se permiten archivos PDF");
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      // Crear un FormData para enviar el archivo
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('solicitudId', solicitudId);
+
+      // Subir el archivo a Bunny.net
+      const response = await axios.post('/api/upload/documento-finalizado', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      if (response.data.url) {
+        setUploadedFile(response.data.url);
+        toast.success("Documento subido correctamente");
       } else {
-        await createNota(nota);
+        toast.error("Error al subir el documento");
       }
-      setIsEditingNota(false);
+    } catch (error) {
+      console.error("Error al subir el archivo:", error);
+      toast.error("Error al subir el documento");
+    } finally {
+      setIsUploading(false);
     }
   };
 
-  const handleDeleteNota = async () => {
-    await deleteNota();
-    setNota("");
-    setIsEditingNota(false);
+  const handleNotaPredefinidaChange = async (notaId: string) => {
+    setSelectedNotaId(notaId);
+    
+    // Buscar la nota seleccionada
+    const notaSeleccionada = notasPredefinidas.find(n => n.id === notaId);
+    if (notaSeleccionada) {
+      setLocalNota(notaSeleccionada.contenido);
+      
+      // Actualizar la relación en la base de datos
+      try {
+        const response = await fetch(`/api/solicitudes/${solicitudId}/nota`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ notaId }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Error al actualizar la nota');
+        }
+
+        const data = await response.json();
+        console.log("Nota actualizada:", data);
+        toast.success("Nota actualizada correctamente");
+      } catch (error) {
+        console.error("Error al actualizar la nota:", error);
+        toast.error("Error al actualizar la nota");
+      }
+    }
   };
 
-  const handleSave = async (data: any) => {
-    // TODO: Implementar guardado
-    setIsEditing(false);
+  const handleSaveNota = async (contenidoNota: string) => {
+    if (!solicitudId) return;
+
+    try {
+      const notaData = await getNota();
+      if (notaData) {
+        await updateNota(contenidoNota);
+      } else {
+        await createNota(contenidoNota);
+      }
+      toast.success("Nota guardada correctamente");
+    } catch (error) {
+      console.error("Error al guardar la nota:", error);
+      toast.error("Error al guardar la nota");
+    }
+  };
+
+  const handleEstadoChange = async (estado: string) => {
+    if (!solicitudId) return;
+    
+    setIsLoadingEstado(true);
+    try {
+      // Actualizar inmediatamente el estado mostrado en el badge
+      setDisplayEstado(estado);
+      
+      const response = await fetch(`/api/solicitudes/${solicitudId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ estado }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al actualizar el estado');
+      }
+
+      setLocalEstado(estado);
+      toast.success("Estado actualizado correctamente");
+      // Notificar al componente padre sobre el cambio de estado
+      onStatusChange?.(solicitudId, estado);
+    } catch (error) {
+      console.error("Error al actualizar el estado:", error);
+      toast.error("Error al actualizar el estado");
+      // Revertir el estado mostrado en caso de error
+      setDisplayEstado(localEstado);
+    } finally {
+      setIsLoadingEstado(false);
+    }
+  };
+
+  const loadNotasPredefinidas = async () => {
+    try {
+      setIsLoadingNotaState(true);
+      const notas = await getNotasPredefinidas();
+      
+      if (Array.isArray(notas)) {
+        setNotasPredefinidas(notas);
+        setNotasPredefinidasLoaded(true);
+      } else {
+        console.error("Las notas predefinidas no son un array:", notas);
+        setNotasPredefinidas([]);
+      }
+    } catch (error) {
+      console.error("Error al cargar notas predefinidas:", error);
+      setNotasPredefinidas([]);
+    } finally {
+      setIsLoadingNotaState(false);
+    }
+  };
+
+  const handleAbogadoChange = async (abogadoId: string) => {
+    try {
+      setSelectedAbogadoId(abogadoId);
+      // Aquí puedes agregar la lógica para asignar el abogado a la solicitud
+      const response = await axios.post(`/api/solicitudes/${solicitudId}/asignar-abogado`, {
+        abogadoId
+      });
+      
+      if (response.status === 200) {
+        toast.success("Abogado asignado correctamente");
+      }
+    } catch (error) {
+      console.error("Error al asignar abogado:", error);
+      toast.error("Error al asignar abogado");
+    }
   };
 
   const renderContent = () => {
     if (loading) {
-      return <div>Cargando...</div>;
+      return (
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        </div>
+      );
     }
 
     if (!solicitud) {
-      return <div>No se encontró la solicitud</div>;
-    }
-
-    if (isEditing) {
       return (
-        <PersonalDocumentForm
-          detalle={solicitud.detalle || null}
-          onSave={handleSave}
-          onCancel={() => setIsEditing(false)}
-        />
+        <div className="text-center p-4">
+          <AlertCircle className="h-8 w-8 text-red-500 mx-auto mb-2" />
+          <p className="text-lg font-medium">Solicitud no encontrada</p>
+          <p className="text-sm text-muted-foreground">No se pudo encontrar la solicitud solicitada.</p>
+        </div>
       );
     }
 
@@ -226,12 +423,11 @@ export const PersonalDialog = ({
 
     // Determinar el tipo de documento
     const isSolteria = solicitud.documento?.nombre?.toLowerCase().includes("soltería") || 
-                       solicitud.documento?.nombre?.toLowerCase().includes("solteria");
+                       solicitud.documento?.nombre?.includes("solteria");
     const isPoder = solicitud.documento?.nombre?.toLowerCase().includes("poder");
 
     return (
       <div className="space-y-6">
-
         {/* Información del solicitante */}
         <div className="space-y-4">
           <h3 className="font-medium text-lg">Información del solicitante</h3>
@@ -272,14 +468,14 @@ export const PersonalDialog = ({
           </div>
         </div>
         
-        {/* Sección del badge y botón editar */}
+        {/* Sección del badge y prioridad */}
         <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">Estado:</span>
               </div>
-              {getStatusBadge(solicitud.estado)}
+              {getStatusBadge(displayEstado)}
             </div>
 
             <div className="flex items-center gap-2">
@@ -292,13 +488,84 @@ export const PersonalDialog = ({
                 <span className="text-sm capitalize">{solicitud.prioridad}</span>
               </div>
             </div>
-
-          <Button onClick={() => setIsEditing(true)}>Editar</Button>
         </div>
 
+        {/* Componente AdminConfig */}
+        <div className="border-t pt-4 mt-4">
+          <AdminConfig 
+            solicitudId={solicitudId}
+            estadoActual={localEstado}
+            onEstadoChange={handleEstadoChange}
+            isLoadingEstado={isLoadingEstado}
+          />
+        </div>
+
+        {/* Formulario para subir documento finalizado */}
+        <Card className="border-2 border-blue-200">
+          <CardHeader className="bg-blue-500">
+            <CardTitle className="text-lg flex items-center gap-2 text-foreground">
+              <Upload className="h-5 w-5 text-blue-900" />
+              Documento Finalizado
+            </CardTitle>
+            <CardDescription className="text-foreground">
+              Sube el documento PDF que ha sido preparado para el cliente
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-4">
+            <div className="grid gap-4">
+              <div className="grid gap-2">
+                <Input
+                  id="documento-finalizado"
+                  type="file"
+                  accept=".pdf"
+                  onChange={handleFileUpload}
+                  disabled={isUploading}
+                />
+              </div>
+              
+              {isUploading && (
+                <div className="flex items-center justify-center p-4">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  <span className="ml-2">Subiendo documento...</span>
+                </div>
+              )}
+              
+              {uploadedFile && (
+                <div className="mt-2">
+                  <p className="text-sm font-medium text-green-600">Documento subido correctamente</p>
+                  <a 
+                    href={uploadedFile} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-600 hover:underline flex items-center gap-1 mt-1"
+                  >
+                    <FileText className="h-4 w-4" />
+                    Ver documento
+                  </a>
+                </div>
+              )}
+              
+              {solicitud.detalle?.solicitud_finalizada && !uploadedFile && (
+                <div className="mt-2">
+                  <p className="text-sm font-medium">Documento ya subido anteriormente:</p>
+                  <a 
+                    href={solicitud.detalle.solicitud_finalizada} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-600 hover:underline flex items-center gap-1 mt-1"
+                  >
+                    <FileText className="h-4 w-4" />
+                    Ver documento
+                  </a>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+        
         {/* Sección de testigos (solo para soltería) */}
         {isSolteria && (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="border-t pt-4 mt-4 grid grid-cols-2 gap-4">
             {solicitud.detalle?.Testigo1 && (
               <div>
                 <h4 className="font-medium mb-2">Testigo 1</h4>
@@ -334,7 +601,7 @@ export const PersonalDialog = ({
 
         {/* Sección de poder (solo para poder especial o general) */}
         {isPoder && (
-          <div className="space-y-4">
+          <div className=" border-t pt-4 mt-4 space-y-4">
             {/* Texto genérico para poder especial */}
             {solicitud.detalle?.generic_text && (
               <div className="border rounded p-4">
@@ -433,17 +700,7 @@ export const PersonalDialog = ({
             </div>
           </div>
         )}
-
-        {/* Sección de notas */}
-        <div className="border-t pt-4 mt-4">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-semibold">Notas</h3>
-          </div>
-            <div className="p-4 bg-muted rounded-md">
-              {nota || "No hay notas para esta solicitud"}
-            </div>
         </div>
-      </div>
     );
   };
 

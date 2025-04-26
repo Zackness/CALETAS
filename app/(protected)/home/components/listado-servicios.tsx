@@ -44,8 +44,8 @@ interface CustomRequest {
     bienes_generico5?: string;
     Acta_de_nacimiento?: string;
     Acta_de_matrimonio?: string;
-    Acta_de_defuncion?: string;
     Acta_de_divorcio?: string;
+    Acta_de_defuncion?: string;
   } | null;
   notas?: {
     id: string;
@@ -101,8 +101,8 @@ interface ListadoServiciosProps {
       bienes_generico5?: string;
       Acta_de_nacimiento?: string;
       Acta_de_matrimonio?: string;
-      Acta_de_defuncion?: string;
       Acta_de_divorcio?: string;
+      Acta_de_defuncion?: string;
     } | null;
     notas?: {
       id: string;
@@ -111,6 +111,18 @@ interface ListadoServiciosProps {
     }[];
   }[];
 }
+
+// Mapeo de colores para las categorias de servicios
+const colorMap: Record<string, string> = {
+  Automovil: "border-blue-500 dark:border-blue-600",
+  Vivienda: "border-green-500 dark:border-green-600",
+  Viajero: "border-purple-500 dark:border-purple-600",
+  Herencia: "border-amber-500 dark:border-amber-600",
+  Personal: "border-pink-500 dark:border-pink-600",
+  Empresarial: "border-blue-600 dark:border-blue-700",
+  Migrante: "border-teal-500 dark:border-teal-600",
+  Financiera: "border-emerald-500 dark:border-emerald-600",
+};
 
 export const ListadoServicios = ({ servicios, solicitudes }: ListadoServiciosProps) => {
   // Encontrar la primera categoría que tenga solicitudes
@@ -123,6 +135,12 @@ export const ListadoServicios = ({ servicios, solicitudes }: ListadoServiciosPro
   const [filterState, setFilterState] = useState("Todos");
   const [filterPriority, setFilterPriority] = useState("Todas");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  // Obtener el nombre de la categoría activa
+  const activeCategoryName = servicios.find(servicio => servicio.id === activeCategory)?.nombre || "";
+  
+  // Obtener el color de borde para la categoría activa
+  const activeCategoryBorderColor = colorMap[activeCategoryName] || "border-gray-500";
 
   // Transformar solicitudes en el formato esperado por CategoryTable
   const requestsByCategory = servicios.reduce((acc, servicio) => {
@@ -165,6 +183,20 @@ export const ListadoServicios = ({ servicios, solicitudes }: ListadoServiciosPro
   // Verificar si hay filtros activos
   const hasActiveFilters = filterState !== "Todos" || filterPriority !== "Todas" || searchTerm !== "";
 
+  // Función para obtener el icono de prioridad
+  const getPriorityIcon = (priority: string) => {
+    switch (priority) {
+      case "ALTA":
+        return <span className="text-red-500">●</span>;
+      case "NORMAL":
+        return <span className="text-yellow-500">●</span>;
+      case "URGENTE":
+        return <span className="text-red-700">●</span>;
+      default:
+        return <span>●</span>;
+    }
+  };
+
   return (
     <Tabs
       defaultValue={activeCategory}
@@ -198,64 +230,72 @@ export const ListadoServicios = ({ servicios, solicitudes }: ListadoServiciosPro
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Buscar servicios..."
-              className="pl-8 h-9 md:w-[200px] lg:w-[300px]"
+              placeholder="Buscar documentos..."
+              className="pl-8 w-[200px]"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           <DropdownMenu open={isFilterOpen} onOpenChange={setIsFilterOpen}>
             <DropdownMenuTrigger asChild>
-              <Button 
-                variant="outline" 
-                size="icon" 
-                className={`h-9 w-9 ${hasActiveFilters ? "bg-foreground text-background" : ""}`}
-              >
+              <Button variant="outline" size="icon">
                 <Filter className="h-4 w-4" />
-                <span className="sr-only">Filtrar</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="bg-background" align="end">
+            <DropdownMenuContent align="end" className="w-[200px]">
               <DropdownMenuLabel>Filtrar por estado</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => setFilterState("Todos")}>Todos</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setFilterState("FINALIZADA")}>Finalizadas</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setFilterState("EN_PROGRESO")}>En progreso</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setFilterState("PENDIENTE")}>Pendientes</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setFilterState("Todos")}>
+                Todos
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setFilterState("PENDIENTE")}>
+                Pendientes
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setFilterState("APROBADA")}>
+                Aprobadas
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setFilterState("EN_PROGRESO")}>
+                En proceso
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setFilterState("FINALIZADA")}>
+                Finalizadas
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setFilterState("RECHAZADA")}>
+                Rechazadas
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuLabel>Filtrar por prioridad</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => setFilterPriority("Todas")}>Todas</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setFilterPriority("ALTA")}>Alta</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setFilterPriority("NORMAL")}>Normal</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setFilterPriority("BAJA")}>Baja</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setFilterPriority("Todas")}>
+                Todas
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setFilterPriority("NORMAL")}>
+                Normal
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setFilterPriority("ALTA")}>
+                Alta
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setFilterPriority("URGENTE")}>
+                Urgente
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
 
-      {/* Contenido de las categorías */}
-      <div className="min-h-[400px]">
-        {servicios.map((servicio) => (
-          <TabsContent key={servicio.id} value={servicio.id} className="mt-0">
-            <CategoryTable
+      {/* Contenido de las pestañas */}
+      {servicios.map((servicio) => (
+        <TabsContent key={servicio.id} value={servicio.id} className="mt-0">
+          <div className={`border-2 rounded-lg p-4 ${activeCategoryBorderColor}`}>
+            <CategoryTable 
               categoryId={servicio.id}
               filteredRequests={filteredRequests}
               requestsByCategory={requestsByCategory}
-              getPriorityIcon={(priority) => {
-                switch (priority) {
-                  case "ALTA":
-                    return <span className="text-red-500">●</span>;
-                  case "NORMAL":
-                    return <span className="text-yellow-500">●</span>;
-                  case "BAJA":
-                    return <span className="text-green-500">●</span>;
-                  default:
-                    return <span>●</span>;
-                }
-              }}
+              getPriorityIcon={getPriorityIcon}
             />
-          </TabsContent>
-        ))}
-      </div>
+          </div>
+        </TabsContent>
+      ))}
     </Tabs>
   );
 };

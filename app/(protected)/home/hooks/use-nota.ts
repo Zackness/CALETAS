@@ -2,6 +2,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
+interface NotaData {
+  id: string;
+  contenido: string;
+  createdAt: string;
+}
+
 interface UseNotaProps {
   solicitudId: string;
 }
@@ -10,12 +16,15 @@ export const useNota = ({ solicitudId }: UseNotaProps) => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
-  const getNota = async () => {
+  const getNota = async (): Promise<NotaData | null> => {
     try {
       setIsLoading(true);
       const response = await fetch(`/api/solicitudes/${solicitudId}/nota`);
       
       if (!response.ok) {
+        if (response.status === 404) {
+          return null;
+        }
         throw new Error("Error al obtener la nota");
       }
 
@@ -29,7 +38,7 @@ export const useNota = ({ solicitudId }: UseNotaProps) => {
     }
   };
 
-  const createNota = async (contenido: string) => {
+  const createNota = async (contenido: string): Promise<NotaData | null> => {
     try {
       setIsLoading(true);
       const response = await fetch(`/api/solicitudes/${solicitudId}/nota`, {
@@ -46,14 +55,16 @@ export const useNota = ({ solicitudId }: UseNotaProps) => {
 
       toast.success("Nota creada exitosamente");
       router.refresh();
+      return await response.json();
     } catch (error) {
       toast.error("Error al crear la nota");
+      return null;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const updateNota = async (contenido: string) => {
+  const updateNota = async (contenido: string): Promise<NotaData | null> => {
     try {
       setIsLoading(true);
       const response = await fetch(`/api/solicitudes/${solicitudId}/nota`, {
@@ -70,14 +81,16 @@ export const useNota = ({ solicitudId }: UseNotaProps) => {
 
       toast.success("Nota actualizada exitosamente");
       router.refresh();
+      return await response.json();
     } catch (error) {
       toast.error("Error al actualizar la nota");
+      return null;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const deleteNota = async () => {
+  const deleteNota = async (): Promise<boolean> => {
     try {
       setIsLoading(true);
       const response = await fetch(`/api/solicitudes/${solicitudId}/nota`, {
@@ -90,18 +103,20 @@ export const useNota = ({ solicitudId }: UseNotaProps) => {
 
       toast.success("Nota eliminada exitosamente");
       router.refresh();
+      return true;
     } catch (error) {
       toast.error("Error al eliminar la nota");
+      return false;
     } finally {
       setIsLoading(false);
     }
   };
 
   return {
-    isLoading,
     getNota,
     createNota,
     updateNota,
     deleteNota,
+    isLoading,
   };
 }; 

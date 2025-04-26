@@ -2,9 +2,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 interface InfoCardProps {
-    numberOfItems: number;
     label: string;
-    type: "pending" | "approved" | "inProcess" | "completed" | "none" | "rejected";
+    numberOfItems: number;
+    type: "pending" | "approved" | "inProcess" | "completed" | "rejected" | "none";
 }
 
 export const InfoCard = ({
@@ -69,7 +69,7 @@ export const InfoCard = ({
             case "completed":
                 return "text-3xl font-bold text-background";
             case "rejected":
-                return "text-3xl font-bold text-background";             
+                return "text-3xl font-bold text-background";            
             default:
                 return "text-3xl font-bold text-foreground";
         }

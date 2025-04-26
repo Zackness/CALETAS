@@ -7,10 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
-import { useOnboarding } from "@/app/(protected)/home/hooks/use-onboarding";
 import { OnboardingStatus } from "@prisma/client";
 import { useToast } from "@/components/ui/use-toast";
 import axios from "axios";
+import { useOnboarding } from "../(protected)/home/hooks/use-onboarding";
 
 type Step = 'titular' | 'conyuge' | 'direccion';
 
@@ -308,14 +308,14 @@ export default function OnboardingPage() {
         return (
           <div className="space-y-2">
             <Label htmlFor="direccion" className="text-foreground">
-              Dirección de Residencia
+              Indique la ciudad de domicilio
             </Label>
             <Input
               id="direccion"
               type="text"
               value={direccion}
               onChange={(e) => setDireccion(e.target.value)}
-              placeholder="Ingresa tu dirección completa"
+              placeholder="Indique la ciudad de domicilio"
               disabled={isLoading}
             />
           </div>
