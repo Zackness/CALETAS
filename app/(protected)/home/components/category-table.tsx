@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Calendar, Eye } from "lucide-react";
 import { useState, useEffect } from "react";
-import { PersonalDialog } from "./dialogs/personal/personal-dialog";
+import { SolicitudDialog } from "./dialogs/solicitud-dialog";
 
 interface Request {
   id: string;
@@ -78,17 +78,14 @@ export const CategoryTable = ({
   getPriorityIcon,
   onStatusChange,
 }: CategoryTableProps) => {
-  // Estado para controlar el diálogo de detalles
-  const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedSolicitudId, setSelectedSolicitudId] = useState<string | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [localRequests, setLocalRequests] = useState<Request[]>(filteredRequests);
 
-  // Actualizar solicitudes locales cuando cambien las filtradas
   useEffect(() => {
     setLocalRequests(filteredRequests);
   }, [filteredRequests]);
 
-  // Función para manejar cambios de estado
   const handleStatusChange = (requestId: string, newStatus: string) => {
     setLocalRequests(prevRequests => 
       prevRequests.map(request => 
@@ -100,20 +97,16 @@ export const CategoryTable = ({
     onStatusChange?.(requestId, newStatus);
   };
 
-  // Función para abrir el diálogo con los detalles de la solicitud
-  const handleViewDetails = (request: Request) => {
-    console.log("Abriendo solicitud:", request.id);
-    setSelectedRequestId(request.id);
-    setDialogOpen(true);
+  const handleViewDetails = (solicitudId: string) => {
+    setSelectedSolicitudId(solicitudId);
+    setIsDialogOpen(true);
   };
 
-  // Función para cerrar el diálogo
   const handleCloseDialog = () => {
-    console.log("Cerrando diálogo");
-    setDialogOpen(false);
+    setIsDialogOpen(false);
+    setSelectedSolicitudId(null);
   };
 
-  // Log para depuración
   console.log(`Categoría ${categoryId}:`, {
     total: requestsByCategory[categoryId]?.length || 0,
     filtradas: localRequests.length,
@@ -181,7 +174,7 @@ export const CategoryTable = ({
                     <Button 
                       variant="ghost" 
                       size="icon"
-                      onClick={() => handleViewDetails(request)}
+                      onClick={() => handleViewDetails(request.id)}
                       title="Ver detalles"
                     >
                       <Eye className="h-4 w-4" />
@@ -212,11 +205,10 @@ export const CategoryTable = ({
         </Table>
       </div>
 
-      {/* Diálogo de detalles de la solicitud */}
-      {selectedRequestId && (
-        <PersonalDialog 
-          solicitudId={selectedRequestId} 
-          isOpen={dialogOpen} 
+      {selectedSolicitudId && (
+        <SolicitudDialog
+          solicitudId={selectedSolicitudId}
+          isOpen={isDialogOpen}
           onClose={handleCloseDialog}
           onStatusChange={handleStatusChange}
         />

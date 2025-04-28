@@ -32,6 +32,11 @@ interface SolicitudData {
     Acta_de_defuncion?: string;
     Acta_de_divorcio?: string;
     solicitud_finalizada?: string;
+    pasaporte?: string;
+    visa?: string;
+    otros_documentos1?: string;
+    otros_documentos2?: string;
+    otros_documentos3?: string;
   } | null;
   prioridad: string;
   documento: {
@@ -78,6 +83,11 @@ interface Detalle {
   Acta_de_defuncion?: string;
   Acta_de_divorcio?: string;
   solicitud_finalizada?: string;
+  pasaporte?: string;
+  visa?: string;
+  otros_documentos1?: string;
+  otros_documentos2?: string;
+  otros_documentos3?: string;
 }
 
 interface Solicitud {
