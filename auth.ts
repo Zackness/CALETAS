@@ -91,7 +91,10 @@ export const { auth, handlers, signIn, signOut }
         },
     },
     adapter: PrismaAdapter(db),
-    session: { strategy: "jwt" },
+    session: {
+        strategy: "jwt",
+        maxAge: 2 * 60,
+    },
     trustHost: true,
     ...authConfig,
 });

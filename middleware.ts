@@ -1,56 +1,52 @@
-import { auth } from "@/auth";
 import { NextResponse } from "next/server";
-import { DEFAULT_LOGIN_REDIRECT, apiAuthPrefix, authRoutes, publicRoutes } from "@/routes";
+import { getToken } from "next-auth/jwt";
+import { NextRequest } from "next/server";
 
-export default auth((req) => {
-  const { nextUrl } = req;
-  const isLoggedIn = !!req.auth;
+export default async function middleware(req: NextRequest) {
+  const token = await getToken({ req });
+  const isAuth = !!token;
+  const isAuthPage = req.nextUrl.pathname.startsWith("/login");
 
-  // Permitir acceso sin autenticación a la ruta del webhook
-  if (nextUrl.pathname.startsWith('/api/uploadthing')) {
-    return;
-  }
-
-  const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
-  const isPublicRoute = publicRoutes.some(route => new RegExp(`^${route}$`).test(nextUrl.pathname));
-  const isAuthRoute = authRoutes.includes(nextUrl.pathname);
-  const isOnboardingRoute = nextUrl.pathname === '/onboarding';
-
-  if (isApiAuthRoute) {
-    return;
-  }
-
-  if (isAuthRoute) {
-    if (isLoggedIn) {
-      return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
+  if (isAuthPage) {
+    if (isAuth) {
+      return NextResponse.redirect(new URL("/home", req.url));
     }
-    return;
+    return null;
   }
 
-  if (!isLoggedIn && !isPublicRoute) {
-    let callbackUrl = nextUrl.pathname;
-    if (nextUrl.search) {
-      callbackUrl += nextUrl.search;
+  if (!isAuth) {
+    let from = req.nextUrl.pathname;
+    if (req.nextUrl.search) {
+      from += req.nextUrl.search;
     }
 
-    const encodedCallbackUrl = encodeURIComponent(callbackUrl);
-
-    return Response.redirect(new URL(
-      `/login?callbackUrl=${encodedCallbackUrl}`, 
-      nextUrl
-    ));
+    return NextResponse.redirect(
+      new URL(`/login?from=${encodeURIComponent(from)}`, req.url)
+    );
   }
 
-  // No verificamos el estado del onboarding en el middleware para evitar problemas con Prisma en Edge Runtime
-  // En su lugar, lo manejaremos en el componente de página
+  // Verificar si la sesión ha expirado
+  if (token && token.exp) {
+    const now = Math.floor(Date.now() / 1000);
+    if (now > token.exp) {
+      return NextResponse.redirect(
+        new URL(`/login?expired=true`, req.url)
+      );
+    }
+  }
 
-  return;
-});
+  return NextResponse.next();
+}
 
 export const config = {
   matcher: [
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    '/(api|trpc)(.*)',
+    "/home/:path*",
+    "/solicitudes/:path*",
+    "/login",
+    "/error",
+    "/register",
+    "/reset",
+    "/new-password",
   ],
 };
 

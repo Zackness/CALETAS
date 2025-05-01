@@ -11,7 +11,9 @@
     "postbuild": "next-sitemap",
     "delete-solicitudes": "node scripts/delete-solicitudes.js",
     "delete-users-familiares": "node scripts/delete-users-familiares.js",
-    "create-notas": "node scripts/create-notas.js"
+    "create-notas": "node scripts/create-notas.js",
+    "seed": "node scripts/seed.js",
+    "unseed": "node scripts/unseed.js"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.3.16",

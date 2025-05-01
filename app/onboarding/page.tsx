@@ -7,10 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
-import { OnboardingStatus } from "@prisma/client";
+import { OnboardingStatus, EstadoDeResidencia, TipoEmpresa } from "@prisma/client";
 import { useToast } from "@/components/ui/use-toast";
 import axios from "axios";
 import { useOnboarding } from "../(protected)/home/hooks/use-onboarding";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type Step = 'titular' | 'conyuge' | 'direccion';
 
@@ -41,6 +42,13 @@ export default function OnboardingPage() {
     fechaNacimiento?: string;
   } | null>(null);
   const [direccion, setDireccion] = useState("");
+  const [telefono, setTelefono] = useState("");
+  const [estado, setEstado] = useState<EstadoDeResidencia>(EstadoDeResidencia.Carabobo);
+  const [ciudad, setCiudad] = useState("");
+  const [empresa, setEmpresa] = useState("");
+  const [codigoEmpresa, setCodigoEmpresa] = useState("");
+  const [empresas, setEmpresas] = useState<{ id: string; nombre: string; tipo: TipoEmpresa }[]>([]);
+  const [showCodigoEmpresa, setShowCodigoEmpresa] = useState(false);
   const { onboardingStatus, isLoading: isLoadingStatus } = useOnboarding();
 
   useEffect(() => {
@@ -48,6 +56,19 @@ export default function OnboardingPage() {
       router.push("/home");
     }
   }, [onboardingStatus, router]);
+
+  // Cargar empresas al montar el componente
+  useEffect(() => {
+    const fetchEmpresas = async () => {
+      try {
+        const response = await axios.get("/api/user/onboarding/empresas");
+        setEmpresas(response.data);
+      } catch (error) {
+        console.error("Error fetching empresas:", error);
+      }
+    };
+    fetchEmpresas();
+  }, []);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -219,10 +240,27 @@ export default function OnboardingPage() {
         throw new Error("Por favor, ingresa tu dirección");
       }
 
+      if (!telefono) {
+        throw new Error("Por favor, ingresa tu teléfono");
+      }
+
+      if (!ciudad) {
+        throw new Error("Por favor, ingresa tu ciudad");
+      }
+
+      if (empresa && !codigoEmpresa) {
+        throw new Error("Por favor, ingresa el código de empresa");
+      }
+
       await axios.post("/api/user/onboarding/complete", {
         userData: extractedData,
         spouseData: spouseData,
-        direccion: direccion
+        direccion: direccion,
+        telefono: telefono,
+        estado: estado,
+        ciudad: ciudad,
+        empresa: empresa || null,
+        codigoEmpresa: codigoEmpresa || null
       });
 
       toast({
@@ -306,18 +344,113 @@ export default function OnboardingPage() {
         );
       case 'direccion':
         return (
-          <div className="space-y-2">
-            <Label htmlFor="direccion" className="text-foreground">
-              Indique la ciudad de domicilio
-            </Label>
-            <Input
-              id="direccion"
-              type="text"
-              value={direccion}
-              onChange={(e) => setDireccion(e.target.value)}
-              placeholder="Indique la ciudad de domicilio"
-              disabled={isLoading}
-            />
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="direccion" className="text-foreground">
+                Indique la ciudad de domicilio
+              </Label>
+              <Input
+                id="direccion"
+                type="text"
+                value={direccion}
+                onChange={(e) => setDireccion(e.target.value)}
+                placeholder="Indique la ciudad de domicilio"
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="telefono" className="text-foreground">
+                Teléfono
+              </Label>
+              <Input
+                id="telefono"
+                type="tel"
+                value={telefono}
+                onChange={(e) => setTelefono(e.target.value)}
+                placeholder="0412-123-4567"
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="estado" className="text-foreground">
+                Estado de Residencia
+              </Label>
+              <Select
+                value={estado}
+                onValueChange={(value) => setEstado(value as EstadoDeResidencia)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona tu estado" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.values(EstadoDeResidencia).map((estado) => (
+                    <SelectItem key={estado} value={estado}>
+                      {estado.replace(/_/g, " ")}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="ciudad" className="text-foreground">
+                Ciudad de Residencia
+              </Label>
+              <Input
+                id="ciudad"
+                type="text"
+                value={ciudad}
+                onChange={(e) => setCiudad(e.target.value)}
+                placeholder="Ej: Valencia"
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="empresa" className="text-foreground">
+                Empresa (Opcional)
+              </Label>
+              <Select
+                value={empresa}
+                onValueChange={(value) => {
+                  setEmpresa(value);
+                  setShowCodigoEmpresa(value !== "");
+                  if (value === "") {
+                    setCodigoEmpresa("");
+                  }
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona tu empresa" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Ninguna empresa</SelectItem>
+                  {empresas.map((emp) => (
+                    <SelectItem key={emp.id} value={emp.id}>
+                      {emp.nombre}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {showCodigoEmpresa && (
+              <div className="space-y-2">
+                <Label htmlFor="codigoEmpresa" className="text-foreground">
+                  Código de Empresa
+                </Label>
+                <Input
+                  id="codigoEmpresa"
+                  type="text"
+                  value={codigoEmpresa}
+                  onChange={(e) => setCodigoEmpresa(e.target.value)}
+                  placeholder="Ingresa tu código de empresa"
+                  disabled={isLoading}
+                />
+              </div>
+            )}
           </div>
         );
     }

@@ -17,6 +17,10 @@ export const SettingsSchema = z.object ({
     newPassword: z.optional(z.string().min(6, {
         message: "La nueva contraseña debe tener al menos 6 caracteres"
     })),
+    estadoCivil: z.optional(z.enum(["SOLTERO", "CASADO"])),
+    ciPhoto: z.optional(z.string()),
+    cedula: z.optional(z.string()),
+    isCiVerified: z.optional(z.boolean()),
 })
     .refine((data) => {
         if (data.password && !data.newPassword) {
@@ -108,6 +112,7 @@ export const RegisterSchema = z.object({
             message: "El nombre del usuario solo puede contener letras"
         })
         .transform(name => name.trim()),
+    EstadoDeResidencia: z.optional(z.string()),
 });
 
 

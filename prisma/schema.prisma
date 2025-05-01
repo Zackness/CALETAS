@@ -24,7 +24,11 @@ model User {
   role                   UserRole               @default(CLIENT)
   isTwoFactorEnabled     Boolean                @default(false)
   onboardingStatus       OnboardingStatus       @default(PENDIENTE)
+  EstadoDeResidencia     EstadoDeResidencia?
+  ciudadDeResidencia     String?
   fechaNacimiento        DateTime?
+  estadoCivil            EstadoCivil            @default(SOLTERO)
+  isCiVerified           Boolean                @default(false)
   createdAt              DateTime               @default(now())
   updatedAt              DateTime               @updatedAt
   accounts               Account[]
@@ -37,7 +41,7 @@ model User {
   asignacionesRealizadas SolicitudAbogado[]     @relation("Asignador")
   StripeCustomer         StripeCustomer?
   twoFactorConfirmation  TwoFactorConfirmation?
-  empresas               Empresa?                @relation(fields: [empresa], references: [id])
+  empresas               Empresa[]              @relation("UserEmpresa")
   UserSubscription       UserSubscription[]
 
   @@index([empresa])
@@ -265,7 +269,6 @@ model NotaPredefinida {
 
 model Empresa {
   id                  String      @id @default(uuid())
-  userId              String
   nombre              String      @unique
   direccion           String
   telefono            String
@@ -274,7 +277,7 @@ model Empresa {
   persona_de_contacto String
   email               String
   tipo                TipoEmpresa
-  user                User[]
+  users               User[]      @relation("UserEmpresa")
 }
 
 model BlogPost {
@@ -346,4 +349,35 @@ enum OnboardingStatus {
   PENDIENTE
   FINALIZADO
   CANCELADO
+}
+
+enum EstadoDeResidencia {
+  Amazonas
+  Anzoátegui
+  Apure
+  Aragua
+  Barinas
+  Bolívar
+  Carabobo
+  Cojedes
+  Delta_Amacuro
+  Falcón
+  Guárico
+  Lara
+  Mérida
+  Miranda
+  Monagas
+  Nueva_Esparta
+  Prtuguesa
+  Sucre
+  Táchira
+  Trujillo
+  Vargas
+  Yaracuy 
+  Zulia
+}
+
+enum EstadoCivil {
+  SOLTERO
+  CASADO
 }
