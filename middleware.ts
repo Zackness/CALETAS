@@ -1,21 +1,38 @@
 import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { NextRequest } from "next/server";
+import { authRoutes, publicRoutes, apiAuthPrefix } from "@/routes";
 
 export default async function middleware(req: NextRequest) {
-  const token = await getToken({ req });
-  const isAuth = !!token;
-  const isAuthPage = req.nextUrl.pathname.startsWith("/login");
+  const { pathname } = req.nextUrl;
 
-  if (isAuthPage) {
-    if (isAuth) {
-      return NextResponse.redirect(new URL("/home", req.url));
-    }
+  // Verificar si es una ruta de API de autenticación
+  if (pathname.startsWith(apiAuthPrefix)) {
     return null;
   }
 
+  // Verificar si es una ruta pública
+  if (publicRoutes.some(route => {
+    if (route.includes(".*")) {
+      const regex = new RegExp(route);
+      return regex.test(pathname);
+    }
+    return pathname === route;
+  })) {
+    return null;
+  }
+
+  // Verificar si es una ruta de autenticación
+  if (authRoutes.includes(pathname)) {
+    return null;
+  }
+
+  // Para rutas protegidas, verificar autenticación
+  const token = await getToken({ req });
+  const isAuth = !!token;
+
   if (!isAuth) {
-    let from = req.nextUrl.pathname;
+    let from = pathname;
     if (req.nextUrl.search) {
       from += req.nextUrl.search;
     }
@@ -43,10 +60,15 @@ export const config = {
     "/home/:path*",
     "/solicitudes/:path*",
     "/login",
-    "/error",
     "/register",
+    "/error",
     "/reset",
     "/new-password",
+    "/nosotros",
+    "/blog/:path*",
+    "/api/webhook",
+    "/api/stripe-url",
+    "/new-verification",
   ],
 };
 
