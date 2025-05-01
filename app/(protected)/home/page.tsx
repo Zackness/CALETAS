@@ -11,6 +11,7 @@ import { MotionWrapper } from "./components/wrapped.";
 import { getSolicitudWithCount } from "./hooks/get-solicitudes";
 import { ListadoServicios } from "./components/listado-servicios";
 import { Solicitud, User, Familiar, Documento, Detalle, Nota, OnboardingStatus } from "@prisma/client";
+import { Banner } from "@/components/ui/banner";
 
 type SolicitudWithRelations = Solicitud & {
   documento: Documento & {
@@ -139,6 +140,20 @@ export default async function DashboardPage() {
   return (
     <MotionWrapper>
       <div className="h-full w-full p-8">
+        {/* Banner para usuarios que no han completado el onboarding */}
+        {user?.onboardingStatus === OnboardingStatus.CANCELADO && (
+          <div className="mb-6">
+            <Banner
+              variant="warning"
+              label="Para realizar solicitudes, necesitas completar tu perfil primero."
+              action={{
+                label: "Completar perfil",
+                onClick: () => window.location.href = "/ajustes/cuenta"
+              }}
+            />
+          </div>
+        )}
+
         <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
           <InfoCard
             label="Total de solicitudes"

@@ -44,7 +44,7 @@ export const NewPasswordForm = () => {
   };
 
   return (
-    <CardWrapper headerLabel="Escribe tu nueva contraseña">
+    <CardWrapper>
       <h2 className="text-3xl font-bold mb-6 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">Escribe tu nueva contraseña</h2>
       <div className="flex flex-col gap-4">
         <Form {...form}>

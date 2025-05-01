@@ -55,7 +55,7 @@ export const NewVerificationForm = () => {
         <h2 className="text-3xl font-bold mb-6 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">Verificando tu correo</h2>
       </div>
       <div className="flex items-center w-full justify-center">
-        {!succes && !error && <BeatLoader color="green" />}
+        {!succes && !error && <BeatLoader color="blue" />}
         <FormSucces message={succes} />
         {!succes && <FormError message={error} />}
       </div>

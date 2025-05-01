@@ -14,6 +14,7 @@ import axios from "axios";
 import { Combobox } from "@/components/ui/combobox"; 
 import { Progress } from "@/components/ui/progress";
 import { CardWrapper } from "@/components/card-wrapper";
+import { FamilyInfo } from "@/components/ui/family-info";
 
 const SolicitudSchema = z.object({
   persona: z.string().optional(),
@@ -65,6 +66,7 @@ export const SolteriaForm = () => {
   const [testigo1File, setTestigo1File] = useState<File | undefined>(undefined);
   const [testigo2File, setTestigo2File] = useState<File | undefined>(undefined);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [hasFamiliares, setHasFamiliares] = useState<boolean>(false);
 
   const form = useForm<z.infer<typeof SolicitudSchema>>({
     resolver: zodResolver(SolicitudSchema),
@@ -85,6 +87,7 @@ export const SolteriaForm = () => {
         setFamiliares(familiares);
         setSelectedPersona(user.id); 
         form.setValue("cedula", user.cedula); 
+        setHasFamiliares(familiares.length > 0);
       } catch (error) {
         console.error("Error al obtener los datos de los familiares:", error);
         setError("Error al obtener los datos de los familiares");
@@ -304,6 +307,9 @@ export const SolteriaForm = () => {
             </Button>
           </form>
         </Form>
+        
+        {/* Mostrar información sobre familiares si no hay ninguno */}
+        {!hasFamiliares && <FamilyInfo />}
       </div>
     </CardWrapper>
   );

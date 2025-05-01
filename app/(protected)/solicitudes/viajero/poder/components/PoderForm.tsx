@@ -18,6 +18,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import { FamilyInfo } from "@/components/ui/family-info";
 
 const SolicitudSchema = z.object({
   persona: z.string().optional(),
@@ -98,6 +99,7 @@ export const PoderForm = () => {
   } | null>(null);
   const [isPoderEspecial, setIsPoderEspecial] = useState<boolean>(false);
   const router = useRouter();
+  const [hasFamiliares, setHasFamiliares] = useState<boolean>(false);
 
   const form = useForm<z.infer<typeof SolicitudSchema>>({
     resolver: zodResolver(SolicitudSchema),
@@ -215,6 +217,7 @@ export const PoderForm = () => {
             requiereDocumento: true
           });
         }
+        setHasFamiliares(familiares.length > 0);
       } catch (error) {
         console.error("Error al cargar datos:", error);
         if (isMounted) {
@@ -687,6 +690,9 @@ export const PoderForm = () => {
             </Button>
           </form>
         </Form>
+        
+        {/* Mostrar información sobre familiares si no hay ninguno */}
+        {!hasFamiliares && <FamilyInfo />}
       </div>
     </CardWrapper>
   );
