@@ -14,7 +14,7 @@ export function DashboardHeader() {
 };
   
   return (
-    <header className="border-b border-border w-full h-16">
+    <header className="border-b border-border w-full h-16 py-4">
       <div className="flex h-full items-center justify-between px-4">
         <div className="flex items-center gap-2">
           <SidebarTrigger />

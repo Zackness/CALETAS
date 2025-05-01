@@ -1,6 +1,9 @@
+"use client";
+
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, CheckCircleIcon } from "lucide-react";
+import Link from "next/link";
 
 const bannerVariants = cva(
   "border text-center p-4 text-sm flex items-center w-full",
@@ -21,7 +24,7 @@ interface BannerProps extends VariantProps<typeof bannerVariants> {
   label: string;
   action?: {
     label: string;
-    onClick: () => void;
+    href: string;
   };
 }
 
@@ -43,12 +46,12 @@ export const Banner = ({
         <Icon className="h-4 w-4 mr-2" />
         <span>{label}</span>
         {action && (
-          <button
-            onClick={action.onClick}
+          <Link
+            href={action.href}
             className="ml-2 text-sm font-medium underline hover:text-opacity-80"
           >
             {action.label}
-          </button>
+          </Link>
         )}
       </div>
     </div>

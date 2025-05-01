@@ -26,12 +26,11 @@ type SolicitudWithRelations = Solicitud & {
   nota: Nota | null;
 };
 
-export default async function DashboardPage() {
-  
+export default async function HomePage() {
   const session = await auth();
 
   if (!session?.user?.id) {
-    return redirect("/");
+    return null;
   }
 
   // Verificar el estado de onboarding
@@ -138,81 +137,71 @@ export default async function DashboardPage() {
   }));
 
   return (
-    <MotionWrapper>
-      <div className="h-full w-full p-8">
-        {/* Banner para usuarios que no han completado el onboarding */}
-        {user?.onboardingStatus === OnboardingStatus.CANCELADO && (
-          <div className="mb-6">
-            <Banner
-              variant="warning"
-              label="Para realizar solicitudes, necesitas completar tu perfil primero."
-              action={{
-                label: "Completar perfil",
-                onClick: () => window.location.href = "/ajustes/cuenta"
-              }}
-            />
+    <div className="flex flex-col min-h-screen">
+      <div className="flex-1">
+        <MotionWrapper>
+          <div className="h-full w-full p-8">
+            <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <InfoCard
+                label="Total de solicitudes"
+                numberOfItems={completedSolicitudes.length + pendingSolicitudes.length + aprovedSolicitudes.length + inProgressSolicitudes.length + regectedSolicitudes.length}
+                type={"none"}
+              />
+              <InfoCard
+                label="Solicitudes rechazadas"
+                numberOfItems={regectedSolicitudes.length}
+                type="rejected"
+              />          
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+              <InfoCard
+                label="Solicitudes pendientes"
+                numberOfItems={pendingSolicitudes.length}
+                type="pending"
+              />
+              <InfoCard
+                label="Solicitudes aprobadas"
+                numberOfItems={aprovedSolicitudes.length}
+                type="approved"
+              />
+              <InfoCard
+                label="Solicitudes en proceso"
+                numberOfItems={inProgressSolicitudes.length}
+                type="inProcess"
+              />          
+              <InfoCard
+                label="Solicitudes finalizadas"
+                numberOfItems={completedSolicitudes.length}
+                type="completed"
+              />
+            </div>
+
+            <div className="w-full">
+              <Card className="w-full border-2">
+                <CardHeader>
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div>
+                      <CardTitle className="mb-2">Documentos solicitados</CardTitle>
+                      <CardDescription>
+                        Gestiona los documentos legales solicitados por todos los usuarios registrados en el sistema
+                      </CardDescription>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button variant="outline" size="sm">
+                        <FileText className="h-4 w-4 mr-2" />
+                        Exportar
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <ListadoServicios servicios={servicios} solicitudes={transformedSolicitudes} />
+                </CardContent>
+              </Card>
+            </div>
           </div>
-        )}
-
-        <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-          <InfoCard
-            label="Total de solicitudes"
-            numberOfItems={completedSolicitudes.length + pendingSolicitudes.length + aprovedSolicitudes.length + inProgressSolicitudes.length + regectedSolicitudes.length}
-            type={"none"}
-          />
-          <InfoCard
-            label="Solicitudes rechazadas"
-            numberOfItems={regectedSolicitudes.length}
-            type="rejected"
-          />          
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <InfoCard
-            label="Solicitudes pendientes"
-            numberOfItems={pendingSolicitudes.length}
-            type="pending"
-          />
-          <InfoCard
-            label="Solicitudes aprobadas"
-            numberOfItems={aprovedSolicitudes.length}
-            type="approved"
-          />
-          <InfoCard
-            label="Solicitudes en proceso"
-            numberOfItems={inProgressSolicitudes.length}
-            type="inProcess"
-          />          
-          <InfoCard
-            label="Solicitudes finalizadas"
-            numberOfItems={completedSolicitudes.length}
-            type="completed"
-          />
-        </div>
-
-        <div className="w-full">
-          <Card className="w-full border-2">
-            <CardHeader>
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div>
-                  <CardTitle className="mb-2">Documentos solicitados</CardTitle>
-                  <CardDescription>
-                    Gestiona los documentos legales solicitados por todos los usuarios registrados en el sistema
-                  </CardDescription>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm">
-                    <FileText className="h-4 w-4 mr-2" />
-                    Exportar
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <ListadoServicios servicios={servicios} solicitudes={transformedSolicitudes} />
-            </CardContent>
-          </Card>
-        </div>
+        </MotionWrapper>
       </div>
-    </MotionWrapper>
+    </div>
   );
 }
