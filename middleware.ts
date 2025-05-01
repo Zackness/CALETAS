@@ -28,7 +28,10 @@ export default async function middleware(req: NextRequest) {
   }
 
   // Para rutas protegidas, verificar autenticación
-  const token = await getToken({ req });
+  const token = await getToken({ 
+    req,
+    secret: process.env.AUTH_SECRET
+  });
   const isAuth = !!token;
 
   if (!isAuth) {
