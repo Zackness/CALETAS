@@ -1,77 +1,62 @@
+import { auth } from "@/auth";
 import { NextResponse } from "next/server";
-import { getToken } from "next-auth/jwt";
-import { NextRequest } from "next/server";
-import { authRoutes, publicRoutes, apiAuthPrefix } from "@/routes";
+import { DEFAULT_LOGIN_REDIRECT, apiAuthPrefix, authRoutes, publicRoutes } from "@/routes";
 
-export default async function middleware(req: NextRequest) {
-  const { pathname } = req.nextUrl;
+export default auth((req) => {
+  const { nextUrl } = req;
+  const isLoggedIn = !!req.auth;
 
-  // Verificar si es una ruta de API de autenticación
-  if (pathname.startsWith(apiAuthPrefix)) {
-    return null;
+  // Permitir acceso sin autenticación a la ruta del webhook
+  if (nextUrl.pathname.startsWith('/api/uploadthing')) {
+    return;
   }
 
-  // Verificar si es una ruta pública
-  if (publicRoutes.some(route => {
+  const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
+  const isPublicRoute = publicRoutes.some(route => {
     if (route.includes(".*")) {
       const regex = new RegExp(route);
-      return regex.test(pathname);
+      return regex.test(nextUrl.pathname);
     }
-    return pathname === route;
-  })) {
-    return null;
-  }
-
-  // Verificar si es una ruta de autenticación
-  if (authRoutes.includes(pathname)) {
-    return null;
-  }
-
-  // Para rutas protegidas, verificar autenticación
-  const token = await getToken({ 
-    req,
-    secret: process.env.AUTH_SECRET
+    return nextUrl.pathname === route;
   });
-  const isAuth = !!token;
+  const isAuthRoute = authRoutes.includes(nextUrl.pathname);
+  const isOnboardingRoute = nextUrl.pathname === '/onboarding';
 
-  if (!isAuth) {
-    let from = pathname;
-    if (req.nextUrl.search) {
-      from += req.nextUrl.search;
-    }
-
-    return NextResponse.redirect(
-      new URL(`/login?from=${encodeURIComponent(from)}`, req.url)
-    );
+  if (isApiAuthRoute) {
+    return;
   }
 
-  // Verificar si la sesión ha expirado
-  if (token && token.exp) {
-    const now = Math.floor(Date.now() / 1000);
-    if (now > token.exp) {
-      return NextResponse.redirect(
-        new URL(`/login?expired=true`, req.url)
-      );
+  if (isAuthRoute) {
+    if (isLoggedIn) {
+      return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
     }
+    return;
   }
 
-  return NextResponse.next();
-}
+  if (!isLoggedIn && !isPublicRoute) {
+    let callbackUrl = nextUrl.pathname;
+    if (nextUrl.search) {
+      callbackUrl += nextUrl.search;
+    }
+
+    const encodedCallbackUrl = encodeURIComponent(callbackUrl);
+
+    return Response.redirect(new URL(
+      `/login?callbackUrl=${encodedCallbackUrl}`, 
+      nextUrl
+    ));
+  }
+
+  // No verificamos el estado del onboarding en el middleware para evitar problemas con Prisma en Edge Runtime
+  // En su lugar, lo manejaremos en el componente de página
+
+  return;
+});
 
 export const config = {
   matcher: [
-    "/home/:path*",
-    "/solicitudes/:path*",
-    "/login",
-    "/register",
-    "/error",
-    "/reset",
-    "/new-password",
-    "/nosotros",
-    "/blog/:path*",
-    "/api/webhook",
-    "/api/stripe-url",
-    "/new-verification",
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    '/(api|trpc)(.*)',
   ],
 };
 
