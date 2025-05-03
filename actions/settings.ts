@@ -36,6 +36,50 @@ export const settings = async (
             values.isTwoFactorEnabled = undefined;
         }
 
+        // Si se subió una nueva CI, analizarla y actualizar los datos
+        if (values.ciPhoto) {
+            try {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/user/onboarding/analyze`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ ciPhoto: values.ciPhoto }),
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error al analizar la CI');
+                }
+
+                const ciData = await response.json();
+                
+                if (!ciData) {
+                    return { error: "No se pudo analizar la cédula de identidad" };
+                }
+
+                // Actualizar los datos del usuario con la información de la CI
+                await db.user.update({
+                    where: { id: user.id },
+                    data: {
+                        name: ciData.nombre,
+                        name2: ciData.nombre2 || null,
+                        apellido: ciData.apellido,
+                        apellido2: ciData.apellido2 || null,
+                        cedula: ciData.cedula,
+                        estadoCivil: ciData.estadoCivil,
+                        fechaNacimiento: ciData.fechaNacimiento,
+                        isCiVerified: true,
+                    }
+                });
+
+                return { succes: "Datos actualizados correctamente" };
+            } catch (error) {
+                console.error("Error al analizar la CI:", error);
+                return { error: "Error al analizar la cédula de identidad" };
+            }
+        }
+
+        // Actualizar email si es necesario
         if (values.email && values.email !== user.email) {
             const existingUser = await getUserByEmail(values.email);
 
@@ -55,41 +99,38 @@ export const settings = async (
             return { succes: "Hemos enviado un correo para verificar tu nuevo Email" };
         }
 
-        if (values.password && values.newPassword && dbUser.password) {
+        // Actualizar contraseña si es necesario
+        if (values.password && values.newPassword) {
             const passwordsMatch = await bcrypt.compare(
                 values.password,
-                dbUser.password,
+                dbUser.password!
             );
 
             if (!passwordsMatch) {
-                console.error("La contraseña actual es incorrecta");
-                return { error: "Tu contraseña actual es incorrecta" }
+                return { error: "Contraseña incorrecta" };
             }
 
-            const hashedPassword = await bcrypt.hash(
-                values.newPassword,
-                10,
-            );
+            const hashedPassword = await bcrypt.hash(values.newPassword, 10);
             values.password = hashedPassword;
             values.newPassword = undefined;
         }
 
-        console.log("Actualizando usuario en la base de datos:", {
-            userId: dbUser.id,
-            values: values
-        });
-
+        // Actualizar los datos del usuario
         await db.user.update({
-            where: { id: dbUser.id },
+            where: { id: user.id },
             data: {
-                ...values
+                email: values.email,
+                password: values.password,
+                isTwoFactorEnabled: values.isTwoFactorEnabled,
+                telefono: values.telefono,
+                EstadoDeResidencia: values.EstadoDeResidencia,
+                ciudadDeResidencia: values.ciudadDeResidencia,
             }
         });
 
-        console.log("Usuario actualizado correctamente");
-        return {succes: "Ajustes actualizados"}
+        return { succes: "Configuración actualizada!" };
     } catch (error) {
-        console.error("Error al actualizar la configuración:", error);
-        return { error: "Error al actualizar la configuración" }
+        console.error("Error al actualizar configuración:", error);
+        return { error: "Algo ha salido mal!" };
     }
 }

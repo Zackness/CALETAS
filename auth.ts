@@ -4,7 +4,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter"
 import { getUserById } from "./data/user"
 import { db } from "./lib/db"
 import authConfig from "./auth.config"
-import { UserRole } from "@prisma/client"
+import { UserRole, EstadoDeResidencia } from "@prisma/client"
 import { getTwoFactorConfirmationByUserId } from "./data/two-factor-confirmation"
 import { getAccountByUserId } from "./data/account"
 
@@ -60,12 +60,17 @@ export const { auth, handlers, signIn, signOut }
             }
     
             if (session.user) {
-                session.user.name = token.name || "";
-                session.user.name2 = token.name2;
-                session.user.apellido = token.apellido;
-                session.user.apellido2 = token.apellido2;
-                session.user.email = token.email || "";
-                session.user.isOAuth = token.isOAuth as boolean;
+                const user = session.user as any;
+                user.name = token.name || "";
+                user.name2 = token.name2;
+                user.apellido = token.apellido;
+                user.apellido2 = token.apellido2;
+                user.email = token.email || "";
+                user.isOAuth = token.isOAuth as boolean;
+                user.cedula = token.cedula;
+                user.telefono = token.telefono;
+                user.EstadoDeResidencia = token.EstadoDeResidencia;
+                user.ciudadDeResidencia = token.ciudadDeResidencia;
             }
     
             return session;
@@ -86,14 +91,18 @@ export const { auth, handlers, signIn, signOut }
             token.apellido2 = existingUser.apellido2;
             token.email = existingUser.email || "";
             token.role = existingUser.role;
-            token.isTwoFactorEnabled = existingUser.isTwoFactorEnabled;    
+            token.isTwoFactorEnabled = existingUser.isTwoFactorEnabled;
+            token.cedula = existingUser.cedula;
+            token.telefono = existingUser.telefono;
+            token.EstadoDeResidencia = existingUser.EstadoDeResidencia;
+            token.ciudadDeResidencia = existingUser.ciudadDeResidencia;
             return token;
         },
     },
     adapter: PrismaAdapter(db),
     session: {
         strategy: "jwt",
-        maxAge: 2 * 60,
+        maxAge: 2 * 60 * 60,
     },
     trustHost: true,
     ...authConfig,

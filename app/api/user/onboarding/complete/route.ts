@@ -14,7 +14,6 @@ export async function POST(req: Request) {
     const {
       userData,
       spouseData,
-      direccion,
       telefono,
       estado,
       ciudad,
@@ -31,17 +30,20 @@ export async function POST(req: Request) {
     const updatedUser = await db.user.update({
       where: { id: session.user.id },
       data: {
+        // Datos de identificación
         cedula: userData.cedula,
         name: userData.nombre,
-        name2: userData.nombre2,
-        apellido: userData.apellido,
-        apellido2: userData.apellido2,
+        name2: userData.nombre2 || null,
+        apellido: userData.apellido || null,
+        apellido2: userData.apellido2 || null,
         fechaNacimiento: new Date(userData.fechaNacimiento),
+        estadoCivil: userData.estadoCivil?.toUpperCase() || "SOLTERO",
+        // Datos de residencia
         telefono,
         EstadoDeResidencia: estado,
         ciudadDeResidencia: ciudad,
         onboardingStatus: "FINALIZADO",
-        // Si se proporcionó una empresa, crear la relación
+        // Datos de empresa (si se proporcionaron)
         ...(empresa && {
           empresas: {
             connect: {

@@ -1,13 +1,20 @@
 import { newPassword } from "@/actions/new-password";
-import { UserRole } from "@prisma/client";
+import { UserRole, EstadoDeResidencia } from "@prisma/client";
 import * as z from "zod";
 
 export const SettingsSchema = z.object ({
-    name: z.optional(z.string()),
-    name2: z.optional(z.string()),
-    apellido: z.optional(z.string()),
-    apellido2: z.optional(z.string()),
-    isTwoFactorEnabled: z.optional(z.boolean()),
+    // Campos de solo lectura (mostrados pero no editables)
+    name: z.string().optional(),
+    name2: z.string().optional(),
+    apellido: z.string().optional(),
+    apellido2: z.string().optional(),
+    cedula: z.string().optional(),
+    estadoCivil: z.string().optional(),
+    
+    // Campos editables
+    telefono: z.optional(z.string().min(11, {
+        message: "Por favor, ingresa un numero de telefono valido"
+    })),
     email: z.optional(z.string().email({
         message: "Por favor, ingresa un correo electrónico válido"
     })),
@@ -17,32 +24,33 @@ export const SettingsSchema = z.object ({
     newPassword: z.optional(z.string().min(6, {
         message: "La nueva contraseña debe tener al menos 6 caracteres"
     })),
-    estadoCivil: z.optional(z.enum(["SOLTERO", "CASADO"])),
+    isTwoFactorEnabled: z.optional(z.boolean()),
+    
+    // Nuevos campos para residencia
+    EstadoDeResidencia: z.optional(z.nativeEnum(EstadoDeResidencia)),
+    ciudadDeResidencia: z.optional(z.string()),
+    
+    // Campo para subir nueva CI
     ciPhoto: z.optional(z.string()),
-    cedula: z.optional(z.string()),
-    isCiVerified: z.optional(z.boolean()),
 })
     .refine((data) => {
         if (data.password && !data.newPassword) {
             return false;
         }
-
         return true;
     }, {
         message: "La nueva contraseña es requerida",
         path: ["newPassword"]
     })
-
     .refine((data) => {
         if (data.newPassword && !data.password) {
             return false;
         }
-
         return true;
     }, {
         message: "La contraseña es requerida",
         path: ["password"]
-    })
+    });
 
 export const NewPasswordSchema = z.object({
     password: z.string()

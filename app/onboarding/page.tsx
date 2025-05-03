@@ -232,35 +232,45 @@ export default function OnboardingPage() {
         throw new Error("Por favor, selecciona un documento");
       }
 
-      if (extractedData?.estadoCivil?.toLowerCase() === "casado" && !spouseFile) {
-        throw new Error("Por favor, sube la cédula de tu cónyuge");
+      if (currentStep === 'titular') {
+        if (extractedData?.estadoCivil?.toLowerCase() === "casado") {
+          setCurrentStep('conyuge');
+        } else {
+          setCurrentStep('direccion');
+        }
+        return;
       }
 
-      if (!direccion) {
-        throw new Error("Por favor, ingresa tu dirección");
+      if (currentStep === 'conyuge') {
+        if (!spouseFile) {
+          throw new Error("Por favor, sube la cédula de tu cónyuge");
+        }
+        setCurrentStep('direccion');
+        return;
       }
 
+      // Último paso: datos de residencia y empresa
       if (!telefono) {
         throw new Error("Por favor, ingresa tu teléfono");
       }
 
       if (!ciudad) {
-        throw new Error("Por favor, ingresa tu ciudad");
+        throw new Error("Por favor, ingresa tu ciudad de residencia");
       }
 
-      if (empresa && !codigoEmpresa) {
+      if (empresa && empresa !== "none" && !codigoEmpresa) {
         throw new Error("Por favor, ingresa el código de empresa");
       }
 
+      // Completamos el onboarding con todos los datos
       await axios.post("/api/user/onboarding/complete", {
         userData: extractedData,
         spouseData: spouseData,
-        direccion: direccion,
-        telefono: telefono,
-        estado: estado,
-        ciudad: ciudad,
-        empresa: empresa || null,
-        codigoEmpresa: codigoEmpresa || null
+        telefono,
+        estado,
+        ciudad,
+        empresa: empresa !== "none" ? empresa : null,
+        codigoEmpresa: empresa !== "none" ? codigoEmpresa : null
       });
 
       toast({
@@ -346,20 +356,6 @@ export default function OnboardingPage() {
         return (
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="direccion" className="text-foreground">
-                Indique la ciudad de domicilio
-              </Label>
-              <Input
-                id="direccion"
-                type="text"
-                value={direccion}
-                onChange={(e) => setDireccion(e.target.value)}
-                placeholder="Indique la ciudad de domicilio"
-                disabled={isLoading}
-              />
-            </div>
-
-            <div className="space-y-2">
               <Label htmlFor="telefono" className="text-foreground">
                 Teléfono
               </Label>
@@ -369,6 +365,20 @@ export default function OnboardingPage() {
                 value={telefono}
                 onChange={(e) => setTelefono(e.target.value)}
                 placeholder="0412-123-4567"
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="ciudad" className="text-foreground">
+                Ciudad de Residencia
+              </Label>
+              <Input
+                id="ciudad"
+                type="text"
+                value={ciudad}
+                onChange={(e) => setCiudad(e.target.value)}
+                placeholder="Ej: Valencia"
                 disabled={isLoading}
               />
             </div>
@@ -395,20 +405,6 @@ export default function OnboardingPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="ciudad" className="text-foreground">
-                Ciudad de Residencia
-              </Label>
-              <Input
-                id="ciudad"
-                type="text"
-                value={ciudad}
-                onChange={(e) => setCiudad(e.target.value)}
-                placeholder="Ej: Valencia"
-                disabled={isLoading}
-              />
-            </div>
-
-            <div className="space-y-2">
               <Label htmlFor="empresa" className="text-foreground">
                 Empresa (Opcional)
               </Label>
@@ -416,8 +412,8 @@ export default function OnboardingPage() {
                 value={empresa}
                 onValueChange={(value) => {
                   setEmpresa(value);
-                  setShowCodigoEmpresa(value !== "");
-                  if (value === "") {
+                  setShowCodigoEmpresa(value !== "none");
+                  if (value === "none") {
                     setCodigoEmpresa("");
                   }
                 }}
@@ -426,7 +422,7 @@ export default function OnboardingPage() {
                   <SelectValue placeholder="Selecciona tu empresa" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Ninguna empresa</SelectItem>
+                  <SelectItem value="none">Ninguna empresa</SelectItem>
                   {empresas.map((emp) => (
                     <SelectItem key={emp.id} value={emp.id}>
                       {emp.nombre}
@@ -479,10 +475,14 @@ export default function OnboardingPage() {
               <Button 
                 type={currentStep === 'direccion' ? "submit" : "button"}
                 onClick={currentStep !== 'direccion' ? handleNext : undefined}
-                disabled={isLoading || 
+                disabled={Boolean(isLoading || 
                   (currentStep === 'titular' && !file) || 
                   (currentStep === 'conyuge' && !spouseFile) ||
-                  (currentStep === 'direccion' && !direccion)}
+                  (currentStep === 'direccion' && (
+                    !telefono || 
+                    !ciudad || 
+                    (empresa && empresa !== "none" && !codigoEmpresa)
+                  )))}
               >
                 {isLoading ? (
                   <>

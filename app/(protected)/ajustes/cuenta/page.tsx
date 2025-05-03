@@ -14,12 +14,28 @@ import { FormSucces } from "@/components/form-succes";
 import { FormError } from "@/components/form-error";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UserRole } from "@prisma/client";
+import { UserRole, EstadoDeResidencia } from "@prisma/client";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "react-hot-toast";
 
+type ExtendedUser = {
+    id: string;
+    name: string;
+    name2: string | null;
+    apellido: string | null;
+    apellido2: string | null;
+    email: string;
+    role: UserRole;
+    isTwoFactorEnabled: boolean;
+    isOAuth: boolean;
+    cedula: string | null;
+    telefono: string | null;
+    EstadoDeResidencia: EstadoDeResidencia | null;
+    ciudadDeResidencia: string | null;
+};
+
 export default function Ajustes() {
-  const user = useCurrentUser();
+  const user = useCurrentUser() as ExtendedUser;
   const { update } = useSession();
 
   const [error, setError] = useState<string | undefined>();
@@ -30,17 +46,21 @@ export default function Ajustes() {
   const [isPending, startTransition] = useTransition();
 
   const form = useForm<z.infer<typeof SettingsSchema>>({
-    resolver: zodResolver(SettingsSchema),
-    defaultValues: {
-      name: user?.name || undefined,
-      name2: user?.name2 || undefined,
-      apellido: user?.apellido || undefined,
-      apellido2: user?.apellido2 || undefined,
-      email: user?.email || undefined,
-      password: undefined,
-      newPassword: undefined,
-      isTwoFactorEnabled: user?.isTwoFactorEnabled || undefined,
-    }
+      resolver: zodResolver(SettingsSchema),
+      defaultValues: {
+          name: user?.name || undefined,
+          name2: user?.name2 || undefined,
+          apellido: user?.apellido || undefined,
+          apellido2: user?.apellido2 || undefined,
+          cedula: user?.cedula || undefined,
+          telefono: user?.telefono || undefined,
+          EstadoDeResidencia: user?.EstadoDeResidencia || undefined,
+          ciudadDeResidencia: user?.ciudadDeResidencia || undefined,
+          email: user?.email || undefined,
+          password: undefined,
+          newPassword: undefined,
+          isTwoFactorEnabled: user?.isTwoFactorEnabled || undefined,
+      }
   });
 
   // Detectar cambios en el formulario
@@ -114,7 +134,7 @@ export default function Ajustes() {
                     <Input
                       className="text-foreground border-none bg-fm-blue-3 rounded-xl"
                       {...field}
-                      disabled={isPending || isSubmitting}
+                      disabled={true}
                     />
                   </FormControl>
                   <FormMessage />
@@ -131,7 +151,7 @@ export default function Ajustes() {
                     <Input
                       className="border-none bg-fm-blue-3 rounded-xl text-foreground"
                       {...field}
-                      disabled={isPending || isSubmitting}
+                      disabled={true}
                     />
                   </FormControl>
                   <FormMessage />
@@ -148,7 +168,7 @@ export default function Ajustes() {
                     <Input
                       className="border-none bg-fm-blue-3 rounded-xl text-foreground"
                       {...field}
-                      disabled={isPending || isSubmitting}
+                      disabled={true}
                     />
                   </FormControl>
                   <FormMessage />
@@ -165,6 +185,164 @@ export default function Ajustes() {
                     <Input
                       className="border-none bg-fm-blue-3 rounded-xl text-foreground"
                       {...field}
+                      disabled={true}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField 
+                control={form.control}
+                name="cedula"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Cédula de identidad</FormLabel>
+                        <FormControl>
+                            <Input
+                                className="border-none bg-fm-blue-3 rounded-xl text-foreground"
+                                {...field}
+                                disabled={true}
+                            />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
+
+            <FormField 
+                control={form.control}
+                name="ciPhoto"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Subir imagen de cédula</FormLabel>
+                        <FormControl>
+                            <div className="flex flex-col gap-2">
+                                <Input
+                                    type="file"
+                                    accept="image/*"
+                                    className="border-none bg-blue-500 rounded-xl text-foreground"
+                                    onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) {
+                                            const reader = new FileReader();
+                                            reader.onloadend = () => {
+                                                field.onChange(reader.result as string);
+                                            };
+                                            reader.readAsDataURL(file);
+                                        }
+                                    }}
+                                    disabled={isPending || isSubmitting}
+                                />
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="w-full"
+                                    disabled={isPending || isSubmitting || !field.value}
+                                    onClick={async () => {
+                                        try {
+                                            const response = await fetch('/api/user/onboarding/analyze', {
+                                                method: 'POST',
+                                                headers: {
+                                                    'Content-Type': 'application/json',
+                                                },
+                                                body: JSON.stringify({
+                                                    ciPhoto: field.value,
+                                                }),
+                                            });
+
+                                            if (!response.ok) {
+                                                throw new Error('Error al analizar la cédula');
+                                            }
+
+                                            const data = await response.json();
+                                            
+                                            // Actualizar los campos del formulario con los datos analizados
+                                            form.setValue('name', data.name || user?.name);
+                                            form.setValue('name2', data.name2 || user?.name2);
+                                            form.setValue('apellido', data.apellido || user?.apellido);
+                                            form.setValue('apellido2', data.apellido2 || user?.apellido2);
+                                            form.setValue('cedula', data.cedula || user?.cedula);
+                                            
+                                            toast.success('Cédula analizada correctamente');
+                                        } catch (error) {
+                                            console.error('Error:', error);
+                                            toast.error('Error al analizar la cédula');
+                                        }
+                                    }}
+                                >
+                                    Analizar cédula
+                                </Button>
+                            </div>
+                        </FormControl>
+                        <FormDescription>
+                            Sube una imagen de tu cédula para verificar y actualizar tus datos
+                        </FormDescription>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
+
+            {/* Campos de contacto y residencia */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField 
+                control={form.control}
+                name="telefono"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Teléfono</FormLabel>
+                    <FormControl>
+                      <Input
+                        className="border-none bg-fm-blue-3 rounded-xl text-foreground"
+                        {...field}
+                        disabled={isPending || isSubmitting}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField 
+                control={form.control}
+                name="EstadoDeResidencia"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Estado de residencia</FormLabel>
+                    <Select
+                      disabled={isPending || isSubmitting}
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="border-blue-500 bg-fm-blue-3 rounded-xl text-foreground">
+                          <SelectValue placeholder="Selecciona un estado" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {Object.values(EstadoDeResidencia).map((estado) => (
+                          <SelectItem key={estado} value={estado}>
+                            {estado.replace(/_/g, " ")}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField 
+              control={form.control}
+              name="ciudadDeResidencia"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Ciudad de residencia</FormLabel>
+                  <FormControl>
+                    <Input
+                      className="border-none bg-fm-blue-3 rounded-xl text-foreground"
+                      {...field}
                       disabled={isPending || isSubmitting}
                     />
                   </FormControl>
@@ -172,6 +350,7 @@ export default function Ajustes() {
                 </FormItem>
               )}
             />
+
             {user?.isOAuth === false && (
             <>
               <FormField 
