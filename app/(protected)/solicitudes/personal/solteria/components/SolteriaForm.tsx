@@ -15,6 +15,7 @@ import { Combobox } from "@/components/ui/combobox";
 import { Progress } from "@/components/ui/progress";
 import { CardWrapper } from "@/components/card-wrapper";
 import { FamilyInfo } from "@/components/ui/family-info";
+import { toast } from "react-hot-toast";
 
 const SolicitudSchema = z.object({
   persona: z.string().optional(),
@@ -60,6 +61,7 @@ export const SolteriaForm = () => {
   const [error, setError] = useState<string | undefined>("");
   const [succes, setSucces] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [familiares, setFamiliares] = useState<Familiar[]>([]);
   const [user, setUser] = useState<User | null>(null);
   const [selectedPersona, setSelectedPersona] = useState<string>("");
@@ -125,12 +127,16 @@ export const SolteriaForm = () => {
     }
   };
 
-  const onSubmit = async (values: z.infer<typeof SolicitudSchema>) => {
-    setError("");
-    setSucces("");
-    setUploadProgress(0);
-
+  const onSubmit = async (data: z.infer<typeof SolicitudSchema>) => {
     try {
+      setIsSubmitting(true);
+      setError("");
+      startTransition(() => {
+        setError("");
+        setSucces("");
+      });
+      setUploadProgress(0);
+
       if (!testigo1File || !testigo2File) {
         setError("Debe seleccionar ambos archivos de testigos");
         return;
@@ -168,16 +174,21 @@ export const SolteriaForm = () => {
               // Limpiar los archivos seleccionados
               setTestigo1File(undefined);
               setTestigo2File(undefined);
+              toast.success('Solicitud creada exitosamente');
             }
           })
           .catch((error) => {
             console.error('Error creating solicitud:', error);
-            setError("Error al crear la solicitud");
+            setError(error.response?.data?.error || "Error al crear la solicitud");
+            toast.error('Error al crear la solicitud');
           });
       });
-    } catch (error: any) {
-      console.error('Error in form submission:', error);
-      setError(error.message || "Error al subir los archivos");
+    } catch (error) {
+      console.error('Error al crear la solicitud:', error);
+      setError(error instanceof Error ? error.message : 'Error al crear la solicitud');
+      toast.error('Error al crear la solicitud');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -291,11 +302,11 @@ export const SolteriaForm = () => {
             <FormSucces message={succes} />
             <Button
               variant="default"
-              disabled={isPending}
+              disabled={isPending || isSubmitting}
               type="submit"
               className="w-full"
             >
-              {isPending ? (
+              {isPending || isSubmitting ? (
                 <div className="flex items-center gap-2">
                   <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />

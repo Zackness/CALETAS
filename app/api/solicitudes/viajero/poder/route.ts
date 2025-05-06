@@ -45,14 +45,14 @@ export async function POST(req: NextRequest) {
 
     // Verificar que el documento existe
     const documento = await db.documento.findUnique({
-      where: { id: "3c174868-335b-4992-a1f7-d14593d902c2" }
+      where: { id: "viajero-doc-id" }
     });
 
     if (!documento) {
       console.error("Documento no encontrado");
       return NextResponse.json({ 
         error: "El tipo de documento no existe",
-        documentoId: "3c174868-335b-4992-a1f7-d14593d902c2"
+        documentoId: "viajero-doc-id"
       }, { status: 400 });
     }
 

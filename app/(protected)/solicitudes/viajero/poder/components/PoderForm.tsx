@@ -326,34 +326,32 @@ export const PoderForm = () => {
       console.log("Enviando datos a la API:", requestData);
 
       // Enviar solicitud a la API
-      const response = await fetch('/api/solicitudes/viajero/poder', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestData),
+      startTransition(() => {
+        axios.post('/api/solicitudes/viajero/poder', requestData)
+          .then((response) => {
+            const data = response.data;
+            if (data.error) {
+              setError(data.error);
+            }
+            if (data.succes) {
+              form.reset();
+              setSucces(data.succes);
+              // Limpiar los archivos seleccionados
+              setDocumentoConyugeFile(null);
+              setBien1File(undefined);
+              setBien2File(undefined);
+              setBien3File(undefined);
+              setBien4File(undefined);
+              setBien5File(undefined);
+              toast.success('Solicitud creada exitosamente');
+            }
+          })
+          .catch((error) => {
+            console.error('Error creating solicitud:', error);
+            setError(error.response?.data?.error || "Error al crear la solicitud");
+            toast.error('Error al crear la solicitud');
+          });
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Error al crear la solicitud');
-      }
-
-      const result = await response.json();
-      
-      // Mostrar mensaje de éxito y resetear el formulario
-      if (result.succes) {
-        form.reset();
-        setSucces(result.succes);
-        // Limpiar los archivos seleccionados
-        setDocumentoConyugeFile(null);
-        setBien1File(undefined);
-        setBien2File(undefined);
-        setBien3File(undefined);
-        setBien4File(undefined);
-        setBien5File(undefined);
-        toast.success('Solicitud creada exitosamente');
-      }
     } catch (error) {
       console.error('Error al crear la solicitud:', error);
       setError(error instanceof Error ? error.message : 'Error al crear la solicitud');

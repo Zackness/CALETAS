@@ -3,53 +3,12 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 async function main() {
-  // Empresas
-  const empresas = [
-    {
-      id: "empresa-1",
-      nombre: "Seguros Caracas",
-      direccion: "Av. Libertador, Caracas",
-      telefono: "0212-555-1234",
-      RIF: "J-123456789",
-      persona_de_contacto: "Juan Pérez",
-      email: "contacto@seguroscaracas.com",
-      tipo: "SEGURO"
-    },
-    {
-      id: "empresa-2",
-      nombre: "Telecom Venezuela",
-      direccion: "Av. Bolívar, Caracas",
-      telefono: "0212-555-5678",
-      RIF: "J-987654321",
-      persona_de_contacto: "María González",
-      email: "contacto@telecomvenezuela.com",
-      tipo: "TELECOMUNICACIONES"
-    },
-    {
-      id: "empresa-3",
-      nombre: "Banco Nacional",
-      direccion: "Av. Francisco de Miranda, Caracas",
-      telefono: "0212-555-9012",
-      RIF: "J-456789123",
-      persona_de_contacto: "Carlos Rodríguez",
-      email: "contacto@bancanacional.com",
-      tipo: "BANCO"
-    }
-  ];
-
-  // Crear empresas
-  for (const empresa of empresas) {
-    const createdEmpresa = await prisma.empresa.create({
-      data: empresa
-    });
-    console.log(`Created empresa: ${createdEmpresa.nombre}`);
-  }
 
   // Servicios con IDs específicos
   const servicios = [
     {
       id: "auto-service-id",
-      nombre: 'Protección Automovil',
+      nombre: 'Automovil',
       descripcion: 'Servicios legales relacionados con vehículos',
       documentos: [
         { 
@@ -59,19 +18,49 @@ async function main() {
       ]
     },
     {
+      id: "vivienda-service-id",
+      nombre: "Vivienda",
+      descripcion: "Servicios legales relacionados con viviendas",
+      documentos: [
+        {
+          id: "vivienda-doc-id",
+          nombre: 'Declaracion de no poseer vivienda'
+        },
+        {
+          id: "vivienda-doc1-id",
+          nombre: 'Compra-venta de vivienda'
+        }
+      ]
+    },
+    {
       id: "viajero-service-id",
-      nombre: 'Protección Viajero',
+      nombre: 'Viajero',
       descripcion: 'Servicios legales para viajeros',
       documentos: [
         { 
           id: "viajero-doc-id",
           nombre: 'Poder para viajero' 
+        },
+        {
+          id: "viejero-doc1-id",
+          nombre: 'Autorizaciones de viaje'
+        }
+      ]
+    },
+    {
+      id: "herencia-service-id",
+      nombre: "Herencia",
+      descripcion: "Servicios legales relacionados con la herencia",
+      documentos: [
+        {
+          id: "herencia-doc-id",
+          nombre: 'Declaracion de sucesiones'
         }
       ]
     },
     {
       id: "personal-service-id",
-      nombre: 'Protección Personal',
+      nombre: 'Personal',
       descripcion: 'Servicios legales de protección personal',
       documentos: [
         { 
@@ -81,13 +70,43 @@ async function main() {
       ]
     },
     {
+      id: "empresarial-service-id",
+      nombre: "Empresarial",
+      descripcion: "Sercicios relacionados con las empresas",
+      documentos: [
+        {
+          id: "empresarial-doc-id",
+          nombre: 'Contitucion de empresa PYME'
+        },
+        {
+          id: "empresarial-doc1-id",
+          nombre: 'Acta de asamblea de accionistas'
+        }
+      ]
+    },
+    {
       id: "migrante-service-id",
-      nombre: 'Protección Migratoria',
+      nombre: 'Migrante',
       descripcion: 'Servicios legales migratorios',
       documentos: [
         { 
           id: "migrante-doc-id",
           nombre: 'Poder desde el exterior' 
+        }
+      ]
+    },
+    {
+      id: "financiiera-service-id",
+      nombre: "Financiera",
+      descripcion: "Servicios legales relacionados con lo financieero",
+      documentos: [
+        {
+          id: "financiera-doc-id",
+          nombre: 'Certificacion de ingresos'
+        },
+        {
+          id: "financiera-doc1-id",
+          nombre: 'Balance personal'
         }
       ]
     }
