@@ -284,11 +284,11 @@ export function AppSidebar({ session }: AppSidebarProps) {
 
               <Collapsible 
                 className="group/collapsible"
-                defaultOpen={isInSection("/solicitudes/financiera")}
+                defaultOpen={isInSection("/solicitudes/financiero")}
               >
-                <SidebarMenuItem className={isInSection("/solicitudes/financiera") ? "bg-gradient-to-r from-emerald-500 to-green-600 dark:from-emerald-600 dark:to-green-700 text-foreground rounded-xl pb-2" : ""}>
+                <SidebarMenuItem className={isInSection("/solicitudes/financiero") ? "bg-gradient-to-r from-emerald-500 to-green-600 dark:from-emerald-600 dark:to-green-700 text-foreground rounded-xl pb-2" : ""}>
                   <CollapsibleTrigger asChild>
-                    <SidebarMenuButton className={`${isInSection("/solicitudes/financiera") ? "text-foreground hover:bg-transparent" : "hover:bg-foreground/50"}`}>
+                    <SidebarMenuButton className={`${isInSection("/solicitudes/financiero") ? "text-foreground hover:bg-transparent" : "hover:bg-foreground/50"}`}>
                       <CreditCard />
                       <span>Financiera</span>
                     </SidebarMenuButton>
@@ -298,16 +298,16 @@ export function AppSidebar({ session }: AppSidebarProps) {
                       <SidebarMenuSubItem>
                         <SidebarMenuButton asChild>
                           <a 
-                            href={"/solicitudes/financiera/certificacion"} 
-                            className={`${isActiveRoute("/solicitudes/financiera/certificacion") ? "bg-foreground/50 text-background hover:bg-foreground/80" : "hover:bg-foreground/50"}`}
+                            href={"/solicitudes/financiero/ingresos"} 
+                            className={`${isActiveRoute("/solicitudes/financiero/ingresos") ? "bg-foreground/50 text-background hover:bg-foreground/80" : "hover:bg-foreground/50"}`}
                           >
                             <span>Certificación de ingresos</span>
                           </a>
                         </SidebarMenuButton>
                         <SidebarMenuButton asChild>
                           <a 
-                            href={"/solicitudes/financiera/balance"} 
-                            className={`${isActiveRoute("/solicitudes/financiera/balance") ? "bg-foreground/50 text-background hover:bg-foreground/80" : "hover:bg-foreground/50"}`}
+                            href={"/solicitudes/financiero/balance"} 
+                            className={`${isActiveRoute("/solicitudes/financiero/balance") ? "bg-foreground/50 text-background hover:bg-foreground/80" : "hover:bg-foreground/50"}`}
                           >
                             <span>Balance personal</span>
                           </a>
