@@ -17,6 +17,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "react-hot-toast";
 import { FamilyInfo } from "@/components/ui/family-info";
 import { Progress } from "@/components/ui/progress";
+import { DatePicker } from "@/components/ui/datepicker";
 
 const SolicitudSchema = z.object({
   persona: z.string().optional(),
@@ -388,7 +389,10 @@ export const IngresosForm = () => {
                     <FormItem>
                       <FormLabel className="text-foreground">Fecha de inicio</FormLabel>
                       <FormControl>
-                        <Input type="date" {...field} value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''} />
+                        <DatePicker
+                          date={field.value}
+                          setDate={field.onChange}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -402,7 +406,10 @@ export const IngresosForm = () => {
                     <FormItem>
                       <FormLabel className="text-foreground">Fecha de finalización</FormLabel>
                       <FormControl>
-                        <Input type="date" {...field} value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''} />
+                        <DatePicker
+                          date={field.value}
+                          setDate={field.onChange}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -511,7 +518,10 @@ export const IngresosForm = () => {
                           <FormItem>
                             <FormLabel className="text-foreground">Fecha de inicio del cónyuge</FormLabel>
                             <FormControl>
-                              <Input type="date" {...field} value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''} />
+                              <DatePicker
+                                date={field.value}
+                                setDate={field.onChange}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -525,7 +535,10 @@ export const IngresosForm = () => {
                           <FormItem>
                             <FormLabel className="text-foreground">Fecha de finalización del cónyuge</FormLabel>
                             <FormControl>
-                              <Input type="date" {...field} value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''} />
+                              <DatePicker
+                                date={field.value}
+                                setDate={field.onChange}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
