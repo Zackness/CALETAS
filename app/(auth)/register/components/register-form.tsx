@@ -13,12 +13,14 @@ import { FormError } from "@/components/form-error";
 import { FormSucces } from "@/components/form-succes";
 import { register } from "@/actions/register";
 import { motion } from "framer-motion";
+import { Eye, EyeOff } from "lucide-react";
 
 export const RegisterForm = () => {
   const [error, setError] = useState<string | undefined>("");
   const [succes, setSucces] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
   const [isMounted, setIsMounted] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -93,7 +95,26 @@ export const RegisterForm = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Input {...field} disable={isPending} label="Contraseña" id="password" type="password" />
+                      <div className="relative">
+                        <Input 
+                          {...field} 
+                          disable={isPending} 
+                          label="Contraseña" 
+                          id="password" 
+                          type={showPassword ? "text" : "password"} 
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-5 w-5" />
+                          ) : (
+                            <Eye className="h-5 w-5" />
+                          )}
+                        </button>
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>

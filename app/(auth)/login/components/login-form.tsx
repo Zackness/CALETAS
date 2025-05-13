@@ -14,9 +14,11 @@ import { FormSucces } from "@/components/form-succes";
 import { login } from "@/actions/login";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react";
 
 export const LoginForm = () => {
   const [isMounted, setIsMounted] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   
   useEffect(() => {
     setIsMounted(true);
@@ -125,13 +127,26 @@ export const LoginForm = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <Input
-                            {...field}
-                            disable={isPending}
-                            label="Contraseña"
-                            id="password"
-                            type="password"
-                          />
+                          <div className="relative">
+                            <Input
+                              {...field}
+                              disable={isPending}
+                              label="Contraseña"
+                              id="password"
+                              type={showPassword ? "text" : "password"}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                            >
+                              {showPassword ? (
+                                <EyeOff className="h-5 w-5" />
+                              ) : (
+                                <Eye className="h-5 w-5" />
+                              )}
+                            </button>
+                          </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>

@@ -22,7 +22,7 @@ import { FamilyInfo } from "@/components/ui/family-info";
 
 const SolicitudSchema = z.object({
   persona: z.string().optional(),
-  cedula: z.string().nonempty("Debe seleccionar una persona"),
+  cedula: z.string().nonempty("Debe seleccionar un solicitante"),
   nombreConyuge: z.string().optional(),
   cedulaConyuge: z.string().optional(),
   documentoConyuge: z.custom<File>((file) => file instanceof File, {
