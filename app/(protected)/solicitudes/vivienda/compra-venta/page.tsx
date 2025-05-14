@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import ViviendaForm from './components/ViviendaForm';
+import { ViviendaForm } from './components/ViviendaForm';
 
 const Vivienda = () => {
   return (
