@@ -1,7 +1,8 @@
+import bcrypt from "bcrypt";
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
-import { sign } from "jsonwebtoken";
+import * as jwt from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
@@ -32,7 +33,7 @@ export async function POST(req: Request) {
     }
 
     // Generar token JWT
-    const token = sign(
+    const token = jwt.sign(
       { 
         id: user.id,
         email: user.email,
@@ -73,7 +74,7 @@ export async function GET(req: Request) {
     }
 
     // Verificar token
-    const decoded = verify(token, JWT_SECRET) as { id: string };
+    const decoded = jwt.verify(token, JWT_SECRET) as { id: string };
     
     // Obtener usuario
     const user = await db.user.findUnique({
