@@ -37,20 +37,22 @@ export async function POST(req: NextRequest) {
 
     // Validar los datos recibidos
     if (!usuarioId || !testigo1 || !bienes_generico1 || !bienes_generico2 || !bienes_generico3 || !generic_text || !testigo2 || !testigo3 || !bienes_generico4 || !bienes_generico5) {
+      const missing = {
+        usuarioId: !usuarioId,
+        testigo1: !testigo1,
+        bienes_generico1: !bienes_generico1,
+        bienes_generico2: !bienes_generico2,
+        bienes_generico3: !bienes_generico3,
+        generic_text: !generic_text,
+        testigo2: !testigo2,
+        testigo3: !testigo3,
+        bienes_generico4: !bienes_generico4,
+        bienes_generico5: !bienes_generico5
+      };
+      console.error("Datos faltantes:", missing);
       return NextResponse.json({ 
         error: 'Faltan datos requeridos',
-        missing: {
-          usuarioId: !usuarioId,
-          testigo1: !testigo1,
-          bienes_generico1: !bienes_generico1,
-          bienes_generico2: !bienes_generico2,
-          bienes_generico3: !bienes_generico3,
-          generic_text: !generic_text,
-          testigo2: !testigo2,
-          testigo3: !testigo3,
-          bienes_generico4: !bienes_generico4,
-          bienes_generico5: !bienes_generico5
-        }
+        missing
       }, { status: 400 });
     }
 
@@ -69,7 +71,7 @@ export async function POST(req: NextRequest) {
     console.log("Documento encontrado:", documento);
 
     // Verificar que la nota predefinida existe
-    const notaPredefinida = await db.notaPredefinida.findUnique({
+    const notaPredefinida = await db.nota.findUnique({
       where: { id: "e20313fa-a6a3-4585-8b1f-9151452976a1" }
     });
 

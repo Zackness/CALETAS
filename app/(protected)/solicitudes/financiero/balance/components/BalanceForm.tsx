@@ -195,6 +195,7 @@ export const BalanceForm = () => {
 
   const onSubmit = async (data: z.infer<typeof SolicitudSchema>) => {
     try {
+      console.log("[BALANCE_FORM] Iniciando envío del formulario");
       setIsSubmitting(true);
       setError("");
       startTransition(() => {
@@ -206,10 +207,19 @@ export const BalanceForm = () => {
       // Subir documento del cónyuge si es necesario
       let documentoConyugeUrl = null;
       if (documentoConyugeFile && data.esBalanceConjunto) {
-        documentoConyugeUrl = await uploadToBunny(
-          documentoConyugeFile,
-          `conyuge-${Date.now()}-${documentoConyugeFile.name.replace(/[^a-zA-Z0-9.-]/g, '')}`
-        );
+        console.log("[BALANCE_FORM] Subiendo documento del cónyuge");
+        try {
+          documentoConyugeUrl = await uploadToBunny(
+            documentoConyugeFile,
+            `conyuge-${Date.now()}-${documentoConyugeFile.name.replace(/[^a-zA-Z0-9.-]/g, '')}`
+          );
+          console.log("[BALANCE_FORM] Documento del cónyuge subido:", documentoConyugeUrl);
+        } catch (error) {
+          console.error("[BALANCE_FORM] Error al subir documento del cónyuge:", error);
+          setError("Error al subir el documento del cónyuge");
+          setIsSubmitting(false);
+          return;
+        }
       }
 
       // Preparar datos para la API
@@ -220,32 +230,28 @@ export const BalanceForm = () => {
         documentoConyuge: documentoConyugeUrl,
       };
 
+      console.log("[BALANCE_FORM] Enviando datos a la API:", requestData);
+
       // Enviar solicitud a la API
-      startTransition(() => {
-        axios.post('/api/solicitudes/financiero/balance', requestData)
-          .then((response) => {
-            const data = response.data;
-            if (data.error) {
-              setError(data.error);
-            }
-            if (data.succes) {
-              form.reset();
-              setSucces(data.succes);
-              // Limpiar los archivos seleccionados
-              setDocumentoConyugeFile(null);
-              toast.success('Solicitud creada exitosamente');
-            }
-          })
-          .catch((error) => {
-            console.error('Error creating solicitud:', error);
-            setError(error.response?.data?.error || "Error al crear la solicitud");
-            toast.error('Error al crear la solicitud');
-          });
-      });
-    } catch (error) {
-      console.error('Error al crear la solicitud:', error);
-      setError(error instanceof Error ? error.message : 'Error al crear la solicitud');
-      toast.error('Error al crear la solicitud');
+      const response = await axios.post('/api/solicitudes/financiero/balance', requestData);
+      console.log("[BALANCE_FORM] Respuesta de la API:", response.data);
+
+      const responseData = response.data;
+      if (responseData.error) {
+        setError(responseData.error);
+        toast.error(responseData.error);
+      }
+      if (responseData.succes) {
+        form.reset();
+        setSucces(responseData.succes);
+        setDocumentoConyugeFile(null);
+        toast.success('Solicitud creada exitosamente');
+      }
+    } catch (error: any) {
+      console.error("[BALANCE_FORM] Error al crear la solicitud:", error);
+      const errorMessage = error.response?.data?.error || error.message || "Error al crear la solicitud";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

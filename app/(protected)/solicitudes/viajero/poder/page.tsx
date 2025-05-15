@@ -8,12 +8,12 @@ const Poder = () => {
         <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
           Poder para representación durante viajes
         </h1>
-        <p>
+        <p className="text-foreground">
           Poder para representación durante viajes
         </p>
       </div>
       <section className="flex justify-center w-full">
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<div className="text-foreground">Loading...</div>}>
           <PoderForm />
         </Suspense>
       </section>

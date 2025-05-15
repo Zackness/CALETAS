@@ -6,6 +6,18 @@ import * as jwt from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
+// Función para manejar las opciones CORS
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    },
+  });
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -19,16 +31,30 @@ export async function POST(req: Request) {
     if (!user) {
       return NextResponse.json(
         { error: "Credenciales inválidas" },
-        { status: 401 }
+        { 
+          status: 401,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+          }
+        }
       );
     }
 
-    // Verificar contraseña (asumiendo que usas bcrypt)
+    // Verificar contraseña
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
       return NextResponse.json(
         { error: "Credenciales inválidas" },
-        { status: 401 }
+        { 
+          status: 401,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+          }
+        }
       );
     }
 
@@ -52,12 +78,25 @@ export async function POST(req: Request) {
         role: user.role
       },
       token
+    }, {
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      }
     });
   } catch (error) {
     console.error("[MOBILE_AUTH]", error);
     return NextResponse.json(
       { error: "Error interno del servidor" },
-      { status: 500 }
+      { 
+        status: 500,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        }
+      }
     );
   }
 }
@@ -69,7 +108,14 @@ export async function GET(req: Request) {
     if (!token) {
       return NextResponse.json(
         { error: "No autorizado" },
-        { status: 401 }
+        { 
+          status: 401,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+          }
+        }
       );
     }
 
@@ -84,7 +130,14 @@ export async function GET(req: Request) {
     if (!user) {
       return NextResponse.json(
         { error: "Usuario no encontrado" },
-        { status: 404 }
+        { 
+          status: 404,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+          }
+        }
       );
     }
 
@@ -95,12 +148,25 @@ export async function GET(req: Request) {
         name: user.name,
         role: user.role
       }
+    }, {
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      }
     });
   } catch (error) {
     console.error("[MOBILE_SESSION]", error);
     return NextResponse.json(
       { error: "No autorizado" },
-      { status: 401 }
+      { 
+        status: 401,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        }
+      }
     );
   }
 } 

@@ -9,36 +9,55 @@ export async function POST(req: NextRequest) {
     const { 
       usuarioId, 
       familiarId,
-      nombreConyuge,
-      cedulaConyuge,
-      testigo3, // documento del cónyuge
-      testigo4, // documento del cónyuge (duplicado para compatibilidad)
-      bienes_generico1,
-      bienes_generico2,
-      bienes_generico3,
-      bienes_generico4,
-      bienes_generico5,
-      genericText
+      tipoInmueble,
+      otroTipoInmueble,
+      monto,
+      formaPago,
+      moneda,
+      esCompraConjunta,
+      esVendedorJuridico,
+      esApoderado,
+      cedulaVendedor,
+      nombreVendedor,
+      documentoConstitucion,
+      actaAutorizacion,
+      documentoPropiedad,
+      cedulaCatastral,
+      solvenciaMunicipal,
+      cedulaApoderado,
+      documentoConyuge,
+      documentoConyugeVendedor
     } = body;
 
     // Log de validación
     console.log("Validación de datos:", {
       hasUsuarioId: !!usuarioId,
       hasFamiliarId: !!familiarId,
-      hasAlMenosUnBien: !!(bienes_generico1 || bienes_generico2 || bienes_generico3 || bienes_generico4 || bienes_generico5)
+      hasTipoInmueble: !!tipoInmueble,
+      hasMonto: !!monto,
+      hasFormaPago: !!formaPago,
+      hasMoneda: !!moneda,
+      hasDocumentoPropiedad: !!documentoPropiedad,
+      hasCedulaCatastral: !!cedulaCatastral,
+      hasSolvenciaMunicipal: !!solvenciaMunicipal
     });
 
     // Validar los datos requeridos
-    if (!usuarioId) {
+    if (!usuarioId || !tipoInmueble || !monto || !formaPago || !moneda || !documentoPropiedad || !cedulaCatastral || !solvenciaMunicipal) {
+      const missing = {
+        usuarioId: !usuarioId,
+        tipoInmueble: !tipoInmueble,
+        monto: !monto,
+        formaPago: !formaPago,
+        moneda: !moneda,
+        documentoPropiedad: !documentoPropiedad,
+        cedulaCatastral: !cedulaCatastral,
+        solvenciaMunicipal: !solvenciaMunicipal
+      };
+      console.error("Datos faltantes:", missing);
       return NextResponse.json({ 
-        error: 'Falta el ID del usuario',
-      }, { status: 400 });
-    }
-
-    // Verificar que al menos un documento de propiedad esté presente
-    if (!bienes_generico1 && !bienes_generico2 && !bienes_generico3 && !bienes_generico4 && !bienes_generico5) {
-      return NextResponse.json({ 
-        error: 'Debe subir al menos un documento de propiedad',
+        error: 'Faltan datos requeridos',
+        missing
       }, { status: 400 });
     }
 
@@ -48,9 +67,9 @@ export async function POST(req: NextRequest) {
     });
 
     if (!documento) {
-      console.error("Documento de poder no encontrado");
+      console.error("Documento de compra-venta de vivienda no encontrado");
       return NextResponse.json({ 
-        error: "El tipo de documento de poder no existe en la base de datos"
+        error: "El tipo de documento de compra-venta de vivienda no existe en la base de datos"
       }, { status: 400 });
     }
 
@@ -99,17 +118,21 @@ export async function POST(req: NextRequest) {
     const detalle = await db.detalle.create({
       data: {
         solicitudId: solicitud.id,
-        // Datos del cónyuge
-        Testigo3: testigo3,
-        Testigo4: testigo4,
-        // Documentos de propiedad
-        bienes_generico1,
-        bienes_generico2,
-        bienes_generico3,
-        bienes_generico4,
-        bienes_generico5,
-        // Detalles del poder especial
-        generic_text: genericText || null
+        // Datos del inmueble
+        generic_text: monto,
+        Testigo1: tipoInmueble === "otro" ? otroTipoInmueble : tipoInmueble,
+        Testigo2: formaPago,
+        Testigo3: moneda,
+        bienes_generico1: documentoPropiedad,
+        bienes_generico2: cedulaCatastral,
+        bienes_generico3: solvenciaMunicipal,
+        // Documentos adicionales para persona jurídica
+        bienes_generico4: esVendedorJuridico ? documentoConstitucion : null,
+        bienes_generico5: esVendedorJuridico ? actaAutorizacion : null,
+        // Documentos adicionales
+        Testigo4: esApoderado ? cedulaApoderado : null,
+        Acta_de_nacimiento: esCompraConjunta ? documentoConyuge : null,
+        Acta_de_matrimonio: !esVendedorJuridico ? documentoConyugeVendedor : null
       },
     });
 
@@ -128,7 +151,7 @@ export async function POST(req: NextRequest) {
     console.log("Solicitud actualizada con detalle:", solicitudActualizada);
 
     return NextResponse.json({ 
-      succes: "Solicitud de poder creada exitosamente.", 
+      succes: "Solicitud de compra-venta de vivienda creada exitosamente.", 
       solicitud: solicitudActualizada 
     }, { status: 200 });
 

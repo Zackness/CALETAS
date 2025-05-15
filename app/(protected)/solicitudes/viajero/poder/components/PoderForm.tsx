@@ -262,23 +262,39 @@ export const PoderForm = () => {
     }
   };
 
-  const onSubmit = async (data: z.infer<typeof SolicitudSchema>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Form submission started");
+    
     try {
+      const formData = form.getValues();
+      console.log("Form data:", formData);
+      
+      // Validar que al menos un archivo de propiedad esté presente
+      if (!bien1File && !bien2File && !bien3File && !bien4File && !bien5File) {
+        setError("Debe subir al menos un documento de propiedad");
+        return;
+      }
+
       setIsSubmitting(true);
       setError("");
-      startTransition(() => {
-        setError("");
-        setSucces("");
-      });
+      setSucces("");
       setUploadProgress(0);
 
       // Subir documento del cónyuge
       let documentoConyugeUrl = null;
       if (documentoConyugeFile) {
-        documentoConyugeUrl = await uploadToBunny(
-          documentoConyugeFile,
-          `conyuge-${Date.now()}-${documentoConyugeFile.name.replace(/[^a-zA-Z0-9.-]/g, '')}`
-        );
+        try {
+          documentoConyugeUrl = await uploadToBunny(
+            documentoConyugeFile,
+            `conyuge-${Date.now()}-${documentoConyugeFile.name.replace(/[^a-zA-Z0-9.-]/g, '')}`
+          );
+        } catch (error) {
+          console.error("Error al subir documento del cónyuge:", error);
+          setError("Error al subir el documento del cónyuge");
+          setIsSubmitting(false);
+          return;
+        }
       }
 
       // Subir archivos de bienes
@@ -290,72 +306,70 @@ export const PoderForm = () => {
         bienes_generico5: null,
       };
 
-      // Subir cada archivo de bien si existe
-      if (bien1File) bienesUrls.bienes_generico1 = await uploadToBunny(
-        bien1File,
-        `bien1-${Date.now()}-${bien1File.name.replace(/[^a-zA-Z0-9.-]/g, '')}`
-      );
-      if (bien2File) bienesUrls.bienes_generico2 = await uploadToBunny(
-        bien2File,
-        `bien2-${Date.now()}-${bien2File.name.replace(/[^a-zA-Z0-9.-]/g, '')}`
-      );
-      if (bien3File) bienesUrls.bienes_generico3 = await uploadToBunny(
-        bien3File,
-        `bien3-${Date.now()}-${bien3File.name.replace(/[^a-zA-Z0-9.-]/g, '')}`
-      );
-      if (bien4File) bienesUrls.bienes_generico4 = await uploadToBunny(
-        bien4File,
-        `bien4-${Date.now()}-${bien4File.name.replace(/[^a-zA-Z0-9.-]/g, '')}`
-      );
-      if (bien5File) bienesUrls.bienes_generico5 = await uploadToBunny(
-        bien5File,
-        `bien5-${Date.now()}-${bien5File.name.replace(/[^a-zA-Z0-9.-]/g, '')}`
-      );
+      try {
+        if (bien1File) bienesUrls.bienes_generico1 = await uploadToBunny(
+          bien1File,
+          `bien1-${Date.now()}-${bien1File.name.replace(/[^a-zA-Z0-9.-]/g, '')}`
+        );
+        if (bien2File) bienesUrls.bienes_generico2 = await uploadToBunny(
+          bien2File,
+          `bien2-${Date.now()}-${bien2File.name.replace(/[^a-zA-Z0-9.-]/g, '')}`
+        );
+        if (bien3File) bienesUrls.bienes_generico3 = await uploadToBunny(
+          bien3File,
+          `bien3-${Date.now()}-${bien3File.name.replace(/[^a-zA-Z0-9.-]/g, '')}`
+        );
+        if (bien4File) bienesUrls.bienes_generico4 = await uploadToBunny(
+          bien4File,
+          `bien4-${Date.now()}-${bien4File.name.replace(/[^a-zA-Z0-9.-]/g, '')}`
+        );
+        if (bien5File) bienesUrls.bienes_generico5 = await uploadToBunny(
+          bien5File,
+          `bien5-${Date.now()}-${bien5File.name.replace(/[^a-zA-Z0-9.-]/g, '')}`
+        );
+      } catch (error) {
+        console.error("Error al subir archivos de bienes:", error);
+        setError("Error al subir los archivos de bienes");
+        setIsSubmitting(false);
+        return;
+      }
 
       // Preparar datos para la API
       const requestData = {
-        ...data,
+        ...formData,
         usuarioId: user?.id,
         familiarId: selectedPersona !== user?.id ? selectedPersona : null,
         testigo3: documentoConyugeUrl,
-        testigo4: documentoConyugeUrl, // Usamos la misma URL para mantener compatibilidad
+        testigo4: documentoConyugeUrl,
         ...bienesUrls,
-        genericText: data.genericText || null,
+        genericText: formData.genericText || null,
       };
 
       console.log("Enviando datos a la API:", requestData);
 
-      // Enviar solicitud a la API
-      startTransition(() => {
-        axios.post('/api/solicitudes/viajero/poder', requestData)
-          .then((response) => {
-            const data = response.data;
-            if (data.error) {
-              setError(data.error);
-            }
-            if (data.succes) {
-              form.reset();
-              setSucces(data.succes);
-              // Limpiar los archivos seleccionados
-              setDocumentoConyugeFile(null);
-              setBien1File(undefined);
-              setBien2File(undefined);
-              setBien3File(undefined);
-              setBien4File(undefined);
-              setBien5File(undefined);
-              toast.success('Solicitud creada exitosamente');
-            }
-          })
-          .catch((error) => {
-            console.error('Error creating solicitud:', error);
-            setError(error.response?.data?.error || "Error al crear la solicitud");
-            toast.error('Error al crear la solicitud');
-          });
-      });
-    } catch (error) {
+      const response = await axios.post('/api/solicitudes/viajero/poder', requestData);
+      const responseData = response.data;
+
+      if (responseData.error) {
+        setError(responseData.error);
+        toast.error(responseData.error);
+      } else if (responseData.succes) {
+        form.reset();
+        setSucces(responseData.succes);
+        setDocumentoConyugeFile(null);
+        setBien1File(undefined);
+        setBien2File(undefined);
+        setBien3File(undefined);
+        setBien4File(undefined);
+        setBien5File(undefined);
+        toast.success('Solicitud creada exitosamente');
+      }
+
+    } catch (error: any) {
       console.error('Error al crear la solicitud:', error);
-      setError(error instanceof Error ? error.message : 'Error al crear la solicitud');
-      toast.error('Error al crear la solicitud');
+      const errorMessage = error.response?.data?.error || error.message || 'Error al crear la solicitud';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -386,7 +400,10 @@ export const PoderForm = () => {
       <div className="flex flex-col gap-4">
         <h2 className="text-2xl font-bold text-center mb-4">Solicitud de Poder</h2>
         <Form {...form}>
-          <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+          <form 
+            className="space-y-4" 
+            onSubmit={handleSubmit}
+          >
             <div className="flex flex-col gap-4 text-white">
               <FormField
                 control={form.control}
@@ -672,11 +689,11 @@ export const PoderForm = () => {
             <FormSucces message={succes} />
             <Button
               variant="default"
-              disabled={isPending || isSubmitting}
+              disabled={isSubmitting}
               type="submit"
               className="w-full"
             >
-              {isPending || isSubmitting ? (
+              {isSubmitting ? (
                 <div className="flex items-center gap-2">
                   <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />

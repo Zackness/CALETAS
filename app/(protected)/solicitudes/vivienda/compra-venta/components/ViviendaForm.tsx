@@ -274,7 +274,7 @@ export const ViviendaForm = () => {
       return uploadConfig.fileUrl;
     } catch (error: any) {
       console.error('Error uploading to Bunny:', error.response?.data || error.message);
-      throw new Error(error.response?.data?.error || 'Error al subir el archivo a Bunny Storage');
+      throw new Error(error.response?.data?.error || 'Error al subir el archivo al los servidores');
     }
   };
 
