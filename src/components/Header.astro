@@ -1,0 +1,31 @@
+---
+import Logo from '../components/marca/Logo.astro'
+import { Button } from '../components/ui/button'
+---
+<header>
+    <nav class="flex flex-row justify-between items-center p-3 border-b-2 mx-5 font-semibold text-[18px]">
+        <Logo/>
+        <p>
+            Caracteristicas
+        </p>
+        <p>
+            Testimonios
+        </p>
+        <p>
+            Aliados
+        </p>
+        <p>
+            Blog
+        </p>
+        <a
+            href="/login"
+            class="font-special"
+        >
+            <Button
+                size="lg"
+            >
+                Agrega tu uni
+            </Button>
+        </a>
+    </nav>
+</header>

@@ -1,0 +1,54 @@
+---
+import Cards from "./Cards.astro"
+
+const CardsInfo = [
+    {
+        titulo: "Comparte tu caleta",
+        contenido: "Sube tu apunte, exámenes resueltos y material de estudio para ayudar a otros estudiantes",
+        picture: "/Cards1.webp",
+        alt: "Cards1",
+    },
+    {
+        titulo: "Aprende más rápido",
+        contenido: "Accede a material ordenado por temas y materias que te ayudará a entender conceptos complejos",
+        picture: "/Cards2.webp",
+        alt: "Cards1",
+    },
+    {
+        titulo: "Comunidad activa",
+        contenido: "Forma parte de una comunidad de estudiantes que se ayudan mutuamente a alcanzar el éxito",
+        picture: "/Cards3.webp",
+        alt: "Cards1",
+    },
+    {
+        titulo: "Visualiza tu progreso",
+        contenido: "Mapa interactivo de tu pensum para visualizar tu avance y planificar tus próximos pasos",
+        picture: "/Cards4.webp",
+        alt: "Cards1",
+    },
+];
+---
+<section class="content-center items-center pt-[56px]">
+    <div class="flex flex-col text-center">
+        <p class="font-semibold">
+            Esta es una iniciativa de Zackness
+        </p>
+        <h2 class="text-[40px] font-special pt-[30px]">
+            ¿POR QUE CALETA?
+        </h2>
+        <p class="font-semibold text-[24px] pt-[55px] px-42">
+            Una plataforma diseñada por estudiantes para estudiantes, centrada en la
+            colaboración y el aprendizaje colectivo
+        </p>
+    </div>
+    <div class="flex flex-row justify-center mx-5 gap-4 pt-24">
+        {CardsInfo.map(card => (
+            <Cards
+                titulo={card.titulo}
+                contenido={card.contenido}
+                picture={card.picture}
+                alt={card.alt}
+            />
+        ))}
+    </div>
+</section>
