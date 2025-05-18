@@ -3,26 +3,26 @@ import Logo from '../components/marca/Logo.astro'
 import { Button } from '../components/ui/button'
 ---
 <header>
-    <nav class="flex flex-row justify-between items-center p-3 border-b-2 mx-5 font-semibold text-[18px]">
+    <nav class="flex flex-row justify-between items-center px-3 border-b-2 border-white/15 mx-5 font-semibold text-[18px] py-[23px]">
         <Logo/>
         <p>
             Caracteristicas
         </p>
-        <p>
+        <a href="/testimonios">
             Testimonios
-        </p>
-        <p>
+        </a>
+        <a href="/aliados">
             Aliados
-        </p>
-        <p>
+        </a>
+        <a href="/blog">
             Blog
-        </p>
+        </a>
         <a
             href="/login"
             class="font-special"
         >
             <Button
-                size="lg"
+                size="sm"
             >
                 Agrega tu uni
             </Button>
