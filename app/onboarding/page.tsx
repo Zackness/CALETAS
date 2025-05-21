@@ -458,8 +458,8 @@ export default function OnboardingPage() {
         <CardHeader>
           <CardTitle>Bienvenido a Global Legal</CardTitle>
           <CardDescription>
-            {currentStep === 'titular' && "Para comenzar, por favor sube tu documento de identificación."}
-            {currentStep === 'conyuge' && "Por favor, sube el documento de identificación de tu cónyuge."}
+            {currentStep === 'titular' && "Para comenzar, por favor sube tu cedula de identidad (en formato JPEG o JPG no mayor a 5MB)."}
+            {currentStep === 'conyuge' && "Por favor, sube la cedula de identidad de tu cónyuge (en formato JPEG o JPG no mayor a 5MB)."}
             {currentStep === 'direccion' && "Por último, ingresa tu dirección de residencia."}
           </CardDescription>
         </CardHeader>

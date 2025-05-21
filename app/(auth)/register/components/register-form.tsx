@@ -71,7 +71,7 @@ export const RegisterForm = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Input {...field} disable={isPending} label="Nombre de usuario" id="name" />
+                      <Input {...field} disable={isPending} label="Ingrese su nombre como en la cedula" id="name" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

@@ -7,7 +7,7 @@ async function main() {
   const empresas = [
     {
       id: "empresa-1",
-      nombre: "Seguros Caracas",
+      nombre: "Guaro Vision (clientes)",
       direccion: "Av. Libertador, Caracas",
       telefono: "0212-555-1234",
       RIF: "J-123456789",
@@ -17,7 +17,7 @@ async function main() {
     },
     {
       id: "empresa-2",
-      nombre: "Telecom Venezuela",
+      nombre: "Guaro Vision (empleados)",
       direccion: "Av. Bolívar, Caracas",
       telefono: "0212-555-5678",
       RIF: "J-987654321",

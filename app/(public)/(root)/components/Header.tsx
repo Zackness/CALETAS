@@ -19,12 +19,9 @@ export function Header() {
 
           {/* Logo */}
           <Link href="/admin" className="flex items-center gap-2">
-              <img
-                src="/images/full-logo.png"
-                alt="Global Logo"
-                width={126}
-                height={31}
-              />
+            <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
+              Global Legal
+            </h2>
             </Link>
 
           {/* Espacio para botones */}

@@ -361,18 +361,19 @@ enum EstadoDeResidencia {
   Carabobo
   Cojedes
   Delta_Amacuro
+  Distrito_Capital
   Falcón
   Guárico
   Lara
+  La_Guaira
   Mérida
   Miranda
   Monagas
   Nueva_Esparta
-  Prtuguesa
+  Portuguesa
   Sucre
   Táchira
   Trujillo
-  Vargas
   Yaracuy 
   Zulia
 }

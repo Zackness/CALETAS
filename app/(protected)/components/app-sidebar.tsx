@@ -57,7 +57,7 @@ export function AppSidebar({ session }: AppSidebarProps) {
                     href={"/home"} 
                   >
                     <Home />
-                    <span>Home</span>
+                    <span>Inicio</span>
                   </a>
                 </SidebarMenuButton>
               </SidebarMenuItem>
