@@ -797,7 +797,7 @@ export default function LandingPage() {
         </motion.div>
       </section>
 
-      {/* Final CTA Section */}
+      {/* CTA Section */}
       <section className="container mx-auto px-4 py-16 text-center">
         <motion.div
           className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 dark:from-blue-500/30 dark:to-purple-500/30 p-10 rounded-2xl border border-blue-200/20 dark:border-blue-500/30"
@@ -816,6 +816,104 @@ export default function LandingPage() {
           >
             Contrata ahora y obtén tu primer documento en minutos <CheckCircle className="ml-2" />
           </Button>
+        </motion.div>
+      </section>
+
+      {/* FAQs Section */}
+      <section className="container mx-auto px-4 py-16">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="text-center mb-12"
+        >
+          <h2 className="text-3xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600 dark:from-blue-400 dark:to-purple-500">
+            Preguntas Frecuentes
+          </h2>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            Resolvemos tus dudas más comunes
+          </p>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="max-w-3xl mx-auto"
+        >
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="item-1" className="border-b border-border">
+              <AccordionTrigger className="text-lg font-medium">
+                ¿Cómo funciona el servicio?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Nuestro servicio te permite acceder a 12 documentos legales al año. Simplemente selecciona el documento que necesitas, completa el formulario con tus datos y nuestro equipo de abogados lo revisará y procesará. Recibirás notificaciones sobre el estado de tu solicitud y podrás descargar el documento una vez aprobado.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-2" className="border-b border-border">
+              <AccordionTrigger className="text-lg font-medium">
+                ¿Cuánto tiempo toma procesar un documento?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                El tiempo de procesamiento varía según el tipo de documento. En general, la mayoría de los documentos se procesan entre 24 y 48 horas hábiles. Documentos más complejos pueden tomar hasta 72 horas hábiles. Te mantendremos informado sobre el estado de tu solicitud en todo momento.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-3" className="border-b border-border">
+              <AccordionTrigger className="text-lg font-medium">
+                ¿Qué documentos están incluidos en el servicio?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                El servicio incluye 12 documentos legales al año, entre ellos: compra-venta de vehículos, declaración de no poseer vivienda, compra-venta de vivienda, autorizaciones de viaje, poderes, declaraciones de sucesiones, justificativos de soltería, constitución de empresas PYME, actas de asamblea, poderes desde el exterior, certificaciones de ingresos y balance personal.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-4" className="border-b border-border">
+              <AccordionTrigger className="text-lg font-medium">
+                ¿Necesito ser abogado para usar el servicio?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                No, no necesitas ser abogado. Nuestro servicio está diseñado para personas y empresas que necesitan documentos legales sin tener conocimientos jurídicos. Nuestro equipo de abogados revisa y procesa todos los documentos, asegurando que cumplan con los requisitos legales necesarios.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-5" className="border-b border-border">
+              <AccordionTrigger className="text-lg font-medium">
+                ¿Los documentos son legalmente válidos?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Sí, todos los documentos son preparados por abogados colegiados y cumplen con los requisitos legales vigentes. Sin embargo, es importante mencionar que algunos documentos pueden requerir firma presencial o apostilla según el caso específico, lo cual te será indicado durante el proceso.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-6" className="border-b border-border">
+              <AccordionTrigger className="text-lg font-medium">
+                ¿Qué sucede si necesito más de 12 documentos al año?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Si necesitas más de 12 documentos al año, puedes adquirir documentos adicionales a un precio especial. También ofrecemos planes personalizados para empresas que requieren un volumen mayor de documentos. Contáctanos para más información sobre estas opciones.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-7" className="border-b border-border">
+              <AccordionTrigger className="text-lg font-medium">
+                ¿Cómo se protegen mis datos personales?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                La protección de tus datos es una prioridad. Utilizamos encriptación de extremo a extremo y cumplimos con las regulaciones de protección de datos. Tus documentos y datos personales solo son accesibles para nuestro equipo de abogados y personal autorizado, y nunca son compartidos con terceros sin tu consentimiento.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-8" className="border-b border-border">
+              <AccordionTrigger className="text-lg font-medium">
+                ¿Puedo cancelar mi suscripción en cualquier momento?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Sí, puedes cancelar tu suscripción en cualquier momento. Los documentos ya procesados seguirán siendo tuyos y podrás acceder a ellos. La cancelación no afecta los documentos que ya has utilizado, solo detiene la generación de nuevos documentos.
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </motion.div>
       </section>
     </div>
