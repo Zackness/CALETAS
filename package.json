@@ -14,7 +14,8 @@
     "create-notas": "node scripts/create-notas.js",
     "seed": "node scripts/seed.js",
     "unseed": "node scripts/unseed.js",
-    "create-empresas": "node scripts/create-empresas.js"
+    "create-empresas": "node scripts/create-empresas.js",
+    "delete-1-user": "node scripts/delete-1-user.js"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.3.16",

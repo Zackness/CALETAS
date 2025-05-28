@@ -846,7 +846,7 @@ export default function LandingPage() {
               <AccordionTrigger className="text-lg font-medium">
                 ¿Cómo funciona el servicio?
               </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground">
+              <AccordionContent className="text-muted-foreground pb-4">
                 Nuestro servicio te permite acceder a 12 documentos legales al año. Simplemente selecciona el documento que necesitas, completa el formulario con tus datos y nuestro equipo de abogados lo revisará y procesará. Recibirás notificaciones sobre el estado de tu solicitud y podrás descargar el documento una vez aprobado.
               </AccordionContent>
             </AccordionItem>
@@ -855,7 +855,7 @@ export default function LandingPage() {
               <AccordionTrigger className="text-lg font-medium">
                 ¿Cuánto tiempo toma procesar un documento?
               </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground">
+              <AccordionContent className="text-muted-foreground pb-4">
                 El tiempo de procesamiento varía según el tipo de documento. En general, la mayoría de los documentos se procesan entre 24 y 48 horas hábiles. Documentos más complejos pueden tomar hasta 72 horas hábiles. Te mantendremos informado sobre el estado de tu solicitud en todo momento.
               </AccordionContent>
             </AccordionItem>
@@ -865,7 +865,21 @@ export default function LandingPage() {
                 ¿Qué documentos están incluidos en el servicio?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                El servicio incluye 12 documentos legales al año, entre ellos: compra-venta de vehículos, declaración de no poseer vivienda, compra-venta de vivienda, autorizaciones de viaje, poderes, declaraciones de sucesiones, justificativos de soltería, constitución de empresas PYME, actas de asamblea, poderes desde el exterior, certificaciones de ingresos y balance personal.
+                El servicio incluye 12 documentos legales al año, entre ellos: <br /><br />
+                <ul className="list-disc list-inside">
+                  <li>1. Compra-venta de vehículos</li>
+                  <li>2. Declaración de no poseer vivienda</li>
+                  <li>3. Compra-venta de vivienda</li>
+                  <li>4. Autorizaciones de viaje</li>
+                  <li>5. Poder para representación durante viajes</li>
+                  <li>6. Declaración de sucesiones</li>
+                  <li>7. Justificativos de soltería</li>
+                  <li>8. Constitución de empresas PYME</li>
+                  <li>9. Actas de asamblea</li>
+                  <li>10. Poder desde el exterior</li>
+                  <li>11. Certificaciones de ingresos</li>
+                  <li>12. Balance personal</li><br />
+                </ul>
               </AccordionContent>
             </AccordionItem>
 
@@ -873,7 +887,7 @@ export default function LandingPage() {
               <AccordionTrigger className="text-lg font-medium">
                 ¿Necesito ser abogado para usar el servicio?
               </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground">
+              <AccordionContent className="text-muted-foreground pb-4">
                 No, no necesitas ser abogado. Nuestro servicio está diseñado para personas y empresas que necesitan documentos legales sin tener conocimientos jurídicos. Nuestro equipo de abogados revisa y procesa todos los documentos, asegurando que cumplan con los requisitos legales necesarios.
               </AccordionContent>
             </AccordionItem>
@@ -882,7 +896,7 @@ export default function LandingPage() {
               <AccordionTrigger className="text-lg font-medium">
                 ¿Los documentos son legalmente válidos?
               </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground">
+              <AccordionContent className="text-muted-foreground pb-4">
                 Sí, todos los documentos son preparados por abogados colegiados y cumplen con los requisitos legales vigentes. Sin embargo, es importante mencionar que algunos documentos pueden requerir firma presencial o apostilla según el caso específico, lo cual te será indicado durante el proceso.
               </AccordionContent>
             </AccordionItem>
@@ -891,7 +905,7 @@ export default function LandingPage() {
               <AccordionTrigger className="text-lg font-medium">
                 ¿Qué sucede si necesito más de 12 documentos al año?
               </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground">
+              <AccordionContent className="text-muted-foreground pb-4">
                 Si necesitas más de 12 documentos al año, puedes adquirir documentos adicionales a un precio especial. También ofrecemos planes personalizados para empresas que requieren un volumen mayor de documentos. Contáctanos para más información sobre estas opciones.
               </AccordionContent>
             </AccordionItem>
@@ -900,7 +914,7 @@ export default function LandingPage() {
               <AccordionTrigger className="text-lg font-medium">
                 ¿Cómo se protegen mis datos personales?
               </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground">
+              <AccordionContent className="text-muted-foreground pb-4">
                 La protección de tus datos es una prioridad. Utilizamos encriptación de extremo a extremo y cumplimos con las regulaciones de protección de datos. Tus documentos y datos personales solo son accesibles para nuestro equipo de abogados y personal autorizado, y nunca son compartidos con terceros sin tu consentimiento.
               </AccordionContent>
             </AccordionItem>
@@ -909,7 +923,7 @@ export default function LandingPage() {
               <AccordionTrigger className="text-lg font-medium">
                 ¿Puedo cancelar mi suscripción en cualquier momento?
               </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground">
+              <AccordionContent className="text-muted-foreground pb-4">
                 Sí, puedes cancelar tu suscripción en cualquier momento. Los documentos ya procesados seguirán siendo tuyos y podrás acceder a ellos. La cancelación no afecta los documentos que ya has utilizado, solo detiene la generación de nuevos documentos.
               </AccordionContent>
             </AccordionItem>

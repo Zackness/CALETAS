@@ -125,11 +125,17 @@ export const CreateFamiliarDialog = ({
                   <FormControl>
                     <Input
                       type="file"
-                      accept="image/*"
+                      accept=".jpg,.jpeg"
                       className="border-none bg-blue-500 rounded-xl text-foreground"
                       onChange={async (e) => {
                         const file = e.target.files?.[0];
                         if (file) {
+                          if (!file.type.match('image/jpeg')) {
+                            toast.error('Solo se aceptan archivos JPG o JPEG');
+                            e.target.value = '';
+                            return;
+                          }
+                          
                           const reader = new FileReader();
                           reader.onloadend = async () => {
                             const base64Image = reader.result as string;
@@ -165,7 +171,7 @@ export const CreateFamiliarDialog = ({
                     />
                   </FormControl>
                   <FormDescription>
-                    Sube una imagen de la cédula del familiar para registrar sus datos
+                    Sube una imagen de la cédula del familiar en formato JPG o JPEG. Otros formatos no serán aceptados.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
