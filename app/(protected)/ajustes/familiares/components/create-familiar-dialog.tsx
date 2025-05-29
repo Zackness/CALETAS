@@ -30,6 +30,7 @@ export const CreateFamiliarDialog = ({
   onSuccess,
 }: CreateFamiliarDialogProps) => {
   const [isPending, setIsPending] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analyzedData, setAnalyzedData] = useState<any>(null);
 
   const form = useForm<z.infer<typeof CreateFamiliarSchema>>({
@@ -49,6 +50,30 @@ export const CreateFamiliarDialog = ({
 
     try {
       setIsPending(true);
+
+      // Verificar si la cédula ya existe
+      const checkCedulaResponse = await fetch(`/api/familiares/check-cedula?cedula=${analyzedData.cedula}`);
+      if (!checkCedulaResponse.ok) {
+        throw new Error('Error al verificar la cédula');
+      }
+      
+      const { exists: cedulaExists } = await checkCedulaResponse.json();
+      if (cedulaExists) {
+        toast.error('Esta cédula ya está registrada en el sistema');
+        return;
+      }
+
+      // Verificar si el teléfono ya existe
+      const checkTelefonoResponse = await fetch(`/api/familiares/check-telefono?telefono=${values.telefono}`);
+      if (!checkTelefonoResponse.ok) {
+        throw new Error('Error al verificar el teléfono');
+      }
+      
+      const { exists: telefonoExists } = await checkTelefonoResponse.json();
+      if (telefonoExists) {
+        toast.error('Este número de teléfono ya está registrado en el sistema');
+        return;
+      }
 
       const response = await fetch('/api/familiares', {
         method: 'POST',
@@ -136,20 +161,24 @@ export const CreateFamiliarDialog = ({
                             return;
                           }
                           
+                          setIsAnalyzing(true);
                           const reader = new FileReader();
                           reader.onloadend = async () => {
                             const base64Image = reader.result as string;
                             field.onChange(base64Image);
 
                             try {
+                              // Convertir el base64 a Blob
+                              const base64Response = await fetch(base64Image);
+                              const blob = await base64Response.blob();
+                              
+                              // Crear FormData y agregar el archivo
+                              const formData = new FormData();
+                              formData.append('file', blob, 'cedula.jpg');
+
                               const response = await fetch('/api/user/onboarding/analyze', {
                                 method: 'POST',
-                                headers: {
-                                  'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify({
-                                  ciPhoto: base64Image,
-                                }),
+                                body: formData,
                               });
 
                               if (!response.ok) {
@@ -162,12 +191,15 @@ export const CreateFamiliarDialog = ({
                             } catch (error) {
                               console.error('Error:', error);
                               toast.error('Error al analizar la cédula');
+                              setAnalyzedData(null);
+                            } finally {
+                              setIsAnalyzing(false);
                             }
                           };
                           reader.readAsDataURL(file);
                         }
                       }}
-                      disabled={isPending}
+                      disabled={isPending || isAnalyzing}
                     />
                   </FormControl>
                   <FormDescription>
@@ -177,6 +209,28 @@ export const CreateFamiliarDialog = ({
                 </FormItem>
               )}
             />
+
+            {analyzedData && (
+              <div className="space-y-2 p-4 bg-muted rounded-lg">
+                <h3 className="font-medium">Datos extraídos:</h3>
+                <p>Cédula: {analyzedData.cedula}</p>
+                <p>Nombre: {analyzedData.nombre} {analyzedData.nombre2}</p>
+                <p>Apellidos: {analyzedData.apellido} {analyzedData.apellido2}</p>
+                <p>Fecha de Nacimiento: {analyzedData.fechaNacimiento}</p>
+              </div>
+            )}
+
+            {isAnalyzing && (
+              <div className="flex items-center justify-center p-4">
+                <div className="flex items-center gap-2">
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  Analizando cédula...
+                </div>
+              </div>
+            )}
 
             <FormField
               control={form.control}
@@ -189,7 +243,7 @@ export const CreateFamiliarDialog = ({
                       className="border-none bg-fm-blue-3 rounded-xl text-foreground"
                       {...field}
                       placeholder="Ingrese el número de teléfono"
-                      disabled={isPending}
+                      disabled={isPending || isAnalyzing}
                     />
                   </FormControl>
                   <FormMessage />
@@ -202,14 +256,14 @@ export const CreateFamiliarDialog = ({
                 type="button"
                 variant="outline"
                 onClick={onClose}
-                disabled={isPending}
+                disabled={isPending || isAnalyzing}
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
                 variant="form"
-                disabled={isPending || !analyzedData}
+                disabled={isPending || isAnalyzing || !analyzedData}
               >
                 {isPending ? (
                   <div className="flex items-center gap-2">
