@@ -61,6 +61,9 @@ export const RegisterForm = () => {
       >
         Registro
       </motion.h2>
+      <p className="text-xs text-gray-400 my-2 px-5">
+        La contraseña debe contener al menos una mayúscula, una minúscula, un número y 6 caracteres de largo.
+      </p>              
       <div className="flex flex-col gap-4">
         <Form {...form}>
           <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>

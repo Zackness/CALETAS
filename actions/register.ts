@@ -46,6 +46,6 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
         verificationToken.token,
     );
 
-    return { succes: "El correo de verificación se envió correctamente"}
+    return { succes: "El correo de verificación se envió correctamente. Por favor revise su cuenta de correo y haga click en Verificar"}
 };
 

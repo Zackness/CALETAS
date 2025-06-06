@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 async function deleteOneUser() {
   try {
     console.log('Iniciando eliminación del usuario...');
-    const userId = 'cmaq0c1sf0000i8047ouihztp';
+    const userId = 'cmb5iggso0000kw04zddtw7rt';
     
     // Primero eliminamos las notificaciones
     console.log('Eliminando notificaciones...');
