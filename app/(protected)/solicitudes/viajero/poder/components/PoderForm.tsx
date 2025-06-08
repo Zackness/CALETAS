@@ -45,6 +45,15 @@ const SolicitudSchema = z.object({
   }).optional(),
   esPoderEspecial: z.boolean().default(false),
   genericText: z.string().optional(),
+}).refine((data) => {
+  // Si es poder especial, al menos un bien debe estar presente
+  if (data.esPoderEspecial) {
+    return !!(data.bien1 || data.bien2 || data.bien3 || data.bien4 || data.bien5);
+  }
+  return true;
+}, {
+  message: "Debe subir al menos un documento de propiedad para un poder especial",
+  path: ["bien1"]
 });
 
 interface User {
@@ -537,6 +546,7 @@ export const PoderForm = () => {
               
               {/* Campo de texto para poder especial */}
               {isPoderEspecial && (
+                <>
                 <FormField
                   control={form.control}
                   name="genericText"
@@ -554,13 +564,11 @@ export const PoderForm = () => {
                     </FormItem>
                   )}
                 />
-              )}
-              
-              {/* Campos para bienes */}
-              <div className="mt-6">
-                <h3 className="text-lg font-medium text-foreground">Propiedades, bienes o inmuebles</h3>
-                <p className="text-sm text-foreground/50 mb-4">Suba los documentos de propiedad de sus bienes o inmuebles</p>
-                <div className="space-y-4">
+
+                <div>
+                  <h3 className="text-lg font-medium text-foreground">Propiedades, bienes o inmuebles</h3>
+                  <p className="text-sm text-foreground/50 mb-4">Suba los documentos de propiedad de sus bienes o inmuebles</p>
+                  <div className="space-y-4 mt-4">
                   <FormField
                     control={form.control}
                     name="bien1"
@@ -678,6 +686,11 @@ export const PoderForm = () => {
                   />
                 </div>
               </div>
+                </>
+              )}
+              
+              {/* Campos para bienes */}
+
             </div>
             {uploadProgress > 0 && uploadProgress < 100 && (
               <div className="w-full">

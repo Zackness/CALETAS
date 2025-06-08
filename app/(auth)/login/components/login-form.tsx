@@ -156,7 +156,7 @@ export const LoginForm = () => {
               )}
             </div>
             <div className="flex items-baseline">
-              <p className="mt-12 text-sm text-white">
+              <p className="mt-3 text-sm text-white">
                 ¿Olvidaste la contraseña? 
               </p>
               <Button className="ml-2 px-0 text-white" size="sm" variant="link" asChild>
@@ -174,7 +174,7 @@ export const LoginForm = () => {
         </Form>
       </div>
       <div className="flex items-baseline">
-        <p className="mt-12 text-sm text-white">
+        <p className="mt-8 text-sm text-white">
           ¿No tienes una cuenta?
         </p>
         <span className="ml-2 hover:underline cursor-pointer font-semibold text-sm text-white">

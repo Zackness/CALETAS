@@ -25,7 +25,8 @@ export async function POST(req: NextRequest) {
     console.log("Validación de datos:", {
       hasUsuarioId: !!usuarioId,
       hasFamiliarId: !!familiarId,
-      hasAlMenosUnBien: !!(bienes_generico1 || bienes_generico2 || bienes_generico3 || bienes_generico4 || bienes_generico5)
+      hasAlMenosUnBien: !!(bienes_generico1 || bienes_generico2 || bienes_generico3 || bienes_generico4 || bienes_generico5),
+      isPoderEspecial: !!genericText
     });
 
     // Validar los datos requeridos
@@ -35,10 +36,10 @@ export async function POST(req: NextRequest) {
       }, { status: 400 });
     }
 
-    // Verificar que al menos un documento de propiedad esté presente
-    if (!bienes_generico1 && !bienes_generico2 && !bienes_generico3 && !bienes_generico4 && !bienes_generico5) {
+    // Verificar que al menos un documento de propiedad esté presente solo si es poder especial
+    if (genericText && !bienes_generico1 && !bienes_generico2 && !bienes_generico3 && !bienes_generico4 && !bienes_generico5) {
       return NextResponse.json({ 
-        error: 'Debe subir al menos un documento de propiedad',
+        error: 'Debe subir al menos un documento de propiedad para un poder especial',
       }, { status: 400 });
     }
 

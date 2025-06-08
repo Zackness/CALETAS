@@ -302,7 +302,7 @@ export default function OnboardingPage() {
           <>
             <div className="space-y-2">
               <Label htmlFor="document" className="text-foreground">
-                Documento de Identificación
+                Documento de Identificación (en formato JPEG o JPG no mayor a 2MB)
               </Label>
               <Input
                 id="document"
@@ -310,6 +310,7 @@ export default function OnboardingPage() {
                 accept="image/*,.pdf"
                 onChange={handleFileChange}
                 disabled={isLoading}
+                className="border-2 border-red-500 rounded-md"
               />
             </div>
 

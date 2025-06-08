@@ -26,6 +26,9 @@ const SolicitudSchema = z.object({
   testigo2: z.custom<File>((file) => file instanceof File, {
     message: "Debe subir el archivo del segundo testigo",
   }),
+  actaNacimiento: z.custom<File>((file) => file instanceof File, {
+    message: "Debe subir su acta de nacimiento",
+  }),
 });
 
 interface User {
@@ -67,6 +70,7 @@ export const SolteriaForm = () => {
   const [selectedPersona, setSelectedPersona] = useState<string>("");
   const [testigo1File, setTestigo1File] = useState<File | undefined>(undefined);
   const [testigo2File, setTestigo2File] = useState<File | undefined>(undefined);
+  const [actaNacimientoFile, setActaNacimientoFile] = useState<File | undefined>(undefined);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [hasFamiliares, setHasFamiliares] = useState<boolean>(false);
 
@@ -77,6 +81,7 @@ export const SolteriaForm = () => {
       cedula: "",
       testigo1: undefined,
       testigo2: undefined,
+      actaNacimiento: undefined,
     },
   });
 
@@ -137,8 +142,8 @@ export const SolteriaForm = () => {
       });
       setUploadProgress(0);
 
-      if (!testigo1File || !testigo2File) {
-        setError("Debe seleccionar ambos archivos de testigos");
+      if (!testigo1File || !testigo2File || !actaNacimientoFile) {
+        setError("Debe seleccionar todos los archivos requeridos");
         return;
       }
 
@@ -153,12 +158,18 @@ export const SolteriaForm = () => {
         `testigo2-${Date.now()}-${testigo2File.name.replace(/[^a-zA-Z0-9.-]/g, '')}`
       );
 
+      const actaNacimientoUrl = await uploadToBunny(
+        actaNacimientoFile,
+        `acta-nacimiento-${Date.now()}-${actaNacimientoFile.name.replace(/[^a-zA-Z0-9.-]/g, '')}`
+      );
+
       // Crear la solicitud con las URLs de Bunny.net
       const solicitudData = {
         usuarioId: user!.id,
         familiarId: selectedPersona !== user!.id ? selectedPersona : null,
         testigo1: testigo1Url,
         testigo2: testigo2Url,
+        actaNacimiento: actaNacimientoUrl,
       };
 
       startTransition(() => {
@@ -174,6 +185,7 @@ export const SolteriaForm = () => {
               // Limpiar los archivos seleccionados
               setTestigo1File(undefined);
               setTestigo2File(undefined);
+              setActaNacimientoFile(undefined);
               toast.success('Solicitud creada exitosamente');
             }
           })
@@ -240,6 +252,29 @@ export const SolteriaForm = () => {
                     <FormLabel className="text-foreground">Cédula del solicitante</FormLabel>
                     <FormControl>
                       <Input {...field} disabled={true} id="cedula" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="actaNacimiento"
+                render={() => (
+                  <FormItem>
+                    <FormLabel className="text-foreground">Acta de Nacimiento</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="file"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setActaNacimientoFile(file);
+                            form.setValue("actaNacimiento", file);
+                          }
+                        }}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

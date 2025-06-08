@@ -16,8 +16,6 @@ export async function POST(req: NextRequest) {
       generic_text,
       testigo2,
       testigo3,
-      bienes_generico4, 
-      bienes_generico5
     } = body;
 
     // Log de validación
@@ -31,12 +29,10 @@ export async function POST(req: NextRequest) {
       hasGenericText: !!generic_text,
       hasTestigo2: !!testigo2,
       hasTestigo3: !!testigo3,
-      hasBienes4: !!bienes_generico4,
-      hasBienes5: !!bienes_generico5
     });
 
     // Validar los datos recibidos
-    if (!usuarioId || !testigo1 || !bienes_generico1 || !bienes_generico2 || !bienes_generico3 || !generic_text || !testigo2 || !testigo3 || !bienes_generico4 || !bienes_generico5) {
+    if (!usuarioId || !testigo1 || !bienes_generico1 || !bienes_generico2 || !bienes_generico3 || !generic_text || !testigo2 || !testigo3) {
       const missing = {
         usuarioId: !usuarioId,
         testigo1: !testigo1,
@@ -46,8 +42,6 @@ export async function POST(req: NextRequest) {
         generic_text: !generic_text,
         testigo2: !testigo2,
         testigo3: !testigo3,
-        bienes_generico4: !bienes_generico4,
-        bienes_generico5: !bienes_generico5
       };
       console.error("Datos faltantes:", missing);
       return NextResponse.json({ 
@@ -125,8 +119,6 @@ export async function POST(req: NextRequest) {
       generic_text,
       Testigo2: testigo2,
       Testigo3: testigo3,
-      bienes_generico4,
-      bienes_generico5
     });
 
     // Crear el detalle usando el ID de la solicitud
@@ -140,8 +132,6 @@ export async function POST(req: NextRequest) {
         generic_text,
         Testigo2: testigo2,
         Testigo3: testigo3,
-        bienes_generico4,
-        bienes_generico5
       },
     });
 

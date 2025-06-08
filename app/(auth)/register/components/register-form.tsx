@@ -14,6 +14,7 @@ import { FormSucces } from "@/components/form-succes";
 import { register } from "@/actions/register";
 import { motion } from "framer-motion";
 import { Eye, EyeOff } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export const RegisterForm = () => {
   const [error, setError] = useState<string | undefined>("");
@@ -32,6 +33,7 @@ export const RegisterForm = () => {
       email: "",
       password: "",
       name: "",
+      acceptTerms: false,
     },
   });
 
@@ -74,7 +76,7 @@ export const RegisterForm = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Input {...field} disable={isPending} label="Ingrese su nombre como en la cedula" id="name" />
+                      <Input {...field} disable={isPending} label="Ingrese su primer nombre" id="name" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -123,10 +125,36 @@ export const RegisterForm = () => {
                   </FormItem>
                 )}
               />
+              <FormField
+                control={form.control}
+                name="acceptTerms"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 bg-blue-200 text-blue-800">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        disabled={isPending}
+                        className="border-blue-800 text-blue-800"
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                        Expresamente declaro la autenticidad de la información suministrada conforme a los términos y condiciones de la plataforma
+                      </label>
+                    </div>
+                  </FormItem>
+                )}
+              />
             </div>
             <FormError message={error} />
             <FormSucces message={succes} />
-            <Button type="submit" variant="form" disabled={isPending} className="w-full">
+            <Button 
+              type="submit" 
+              variant="form" 
+              disabled={isPending || !form.watch("acceptTerms")} 
+              className="w-full"
+            >
               Registrarse
             </Button>
           </form>

@@ -51,8 +51,8 @@ export const NewVerificationForm = () => {
   return (
     <CardWrapper showSocial>
       <div className="flex items-baseline flex-col">
-        <img src="/images/meme2.png" className="w-full mb-[-100px] mt-[-80px]" alt="Logo" />
         <h2 className="text-3xl font-bold mb-6 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">Verificando tu correo</h2>
+        <p className="text-sm text-red-500 bg-red-900 p-2 rounded-xl mb-8">Una vez verificado el correo electrónico, haga click en el boton de &quot;Iniciar sesión&quot; para acceder a la plataforma</p>
       </div>
       <div className="flex items-center w-full justify-center">
         {!succes && !error && <BeatLoader color="blue" />}
@@ -63,13 +63,13 @@ export const NewVerificationForm = () => {
         {succes && !error && (
           <p className="mt-12 text-sm text-white">Es momento de acceder</p>
         )}
-        {!succes && error && (
-          <p className="mt-12 text-sm text-white">Vuelve al formulario para</p>
-        )}
         {succes && !error && (
           <span className="ml-2 hover:underline cursor-pointer font-semibold text-sm text-white">
             <a href="/login">Inicia aquí</a>
           </span>
+        )}
+        {!succes && error && (
+          <p className="mt-12 text-sm text-white">Vuelve al formulario para</p>
         )}
         {!succes && error && (
           <span className="ml-2 hover:underline cursor-pointer font-semibold text-sm text-white">

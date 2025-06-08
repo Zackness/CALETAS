@@ -34,12 +34,6 @@ const SolicitudSchema = z.object({
   generic_text: z.string().nonempty("Debe ingresar el monto"),
   formaPago: z.string().nonempty("Debe seleccionar una forma de pago"),
   moneda: z.string().nonempty("Debe seleccionar la moneda de la transacción"),
-  bienes_generico4: z.custom<File>((file) => file instanceof File, {
-    message: "Debe subir la declaración jurada del vendedor",
-  }),
-  bienes_generico5: z.custom<File>((file) => file instanceof File, {
-    message: "Debe subir la declaración jurada del comprador",
-  }),
 });
 
 interface User {
@@ -82,8 +76,6 @@ export const AutoForm = () => {
   const [bienes1File, setBienes1File] = useState<File | undefined>(undefined);
   const [bienes2File, setBienes2File] = useState<File | undefined>(undefined);
   const [bienes3File, setBienes3File] = useState<File | undefined>(undefined);
-  const [bienes4File, setBienes4File] = useState<File | undefined>(undefined);
-  const [bienes5File, setBienes5File] = useState<File | undefined>(undefined);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
 
   const form = useForm<z.infer<typeof SolicitudSchema>>({
@@ -98,8 +90,6 @@ export const AutoForm = () => {
       generic_text: "",
       formaPago: "",
       moneda: "",
-      bienes_generico4: undefined,
-      bienes_generico5: undefined,
     },
   });
 
@@ -155,7 +145,7 @@ export const AutoForm = () => {
     setUploadProgress(0);
 
     try {
-      if (!testigo1File || !bienes1File || !bienes2File || !bienes3File || !bienes4File || !bienes5File) {
+      if (!testigo1File || !bienes1File || !bienes2File || !bienes3File) {
         setError("Debe seleccionar todos los documentos requeridos");
         return;
       }
@@ -181,16 +171,6 @@ export const AutoForm = () => {
         `bienes3-${Date.now()}-${bienes3File.name.replace(/[^a-zA-Z0-9.-]/g, '')}`
       );
 
-      const bienes4Url = await uploadToBunny(
-        bienes4File,
-        `bienes4-${Date.now()}-${bienes4File.name.replace(/[^a-zA-Z0-9.-]/g, '')}`
-      );
-
-      const bienes5Url = await uploadToBunny(
-        bienes5File,
-        `bienes5-${Date.now()}-${bienes5File.name.replace(/[^a-zA-Z0-9.-]/g, '')}`
-      );
-
       // Crear la solicitud con las URLs de Bunny.net
       const solicitudData = {
         usuarioId: user!.id,
@@ -202,8 +182,6 @@ export const AutoForm = () => {
         generic_text: values.generic_text,
         testigo2: values.formaPago,
         testigo3: values.moneda,
-        bienes_generico4: bienes4Url,
-        bienes_generico5: bienes5Url,
       };
 
       startTransition(() => {
@@ -221,8 +199,6 @@ export const AutoForm = () => {
               setBienes1File(undefined);
               setBienes2File(undefined);
               setBienes3File(undefined);
-              setBienes4File(undefined);
-              setBienes5File(undefined);
             }
           })
           .catch((error) => {
@@ -290,13 +266,13 @@ export const AutoForm = () => {
                 )}
               />
               
-              {/* Documento del comprador */}
+              {/* Cedula del Vendedor */}
               <FormField
                 control={form.control}
                 name="testigo1"
                 render={() => (
                   <FormItem>
-                    <FormLabel className="text-foreground">Documento del comprador</FormLabel>
+                    <FormLabel className="text-foreground">Cedula del Vendedor</FormLabel>
                     <FormControl>
                       <Input
                         type="file"
@@ -495,57 +471,8 @@ export const AutoForm = () => {
                     <FormMessage />
                   </FormItem>
                 )}
-              />
+              />            
               
-              {/* Declaración jurada del vendedor */}
-              <FormField
-                control={form.control}
-                name="bienes_generico4"
-                render={() => (
-                  <FormItem>
-                    <FormLabel className="text-foreground">Declaración jurada del vendedor (destino de los fondos son lícitos)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="file"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            setBienes4File(file);
-                            form.setValue("bienes_generico4", file);
-                          }
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              {/* Declaración jurada del comprador */}
-              <FormField
-                control={form.control}
-                name="bienes_generico5"
-                render={() => (
-                  <FormItem>
-                    <FormLabel className="text-foreground">Declaración jurada del comprador (origen de los fondos son lícitos)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="file"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            setBienes5File(file);
-                            form.setValue("bienes_generico5", file);
-                          }
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </div>
             {uploadProgress > 0 && uploadProgress < 100 && (
               <div className="w-full">

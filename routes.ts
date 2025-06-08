@@ -11,6 +11,7 @@ export const publicRoutes = [
     "/api/webhook",
     "/api/stripe-url",
     "/new-verification",
+    "/terminos-y-condiciones",
 ];
 
 /**

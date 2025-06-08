@@ -1,36 +1,50 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from "@/lib/db";
+import { auth } from "@/auth";
+import { Estado } from "@prisma/client";
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return new NextResponse("No autorizado", { status: 401 });
+    }
+
     const body = await req.json();
     console.log("Datos recibidos:", body);
 
-    const { usuarioId, familiarId, testigo1, testigo2 } = body;
+    const { usuarioId, familiarId, testigo1, testigo2, actaNacimiento } = body;
 
     // Log de validación
     console.log("Validación de datos:", {
       hasUsuarioId: !!usuarioId,
       hasFamiliarId: !!familiarId,
       hasTestigo1: !!testigo1,
-      hasTestigo2: !!testigo2
+      hasTestigo2: !!testigo2,
+      hasActaNacimiento: !!actaNacimiento
     });
 
     // Validar los datos recibidos
-    if (!usuarioId || !testigo1 || !testigo2) {
+    if (!usuarioId || !testigo1 || !testigo2 || !actaNacimiento) {
       return NextResponse.json({ 
         error: 'Faltan datos requeridos',
         missing: {
           usuarioId: !usuarioId,
           testigo1: !testigo1,
-          testigo2: !testigo2
+          testigo2: !testigo2,
+          actaNacimiento: !actaNacimiento
         }
       }, { status: 400 });
     }
 
-    // Verificar que el documento existe
-    const documento = await db.documento.findUnique({
-      where: { id: "personal-doc-id" }
+    // Obtener el ID del documento de soltería
+    const documento = await db.documento.findFirst({
+      where: {
+        nombre: "Solteria",
+        servicio: {
+          nombre: "PREVISION PERSONAL"
+        }
+      }
     });
 
     if (!documento) {
@@ -50,30 +64,21 @@ export async function POST(req: NextRequest) {
     // Crear la solicitud
     const solicitud = await db.solicitud.create({
       data: {
+        documentoId: documento.id,
         usuarioId,
         familiarId,
-        documentoId: documento.id,
-      },
+        estado: Estado.PENDIENTE,
+        detalle: {
+          create: {
+            Testigo1: testigo1,
+            Testigo2: testigo2,
+            bienes_generico1: actaNacimiento, // Usamos bienes_generico1 para el acta de nacimiento
+          }
+        }
+      }
     });
 
     console.log("Solicitud creada:", solicitud);
-
-    console.log("Intentando crear detalle con:", {
-      solicitudId: solicitud.id,
-      Testigo1: testigo1,
-      Testigo2: testigo2
-    });
-
-    // Crear el detalle usando el ID de la solicitud
-    const detalle = await db.detalle.create({
-      data: {
-        solicitudId: solicitud.id,
-        Testigo1: testigo1,
-        Testigo2: testigo2,
-      },
-    });
-
-    console.log("Detalle creado:", detalle);
 
     // Actualizar la solicitud para usar la nota predefinida
     const solicitudActualizada = await db.solicitud.update({
