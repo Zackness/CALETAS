@@ -4,7 +4,7 @@ import bcrypt from "bcrypt";
 import * as z from "zod";
 import { db } from "@/lib/db";
 import { RegisterSchema } from "@/schemas";
-import { getUserByEmail, getUserByName } from "@/data/user";
+import { getUserByEmail } from "@/data/user";
 import { generateVerificationToken } from "@/lib/tokens";
 import { sendVerificationEmail } from "@/lib/mail";
 
@@ -19,14 +19,9 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const existingMail = await getUserByEmail(email);
-    const existingUser = await getUserByName(name);
 
     if (existingMail) {
         return { error: "Este correo ya esta asociado a un usuario"}
-    }
-
-    if (existingUser) {
-        return { error: "Este nombre de usuario ya fue asignado"}
     }
 
     // Crear el usuario sin empresa (ahora es opcional)

@@ -6,20 +6,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { Loader2, Building2, User } from "lucide-react";
 import { OnboardingStatus, EstadoDeResidencia, TipoEmpresa } from "@prisma/client";
 import { useToast } from "@/components/ui/use-toast";
 import axios from "axios";
 import { useOnboarding } from "../(protected)/home/hooks/use-onboarding";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-type Step = 'titular' | 'conyuge' | 'direccion';
+type Step = 'company-selection' | 'titular' | 'conyuge' | 'direccion';
 
 export default function OnboardingPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [currentStep, setCurrentStep] = useState<Step>('titular');
+  const [currentStep, setCurrentStep] = useState<Step>('company-selection');
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [extractedData, setExtractedData] = useState<{
@@ -48,7 +48,8 @@ export default function OnboardingPage() {
   const [empresa, setEmpresa] = useState("");
   const [codigoEmpresa, setCodigoEmpresa] = useState("");
   const [empresas, setEmpresas] = useState<{ id: string; nombre: string; tipo: TipoEmpresa }[]>([]);
-  const [showCodigoEmpresa, setShowCodigoEmpresa] = useState(false);
+  const [showEmpresaSelection, setShowEmpresaSelection] = useState(false);
+  const [userType, setUserType] = useState<'independent' | 'allied' | null>(null);
   const { onboardingStatus, isLoading: isLoadingStatus } = useOnboarding();
 
   useEffect(() => {
@@ -211,7 +212,13 @@ export default function OnboardingPage() {
   };
 
   const handleNext = () => {
-    if (currentStep === 'titular') {
+    if (currentStep === 'company-selection') {
+      if (userType === 'independent') {
+        setCurrentStep('titular');
+      } else if (userType === 'allied' && empresa) {
+        setCurrentStep('titular');
+      }
+    } else if (currentStep === 'titular') {
       if (extractedData?.estadoCivil?.toLowerCase() === "casado") {
         setCurrentStep('conyuge');
       } else {
@@ -249,17 +256,13 @@ export default function OnboardingPage() {
         return;
       }
 
-      // Último paso: datos de residencia y empresa
+      // Último paso: datos de residencia
       if (!telefono) {
         throw new Error("Por favor, ingresa tu teléfono");
       }
 
       if (!ciudad) {
         throw new Error("Por favor, ingresa tu ciudad de residencia");
-      }
-
-      if (empresa && empresa !== "none" && !codigoEmpresa) {
-        throw new Error("Por favor, ingresa el código de empresa");
       }
 
       // Completamos el onboarding con todos los datos
@@ -269,8 +272,8 @@ export default function OnboardingPage() {
         telefono,
         estado,
         ciudad,
-        empresa: empresa !== "none" ? empresa : null,
-        codigoEmpresa: empresa !== "none" ? codigoEmpresa : null
+        empresa: userType === 'allied' ? empresa : null,
+        codigoEmpresa: userType === 'allied' ? codigoEmpresa : null
       });
 
       toast({
@@ -297,6 +300,97 @@ export default function OnboardingPage() {
 
   const renderStepContent = () => {
     switch (currentStep) {
+      case 'company-selection':
+        return (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card 
+                className={`cursor-pointer transition-all duration-200 border-2 hover:shadow-lg hover:scale-105 ${
+                  userType === 'independent' 
+                    ? 'ring-2 ring-blue-500 bg-blue-50 border-blue-300 shadow-md' 
+                    : 'border-gray-200 hover:border-blue-300 shadow-sm'
+                }`}
+                onClick={() => {
+                  setUserType('independent');
+                  setEmpresa('');
+                  setCodigoEmpresa('');
+                  setShowEmpresaSelection(false);
+                }}
+              >
+                <CardHeader className="text-center pb-4">
+                  <User className="h-12 w-12 mx-auto text-blue-600 mb-2" />
+                  <CardTitle className="text-lg">Particular</CardTitle>
+                  <CardDescription className="text-sm">
+                    Si no estás suscrito a ninguna empresa aliada
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+
+              <Card 
+                className={`cursor-pointer transition-all duration-200 border-2 hover:shadow-lg hover:scale-105 ${
+                  userType === 'allied' 
+                    ? 'ring-2 ring-green-500 bg-green-50 border-green-300 shadow-md' 
+                    : 'border-gray-200 hover:border-green-300 shadow-sm'
+                }`}
+                onClick={() => {
+                  setUserType('allied');
+                  setShowEmpresaSelection(true);
+                }}
+              >
+                <CardHeader className="text-center pb-4">
+                  <Building2 className="h-12 w-12 mx-auto text-green-600 mb-2" />
+                  <CardTitle className="text-lg">Empresa Aliada</CardTitle>
+                  <CardDescription className="text-sm">
+                    Si estás suscrito a alguna empresa aliada
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            </div>
+
+            {showEmpresaSelection && userType === 'allied' && (
+              <div className="space-y-4 p-4 border-2 border-green-200 rounded-lg bg-green-50">
+                <Label htmlFor="empresa" className="text-foreground font-medium">
+                  Selecciona tu empresa aliada
+                </Label>
+                <Select
+                  value={empresa}
+                  onValueChange={(value) => {
+                    setEmpresa(value);
+                    setCodigoEmpresa('');
+                  }}
+                >
+                  <SelectTrigger className="border-green-300 bg-white">
+                    <SelectValue placeholder="Selecciona tu empresa" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {empresas.map((emp) => (
+                      <SelectItem key={emp.id} value={emp.id}>
+                        {emp.nombre}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                {empresa && (
+                  <div className="space-y-2">
+                    <Label htmlFor="codigoEmpresa" className="text-foreground font-medium">
+                      Código de Empresa
+                    </Label>
+                    <Input
+                      id="codigoEmpresa"
+                      type="text"
+                      value={codigoEmpresa}
+                      onChange={(e) => setCodigoEmpresa(e.target.value)}
+                      placeholder="Ingresa tu código de empresa"
+                      disabled={isLoading}
+                      className="border-green-300 bg-white"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        );
       case 'titular':
         return (
           <>
@@ -404,50 +498,6 @@ export default function OnboardingPage() {
                 </SelectContent>
               </Select>
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="empresa" className="text-foreground">
-                Empresa (Opcional)
-              </Label>
-              <Select
-                value={empresa}
-                onValueChange={(value) => {
-                  setEmpresa(value);
-                  setShowCodigoEmpresa(value !== "none");
-                  if (value === "none") {
-                    setCodigoEmpresa("");
-                  }
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecciona tu empresa" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Ninguna empresa</SelectItem>
-                  {empresas.map((emp) => (
-                    <SelectItem key={emp.id} value={emp.id}>
-                      {emp.nombre}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {showCodigoEmpresa && (
-              <div className="space-y-2">
-                <Label htmlFor="codigoEmpresa" className="text-foreground">
-                  Código de Empresa
-                </Label>
-                <Input
-                  id="codigoEmpresa"
-                  type="text"
-                  value={codigoEmpresa}
-                  onChange={(e) => setCodigoEmpresa(e.target.value)}
-                  placeholder="Ingresa tu código de empresa"
-                  disabled={isLoading}
-                />
-              </div>
-            )}
           </div>
         );
     }
@@ -459,7 +509,8 @@ export default function OnboardingPage() {
         <CardHeader>
           <CardTitle>Bienvenido a Global Legal</CardTitle>
           <CardDescription>
-            {currentStep === 'titular' && "Para comenzar, por favor sube tu cedula de identidad (en formato JPEG o JPG no mayor a 5MB)."}
+            {currentStep === 'company-selection' && "Para comenzar, por favor selecciona la opción que mejor se adapte a tu situación"}
+            {currentStep === 'titular' && "Por favor, sube tu cedula de identidad (en formato JPEG o JPG no mayor a 5MB)."}
             {currentStep === 'conyuge' && "Por favor, sube la cedula de identidad de tu cónyuge (en formato JPEG o JPG no mayor a 5MB)."}
             {currentStep === 'direccion' && "Por último, ingresa tu dirección de residencia."}
           </CardDescription>
@@ -477,12 +528,12 @@ export default function OnboardingPage() {
                 type={currentStep === 'direccion' ? "submit" : "button"}
                 onClick={currentStep !== 'direccion' ? handleNext : undefined}
                 disabled={Boolean(isLoading || 
+                  (currentStep === 'company-selection' && (!userType || (userType === 'allied' && !empresa))) ||
                   (currentStep === 'titular' && !file) || 
                   (currentStep === 'conyuge' && !spouseFile) ||
                   (currentStep === 'direccion' && (
                     !telefono || 
-                    !ciudad || 
-                    (empresa && empresa !== "none" && !codigoEmpresa)
+                    !ciudad
                   )))}
               >
                 {isLoading ? (

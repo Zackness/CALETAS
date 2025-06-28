@@ -140,7 +140,7 @@ export const RegisterForm = () => {
                     </FormControl>
                     <div className="space-y-1 leading-none">
                       <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                        Expresamente declaro la autenticidad de la información suministrada conforme a los términos y condiciones de la plataforma
+                        Expresamente declaro la autenticidad de la información suministrada.
                       </label>
                     </div>
                   </FormItem>
