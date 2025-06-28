@@ -17,8 +17,7 @@ export async function POST(req: Request) {
       telefono,
       estado,
       ciudad,
-      empresa,
-      codigoEmpresa
+      empresa
     } = body;
 
     // Validar los datos del usuario
@@ -43,7 +42,7 @@ export async function POST(req: Request) {
         EstadoDeResidencia: estado,
         ciudadDeResidencia: ciudad,
         onboardingStatus: "FINALIZADO",
-        // Datos de empresa (si se proporcionaron)
+        // Solo conectar con la empresa, sin guardar código ni contraseña
         ...(empresa && {
           empresas: {
             connect: {
@@ -56,16 +55,6 @@ export async function POST(req: Request) {
         empresas: true
       }
     });
-
-    // Si se proporcionó una empresa, actualizar el código
-    if (empresa && codigoEmpresa) {
-      await db.user.update({
-        where: { id: session.user.id },
-        data: {
-          codigoEmpresa
-        }
-      });
-    }
 
     // Si hay datos del cónyuge, crear un familiar
     if (spouseData?.cedula && spouseData?.nombre) {

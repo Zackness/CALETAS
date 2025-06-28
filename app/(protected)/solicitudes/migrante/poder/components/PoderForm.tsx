@@ -53,7 +53,6 @@ interface User {
   id: string;
   email: string;
   telefono: string | null;
-  codigoEmpresa: string | null;
   emailVerified: Date | null;
   image: string | null;
   password: string;

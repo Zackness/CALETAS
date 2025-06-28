@@ -46,7 +46,9 @@ export default function OnboardingPage() {
   const [estado, setEstado] = useState<EstadoDeResidencia>(EstadoDeResidencia.Carabobo);
   const [ciudad, setCiudad] = useState("");
   const [empresa, setEmpresa] = useState("");
-  const [codigoEmpresa, setCodigoEmpresa] = useState("");
+  const [passwordEmpresa, setPasswordEmpresa] = useState("");
+  const [isValidatingPassword, setIsValidatingPassword] = useState(false);
+  const [passwordValid, setPasswordValid] = useState(false);
   const [empresas, setEmpresas] = useState<{ id: string; nombre: string; tipo: TipoEmpresa }[]>([]);
   const [showEmpresaSelection, setShowEmpresaSelection] = useState(false);
   const [userType, setUserType] = useState<'independent' | 'allied' | null>(null);
@@ -198,6 +200,50 @@ export default function OnboardingPage() {
     }
   };
 
+  const validateCompanyPassword = async () => {
+    if (!empresa || !passwordEmpresa) {
+      toast({
+        title: "Error",
+        description: "Por favor, selecciona una empresa e ingresa la contraseña.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsValidatingPassword(true);
+    try {
+      const response = await axios.post("/api/user/onboarding/validate-company-password", {
+        empresaId: empresa,
+        password: passwordEmpresa
+      });
+
+      if (response.data.valid) {
+        setPasswordValid(true);
+        toast({
+          title: "Contraseña válida",
+          description: "La contraseña de la empresa es correcta.",
+        });
+      } else {
+        setPasswordValid(false);
+        toast({
+          title: "Contraseña incorrecta",
+          description: "La contraseña ingresada no es correcta.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error validating password:", error);
+      setPasswordValid(false);
+      toast({
+        title: "Error",
+        description: "Error al validar la contraseña. Por favor, intenta nuevamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsValidatingPassword(false);
+    }
+  };
+
   const handleSkip = async () => {
     setIsLoading(true);
     try {
@@ -215,8 +261,10 @@ export default function OnboardingPage() {
     if (currentStep === 'company-selection') {
       if (userType === 'independent') {
         setCurrentStep('titular');
-      } else if (userType === 'allied' && empresa) {
+      } else if (userType === 'allied' && empresa && passwordValid) {
         setCurrentStep('titular');
+        setPasswordEmpresa('');
+        setPasswordValid(false);
       }
     } else if (currentStep === 'titular') {
       if (extractedData?.estadoCivil?.toLowerCase() === "casado") {
@@ -272,8 +320,7 @@ export default function OnboardingPage() {
         telefono,
         estado,
         ciudad,
-        empresa: userType === 'allied' ? empresa : null,
-        codigoEmpresa: userType === 'allied' ? codigoEmpresa : null
+        empresa: userType === 'allied' ? empresa : null
       });
 
       toast({
@@ -313,7 +360,6 @@ export default function OnboardingPage() {
                 onClick={() => {
                   setUserType('independent');
                   setEmpresa('');
-                  setCodigoEmpresa('');
                   setShowEmpresaSelection(false);
                 }}
               >
@@ -356,7 +402,8 @@ export default function OnboardingPage() {
                   value={empresa}
                   onValueChange={(value) => {
                     setEmpresa(value);
-                    setCodigoEmpresa('');
+                    setPasswordEmpresa('');
+                    setPasswordValid(false);
                   }}
                 >
                   <SelectTrigger className="border-green-300 bg-white">
@@ -372,20 +419,44 @@ export default function OnboardingPage() {
                 </Select>
 
                 {empresa && (
-                  <div className="space-y-2">
-                    <Label htmlFor="codigoEmpresa" className="text-foreground font-medium">
-                      Código de Empresa
-                    </Label>
-                    <Input
-                      id="codigoEmpresa"
-                      type="text"
-                      value={codigoEmpresa}
-                      onChange={(e) => setCodigoEmpresa(e.target.value)}
-                      placeholder="Ingresa tu código de empresa"
-                      disabled={isLoading}
-                      className="border-green-300 bg-white"
-                    />
-                  </div>
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="passwordEmpresa" className="text-foreground font-medium">
+                        Contraseña de la Empresa
+                      </Label>
+                      <div className="flex gap-2">
+                        <Input
+                          id="passwordEmpresa"
+                          type="password"
+                          value={passwordEmpresa}
+                          onChange={(e) => {
+                            setPasswordEmpresa(e.target.value);
+                            setPasswordValid(false);
+                          }}
+                          placeholder="Ingresa la contraseña de la empresa"
+                          disabled={isLoading || isValidatingPassword}
+                          className="border-green-300 bg-white flex-1"
+                        />
+                        <Button
+                          type="button"
+                          onClick={validateCompanyPassword}
+                          disabled={isLoading || isValidatingPassword || !passwordEmpresa}
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          {isValidatingPassword ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            "Validar"
+                          )}
+                        </Button>
+                      </div>
+                      {passwordValid && (
+                        <p className="text-sm text-green-600 font-medium">
+                          ✓ Contraseña válida
+                        </p>
+                      )}
+                    </div>
+                  </>
                 )}
               </div>
             )}
@@ -528,7 +599,10 @@ export default function OnboardingPage() {
                 type={currentStep === 'direccion' ? "submit" : "button"}
                 onClick={currentStep !== 'direccion' ? handleNext : undefined}
                 disabled={Boolean(isLoading || 
-                  (currentStep === 'company-selection' && (!userType || (userType === 'allied' && !empresa))) ||
+                  (currentStep === 'company-selection' && (
+                    !userType || 
+                    (userType === 'allied' && (!empresa || !passwordValid))
+                  )) ||
                   (currentStep === 'titular' && !file) || 
                   (currentStep === 'conyuge' && !spouseFile) ||
                   (currentStep === 'direccion' && (
