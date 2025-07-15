@@ -40,8 +40,7 @@ export async function GET(req: NextRequest) {
           usuarioId: usuarioId,
           isActive: true,
           tipoArchivo: {
-            contains: 'pdf',
-            mode: 'insensitive'
+            contains: 'pdf'
           }
         }
       }),
@@ -98,7 +97,7 @@ export async function GET(req: NextRequest) {
     ]);
 
     // Obtener caletas por materia (top 5)
-    const caletasPorMateria = await db.caleta.groupBy({
+    let caletasPorMateria = await db.caleta.groupBy({
       by: ['materiaId'],
       where: {
         usuarioId: usuarioId,
@@ -106,14 +105,12 @@ export async function GET(req: NextRequest) {
       },
       _count: {
         _all: true
-      },
-      orderBy: {
-        _count: {
-          _all: 'desc'
-        }
-      },
-      take: 5
+      }
     });
+    // Ordenar en JS por cantidad descendente y tomar top 5
+    caletasPorMateria = caletasPorMateria
+      .sort((a, b) => (b._count._all || 0) - (a._count._all || 0))
+      .slice(0, 5);
 
     // Obtener detalles de las materias
     const materiasIds = caletasPorMateria.map(c => c.materiaId);

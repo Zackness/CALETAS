@@ -5,12 +5,12 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormMessage, } from "@/components/ui/form"
 import { useState, useTransition } from "react";
-import { Input } from "@/components/input";
-import { CardWrapper } from "@/app/(auth)/components/card-wrapper";
+import Input from "@/components/input";
+import { CardWrapper } from "@/components/card-wrapper";
 import { Button } from "@/components/ui/button";
 import { ResetSchema } from "@/schemas";
 import { FormError } from "@/components/form-error";
-import { FormSuccess } from "@/components/form-success";
+import { FormSucces } from "@/components/form-succes";
 import { reset } from "@/actions/reset";
 
 export const ResetForm = () => {
@@ -35,8 +35,8 @@ export const ResetForm = () => {
                     if (data?.error) {
                         setError(data.error);
                     }
-                    if (data?.success) {
-                        setSuccess(data.success);
+                    if (data?.succes) {
+                        setSuccess(data.succes);
                     }
                 })
                 .catch(() => setError("Algo ha salido mal!"));
@@ -57,8 +57,9 @@ export const ResetForm = () => {
                                     <FormControl>
                                         <Input 
                                             {...field}
-                                            disabled={isPending}
-                                            placeholder="Email"
+                                            id="email"
+                                            disable={isPending}
+                                            label="Email"
                                             type="email"
                                         />
                                     </FormControl>
@@ -67,7 +68,7 @@ export const ResetForm = () => {
                             )}
                         />
                         <FormError message={error} />
-                        <FormSuccess message={success} />
+                        <FormSucces message={success} />
                         <Button disabled={isPending} className="w-full mt-4 text-white" size="lg" type="submit">
                             Send reset email
                         </Button>

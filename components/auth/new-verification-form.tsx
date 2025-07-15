@@ -1,9 +1,9 @@
 "use client";
 
-import { CardWrapper } from "@/app/(auth)/components/card-wrapper";
+import { CardWrapper } from "@/components/card-wrapper";
 import { Button } from "@/components/ui/button";
 import { FormError } from "@/components/form-error";
-import { FormSuccess } from "@/components/form-success";
+import { FormSucces } from "@/components/form-succes";
 import { useState, useTransition } from "react";
 import { useSearchParams } from "next/navigation";
 
@@ -34,7 +34,7 @@ export const NewVerificationForm = () => {
                     Verificando tu email...
                 </p>
                 <FormError message={error} />
-                <FormSuccess message={success} />
+                <FormSucces message={success} />
                 <Button 
                     disabled={isPending || !!success || !!error} 
                     className="w-full mt-4 text-white" 

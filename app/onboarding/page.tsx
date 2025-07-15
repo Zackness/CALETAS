@@ -551,7 +551,7 @@ export default function OnboardingPage() {
                 ✅ Último paso - Revisa tu información antes de completar
               </p>
               <p className="text-xs text-white/70 mt-1">
-                Puedes usar el botón "Atrás" para modificar cualquier dato si es necesario
+                Puedes usar el botón &quot;Atrás&quot; para modificar cualquier dato si es necesario
               </p>
             </div>
           )}

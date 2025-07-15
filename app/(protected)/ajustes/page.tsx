@@ -72,7 +72,7 @@ export default function Ajustes() {
     });
     
     return () => subscription.unsubscribe();
-  }, [form.watch]);
+  }, [form]);
 
   const onSubmit = (values: z.infer<typeof SettingsSchema>) => {
     setError(undefined);

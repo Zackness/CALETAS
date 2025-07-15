@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
           await db.user.update({
             where: { id: session.user.id },
         data: {
-              materiasActuales: materiasIds,
+              materiasActuales: JSON.stringify(materiasIds),
             },
           });
         }

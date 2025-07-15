@@ -10,7 +10,7 @@ export function Hero() {
             </h1>
             <p className="pb-6 sm:pb-8 lg:pb-[45px] font-semibold text-lg sm:text-xl md:text-2xl lg:text-3xl leading-relaxed sm:leading-relaxed md:leading-relaxed lg:leading-[50px]">
                 Accede a material universitario creado por estudiantes
-                para estudiantes. Tu "CALETA" ahora es nuestra caleta.
+                para estudiantes. Tu &quot;CALETA&quot; ahora es nuestra caleta.
                 Juntos somos más.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full">

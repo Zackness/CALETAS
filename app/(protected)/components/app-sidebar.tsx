@@ -17,6 +17,7 @@ import {
   SidebarMenuSubItem,
   SidebarMenuSub,
 } from "@/components/ui/sidebar";
+import Link from "next/link";
 
 export function AppSidebar() {
 
@@ -36,10 +37,10 @@ export function AppSidebar() {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild className="hover:bg-white/10 text-white">
-                  <a href="/home">
+                  <Link href="/home">
                     <Home />
                     <span>Inicio</span>
-                  </a>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
@@ -55,22 +56,22 @@ export function AppSidebar() {
                     <SidebarMenuSub>
                       <SidebarMenuSubItem>
                         <SidebarMenuButton asChild>
-                          <a href="/caletas" className="hover:bg-foreground/50">
+                          <Link href="/caletas" className="hover:bg-foreground/50">
                             <Search className="h-4 w-4" />
                             <span>Buscar Caletas</span>
-                          </a>
+                          </Link>
                         </SidebarMenuButton>
                         <SidebarMenuButton asChild>
-                          <a href="/caletas/subir" className="hover:bg-foreground/50">
+                          <Link href="/caletas/subir" className="hover:bg-foreground/50">
                             <Upload className="h-4 w-4" />
                             <span>Subir Caleta</span>
-                          </a>
+                          </Link>
                         </SidebarMenuButton>
                         <SidebarMenuButton asChild>
-                          <a href="/caletas/favoritos" className="hover:bg-foreground/50">
+                          <Link href="/caletas/favoritos" className="hover:bg-foreground/50">
                             <Heart className="h-4 w-4" />
                             <span>Mis Favoritos</span>
-                          </a>
+                          </Link>
                         </SidebarMenuButton>
                       </SidebarMenuSubItem>
                     </SidebarMenuSub>
@@ -99,29 +100,29 @@ export function AppSidebar() {
                 className="w-[--radix-popper-anchor-width] rounded-xl bg-fm-blue-3 text-foreground"
               >
                 <DropdownMenuItem>
-                  <a href="/" className="underline-offset-4 hover:underline">
+                  <Link href="/" className="underline-offset-4 hover:underline">
                     <span>Informacion</span>
-                  </a>
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
-                  <a href="/" className="underline-offset-4 hover:underline">
+                  <Link href="/" className="underline-offset-4 hover:underline">
                     <span>Privacidad</span>
-                  </a>
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
-                  <a href="/" className="underline-offset-4 hover:underline">
+                  <Link href="/" className="underline-offset-4 hover:underline">
                     <span>Terminos</span>
-                  </a>
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
-                  <a href="/" className="underline-offset-4 hover:underline">
+                  <Link href="/" className="underline-offset-4 hover:underline">
                     <span>Contactar</span>
-                  </a>
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
-                  <a href="/" className="underline-offset-4 hover:underline">
+                  <Link href="/" className="underline-offset-4 hover:underline">
                     <span>Derechos de autor</span>
-                  </a>
+                  </Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

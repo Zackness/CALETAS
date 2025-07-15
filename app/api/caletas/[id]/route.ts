@@ -3,24 +3,20 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 
 // PUT - Actualizar caleta
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(req: NextRequest) {
   try {
     const session = await auth();
-    
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: "No autorizado" },
         { status: 401 }
       );
     }
-
-    const { id } = params;
+    // Obtener el id de la URL
+    const segments = req.nextUrl.pathname.split("/");
+    const id = segments[segments.length - 2];
     const body = await req.json();
     const { nombre, tema, carreraId, materiaId } = body;
-
     // Verificar que la caleta pertenece al usuario
     const caletaExistente = await db.caleta.findFirst({
       where: {
@@ -29,14 +25,12 @@ export async function PUT(
         isActive: true
       }
     });
-
     if (!caletaExistente) {
       return NextResponse.json(
         { error: "Caleta no encontrada" },
         { status: 404 }
       );
     }
-
     // Si se está cambiando la materia, verificar que pertenece a la carrera
     if (materiaId && carreraId) {
       const materia = await db.materia.findFirst({
@@ -46,7 +40,6 @@ export async function PUT(
           isActive: true
         }
       });
-
       if (!materia) {
         return NextResponse.json(
           { error: "La materia no pertenece a la carrera especificada" },
@@ -54,7 +47,6 @@ export async function PUT(
         );
       }
     }
-
     // Actualizar la caleta
     const caletaActualizada = await db.caleta.update({
       where: { id },
@@ -88,9 +80,7 @@ export async function PUT(
         }
       }
     });
-
     return NextResponse.json(caletaActualizada);
-
   } catch (error) {
     console.error("Error updating caleta:", error);
     return NextResponse.json(
@@ -101,22 +91,18 @@ export async function PUT(
 }
 
 // DELETE - Eliminar caleta (soft delete)
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(req: NextRequest) {
   try {
     const session = await auth();
-    
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: "No autorizado" },
         { status: 401 }
       );
     }
-
-    const { id } = params;
-
+    // Obtener el id de la URL
+    const segments = req.nextUrl.pathname.split("/");
+    const id = segments[segments.length - 2];
     // Verificar que la caleta pertenece al usuario
     const caleta = await db.caleta.findFirst({
       where: {
@@ -125,14 +111,12 @@ export async function DELETE(
         isActive: true
       }
     });
-
     if (!caleta) {
       return NextResponse.json(
         { error: "Caleta no encontrada" },
         { status: 404 }
       );
     }
-
     // Soft delete - marcar como inactiva
     await db.caleta.update({
       where: { id },
@@ -140,12 +124,10 @@ export async function DELETE(
         isActive: false
       }
     });
-
     return NextResponse.json(
       { message: "Caleta eliminada exitosamente" },
       { status: 200 }
     );
-
   } catch (error) {
     console.error("Error deleting caleta:", error);
     return NextResponse.json(

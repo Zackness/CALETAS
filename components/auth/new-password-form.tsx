@@ -10,7 +10,7 @@ import { CardWrapper } from "@/components/card-wrapper";
 import { Button } from "@/components/ui/button";
 import { NewPasswordSchema } from "@/schemas";
 import { FormError } from "@/components/form-error";
-import { FormSuccess } from "@/components/form-success";
+import { FormSucces } from "@/components/form-succes";
 import { newPassword } from "@/actions/new-password";
 import { useSearchParams } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
@@ -40,8 +40,8 @@ export const NewPasswordForm = () => {
                     if (data?.error) {
                         setError(data.error);
                     }
-                    if (data?.success) {
-                        setSuccess(data.success);
+                    if (data?.succes) {
+                        setSuccess(data.succes);
                     }
                 })
                 .catch(() => setError("Algo ha salido mal!"));
@@ -86,7 +86,7 @@ export const NewPasswordForm = () => {
                             )}
                         />
                         <FormError message={error} />
-                        <FormSuccess message={success} />
+                        <FormSucces message={success} />
                         <Button 
                             disabled={isPending} 
                             className="w-full mt-2 font-special text-white" 

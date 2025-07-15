@@ -3,21 +3,18 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 
 // POST - Agregar caleta a favoritos
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(req: NextRequest) {
   try {
     const session = await auth();
-    
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: "No autorizado" },
         { status: 401 }
       );
     }
-
-    const caletaId = params.id;
+    // Obtener el id de la URL
+    const segments = req.nextUrl.pathname.split("/");
+    const caletaId = segments[segments.length - 2];
 
     // Verificar que la caleta existe
     const caleta = await db.caleta.findUnique({
@@ -26,14 +23,12 @@ export async function POST(
         isActive: true
       }
     });
-
     if (!caleta) {
       return NextResponse.json(
         { error: "Caleta no encontrada" },
         { status: 404 }
       );
     }
-
     // Verificar si ya está en favoritos
     const favoritoExistente = await db.caletaFavorita.findUnique({
       where: {
@@ -43,14 +38,12 @@ export async function POST(
         }
       }
     });
-
     if (favoritoExistente) {
       return NextResponse.json(
         { error: "La caleta ya está en tus favoritos" },
         { status: 400 }
       );
     }
-
     // Agregar a favoritos
     const favorito = await db.caletaFavorita.create({
       data: {
@@ -58,12 +51,10 @@ export async function POST(
         caletaId: caletaId
       }
     });
-
     return NextResponse.json(
       { message: "Caleta agregada a favoritos", favorito },
       { status: 201 }
     );
-
   } catch (error) {
     console.error("Error adding to favorites:", error);
     return NextResponse.json(
@@ -74,21 +65,18 @@ export async function POST(
 }
 
 // DELETE - Quitar caleta de favoritos
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(req: NextRequest) {
   try {
     const session = await auth();
-    
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: "No autorizado" },
         { status: 401 }
       );
     }
-
-    const caletaId = params.id;
+    // Obtener el id de la URL
+    const segments = req.nextUrl.pathname.split("/");
+    const caletaId = segments[segments.length - 2];
 
     // Verificar que la caleta existe
     const caleta = await db.caleta.findUnique({
@@ -97,14 +85,12 @@ export async function DELETE(
         isActive: true
       }
     });
-
     if (!caleta) {
       return NextResponse.json(
         { error: "Caleta no encontrada" },
         { status: 404 }
       );
     }
-
     // Verificar si está en favoritos
     const favoritoExistente = await db.caletaFavorita.findUnique({
       where: {
@@ -114,14 +100,12 @@ export async function DELETE(
         }
       }
     });
-
     if (!favoritoExistente) {
       return NextResponse.json(
         { error: "La caleta no está en tus favoritos" },
         { status: 400 }
       );
     }
-
     // Quitar de favoritos
     await db.caletaFavorita.delete({
       where: {
@@ -131,12 +115,10 @@ export async function DELETE(
         }
       }
     });
-
     return NextResponse.json(
       { message: "Caleta removida de favoritos" },
       { status: 200 }
     );
-
   } catch (error) {
     console.error("Error removing from favorites:", error);
     return NextResponse.json(
