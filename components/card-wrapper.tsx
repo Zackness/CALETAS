@@ -1,26 +1,29 @@
 "use client";
 
-import { Card, CardContent } from "./ui/card";
+import { Social } from "@/app/(auth)/components/social";
+import { Card, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 
 interface CardWrapperProps {
     children: React.ReactNode;
-    showSocial?: boolean;
     headerLabel?: string;
+    showSocial?: boolean;
 };
 
 export const CardWrapper = ({
     children,
-    showSocial,
-    headerLabel
+    headerLabel,
+    showSocial
 }: CardWrapperProps) => {
     return (
-        <Card className="bg-fm-blue-1 px-8 pt-8 self-center md:w-2/3 sm:max-w-lg rounded-xl w-full border-2 mb-12">
+        <Card className="bg-white/10 backdrop-blur-sm border-white/20 border p-8 self-center mt-2 md:w-2/3 sm:max-w-lg rounded-xl w-full shadow-2xl">
             <CardContent>
-                {headerLabel && (
-                    <h2 className="text-2xl font-bold text-center mb-4">{headerLabel}</h2>
-                )}
-                {children}
+            {children}
             </CardContent>
+            {showSocial && (
+                <CardFooter>
+                    <Social />
+                </CardFooter>
+            )}
         </Card>
     );
 };

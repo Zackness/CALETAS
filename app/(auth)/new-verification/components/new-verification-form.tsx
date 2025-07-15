@@ -7,6 +7,8 @@ import { newVerification } from "@/actions/new-verification";
 import { FormError } from "@/components/form-error";
 import { FormSucces } from "@/components/form-succes";
 import { BeatLoader } from "react-spinners";
+import { Mail, CheckCircle, AlertCircle } from "lucide-react";
+import Link from "next/link";
 
 export const NewVerificationForm = () => {
   const [isMounted, setIsMounted] = useState(false);
@@ -49,33 +51,69 @@ export const NewVerificationForm = () => {
   }
 
   return (
-    <CardWrapper showSocial>
-      <div className="flex items-baseline flex-col">
-        <h2 className="text-3xl font-bold mb-6 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">Verificando tu correo</h2>
-        <p className="text-sm text-red-500 bg-red-900 p-2 rounded-xl mb-8">Una vez verificado el correo electrónico, haga click en el boton de &quot;Iniciar sesión&quot; para acceder a la plataforma</p>
-      </div>
-      <div className="flex items-center w-full justify-center">
-        {!succes && !error && <BeatLoader color="blue" />}
-        <FormSucces message={succes} />
-        {!succes && <FormError message={error} />}
-      </div>
-      <div className="flex items-baseline justify-center">
-        {succes && !error && (
-          <p className="mt-12 text-sm text-white">Es momento de acceder</p>
-        )}
-        {succes && !error && (
-          <span className="ml-2 hover:underline cursor-pointer font-semibold text-sm text-white">
-            <a href="/login">Inicia aquí</a>
-          </span>
-        )}
-        {!succes && error && (
-          <p className="mt-12 text-sm text-white">Vuelve al formulario para</p>
-        )}
-        {!succes && error && (
-          <span className="ml-2 hover:underline cursor-pointer font-semibold text-sm text-white">
-            <a href="/register">Obtener un token</a>
-          </span>
-        )}
+    <CardWrapper 
+      headerLabel="Verificación de correo"
+      showSocial
+    >
+      <div className="flex flex-col items-center text-center">
+        <div className="mb-6">
+          <div className="w-16 h-16 bg-gradient-to-r from-mygreen to-mygreen-light rounded-full flex items-center justify-center mb-4 mx-auto">
+            <Mail className="h-8 w-8 text-white" />
+          </div>
+          <h2 className="text-3xl mb-4 text-white text-center font-special pb-4">
+            Verificando tu correo
+          </h2>
+        </div>
+
+        {/* Mensaje informativo */}
+        <div className="bg-gradient-to-r from-mygreen/20 to-mygreen-light/20 border border-mygreen/30 rounded-xl p-4 mb-6 max-w-md">
+          <div className="flex items-start gap-3">
+            <CheckCircle className="h-5 w-5 text-mygreen mt-0.5 flex-shrink-0" />
+            <div className="text-sm text-white/90 leading-relaxed">
+              <p>Una vez verificado el correo electrónico, podrás acceder a toda la plataforma de Caletas.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Estados de carga y mensajes */}
+        <div className="w-full max-w-md space-y-4">
+          {!succes && !error && (
+            <div className="flex flex-col items-center gap-3 p-6 bg-white/5 rounded-xl border border-white/10">
+              <BeatLoader color="#354B3A" size={8} />
+              <p className="text-sm text-white/70">Verificando tu correo...</p>
+            </div>
+          )}
+          
+          <FormSucces message={succes} />
+          {!succes && <FormError message={error} />}
+        </div>
+
+        {/* Enlaces de acción */}
+        <div className="flex flex-col items-center gap-4 mt-8">
+          {succes && !error && (
+            <div className="flex items-center gap-2">
+              <p className="text-sm text-white">¡Es momento de acceder!</p>
+              <Link 
+                href="/login" 
+                className="text-mygreen hover:text-mygreen-light font-semibold text-sm transition-colors"
+              >
+                Inicia aquí
+              </Link>
+            </div>
+          )}
+          
+          {!succes && error && (
+            <div className="flex items-center gap-2">
+              <p className="text-sm text-white">Vuelve al formulario para</p>
+              <Link 
+                href="/register" 
+                className="text-mygreen hover:text-mygreen-light font-semibold text-sm transition-colors"
+              >
+                obtener un token
+              </Link>
+            </div>
+          )}
+        </div>
       </div>
     </CardWrapper>
   );

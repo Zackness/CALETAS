@@ -1,0 +1,43 @@
+# Reglas de Cursor para Caletas
+
+## Estilos y Diseño
+
+### Fondos y Colores
+- **NUNCA usar fondos blancos** en ningún componente o página
+- Usar siempre la paleta de colores verde oscuro del proyecto:
+  - `bg-gradient-to-t from-mygreen to-mygreen-light` - Fondo principal (gradiente original)
+  - `bg-[#203324]` - Fondo principal sólido
+  - `bg-[#1C2D20]` - Fondo secundario
+  - `bg-[#354B3A]` - Fondo de tarjetas
+  - `bg-[#40C9A9]` - Color de acento (botones principales)
+- Las tarjetas deben usar `bg-[#354B3A]` con `border-white/10`
+- Los elementos interactivos deben usar `bg-white/10` con `hover:bg-white/20`
+
+### Tipografía
+- Usar `font-special` para títulos principales
+- Texto principal en `text-white`
+- Texto secundario en `text-white/70`
+- Texto de acento en `text-[#40C9A9]`
+
+### Componentes
+- Mantener el diseño actual de la aplicación
+- No cambiar estilos existentes sin autorización
+- Preservar la funcionalidad del sidebar con ShadCN
+- Usar gradientes `bg-gradient-to-t from-mygreen to-mygreen-light` para fondos principales (estilo original)
+
+### Responsive Design
+- Mantener el diseño responsive existente
+- Usar clases de Tailwind para responsive: `md:`, `lg:`, `xl:`
+- El sidebar debe funcionar correctamente en móviles y desktop
+
+## Funcionalidad
+- Preservar toda la funcionalidad existente
+- No eliminar características sin autorización
+- Mantener la autenticación y protección de rutas
+- Conservar la integración con la base de datos
+
+## Código
+- Usar TypeScript para todos los archivos
+- Seguir las convenciones de Next.js 14 con App Router
+- Mantener la estructura de carpetas existente
+- Usar componentes de ShadCN/UI cuando sea posible 

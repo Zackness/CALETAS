@@ -10,28 +10,35 @@ datasource db {
 model User {
   id                     String                 @id @default(cuid())
   name                   String
-  name2                  String?
-  apellido               String?
-  apellido2              String?
   email                  String                 @unique
-  cedula                 String?                 @unique
-  telefono               String?                @unique
   emailVerified          DateTime?
-  image                  String?                @default("/mascot.svg")
+  image                  String?                @default("/globe.svg")
   password               String
-  empresa                String?
   role                   UserRole               @default(CLIENT)
   isTwoFactorEnabled     Boolean                @default(false)
-  onboardingStatus       OnboardingStatus       @default(PENDIENTE)
-  EstadoDeResidencia     EstadoDeResidencia?
-  ciudadDeResidencia     String?
-  fechaNacimiento        DateTime?
-  estadoCivil            EstadoCivil            @default(SOLTERO)
-  isCiVerified           Boolean                @default(false)
   createdAt              DateTime               @default(now())
   updatedAt              DateTime               @updatedAt
+  EstadoDeResidencia     EstadoDeResidencia?
+  apellido               String?
+  apellido2              String?
+  cedula                 String?                @unique
+  ciudadDeResidencia     String?
+  empresa                String?
+  estadoCivil            EstadoCivil            @default(SOLTERO)
+  fechaNacimiento        DateTime?
+  isCiVerified           Boolean                @default(false)
+  name2                  String?
+  onboardingStatus       OnboardingStatus       @default(PENDIENTE)
+  telefono               String?                @unique
+  expediente             String?
+  materiasActuales       String?                @db.LongText
+  semestreActual         String?
+  universidadId          String?
+  userType               String?
   accounts               Account[]
   blogPosts              BlogPost[]
+  caletas                Caleta[]
+  caletasFavoritas       CaletaFavorita[]
   documentosHabilitados  DocumentoEditable[]
   familiares             Familiar[]
   notificaciones         Notificacion[]
@@ -40,11 +47,14 @@ model User {
   asignacionesRealizadas SolicitudAbogado[]     @relation("Asignador")
   StripeCustomer         StripeCustomer?
   twoFactorConfirmation  TwoFactorConfirmation?
-  empresas               Empresa[]              @relation("UserEmpresa")
+  universidad            Universidad?           @relation(fields: [universidadId], references: [id])
   UserSubscription       UserSubscription[]
+  empresas               Empresa[]              @relation("UserEmpresa")
+  notifications          Notification[]
 
   @@index([empresa])
   @@index([role])
+  @@index([universidadId])
 }
 
 model Account {
@@ -280,6 +290,79 @@ model Empresa {
   users               User[]      @relation("UserEmpresa")
 }
 
+model Universidad {
+  id        String    @id @default(uuid())
+  nombre    String    @unique
+  siglas    String    @unique
+  direccion String
+  telefono  String
+  email     String
+  website   String?
+  estado    String
+  ciudad    String
+  tipo      String    @default("PÚBLICA")
+  ranking   Int?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  password  String?
+  isActive  Boolean   @default(true)
+  carreras  Carrera[]
+  users     User[]
+}
+
+model Carrera {
+  id            String      @id @default(uuid())
+  nombre        String
+  codigo        String      @unique
+  descripcion   String?     @db.Text
+  duracion      Int
+  creditos      Int
+  universidadId String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  isActive      Boolean     @default(true)
+  caletas       Caleta[]
+  universidad   Universidad @relation(fields: [universidadId], references: [id], onDelete: Cascade)
+  materias      Materia[]
+
+  @@index([universidadId])
+}
+
+model Materia {
+  id                String                 @id @default(uuid())
+  nombre            String
+  codigo            String                 @unique
+  descripcion       String?                @db.Text
+  creditos          Int
+  semestre          Semestre
+  horasTeoria       Int
+  horasPractica     Int
+  carreraId         String
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+  isActive          Boolean                @default(true)
+  caletas           Caleta[]
+  carrera           Carrera                @relation(fields: [carreraId], references: [id], onDelete: Cascade)
+  prerrequisitos    MateriaPrerrequisito[] @relation("MateriaPrerrequisito")
+  esPrerrequisitoDe MateriaPrerrequisito[] @relation("MateriaQueRequiere")
+
+  @@index([carreraId])
+}
+
+model MateriaPrerrequisito {
+  id                String            @id @default(uuid())
+  materiaId         String
+  prerrequisitoId   String
+  tipoPrerrequisito TipoPrerrequisito @default(OBLIGATORIO)
+  createdAt         DateTime          @default(now())
+  materia           Materia           @relation("MateriaPrerrequisito", fields: [materiaId], references: [id], onDelete: Cascade)
+  prerrequisito     Materia           @relation("MateriaQueRequiere", fields: [prerrequisitoId], references: [id], onDelete: Cascade)
+
+  @@unique([materiaId, prerrequisitoId])
+  @@index([materiaId])
+  @@index([prerrequisitoId])
+}
+
 model BlogPost {
   id          String        @id @default(cuid())
   title       String
@@ -306,6 +389,52 @@ model BlogCategory {
   posts BlogPost[]
 }
 
+model Caleta {
+  id          String           @id @default(uuid())
+  nombre      String
+  tema        String
+  urlArchivo  String
+  tipoArchivo String
+  tamanio     Int
+  carreraId   String
+  materiaId   String
+  usuarioId   String
+  isActive    Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  carrera     Carrera          @relation(fields: [carreraId], references: [id], onDelete: Cascade)
+  materia     Materia          @relation(fields: [materiaId], references: [id], onDelete: Cascade)
+  usuario     User             @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  favoritos   CaletaFavorita[]
+
+  @@index([carreraId])
+  @@index([materiaId])
+  @@index([usuarioId])
+  @@index([isActive])
+}
+
+model CaletaFavorita {
+  id        String   @id @default(uuid())
+  usuarioId String
+  caletaId  String
+  createdAt DateTime @default(now())
+  caleta    Caleta   @relation(fields: [caletaId], references: [id], onDelete: Cascade)
+  usuario   User     @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@unique([usuarioId, caletaId])
+  @@index([usuarioId])
+  @@index([caletaId])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
 enum TipoNotificacion {
   ASIGNACION
   ESTADO_CAMBIO
@@ -319,6 +448,7 @@ enum TipoEmpresa {
   TELECOMUNICACIONES
   BANCO
   INDUSTRIAL
+  UNIVERSIDAD
   NINGUNO
 }
 
@@ -353,32 +483,45 @@ enum OnboardingStatus {
 
 enum EstadoDeResidencia {
   Amazonas
-  Anzoátegui
   Apure
   Aragua
   Barinas
-  Bolívar
   Carabobo
   Cojedes
   Delta_Amacuro
   Distrito_Capital
-  Falcón
-  Guárico
   Lara
   La_Guaira
-  Mérida
   Miranda
   Monagas
   Nueva_Esparta
   Portuguesa
   Sucre
-  Táchira
   Trujillo
-  Yaracuy 
+  Yaracuy
   Zulia
 }
 
 enum EstadoCivil {
   SOLTERO
   CASADO
+}
+
+enum TipoPrerrequisito {
+  OBLIGATORIO
+  RECOMENDADO
+  CO_REQUISITO
+}
+
+enum Semestre {
+  S1
+  S2
+  S3
+  S4
+  S5
+  S6
+  S7
+  S8
+  S9
+  S10
 }

@@ -12,6 +12,7 @@ import { ResetSchema } from "@/schemas";
 import { FormError } from "@/components/form-error";
 import { FormSucces } from "@/components/form-succes";
 import { reset } from "@/actions/reset";
+import Link from "next/link";
 
 export const ResetForm = () => {
   const [error, setError] = useState<string | undefined>("");
@@ -41,7 +42,9 @@ export const ResetForm = () => {
 
   return (
     <CardWrapper headerLabel="¿Olvidaste la contraseña?">
-      <h2 className="text-3xl font-bold mb-6 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">¿Olvidaste la contraseña?</h2>
+      <h2 className="text-3xl mb-4 text-white text-center font-special pb-4">
+        ¿Olvidaste la contraseña?
+      </h2>
       <div className="flex flex-col gap-4">
         <Form {...form}>
           <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
@@ -67,17 +70,24 @@ export const ResetForm = () => {
             </div>
             <FormError message={error} />
             <FormSucces message={succes} />
-            <Button disabled={isPending} className="w-full mt-4 text-white" size="lg" variant="form" type="submit">
+            <Button 
+              disabled={isPending} 
+              className="w-full mt-2 font-special text-white" 
+              size="sm"
+              type="submit"
+            >
               Resetear contraseña
             </Button>
           </form>
         </Form>
       </div>
-      <div className="flex items-baseline">
-        <p className="mt-12 text-sm text-white">¿Ya conoces el camino?</p>
-        <span className="ml-2 hover:underline cursor-pointer font-semibold text-sm text-white">
-          <a href="/login">Inicia sesión ahora</a>
-        </span>
+      <div className="flex items-center justify-center mt-6">
+        <p className="text-sm text-white">
+          ¿Ya conoces el camino?
+        </p>
+        <Link href="/login" className="ml-2 hover:underline cursor-pointer font-semibold text-sm text-white hover:text-blue-200">
+          Inicia sesión ahora
+        </Link>
       </div>
     </CardWrapper>
   );

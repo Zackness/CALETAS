@@ -1,72 +1,51 @@
-import { SidebarProvider } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/app/(protected)/components/app-sidebar";
-import { SessionProvider } from "next-auth/react";
-import { auth } from "@/auth";
-import "@/app/globals.css";
 import type { Metadata } from "next";
-import { ThemeProvider } from "next-themes";
-import { DashboardHeader } from "@/components/header";
-import { db } from "@/lib/db";
-import { OnboardingBanner } from "@/components/ui/onboarding-banner";
+import '@fontsource-variable/montserrat';
+import "../globals.css";
+import { AppSidebar } from "./components/app-sidebar";
+import { DashboardHeader } from "./components/app-header";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
+import { SessionProvider } from "next-auth/react";
 
 export const metadata: Metadata = {
-  title: "Home | Global Legal",
-  description: "En Global Legal simplificamos tus trámites",
+  title: "Dashboard - Caletas",
+  description: "Tu dashboard personal para gestionar y explorar caletas universitarias.",
   icons: {
-    icon: "/favicon.ico",
+    icon: '/favicon.svg',
   },
 };
 
 export default async function ProtectedLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   const session = await auth();
 
   if (!session?.user?.id) {
-    return null;
+    return redirect("/login");
   }
 
-  // Verificar el estado de onboarding
-  const user = await db.user.findUnique({
-    where: {
-      id: session.user.id
-    },
-    select: {
-      onboardingStatus: true
-    }
-  });
-
   return (
+    <html lang="es">
+      <body>
     <SessionProvider session={session}>
-      <html lang="es">
-        <body>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <SidebarProvider>
-              <div className="flex h-screen w-full">
-                {/* Sidebar */}
-                <AppSidebar session={session} />
-
-                {/* Main Content */}
-                <main className="flex-1 flex flex-col min-h-screen bg-background">
-                  <DashboardHeader />
-                  <OnboardingBanner onboardingStatus={user?.onboardingStatus}/>
-                  <div className="flex-1">
-                    {children}
-                  </div>
-                </main>
-              </div>
-            </SidebarProvider>
-          </ThemeProvider>
-        </body>
-      </html>
+      <SidebarProvider>
+        <div className="flex h-screen w-screen min-w-0">
+          {/* Sidebar siempre al lado, nunca encima del contenido */}
+          <AppSidebar />
+          {/* Contenido principal adaptativo */}
+          <SidebarInset>
+            <DashboardHeader session={session} />
+            <main className="flex-1 min-w-0 overflow-y-auto">
+              {children}
+            </main>
+          </SidebarInset>
+        </div>
+      </SidebarProvider>
     </SessionProvider>
+    </body>
+    </html>
   );
 }
-

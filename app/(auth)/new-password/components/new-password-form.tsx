@@ -13,10 +13,13 @@ import { FormError } from "@/components/form-error";
 import { FormSucces } from "@/components/form-succes";
 import { newPassword } from "@/actions/new-password";
 import { useSearchParams } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react";
+import Link from "next/link";
 
 export const NewPasswordForm = () => {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
+  const [showPassword, setShowPassword] = useState(false);
 
   const [error, setError] = useState<string | undefined>("");
   const [succes, setSucces] = useState<string | undefined>("");
@@ -44,8 +47,12 @@ export const NewPasswordForm = () => {
   };
 
   return (
-    <CardWrapper>
-      <h2 className="text-3xl font-bold mb-6 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">Escribe tu nueva contraseña</h2>
+    <CardWrapper
+                 headerLabel="Escribe tu nueva contraseña"
+    >
+      <h2 className="text-3xl mb-4 text-white text-center font-special pb-4">
+        Escribe tu nueva contraseña
+      </h2>
       <div className="flex flex-col gap-4">
         <Form {...form}>
           <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
@@ -56,13 +63,26 @@ export const NewPasswordForm = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Input
-                        {...field}
-                        disable={isPending}
-                        label="Password"
-                        id="password"
-                        type="password"
-                      />
+                      <div className="relative">
+                        <Input
+                          {...field}
+                          disable={isPending}
+                          label="Nueva contraseña"
+                          id="password"
+                          type={showPassword ? "text" : "password"}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-5 w-5" />
+                          ) : (
+                            <Eye className="h-5 w-5" />
+                          )}
+                        </button>
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -71,17 +91,24 @@ export const NewPasswordForm = () => {
             </div>
             <FormError message={error} />
             <FormSucces message={succes} />
-            <Button disabled={isPending} className="w-full mt-4" size="lg" variant="form" type="submit">
-              Resetear contraseña
+            <Button 
+              disabled={isPending} 
+              className="w-full mt-2 font-special text-white" 
+              size="sm"
+              type="submit"
+            >
+              Cambiar contraseña
             </Button>
           </form>
         </Form>
       </div>
-      <div className="flex items-baseline text-white">
-        <p className="mt-12 text-sm">¿Camino incorrecto?</p>
-        <span className="ml-2 hover:underline cursor-pointer font-semibold text-sm">
-          <a href="/login">Inicia sesión ahora</a>
-        </span>
+      <div className="flex items-center justify-center mt-6">
+        <p className="text-sm text-white">
+          ¿Camino incorrecto?
+        </p>
+        <Link href="/login" className="ml-2 hover:underline cursor-pointer font-semibold text-sm text-white hover:text-blue-200">
+          Inicia sesión ahora
+        </Link>
       </div>
     </CardWrapper>
   );

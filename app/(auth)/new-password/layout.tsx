@@ -1,8 +1,9 @@
 import "@/app/globals.css";
+import type { Metadata } from "next";
 
-export const metadata = {
-  title: 'Login en Franky',
-  description: 'Inicia sesión en tu cuenta de Franky',
+export const metadata: Metadata = {
+  title: 'Verificar Email - Caletas',
+  description: 'Verifica tu dirección de email en Caletas',
 }
 
 export default function RootLayout({
@@ -11,8 +12,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body>
+    <html lang="es">
+      <body suppressHydrationWarning={true}>
           {children}
       </body>
     </html>

@@ -1,82 +1,104 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
-import { EstadoDeResidencia } from "@prisma/client";
+import { OnboardingStatus, EstadoDeResidencia } from "@prisma/client";
 
-export async function POST(req: Request) {
+export async function POST(request: NextRequest) {
   try {
     const session = await auth();
+    
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+      return NextResponse.json(
+        { error: "No autorizado" },
+        { status: 401 }
+      );
     }
 
-    const body = await req.json();
-    const {
-      userData,
-      spouseData,
-      telefono,
-      estado,
-      ciudad,
-      empresa
-    } = body;
+    const formData = await request.formData();
+    const userType = formData.get("userType") as string;
+    const universidad = formData.get("universidad") as string;
+    const telefono = formData.get("telefono") as string;
+    const estado = formData.get("estado") as string;
+    const ciudad = formData.get("ciudad") as string;
+    const semestreActual = formData.get("semestreActual") as string;
+    const materiasActuales = formData.get("materiasActuales") as string;
+    const carnetData = formData.get("carnetData") as string;
 
-    // Validar los datos del usuario
-    if (!userData?.cedula || !userData?.nombre || !userData?.fechaNacimiento) {
-      return new NextResponse("Faltan datos requeridos del usuario", { status: 400 });
+    // Parsear datos del carnet
+    let carnetInfo = null;
+    if (carnetData) {
+      try {
+        carnetInfo = JSON.parse(carnetData);
+      } catch (error) {
+        console.error("Error parsing carnet data:", error);
+      }
     }
 
-    // Actualizar datos del usuario
+    // Actualizar el perfil del usuario - solo campos básicos por ahora
     const updatedUser = await db.user.update({
       where: { id: session.user.id },
       data: {
-        // Datos de identificación
-        cedula: userData.cedula,
-        name: userData.nombre,
-        name2: userData.nombre2 || null,
-        apellido: userData.apellido || null,
-        apellido2: userData.apellido2 || null,
-        fechaNacimiento: new Date(userData.fechaNacimiento),
-        estadoCivil: userData.estadoCivil?.toUpperCase() || "SOLTERO",
-        // Datos de residencia
-        telefono,
-        EstadoDeResidencia: estado,
-        ciudadDeResidencia: ciudad,
-        onboardingStatus: "FINALIZADO",
-        // Solo conectar con la empresa, sin guardar código ni contraseña
-        ...(empresa && {
-          empresas: {
-            connect: {
-              id: empresa
-            }
-          }
-        })
+        // Información básica
+        telefono: telefono || null,
+        EstadoDeResidencia: estado as EstadoDeResidencia || null,
+        ciudadDeResidencia: ciudad || null,
+        
+        // Estado del onboarding
+        onboardingStatus: OnboardingStatus.FINALIZADO,
       },
-      include: {
-        empresas: true
-      }
     });
 
-    // Si hay datos del cónyuge, crear un familiar
-    if (spouseData?.cedula && spouseData?.nombre) {
-      await db.familiar.create({
+    // Si hay materias actuales, guardarlas
+    if (materiasActuales) {
+      try {
+        const materiasIds = JSON.parse(materiasActuales);
+        if (Array.isArray(materiasIds) && materiasIds.length > 0) {
+          // Aquí podrías guardar las materias actuales en una tabla separada
+          // Por ahora solo las guardamos como JSON en el perfil
+          await db.user.update({
+            where: { id: session.user.id },
         data: {
-          nombre: spouseData.nombre,
-          nombre2: spouseData.nombre2,
-          apellido: spouseData.apellido,
-          apellido2: spouseData.apellido2,
-          cedula: spouseData.cedula,
-          parentesco: "ESPOSO",
-          fechaNacimiento: spouseData.fechaNacimiento ? new Date(spouseData.fechaNacimiento) : null,
-          usuarioId: session.user.id,
-        },
+              materiasActuales: materiasIds,
+            },
+          });
+        }
+      } catch (error) {
+        console.error("Error parsing materias actuales:", error);
+      }
+    }
+
+    // Actualizar campos universitarios usando SQL directo
+    if (universidad || semestreActual || carnetInfo?.nombre || carnetInfo?.expediente || userType) {
+      const updateData: any = {};
+      if (universidad) updateData.universidadId = universidad;
+      if (semestreActual) updateData.semestreActual = semestreActual;
+      if (carnetInfo?.nombre) updateData.name = carnetInfo.nombre;
+      if (carnetInfo?.expediente) updateData.expediente = carnetInfo.expediente;
+      if (userType) updateData.userType = userType;
+      
+      await db.user.update({
+        where: { id: session.user.id },
+        data: updateData,
       });
     }
 
-    return NextResponse.json(updatedUser);
+    return NextResponse.json({
+      message: "Onboarding completado exitosamente",
+      user: {
+        id: updatedUser.id,
+        email: updatedUser.email,
+        name: updatedUser.name,
+        expediente: updatedUser.expediente,
+        universidadId: updatedUser.universidadId,
+        semestreActual: updatedUser.semestreActual,
+        onboardingStatus: updatedUser.onboardingStatus,
+      },
+    });
+
   } catch (error) {
     console.error("Error completing onboarding:", error);
     return NextResponse.json(
-      { error: "Error al completar el onboarding" },
+      { error: "Error interno del servidor" },
       { status: 500 }
     );
   }

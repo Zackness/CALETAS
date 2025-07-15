@@ -73,14 +73,17 @@ export const LoginForm = () => {
   }
 
   return (
-    <CardWrapper showSocial>
-      <h2 className="text-3xl font-bold mb-6 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
-        Iniciar sesión
+    <CardWrapper 
+    headerLabel="Bienvenido" 
+    showSocial
+    >
+      <h2 className="text-3xl mb-4 text-white text-center font-special pb-4">
+        Inicia sesión
       </h2>
       <div className="flex flex-col gap-4">
         <Form {...form}>
           <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
-            <div className="flex flex-col gap-4 text-white">
+            <div className="flex flex-col gap-4">
               {showTwoFactor && (
                 <FormField
                   control={form.control}
@@ -155,31 +158,34 @@ export const LoginForm = () => {
                 </>
               )}
             </div>
-            <div className="flex items-baseline">
-              <p className="mt-3 text-sm text-white">
-                ¿Olvidaste la contraseña? 
-              </p>
-              <Button className="ml-2 px-0 text-white" size="sm" variant="link" asChild>
-                <Link href="/reset">
-                  Recuperar contraseña
-                </Link>
-              </Button>
-            </div>
             <FormError message={error || urlError} />
             <FormSucces message={succes} />
-            <Button disabled={isPending} className="w-full mt-4 text-white" size="lg" variant="form" type="submit">
+            <Button 
+              disabled={isPending} 
+              className="w-full mt-2 font-special text-white" 
+              size="sm"
+              type="submit"
+            >
               {showTwoFactor ? "Confirmar código" : "Iniciar sesión"}
             </Button>
+            <div className="text-center">
+              <a 
+                href="/reset" 
+                className="font-semibold text-sm text-white/80 hover:text-white transition-colors"
+              >
+                ¿Olvidaste tu contraseña?
+              </a>
+            </div>
           </form>
         </Form>
       </div>
-      <div className="flex items-baseline">
-        <p className="mt-8 text-sm text-white">
-          ¿No tienes una cuenta?
+      <div className="flex items-center justify-center mt-6">
+        <p className="text-sm text-white">
+          ¿Nuevo en Caletas?
         </p>
-        <span className="ml-2 hover:underline cursor-pointer font-semibold text-sm text-white">
-          <a href="/register">Regístrate ahora</a>
-        </span>
+        <Link href="/register" className="ml-2 hover:underline cursor-pointer font-semibold text-sm text-white hover:text-blue-200">
+          Regístrate ahora
+        </Link>
       </div>
     </CardWrapper>
   );

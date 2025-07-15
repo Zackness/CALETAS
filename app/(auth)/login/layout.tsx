@@ -1,8 +1,9 @@
 import "@/app/globals.css";
+import type { Metadata } from "next";
 
 export const metadata = {
-  title: 'Login en Global Legal',
-  description: 'Inicia sesión en tu cuenta de Global Legal',
+  title: 'Iniciar Sesión - Caletas',
+  description: 'Inicia sesión en tu cuenta de Caletas',
 }
 
 export default function RootLayout({
@@ -11,8 +12,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body>
+    <html lang="es">
+      <body suppressHydrationWarning={true}>
           {children}
       </body>
     </html>

@@ -9,13 +9,13 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-blue-600 font-bold text-white hover:bg-fm-blue-3",
-        form: "bg-blue-600 hover:bg-blue-700 text-white transition-colors ml-auto",
+        default: "bg-none border-3 border-[#BEBEBE] items-center hover:border-white/50 cursor-pointer py-6",
+        form: "bg-fm-green font-md text-white hover:bg-fm-blue-3",
         form2: "bg-fm-red font-md text-white hover:bg-fm-blue-3",
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline:
-          "border border-blue-600 border-2 text-white hover:bg-blue-700 hover:text-white/50",
+          "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50",
         outline2:
           "border border-fm-green/80 border-2 border-b-4 bg-fm-blue-1 text-white hover:border-fm-blue-3 hover:text-white/50",
         outline3:
@@ -25,13 +25,13 @@ const buttonVariants = cva(
         outline5:
           "border border-fm-red-3 border-2 border-b-4 bg-fm-red hover:border-fm-blue-3 hover:bg-fm-blue-2 hover:text-white/50",
         secondary:
-          "text-secondary-foreground hover:bg-fm-blue-2 hover:text-accent-foreground",
+          "bg-none border-3 border-[#40C9A9] hover:border-[#40C9A9]/50 text-[#40C9A9] cursor-pointer py-6",
         secondary2:
           "text-secondary-foreground hover:bg-fm-blue-1 hover:text-accent-foreground",
         ghost:
-          "hover:bg-accent hover:text-accent-foreground",
+          "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         link:
-          "text-primary underline-offset-4 hover:underline",
+          "bg-none cursor-pointer text-white/50",
         extragrande:
           "bg-fm-green rounded-full text-2xl text-white",
         locked:
@@ -40,10 +40,11 @@ const buttonVariants = cva(
           "border border-fm-blue-3/30 border-2 border-b-4 bg-fm-green/50 hover:border-fm-blue-3 hover:bg-fm-blue-2 hover:text-accent-foreground",
       },
       size: {
-        default: "h-10 px-4 py-2 rounded-xl",
+        default: "h-9 px-4 py-2 has-[>svg]:px-3",
         default2: "h-12 w-20 lg:w-16 px-2 py-2 rounded-xl",
-        sm: "h-9 rounded-xl px-3",
-        lg: "h-11 rounded-xl px-8",
+        sm: "h-[63px] w-[284px] text-lg rounded-2xl gap-1.5 px-3 has-[>svg]:px-2.5",
+        lg: "h-[63px] sm:w-[369px] w-[700px] rounded-2xl sm:py-2 py-9 px-6 has-[>svg]:px-4 sm:text-base text-3xl",
+        xl: "h-14 rounded-xl px-10 has-[>svg]:px-6 text-lg",
         lgfull: "h-11 rounded-full px-8",
         icon: "h-10 w-10",
         extragrande: "my-10 px-10 py-4",

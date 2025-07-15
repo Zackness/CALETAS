@@ -12,20 +12,21 @@ import { RegisterSchema } from "@/schemas";
 import { FormError } from "@/components/form-error";
 import { FormSucces } from "@/components/form-succes";
 import { register } from "@/actions/register";
-import { motion } from "framer-motion";
-import { Eye, EyeOff } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Eye, EyeOff, Info } from "lucide-react";
+import Link from "next/link";
 
 export const RegisterForm = () => {
-  const [error, setError] = useState<string | undefined>("");
-  const [succes, setSucces] = useState<string | undefined>("");
-  const [isPending, startTransition] = useTransition();
   const [isMounted, setIsMounted] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-
+  
   useEffect(() => {
     setIsMounted(true);
   }, []);
+  
+  const [error, setError] = useState<string | undefined>("");
+  const [succes, setSucces] = useState<string | undefined>("");
+
+  const [isPending, startTransition] = useTransition();
 
   const form = useForm<z.infer<typeof RegisterSchema>>({
     resolver: zodResolver(RegisterSchema),
@@ -33,7 +34,6 @@ export const RegisterForm = () => {
       email: "",
       password: "",
       name: "",
-      acceptTerms: false,
     },
   });
 
@@ -54,29 +54,29 @@ export const RegisterForm = () => {
   }
 
   return (
-    <CardWrapper showSocial>
-      <motion.h2
-        className="text-3xl font-bold mb-6 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        Registro
-      </motion.h2>
-      <p className="text-xs text-gray-400 my-2 px-5">
-        La contraseña debe contener al menos una mayúscula, una minúscula, un número y 6 caracteres de largo.
-      </p>              
+    <CardWrapper 
+    headerLabel="Bienvenido" 
+    showSocial
+    >
+      <h2 className="text-3xl mb-4 text-white text-center font-special pb-4">
+        Registrarse
+      </h2>
       <div className="flex flex-col gap-4">
         <Form {...form}>
           <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
-            <div className="flex flex-col gap-4 text-white">
+            <div className="flex flex-col gap-4">
               <FormField
                 control={form.control}
                 name="name"
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Input {...field} disable={isPending} label="Ingrese su primer nombre" id="name" />
+                      <Input
+                        {...field}
+                        disable={isPending}
+                        label="Nombre completo"
+                        id="name"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -88,7 +88,13 @@ export const RegisterForm = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Input {...field} disable={isPending} label="Email" id="email" type="email" />
+                      <Input
+                        {...field}
+                        disable={isPending}
+                        label="Email"
+                        id="email"
+                        type="email"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -101,12 +107,12 @@ export const RegisterForm = () => {
                   <FormItem>
                     <FormControl>
                       <div className="relative">
-                        <Input 
-                          {...field} 
-                          disable={isPending} 
-                          label="Contraseña" 
-                          id="password" 
-                          type={showPassword ? "text" : "password"} 
+                        <Input
+                          {...field}
+                          disable={isPending}
+                          label="Contraseña"
+                          id="password"
+                          type={showPassword ? "text" : "password"}
                         />
                         <button
                           type="button"
@@ -125,46 +131,35 @@ export const RegisterForm = () => {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="acceptTerms"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 bg-blue-200 text-blue-800">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        disabled={isPending}
-                        className="border-blue-800 text-blue-800"
-                      />
-                    </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                        Expresamente declaro la autenticidad de la información suministrada.
-                      </label>
-                    </div>
-                  </FormItem>
-                )}
-              />
             </div>
             <FormError message={error} />
             <FormSucces message={succes} />
             <Button 
-              type="submit" 
-              variant="form" 
-              disabled={isPending || !form.watch("acceptTerms")} 
-              className="w-full"
+              disabled={isPending} 
+              className="w-full mt-2 font-special text-white" 
+              size="sm"
+              type="submit"
             >
               Registrarse
             </Button>
+            
+            {/* Mensaje de requisitos de contraseña - sutil */}
+            <div className="flex items-start gap-2 mt-3 p-3 bg-white/5 rounded-lg border border-white/10">
+              <Info className="h-4 w-4 text-white/60 mt-0.5 flex-shrink-0" />
+              <div className="text-xs text-white/70 leading-relaxed">
+                <span className="font-medium">Requisitos:</span> Mínimo 6 caracteres, una mayúscula, una minúscula y un número.
+              </div>
+            </div>
           </form>
         </Form>
       </div>
-      <div className="flex items-baseline">
-        <p className="mt-12 text-sm text-white">¿Ya tienes una cuenta?</p>
-        <span className="ml-2 hover:underline cursor-pointer font-semibold text-sm text-white">
-          <a href="/login">Inicia sesión ahora</a>
-        </span>
+      <div className="flex items-center justify-center mt-6">
+        <p className="text-sm text-white">
+          ¿Ya conoces el camino?
+        </p>
+        <Link href="/login" className="ml-2 hover:underline cursor-pointer font-semibold text-sm text-white hover:text-blue-200">
+          Inicia sesión ahora
+        </Link>
       </div>
     </CardWrapper>
   );
