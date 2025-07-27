@@ -78,9 +78,9 @@ export default function CaletasPage() {
   const [materias, setMaterias] = useState<Materia[]>([]);
   const [filteredCaletas, setFilteredCaletas] = useState<Caleta[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedUniversidad, setSelectedUniversidad] = useState<string>("");
-  const [selectedCarrera, setSelectedCarrera] = useState<string>("");
-  const [selectedMateria, setSelectedMateria] = useState<string>("");
+  const [selectedUniversidad, setSelectedUniversidad] = useState<string>("all");
+  const [selectedCarrera, setSelectedCarrera] = useState<string>("all");
+  const [selectedMateria, setSelectedMateria] = useState<string>("all");
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingFavorites, setIsLoadingFavorites] = useState<string | null>(null);
   
@@ -123,12 +123,12 @@ export default function CaletasPage() {
 
   // Cargar carreras cuando se selecciona una universidad
   useEffect(() => {
-    if (selectedUniversidad) {
+    if (selectedUniversidad !== "all") {
       const universidad = universidades.find(u => u.id === selectedUniversidad);
       if (universidad) {
         setCarreras(universidad.carreras);
-        setSelectedCarrera("");
-        setSelectedMateria("");
+        setSelectedCarrera("all");
+        setSelectedMateria("all");
         setMaterias([]);
       }
     } else {
@@ -139,11 +139,11 @@ export default function CaletasPage() {
 
   // Cargar materias cuando se selecciona una carrera
   useEffect(() => {
-    if (selectedCarrera) {
+    if (selectedCarrera !== "all") {
       const carrera = carreras.find(c => c.id === selectedCarrera);
       if (carrera) {
         setMaterias(carrera.materias);
-        setSelectedMateria("");
+        setSelectedMateria("all");
       }
     } else {
       setMaterias([]);
@@ -165,21 +165,21 @@ export default function CaletasPage() {
     }
 
     // Filtro por universidad
-    if (selectedUniversidad) {
+    if (selectedUniversidad !== "all") {
       filtered = filtered.filter(caleta =>
         caleta.materia.carrera.universidad.id === selectedUniversidad
       );
     }
 
     // Filtro por carrera
-    if (selectedCarrera) {
+    if (selectedCarrera !== "all") {
       filtered = filtered.filter(caleta =>
         caleta.materia.carrera.id === selectedCarrera
       );
     }
 
     // Filtro por materia
-    if (selectedMateria) {
+    if (selectedMateria !== "all") {
       filtered = filtered.filter(caleta =>
         caleta.materia.id === selectedMateria
       );
@@ -314,7 +314,7 @@ export default function CaletasPage() {
                     <SelectValue placeholder="Todas las universidades" />
                   </SelectTrigger>
                   <SelectContent className="bg-[#354B3A] border-white/10">
-                    <SelectItem value="" className="text-white hover:bg-white/10">Todas las universidades</SelectItem>
+                    <SelectItem value="all" className="text-white hover:bg-white/10">Todas las universidades</SelectItem>
                     {universidades.map((universidad) => (
                       <SelectItem key={universidad.id} value={universidad.id} className="text-white hover:bg-white/10">
                         <div className="flex items-center gap-2">
@@ -339,7 +339,7 @@ export default function CaletasPage() {
                     <SelectValue placeholder="Todas las carreras" />
                   </SelectTrigger>
                   <SelectContent className="bg-[#354B3A] border-white/10">
-                    <SelectItem value="" className="text-white hover:bg-white/10">Todas las carreras</SelectItem>
+                    <SelectItem value="all" className="text-white hover:bg-white/10">Todas las carreras</SelectItem>
                     {carreras.map((carrera) => (
                       <SelectItem key={carrera.id} value={carrera.id} className="text-white hover:bg-white/10">
                         <div className="flex items-center gap-2">
@@ -364,7 +364,7 @@ export default function CaletasPage() {
                     <SelectValue placeholder="Todas las materias" />
                   </SelectTrigger>
                   <SelectContent className="bg-[#354B3A] border-white/10">
-                    <SelectItem value="" className="text-white hover:bg-white/10">Todas las materias</SelectItem>
+                    <SelectItem value="all" className="text-white hover:bg-white/10">Todas las materias</SelectItem>
                     {materias.map((materia) => (
                       <SelectItem key={materia.id} value={materia.id} className="text-white hover:bg-white/10">
                         <div className="flex items-center gap-2">
@@ -491,7 +491,7 @@ export default function CaletasPage() {
             <FileText className="h-12 w-12 text-white/30 mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2 text-white">No se encontraron caletas</h3>
             <p className="text-white/70 mb-4">
-              {searchTerm || selectedUniversidad || selectedCarrera || selectedMateria
+              {searchTerm || selectedUniversidad !== "all" || selectedCarrera !== "all" || selectedMateria !== "all"
                 ? "Intenta ajustar los filtros de búsqueda"
                 : "Sé el primero en subir una caleta"}
             </p>

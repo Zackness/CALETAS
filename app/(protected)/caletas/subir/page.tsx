@@ -179,180 +179,130 @@ export default function SubirCaletaPage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p>Cargando universidades...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#40C9A9] mx-auto mb-4"></div>
+          <p className="text-white/80">Cargando universidades...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-2xl bg-gradient-to-t from-mygreen to-mygreen-light min-h-screen">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-center mb-2">Subir Caleta</h1>
-        <p className="text-muted-foreground text-center">
-          Comparte tus apuntes, exámenes y materiales de estudio con otros estudiantes
-        </p>
-      </div>
-
-      <Card className="bg-[#354B3A] text-white">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Upload className="h-5 w-5" />
-            Nueva Caleta
-          </CardTitle>
-          <CardDescription>
-            Completa la información de tu caleta para que otros estudiantes puedan encontrarla
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Información básica */}
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="nombre">Nombre de la caleta *</Label>
-                <Input
-                  id="nombre"
-                  value={nombre}
-                  onChange={(e) => setNombre(e.target.value)}
-                  placeholder="Ej: Examen parcial de Cálculo I"
-                  required
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="tema">Tema o descripción *</Label>
-                <Textarea
-                  id="tema"
-                  value={tema}
-                  onChange={(e) => setTema(e.target.value)}
-                  placeholder="Describe brevemente el contenido de la caleta"
-                  rows={3}
-                  required
-                />
-              </div>
-            </div>
-
-            {/* Selección de universidad, carrera y materia */}
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="universidad">Universidad</Label>
-                <Select value={selectedUniversidad} onValueChange={setSelectedUniversidad}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecciona una universidad" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {universidades.map((universidad) => (
-                      <SelectItem key={universidad.id} value={universidad.id}>
-                        <div className="flex items-center gap-2">
-                          <GraduationCap className="h-4 w-4" />
-                          {universidad.nombre}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="carrera">Carrera</Label>
-                <Select 
-                  value={selectedCarrera} 
-                  onValueChange={setSelectedCarrera}
-                  disabled={!selectedUniversidad}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecciona una carrera" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {carreras.map((carrera) => (
-                      <SelectItem key={carrera.id} value={carrera.id}>
-                        <div className="flex items-center gap-2">
-                          <BookOpen className="h-4 w-4" />
-                          {carrera.nombre}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="materia">Materia *</Label>
-                <Select 
-                  value={selectedMateria} 
-                  onValueChange={setSelectedMateria}
-                  disabled={!selectedCarrera}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecciona una materia" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {materias.map((materia) => (
-                      <SelectItem key={materia.id} value={materia.id}>
-                        <div className="flex items-center gap-2">
-                          <FileText className="h-4 w-4" />
-                          {materia.codigo} - {materia.nombre}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Subida de archivo */}
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-t from-mygreen to-mygreen-light px-2">
+      <div className="w-full max-w-lg">
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl md:text-4xl font-special text-[#40C9A9] mb-2">Subir Caleta</h1>
+          <p className="text-white/70 text-base md:text-lg">
+            Comparte tus apuntes, exámenes y materiales de estudio con otros estudiantes
+          </p>
+        </div>
+        <form onSubmit={handleSubmit} className="bg-[#354B3A] border border-white/10 rounded-2xl shadow-xl p-6 md:p-10 space-y-6">
+          {/* Información básica */}
+          <div className="space-y-4">
             <div>
-              <Label htmlFor="archivo">Archivo *</Label>
-              <div className="mt-2">
-                <Input
-                  id="archivo"
-                  type="file"
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  onChange={handleFileChange}
-                  required
-                />
-                <p className="text-sm text-muted-foreground mt-1">
-                  Formatos permitidos: PDF, JPG, JPEG, PNG. Máximo 10MB.
-                </p>
-                {archivo && (
-                  <div className="mt-2 p-3 bg-muted rounded-md">
-                    <p className="text-sm font-medium">Archivo seleccionado:</p>
-                    <p className="text-sm text-muted-foreground">
-                      {archivo.name} ({(archivo.size / 1024 / 1024).toFixed(2)} MB)
-                    </p>
-                  </div>
-                )}
-              </div>
+              <Label htmlFor="nombre" className="text-white/80">Nombre de la caleta *</Label>
+              <Input
+                id="nombre"
+                value={nombre}
+                onChange={(e) => setNombre(e.target.value)}
+                placeholder="Ej: Examen parcial de Cálculo I"
+                required
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1"
+              />
             </div>
+            <div>
+              <Label htmlFor="tema" className="text-white/80">Tema o descripción *</Label>
+              <Textarea
+                id="tema"
+                value={tema}
+                onChange={(e) => setTema(e.target.value)}
+                placeholder="Describe brevemente el contenido de la caleta"
+                rows={3}
+                required
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1"
+              />
+            </div>
+          </div>
 
-            {/* Botones */}
-            <div className="flex gap-4 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => router.back()}
-                disabled={isLoading}
-              >
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={isLoading} className="flex-1">
-                {isLoading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Subiendo...
-                  </>
-                ) : (
-                  <>
-                    <Upload className="h-4 w-4 mr-2" />
-                    Subir Caleta
-                  </>
-                )}
-              </Button>
+          {/* Selección de universidad, carrera y materia */}
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="universidad" className="text-white/80">Universidad</Label>
+              <Select value={selectedUniversidad} onValueChange={setSelectedUniversidad}>
+                <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1">
+                  <SelectValue placeholder="Selecciona una universidad" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#203324] text-white">
+                  {universidades.map((universidad) => (
+                    <SelectItem key={universidad.id} value={universidad.id} className="hover:bg-[#40C9A9]/10">
+                      <div className="flex items-center gap-2">
+                        <GraduationCap className="h-4 w-4 text-[#40C9A9]" />
+                        {universidad.nombre}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-          </form>
-        </CardContent>
-      </Card>
+            <div>
+              <Label htmlFor="carrera" className="text-white/80">Carrera</Label>
+              <Select value={selectedCarrera} onValueChange={setSelectedCarrera} disabled={!selectedUniversidad}>
+                <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1 disabled:opacity-50">
+                  <SelectValue placeholder="Selecciona una carrera" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#203324] text-white">
+                  {carreras.map((carrera) => (
+                    <SelectItem key={carrera.id} value={carrera.id} className="hover:bg-[#40C9A9]/10">
+                      <BookOpen className="h-4 w-4 text-[#40C9A9] mr-1" />
+                      {carrera.nombre}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="materia" className="text-white/80">Materia *</Label>
+              <Select value={selectedMateria} onValueChange={setSelectedMateria} disabled={!selectedCarrera} required>
+                <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1 disabled:opacity-50">
+                  <SelectValue placeholder="Selecciona una materia" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#203324] text-white">
+                  {materias.map((materia) => (
+                    <SelectItem key={materia.id} value={materia.id} className="hover:bg-[#40C9A9]/10">
+                      <FileText className="h-4 w-4 text-[#40C9A9] mr-1" />
+                      {materia.nombre}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Subir archivo */}
+          <div className="space-y-2">
+            <Label htmlFor="archivo" className="text-white/80">Archivo (PDF, JPG, PNG) *</Label>
+            <Input
+              id="archivo"
+              type="file"
+              accept=".pdf,.jpg,.jpeg,.png"
+              onChange={handleFileChange}
+              required
+              className="bg-white/10 border-white/20 text-white file:text-white file:bg-[#40C9A9] file:border-0 file:rounded-lg file:px-4 file:py-2 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1"
+            />
+            {archivo && (
+              <div className="text-[#40C9A9] text-sm mt-1">Archivo seleccionado: {archivo.name}</div>
+            )}
+          </div>
+
+          {/* Botón enviar */}
+          <Button
+            type="submit"
+            className="w-full bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white font-bold text-lg py-3 rounded-xl mt-2 shadow-lg transition-colors"
+            disabled={isLoading}
+          >
+            {isLoading ? "Subiendo..." : "Subir Caleta"}
+          </Button>
+        </form>
+      </div>
     </div>
   );
 } 
