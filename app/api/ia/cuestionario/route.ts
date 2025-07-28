@@ -65,7 +65,9 @@ Genera un cuestionario de 5 preguntas basado en este contenido. Cada pregunta de
 3. Una respuesta correcta (índice 0-3)
 4. Una explicación breve de por qué es correcta
 
-Responde ÚNICAMENTE con un JSON válido con esta estructura:
+IMPORTANTE: Responde ÚNICAMENTE con un JSON válido, sin markdown, sin \`\`\`json, sin explicaciones adicionales.
+
+Estructura JSON esperada:
 {
   "preguntas": [
     {
@@ -86,7 +88,7 @@ Las preguntas deben ser variadas y cubrir diferentes aspectos del contenido, des
       messages: [
         {
           role: "system",
-          content: "Eres un profesor universitario experto en crear cuestionarios educativos efectivos. Genera preguntas claras, relevantes y que evalúen la comprensión del contenido."
+          content: "Eres un profesor universitario experto en crear cuestionarios educativos efectivos. Genera preguntas claras, relevantes y que evalúen la comprensión del contenido. Responde ÚNICAMENTE en formato JSON válido, sin markdown, sin ```json, sin explicaciones adicionales."
         },
         {
           role: "user",
@@ -106,9 +108,25 @@ Las preguntas deben ser variadas y cubrir diferentes aspectos del contenido, des
     // Parsear la respuesta JSON
     let cuestionarioGenerado;
     try {
-      cuestionarioGenerado = JSON.parse(respuestaIA);
+      // Limpiar la respuesta de markdown si viene envuelta en ```json
+      let cleanResponse = respuestaIA.trim();
+      if (cleanResponse.startsWith('```json')) {
+        cleanResponse = cleanResponse.substring(7);
+      }
+      if (cleanResponse.startsWith('```')) {
+        cleanResponse = cleanResponse.substring(3);
+      }
+      if (cleanResponse.endsWith('```')) {
+        cleanResponse = cleanResponse.substring(0, cleanResponse.length - 3);
+      }
+      cleanResponse = cleanResponse.trim();
+      
+      console.log("🔍 Respuesta limpia de la IA:", cleanResponse.substring(0, 200));
+      
+      cuestionarioGenerado = JSON.parse(cleanResponse);
     } catch (error) {
       console.error("Error parsing AI response:", error);
+      console.error("Respuesta original:", respuestaIA);
       return NextResponse.json({ error: "Error al procesar la respuesta de la IA" }, { status: 500 });
     }
 

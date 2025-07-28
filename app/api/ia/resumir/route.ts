@@ -74,7 +74,9 @@ Genera un resumen que incluya:
 4. Aplicaciones prácticas
 5. Conclusiones relevantes
 
-Responde ÚNICAMENTE con un JSON válido con esta estructura:
+IMPORTANTE: Responde ÚNICAMENTE con un JSON válido, sin markdown, sin \`\`\`json, sin explicaciones adicionales.
+
+Estructura JSON esperada:
 {
   "temaPrincipal": "Tema principal del contenido",
   "puntosClave": ["Punto 1", "Punto 2", "Punto 3"],
@@ -93,7 +95,7 @@ El resumen debe ser claro, educativo y útil para estudiantes universitarios.
       messages: [
         {
           role: "system",
-          content: "Eres un asistente educativo especializado en crear resúmenes claros y estructurados para estudiantes universitarios."
+          content: "Eres un asistente educativo especializado en crear resúmenes claros y estructurados para estudiantes universitarios. Responde ÚNICAMENTE en formato JSON válido, sin markdown, sin ```json, sin explicaciones adicionales."
         },
         {
           role: "user",
@@ -113,9 +115,25 @@ El resumen debe ser claro, educativo y útil para estudiantes universitarios.
     // Parsear la respuesta JSON
     let resumenGenerado;
     try {
-      resumenGenerado = JSON.parse(respuestaIA);
+      // Limpiar la respuesta de markdown si viene envuelta en ```json
+      let cleanResponse = respuestaIA.trim();
+      if (cleanResponse.startsWith('```json')) {
+        cleanResponse = cleanResponse.substring(7);
+      }
+      if (cleanResponse.startsWith('```')) {
+        cleanResponse = cleanResponse.substring(3);
+      }
+      if (cleanResponse.endsWith('```')) {
+        cleanResponse = cleanResponse.substring(0, cleanResponse.length - 3);
+      }
+      cleanResponse = cleanResponse.trim();
+      
+      console.log("🔍 Respuesta limpia de la IA:", cleanResponse.substring(0, 200));
+      
+      resumenGenerado = JSON.parse(cleanResponse);
     } catch (error) {
       console.error("Error parsing AI response:", error);
+      console.error("Respuesta original:", respuestaIA);
       return NextResponse.json({ error: "Error al procesar la respuesta de la IA" }, { status: 500 });
     }
 
