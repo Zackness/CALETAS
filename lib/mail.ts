@@ -165,7 +165,7 @@ export const sendTwoFactorTokenEmail = async (
     `;
 
     await resend.emails.send({
-        from: "Caletas <onboarding@resend.dev>",
+        from: "Caletas <bienvenido@caletas.top>",
         to: email,
         subject: "Tu código de verificación 2FA - Caletas",
         html: baseTemplate(content)
@@ -194,7 +194,7 @@ export const sendPasswordResetEmail = async (
     `;
 
     await resend.emails.send({
-        from: "Caletas <onboarding@resend.dev>",
+        from: "Caletas <bienvenido@caletas.top>",
         to: email,
         subject: "Restablecer contraseña - Caletas",
         html: baseTemplate(content)
@@ -224,7 +224,7 @@ export const sendVerificationEmail = async (
     `;
 
     await resend.emails.send({
-        from: "Caletas <onboarding@resend.dev>",
+        from: "Caletas <bienvenido@caletas.top>",
         to: email,
         subject: "¡Bienvenido a Caletas! Verifica tu correo",
         html: baseTemplate(content)

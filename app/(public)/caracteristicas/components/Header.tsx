@@ -3,11 +3,9 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect, useRef } from "react";
-// import { useAuth } from "@/lib/auth";
 import { Logo } from "@/components/marca/Logo";
 
 export function Header() {
-  // const { user, signOut } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -64,16 +62,16 @@ export function Header() {
           <span className={`block w-6 h-0.5 bg-white transition-all duration-300 ${isMenuOpen ? 'opacity-0' : ''}`}></span>
           <span className={`block w-6 h-0.5 bg-white transition-all duration-300 ${isMenuOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></span>
         </button>
-        {/* Botón Agrega tu uni para escritorio */}
+        {/* Botón Iniciar Sesión para escritorio */}
         <a
-          href="/login"
+          href="/auth/login"
           className="font-special hidden md:block ml-2"
         >
           <Button
             size="sm"
             className="text-sm sm:text-base font-special text-white rounded-xl px-4 py-2 shadow"
           >
-            Agrega tu uni
+            Iniciar Sesión
           </Button>
         </a>
       </nav>
@@ -83,7 +81,7 @@ export function Header() {
           <div ref={menuRef} className="w-full bg-gradient-to-t from-mygreen to-mygreen-light border-b border-white/10 shadow-lg animate-fadeInDown">
             <nav className="flex flex-col gap-1 py-2 px-4">
               <a
-                href="#caracteristicas"
+                href="/caracteristicas"
                 className="text-white font-special text-base py-2 px-2 rounded-md hover:bg-white/10 transition-colors text-left"
                 onClick={() => setIsMenuOpen(false)}
               >
@@ -110,13 +108,13 @@ export function Header() {
               >
                 Blog
               </a>
-              <a href="/login" className="mt-2 mb-1 block">
+              <a href="/auth/login" className="mt-2 mb-1 block">
                 <Button
                   size="sm"
                   className="w-full text-sm font-special text-white rounded-xl px-4 py-2 shadow"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  Agrega tu uni
+                  Iniciar Sesión
                 </Button>
               </a>
             </nav>
