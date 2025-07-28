@@ -1,0 +1,661 @@
+REPÚBLICA BOLIVARIANA DE VENEZUELA
+UNIVERSIDAD NACIONAL EXPERIMENTAL POLITÉCNICA
+“ANTONIO JOSÉ DE SUCRE”
+VICERRECTORTADO BARQUISIMETO NÙCLEO CARORA
+
+PENSUM DE ESTUDIOS DE INGENIERÍA MECATRÓNICA
+SEMESTRE I
+CÓDIGO
+AAU1111
+ABI1212
+ABI1313
+ABI1413
+ABB1515
+APP1611
+IQU1713
+
+ASIGNATURA
+Autodesarrollo
+Dibujo I
+Inglés I
+Lenguaje y Redacción
+Matemática I
+Práctica Profesional
+Química General
+
+Ht Ha HL HT UC
+0 2 0
+2
+1
+1 3 0
+4
+2
+3 0 0
+3
+3
+3 0 0
+3
+3
+4 2 0
+6
+5
+0 3 0
+3
+1
+3 1 0
+4
+3
+14 11
+
+0
+
+25
+
+PRE-REQUISITO
+
+CO-REQUISITO
+
+18
+
+SEMESTRE II
+CÓDIGO
+ABI2122
+ABB2214
+ABI2323
+ABB2425
+ABI2513
+ABI2612
+
+ASIGNATURA
+Dibujo II
+Física I
+Inglés II
+Matemática II
+Solución de Problemas
+Técnicas de Lectura
+
+Ht Ha HL HT UC
+1 3
+0
+4
+2
+4 1
+0
+5
+4
+2 2
+0
+4
+3
+4 2
+0
+6
+5
+3 0
+0
+3
+3
+1 2
+0
+3
+2
+15 10
+
+0
+
+25
+
+PRE-REQUISITO
+ABI1212
+ABB1515
+ABI1313
+ABB1515
+ABI1413
+ABI1413
+
+CO-REQUISITO
+
+PRE-REQUISITO
+ABB2425
+ABI2513
+ABI2513
+ABB2214
+ABB2214
+
+CO-REQUISITO
+
+19
+
+SEMESTRE III
+CÓDIGO
+ABB3113
+ABI3212
+ABI3313
+IME3412
+ABB3524
+ABB3611
+ABB3734
+
+ASIGNATURA
+Álgebra Lineal
+Computación I
+Creatividad
+Estática
+Física II
+Laboratorio de Física
+Matemática III
+
+Ht Ha HL HT UC
+3 0
+0
+3
+3
+1 2
+0
+3
+2
+3 0
+0
+3
+3
+2 0
+0
+2
+2
+4 1
+0
+5
+4
+0 0
+3
+3
+1
+3 3
+0
+6
+4
+16
+
+6
+
+3
+
+25
+
+19
+
+ABB3524
+ABB2425
+
+REPÚBLICA BOLIVARIANA DE VENEZUELA
+UNIVERSIDAD NACIONAL EXPERIMENTAL POLITÉCNICA
+“ANTONIO JOSÉ DE SUCRE”
+VICERRECTORTADO BARQUISIMETO NÙCLEO CARORA
+
+SEMESTRE IV
+CÓDIGO
+IEI4114
+ABI4222
+IME4314
+IMT4413
+IMC4512
+ABB4644
+
+ASIGNATURA
+Circuitos Eléctricos I
+Computación II
+Dinámica
+Ingeniería de Materiales
+Laboratorio de Instrumentación y
+Mediciones
+Matemáticas IV
+
+Ht Ha HL HT UC
+3 0 2
+5
+4
+1 2 0
+3
+2
+4 0 0
+4
+4
+2 0 2
+4
+3
+1
+4
+
+0
+1
+
+3
+0
+
+4
+5
+
+2
+4
+
+15
+
+3
+
+7
+
+25
+
+19
+
+PRE-REQUISITO
+ABB3524
+ABI3212
+IME3412
+
+CO-REQUISITO
+
+ABB3611
+ABB3734
+
+SEMESTRE V
+CÓDIGO
+IEI5125
+IEL5214
+IME5313
+IME5413
+IIN5513
+IME5613
+
+ASIGNATURA
+Circuitos Eléctricos II
+Electrónica I
+Mecánica de Materiales
+Mecanismos
+Probabilidad y Estadística
+Tecnología de Manufactura
+
+Ht Ha HL HT UC
+4 0 2
+6
+5
+3 0 2
+5
+4
+3 1 0
+4
+3
+3 0 0
+3
+3
+3 0 0
+3
+3
+2 0 2
+4
+3
+18
+
+1
+
+6
+
+25
+
+PRE-REQUISITO
+IEI4114
+IEI4114
+IMT4413
+IME4314
+ABB4644
+IMT4413
+
+CO-REQUISITO
+
+PRE-REQUISITO
+IEL5214
+IME5313
+IEL5214
+
+CO-REQUISITO
+
+21
+
+SEMESTRE VI
+CÓDIGO
+IMC6113
+IME6213
+IEL6313
+AFG6413
+IEL6523
+IME6613
+IME6713
+
+ASIGNATURA
+Control I
+Diseño de Elementos de Máquinas
+Diseño de Sistemas Lógicos
+Ecología y Ambiente
+Electrónica II
+Mecánica de los Fluidos
+Transferencia de Energía
+
+Ht Ha HL HT UC
+3 0
+0
+3
+3
+3 1
+0
+4
+3
+3 0
+0
+3
+3
+3 0
+0
+3
+3
+2 0
+2
+4
+3
+2 0
+2
+4
+3
+2 0
+2
+4
+3
+18
+
+1
+
+6
+
+25
+
+21
+
+IEL5214
+IME6613
+
+REPÚBLICA BOLIVARIANA DE VENEZUELA
+UNIVERSIDAD NACIONAL EXPERIMENTAL POLITÉCNICA
+“ANTONIO JOSÉ DE SUCRE”
+VICERRECTORTADO BARQUISIMETO NÙCLEO CARORA
+
+SEMESTRE VII
+CÓDIGO
+IEI7114
+IMC7223
+IIN7313
+IEL7411
+IEL7513
+IMC7614
+
+ASIGNATURA
+Actuadores Eléctricos
+Control II
+Economía
+Laboratorio de Diseño de Sistemas
+Lógicos
+Laboratorio de Electrónica Industrial
+Metodologías de Diseño Mecatrónico
+
+Ht Ha HL HT UC
+3 0 3
+6
+4
+3 0 0
+3
+3
+3 0 0
+3
+3
+0
+2
+3
+
+0
+0
+2
+
+3
+3
+0
+
+3
+5
+5
+
+1
+3
+4
+
+14
+
+2
+
+9
+
+25
+
+18
+
+PRE-REQUISITO
+IEL6523
+IMC6113
+IEL6313
+IEL6523
+IEL6313
+
+CO-REQUISITO
+
+IEL7411
+
+SEMESTRE VIII
+CÓDIGO
+IMC8113
+IMC8211
+IEL8313
+IMC8413
+IMC8513
+IEI8613
+
+ASIGNATURA
+Automatización Industrial I
+Laboratorio de Control Automático
+Microcontroladores
+Neumática y Óleohidráulica
+Proyectos de Ingeniería Mecatrónica I
+Redes Industriales
+
+Ht Ha HL HT UC
+2 0
+3
+5
+3
+0 0
+3
+3
+1
+2 0
+2
+4
+3
+2 0
+2
+4
+3
+2 0
+3
+5
+3
+2 0
+2
+4
+3
+10
+
+0
+
+15
+
+25
+
+PRE-REQUISITO
+IMC7614
+IMC7223
+IEL7513
+IEI7114
+IMC7614
+IEL7411
+
+CO-REQUISITO
+
+PRE-REQUISITO
+IMC8113
+
+CO-REQUISITO
+
+16
+
+SEMESTRE XI
+CÓDIGO
+IMC9123
+AFG9211
+IMC9313
+IMC9413
+IMC9524
+IMC9613
+AFG9713
+
+ASIGNATURA
+Automatización Industrial II
+Desarrollo de Emprendedores
+Electiva Profesional
+Electiva Profesional
+Proyectos de Ingeniería Mecatrónica II
+Tópicos Especiales de Mecatrónica
+Valores en el Ejercicio Profesional
+
+Ht Ha HL HT UC
+2 0
+2
+4
+3
+0 3
+0
+3
+1
+3 0
+0
+3
+3
+3 0
+0
+3
+3
+3 0
+3
+6
+4
+3 0
+0
+3
+3
+3 0
+0
+3
+3
+17
+
+3
+
+5
+
+25
+
+IMC8513
+IMC9524
+AFG9211
+
+20
+
+SEMESTRES X
+CÓDIGO
+APP1016
+
+ASIGNATURA
+Entrenamiento Industrial
+
+Ht Ha HL HT UC
+
+PRE-REQUISITO
+
+0
+
+0
+
+0
+
+0
+
+16
+
+HABER APROBADO
+TODAS
+
+0
+
+0
+
+0
+
+0
+
+16
+
+LAS ASIGNATURAS DEL
+PLAN DE ESTUDIOS
+
+CO-REQUISITO
+
+REPÚBLICA BOLIVARIANA DE VENEZUELA
+UNIVERSIDAD NACIONAL EXPERIMENTAL POLITÉCNICA
+“ANTONIO JOSÉ DE SUCRE”
+VICERRECTORTADO BARQUISIMETO NÙCLEO CARORA
+
+LISTADO DE ELECTIVAS PROFESIONALES
+•
+•
+•
+•
+•
+•
+•
+•
+•
+•
+•
+•
+•
+
+Control Difuso.
+Control Numérico por Computadora.
+Control Secuencial.
+Diseño Geométrico.
+Ingeniería Concurrente.
+Ingeniería Inversa.
+Inteligencia Artificial.
+Interfases y Transductores.
+Matemáticas Directas para Diseño Geométrico.
+Métodos de Análisis Ingeniería.
+Procesamiento Digital de Señales.
+Programación orientada a la Automatización.
+Secuenciamiento y Programación de tareas en sistemas de manufactura.
+
+

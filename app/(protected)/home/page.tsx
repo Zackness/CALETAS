@@ -3,7 +3,42 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { OnboardingStatus } from "@prisma/client";
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { 
+  BookOpen, 
+  GraduationCap, 
+  TrendingUp, 
+  Clock, 
+  CheckCircle, 
+  XCircle,
+  AlertCircle,
+  Target,
+  Calendar,
+  Award,
+  Star,
+  Eye,
+  Download,
+  Users,
+  FileText,
+  Plus,
+  Bell,
+  BarChart3,
+  Lightbulb,
+  History,
+  Settings,
+  ArrowRight,
+  Clock3,
+  Trophy,
+  Bookmark,
+  Share2,
+  CalendarDays,
+  BookMarked
+} from "lucide-react";
+import Link from "next/link";
 
 // Suprimir warning de hidratación para extensiones del navegador
 export const dynamic = 'force-dynamic';
@@ -21,7 +56,18 @@ export default async function HomePage() {
       id: session.user.id
     },
     select: {
-      onboardingStatus: true
+      onboardingStatus: true,
+      carrera: {
+        select: {
+          nombre: true,
+          universidad: {
+            select: {
+              nombre: true,
+              siglas: true
+            }
+          }
+        }
+      }
     }
   });
 
@@ -29,257 +75,841 @@ export default async function HomePage() {
     return redirect("/onboarding");
   }
   
-  // Obtener las caletas favoritas del usuario
-  let caletasFavoritas: any[] = [];
-  try {
-    caletasFavoritas = await db.caletaFavorita.findMany({
+  // Obtener datos académicos del usuario
+  const materiasEstudiante = await db.materiaEstudiante.findMany({
       where: {
-        usuarioId: session.user.id
+      userId: session.user.id,
     },
     include: {
-        caleta: {
+      materia: {
+        select: {
+          id: true,
+          codigo: true,
+          nombre: true,
+          creditos: true,
+          semestre: true,
+        },
+      },
+    },
+  });
+
+  // Calcular estadísticas académicas
+  const totalMaterias = materiasEstudiante.length;
+  const materiasAprobadas = materiasEstudiante.filter(m => m.estado === "APROBADA").length;
+  const materiasEnCurso = materiasEstudiante.filter(m => m.estado === "EN_CURSO").length;
+  const materiasAplazadas = materiasEstudiante.filter(m => m.estado === "APLAZADA").length;
+  const materiasRetiradas = materiasEstudiante.filter(m => m.estado === "RETIRADA").length;
+  
+  const creditosAprobados = materiasEstudiante
+    .filter(m => m.estado === "APROBADA")
+    .reduce((sum, m) => sum + m.materia.creditos, 0);
+  
+  const creditosEnCurso = materiasEstudiante
+    .filter(m => m.estado === "EN_CURSO")
+    .reduce((sum, m) => sum + m.materia.creditos, 0);
+
+  const promedioGeneral = materiasEstudiante
+    .filter(m => m.estado === "APROBADA" && m.nota)
+    .reduce((sum, m) => sum + (m.nota || 0), 0) / 
+    materiasEstudiante.filter(m => m.estado === "APROBADA" && m.nota).length || 0;
+
+  const progresoCarrera = user?.carrera ? 
+    (creditosAprobados / (creditosAprobados + creditosEnCurso + 50)) * 100 : 0; // Estimación
+
+  // Obtener recursos de Caletas del usuario
+  const recursosUsuario = await db.recurso.findMany({
+    where: {
+      autorId: session.user.id,
+    },
           include: {
             materia: {
-              include: {
-                carrera: {
-                  include: {
-                    universidad: true
-                  }
-                }
-              }
-            },
-            usuario: {
-              select: {
-                id: true,
-                name: true,
-                image: true
-              }
-            }
-          }
-        }
+        select: {
+          codigo: true,
+          nombre: true,
+        },
+      },
     },
     orderBy: {
       createdAt: 'desc'
       },
-      take: 6
-    });
-    caletasFavoritas = caletasFavoritas.map(favorita => ({
-      ...favorita.caleta,
-      isFavorita: true,
-      fechaFavorito: favorita.createdAt
-    }));
-  } catch {
-    caletasFavoritas = [];
-  }
+    take: 5
+  });
 
-  // Obtener caletas recientes del usuario
-  let caletasRecientes: any[] = [];
-  try {
-    caletasRecientes = await db.caleta.findMany({
+  // Obtener recursos más populares de Caletas
+  const recursosPopulares = await db.recurso.findMany({
       where: {
-        usuarioId: session.user.id,
-        isActive: true
+      esPublico: true,
       },
       include: {
         materia: {
-          include: {
-            carrera: {
-              include: {
-                universidad: true
-              }
-            }
-          }
+        select: {
+          codigo: true,
+          nombre: true,
         },
-        usuario: {
+      },
+      autor: {
           select: {
-            id: true,
             name: true,
-            image: true
-          }
-        }
+        },
+      },
+    },
+    orderBy: [
+      { numVistas: 'desc' },
+      { calificacion: 'desc' }
+    ],
+    take: 5
+  });
+
+  // Obtener materias próximas a vencer (materias en curso)
+  const materiasProximas = materiasEstudiante
+    .filter(m => m.estado === "EN_CURSO")
+    .slice(0, 5);
+
+  // Obtener notificaciones recientes
+  const notificaciones = await db.notificacion.findMany({
+    where: {
+      usuarioId: session.user.id,
+      leida: false,
       },
       orderBy: {
         createdAt: 'desc'
       },
-      take: 4
-    });
-  } catch {
-    caletasRecientes = [];
-  }
+    take: 5
+  });
 
-  // Estadísticas de caletas
-  let caletasStats: any = {
-    total: 0,
-    porTipo: { pdf: 0, imagenes: 0, documentos: 0, otros: 0 },
-    favoritas: 0,
-    recientes: 0,
-    tamanioTotal: 0,
-    materiasUnicas: 0,
-    universidadesUnicas: 0
-  };
-  try {
-    const [
-      totalCaletas,
-      caletasPDF,
-      caletasImagenes,
-      caletasDocumentos,
-      caletasOtros,
-      caletasFavoritasCount,
-      caletasRecientes,
-      totalTamanio,
-      materiasUnicas,
-      universidadesUnicas
-    ] = await Promise.all([
-      db.caleta.count({ where: { usuarioId: session.user.id, isActive: true } }),
-      db.caleta.count({ where: { usuarioId: session.user.id, isActive: true, tipoArchivo: { equals: 'application/pdf' } } }),
-      db.caleta.count({ where: { usuarioId: session.user.id, isActive: true, tipoArchivo: { in: ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/jpg'] } } }),
-      db.caleta.count({ where: { usuarioId: session.user.id, isActive: true, tipoArchivo: { in: ['application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'] } } }),
-      db.caleta.count({ where: { usuarioId: session.user.id, isActive: true, tipoArchivo: { notIn: [ 'application/pdf', 'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/jpg', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain' ] } } }),
-      db.caletaFavorita.count({ where: { usuarioId: session.user.id } }),
-      db.caleta.count({ where: { usuarioId: session.user.id, isActive: true, createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } } }),
-      db.caleta.aggregate({ where: { usuarioId: session.user.id, isActive: true }, _sum: { tamanio: true } }),
-      db.caleta.groupBy({ by: ['materiaId'], where: { usuarioId: session.user.id, isActive: true }, _count: true }),
-      db.caleta.groupBy({ by: ['materiaId'], where: { usuarioId: session.user.id, isActive: true }, _count: true })
-    ]);
-    
-    caletasStats = {
-      total: totalCaletas,
-      porTipo: {
-        pdf: caletasPDF,
-        imagenes: caletasImagenes,
-        documentos: caletasDocumentos,
-        otros: caletasOtros
-      },
-      favoritas: caletasFavoritasCount,
-      recientes: caletasRecientes,
-      tamanioTotal: totalTamanio._sum.tamanio || 0,
-      materiasUnicas: materiasUnicas.length,
-      universidadesUnicas: universidadesUnicas.length
-    };
-  } catch {}
+  // Obtener metas académicas del usuario
+  const metasAcademicas = await db.metaAcademica.findMany({
+    where: {
+      usuarioId: session.user.id,
+      completada: false,
+    },
+    orderBy: {
+      fechaLimite: 'asc'
+    },
+    take: 3
+  });
+
+  // Obtener metas completadas recientes para logros
+  const metasCompletadas = await db.metaAcademica.findMany({
+    where: {
+      usuarioId: session.user.id,
+      completada: true,
+    },
+    orderBy: {
+      updatedAt: 'desc'
+    },
+    take: 5
+  });
 
   // Funciones auxiliares
-  const formatFileSize = (bytes: number) => {
-    if (!bytes) return "0 Bytes";
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-  };
-  const formatDate = (dateString: Date) => {
-    const date = new Date(dateString);
-    const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-    const day = date.getUTCDate();
-    const month = months[date.getUTCMonth()];
-    const year = date.getUTCFullYear();
-    return `${day} ${month} ${year}`;
-  };
-  const getFileIcon = (tipoArchivo: string) => {
-    if (tipoArchivo.includes("pdf")) return "📄";
-    if (tipoArchivo.includes("image")) return "🖼️";
-    return "📎";
+  const getEstadoColor = (estado: string) => {
+    switch (estado) {
+      case "APROBADA":
+        return "bg-green-500/10 text-green-300 border-green-500/20";
+      case "EN_CURSO":
+        return "bg-blue-500/10 text-blue-300 border-blue-500/20";
+      case "APLAZADA":
+        return "bg-red-500/10 text-red-300 border-red-500/20";
+      case "RETIRADA":
+        return "bg-yellow-500/10 text-yellow-300 border-yellow-500/20";
+      default:
+        return "bg-gray-500/10 text-gray-300 border-gray-500/20";
+    }
   };
 
-  // Mock de caletas recomendadas
-  const caletasRecomendadas = [
-    { id: "r1", nombre: "Cálculo I", materia: { nombre: "Matemáticas" }, tipoArchivo: "pdf", urlArchivo: "#" },
-    { id: "r2", nombre: "Física Básica", materia: { nombre: "Física" }, tipoArchivo: "pdf", urlArchivo: "#" },
-    { id: "r3", nombre: "Química Orgánica", materia: { nombre: "Química" }, tipoArchivo: "pdf", urlArchivo: "#" },
-    { id: "r4", nombre: "Historia Universal", materia: { nombre: "Historia" }, tipoArchivo: "pdf", urlArchivo: "#" },
-    { id: "r5", nombre: "Programación I", materia: { nombre: "Computación" }, tipoArchivo: "pdf", urlArchivo: "#" },
-  ];
+  const getEstadoIcon = (estado: string) => {
+    switch (estado) {
+      case "APROBADA":
+        return <CheckCircle className="w-4 h-4" />;
+      case "EN_CURSO":
+        return <Clock className="w-4 h-4" />;
+      case "APLAZADA":
+        return <XCircle className="w-4 h-4" />;
+      case "RETIRADA":
+        return <AlertCircle className="w-4 h-4" />;
+      default:
+        return <BookOpen className="w-4 h-4" />;
+    }
+  };
+
+  const getTipoIcon = (tipo: string) => {
+    switch (tipo) {
+      case "ANOTACION":
+        return <FileText className="w-4 h-4" />;
+      case "RESUMEN":
+        return <BookOpen className="w-4 h-4" />;
+      case "GUIA_ESTUDIO":
+        return <Award className="w-4 h-4" />;
+      case "EJERCICIOS":
+        return <TrendingUp className="w-4 h-4" />;
+      case "PRESENTACION":
+        return <FileText className="w-4 h-4" />;
+      case "VIDEO":
+        return <FileText className="w-4 h-4" />;
+      case "AUDIO":
+        return <FileText className="w-4 h-4" />;
+      case "DOCUMENTO":
+        return <FileText className="w-4 h-4" />;
+      case "ENLACE":
+        return <FileText className="w-4 h-4" />;
+      case "TIP":
+        return <Lightbulb className="w-4 h-4" />;
+      case "PROMEDIO_GENERAL":
+        return <BarChart3 className="w-4 h-4" />;
+      case "MATERIAS_APROBADAS":
+        return <BookOpen className="w-4 h-4" />;
+      case "CREDITOS_COMPLETADOS":
+        return <GraduationCap className="w-4 h-4" />;
+      case "SEMESTRE_ESPECIFICO":
+        return <CalendarDays className="w-4 h-4" />;
+      case "MATERIA_ESPECIFICA":
+        return <BookMarked className="w-4 h-4" />;
+      case "HORAS_ESTUDIO":
+        return <Clock className="w-4 h-4" />;
+      default:
+        return <FileText className="w-4 h-4" />;
+    }
+  };
+
+  const getTipoNombre = (tipo: string) => {
+    switch (tipo) {
+      case "PROMEDIO_GENERAL":
+        return "Promedio";
+      case "MATERIAS_APROBADAS":
+        return "Materias";
+      case "CREDITOS_COMPLETADOS":
+        return "Créditos";
+      case "SEMESTRE_ESPECIFICO":
+        return "Semestre";
+      case "MATERIA_ESPECIFICA":
+        return "Materia";
+      case "HORAS_ESTUDIO":
+        return "Horas";
+      default:
+        return tipo;
+    }
+  };
 
   return (
-    <div className="text-center flex-1 pt-8 md:pt-20 px-4 md:px-6 space-y-6 md:space-y-10 bg-gradient-to-t from-mygreen to-mygreen-light min-h-screen overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-t from-mygreen to-mygreen-light">
+      <div className="container mx-auto px-4 py-8">
       {/* Header del Dashboard */}
-      <div className="space-y-2">
-        <h1 className="text-xl md:text-3xl font-special text-white px-2">
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-special text-white mb-2">
           ¡Bienvenido de vuelta, {session.user.name?.split(' ')[0] || 'Estudiante'}!
         </h1>
-        <p className="text-white/70 text-sm md:text-base px-2">
-          Aquí tienes un resumen de tu actividad académica y caletas
+              <p className="text-white/70">
+                {user?.carrera ? 
+                  `${user.carrera.universidad.siglas} - ${user.carrera.nombre}` : 
+                  "Tu dashboard académico personal"
+                }
         </p>
       </div>
-
-      {/* Carrusel de Caletas Favoritas */}
-      <div className="text-left max-w-6xl mx-auto px-2">
-        <h2 className="text-lg md:text-2xl font-special text-[#40C9A9] mb-2">Tus caletas favoritas</h2>
-        <Carousel className="w-full">
-          <CarouselContent>
-            {caletasFavoritas.length > 0 ? caletasFavoritas.map((caleta) => (
-              <CarouselItem key={caleta.id} className="basis-full sm:basis-1/2 md:basis-1/3 max-w-xs">
-                <div className="bg-[#354B3A] border-white/10 border rounded-xl p-3 md:p-4 m-1 md:m-2 flex flex-col gap-2 shadow-lg h-40 md:h-48 justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="text-xl md:text-2xl">{getFileIcon(caleta.tipoArchivo)}</span>
-                    <span className="font-bold text-white truncate text-sm md:text-base">{caleta.nombre}</span>
+              <Badge className="bg-[#40C9A9]/10 text-[#40C9A9] border-[#40C9A9]/20">
+                <Bell className="w-3 h-3 mr-1" />
+                {notificaciones.length} nuevas
+              </Badge>
+            </div>
+          </div>
+        </div>
+
+        {/* Estadísticas Principales */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Card className="bg-[#354B3A] border-white/10">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-white/70">
+                Progreso de Carrera
+              </CardTitle>
+              <Target className="h-4 w-4 text-[#40C9A9]" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">
+                {progresoCarrera.toFixed(1)}%
+              </div>
+              <Progress 
+                value={progresoCarrera} 
+                className="mt-2"
+              />
+              <p className="text-xs text-white/70 mt-1">
+                {creditosAprobados} créditos aprobados
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-[#354B3A] border-white/10">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-white/70">
+                Promedio General
+              </CardTitle>
+              <TrendingUp className="h-4 w-4 text-[#40C9A9]" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">
+                {promedioGeneral.toFixed(2)}
+              </div>
+              <p className="text-xs text-white/70 mt-1">
+                {materiasAprobadas} materias aprobadas
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-[#354B3A] border-white/10">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-white/70">
+                Materias en Curso
+              </CardTitle>
+              <Clock className="h-4 w-4 text-[#40C9A9]" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">
+                {materiasEnCurso}
+              </div>
+              <p className="text-xs text-white/70 mt-1">
+                {creditosEnCurso} créditos en curso
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-[#354B3A] border-white/10">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-white/70">
+                Recursos Compartidos
+              </CardTitle>
+              <Share2 className="h-4 w-4 text-[#40C9A9]" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">
+                {recursosUsuario.length}
+              </div>
+              <p className="text-xs text-white/70 mt-1">
+                En Caletas
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Tabs principales */}
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4 bg-[#354B3A] border-white/10">
+            <TabsTrigger value="overview" className="text-white data-[state=active]:bg-[#40C9A9] data-[state=active]:text-white">
+              Resumen General
+            </TabsTrigger>
+            <TabsTrigger value="academic" className="text-white data-[state=active]:bg-[#40C9A9] data-[state=active]:text-white">
+              Académico
+            </TabsTrigger>
+            <TabsTrigger value="caletas" className="text-white data-[state=active]:bg-[#40C9A9] data-[state=active]:text-white">
+              Caletas
+            </TabsTrigger>
+            <TabsTrigger value="goals" className="text-white data-[state=active]:bg-[#40C9A9] data-[state=active]:text-white">
+              Metas
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Tab: Resumen General */}
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Materias Próximas */}
+              <Card className="bg-[#354B3A] border-white/10">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Clock3 className="w-5 h-5 text-[#40C9A9]" />
+                    Materias en Curso
+                  </CardTitle>
+                  <CardDescription className="text-white/70">
+                    Tus materias actuales y próximas evaluaciones
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {materiasProximas.map((materia) => (
+                      <div key={materia.id} className="flex items-center justify-between p-3 bg-[#1C2D20] rounded-lg">
+                        <div className="flex items-center gap-3">
+                          {getEstadoIcon(materia.estado)}
+                          <div>
+                            <p className="text-white font-medium">{materia.materia.codigo}</p>
+                            <p className="text-white/70 text-sm">{materia.materia.nombre}</p>
+                          </div>
+                        </div>
+                        <Badge className={getEstadoColor(materia.estado)}>
+                          {materia.estado}
+                        </Badge>
+                      </div>
+                    ))}
+                    {materiasProximas.length === 0 && (
+                      <div className="text-center py-4 text-white/70">
+                        <BookOpen className="w-8 h-8 mx-auto mb-2 text-white/30" />
+                        <p>No tienes materias en curso</p>
+                      </div>
+                    )}
                   </div>
-                  <div className="text-white/70 text-xs md:text-sm truncate">{caleta.materia?.nombre}</div>
-                  <a href={caleta.urlArchivo} target="_blank" rel="noopener noreferrer" className="mt-auto text-[#40C9A9] hover:underline text-sm">Ver caleta</a>
+                  <Button asChild className="w-full mt-4 bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white">
+                    <Link href="/academico">
+                      Ver Panel Académico
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Notificaciones */}
+              <Card className="bg-[#354B3A] border-white/10">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Bell className="w-5 h-5 text-[#40C9A9]" />
+                    Notificaciones Recientes
+                  </CardTitle>
+                  <CardDescription className="text-white/70">
+                    Mantente al día con tu actividad académica
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {notificaciones.map((notificacion) => (
+                      <div key={notificacion.id} className="flex items-start gap-3 p-3 bg-[#1C2D20] rounded-lg">
+                        <div className="w-2 h-2 bg-[#40C9A9] rounded-full mt-2 flex-shrink-0"></div>
+                        <div className="flex-1">
+                          <p className="text-white font-medium text-sm">{notificacion.titulo}</p>
+                          <p className="text-white/70 text-xs">{notificacion.mensaje}</p>
+                          <p className="text-white/50 text-xs mt-1">
+                            {new Date(notificacion.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
                 </div>
-              </CarouselItem>
-            )) : (
-              <CarouselItem className="basis-full sm:basis-1/2 md:basis-1/3 max-w-xs">
-                <div className="bg-[#354B3A] border-white/10 border rounded-xl p-4 md:p-8 flex items-center justify-center text-white/70 h-40 md:h-48 text-sm md:text-base">
-                  No tienes caletas favoritas aún
+                    ))}
+                    {notificaciones.length === 0 && (
+                      <div className="text-center py-4 text-white/70">
+                        <Bell className="w-8 h-8 mx-auto mb-2 text-white/30" />
+                        <p>No tienes notificaciones nuevas</p>
                 </div>
-              </CarouselItem>
-            )}
-          </CarouselContent>
-          <CarouselPrevious />
-          <CarouselNext />
-        </Carousel>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
       </div>
 
-      {/* Carrusel de Caletas Recientes */}
-      <div className="text-left max-w-6xl mx-auto px-2">
-        <h2 className="text-lg md:text-2xl font-special text-[#40C9A9] mb-2">Caletas vistas recientemente</h2>
-        <Carousel className="w-full">
-          <CarouselContent>
-            {caletasRecientes.length > 0 ? caletasRecientes.map((caleta) => (
-              <CarouselItem key={caleta.id} className="basis-full sm:basis-1/2 md:basis-1/3 max-w-xs">
-                <div className="bg-[#354B3A] border-white/10 border rounded-xl p-3 md:p-4 m-1 md:m-2 flex flex-col gap-2 shadow-lg h-40 md:h-48 justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl md:text-2xl">{getFileIcon(caleta.tipoArchivo)}</span>
-                    <span className="font-bold text-white truncate text-sm md:text-base">{caleta.nombre}</span>
+            {/* Estadísticas Detalladas */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card className="bg-[#354B3A] border-white/10">
+                <CardHeader>
+                  <CardTitle className="text-white text-center">Distribución de Materias</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/70">Aprobadas</span>
+                      <span className="text-white font-medium">{materiasAprobadas}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/70">En Curso</span>
+                      <span className="text-white font-medium">{materiasEnCurso}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/70">Aplazadas</span>
+                      <span className="text-white font-medium">{materiasAplazadas}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/70">Retiradas</span>
+                      <span className="text-white font-medium">{materiasRetiradas}</span>
+                    </div>
                   </div>
-                  <div className="text-white/70 text-xs md:text-sm truncate">{caleta.materia?.nombre}</div>
-                  <a href={caleta.urlArchivo} target="_blank" rel="noopener noreferrer" className="mt-auto text-[#40C9A9] hover:underline text-sm">Ver caleta</a>
-                </div>
-              </CarouselItem>
-            )) : (
-              <CarouselItem className="basis-full sm:basis-1/2 md:basis-1/3 max-w-xs">
-                <div className="bg-[#354B3A] border-white/10 border rounded-xl p-4 md:p-8 flex items-center justify-center text-white/70 h-40 md:h-48 text-sm md:text-base">
-                  No tienes caletas recientes aún
-                </div>
-              </CarouselItem>
-            )}
-          </CarouselContent>
-          <CarouselPrevious />
-          <CarouselNext />
-        </Carousel>
-      </div>
+                </CardContent>
+              </Card>
 
-      {/* Carrusel de Caletas Recomendadas */}
-      <div className="text-left max-w-6xl mx-auto px-2">
-        <h2 className="text-lg md:text-2xl font-special text-[#40C9A9] mb-2">Caletas recomendadas</h2>
-        <Carousel className="w-full">
-          <CarouselContent>
-            {caletasRecomendadas.map((caleta) => (
-              <CarouselItem key={caleta.id} className="basis-full sm:basis-1/2 md:basis-1/3 max-w-xs">
-                <div className="bg-[#354B3A] border-white/10 border rounded-xl p-3 md:p-4 m-1 md:m-2 flex flex-col gap-2 shadow-lg h-40 md:h-48 justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl md:text-2xl">{getFileIcon(caleta.tipoArchivo)}</span>
-                    <span className="font-bold text-white truncate text-sm md:text-base">{caleta.nombre}</span>
+              <Card className="bg-[#354B3A] border-white/10">
+                <CardHeader>
+                  <CardTitle className="text-white text-center">Progreso de Créditos</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/70">Aprobados</span>
+                      <span className="text-white font-medium">{creditosAprobados}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/70">En Curso</span>
+                      <span className="text-white font-medium">{creditosEnCurso}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/70">Total</span>
+                      <span className="text-white font-medium">{creditosAprobados + creditosEnCurso}</span>
+                    </div>
                   </div>
-                  <div className="text-white/70 text-xs md:text-sm truncate">{caleta.materia?.nombre}</div>
-                  <a href={caleta.urlArchivo} target="_blank" rel="noopener noreferrer" className="mt-auto text-[#40C9A9] hover:underline text-sm">Ver caleta</a>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-[#354B3A] border-white/10">
+                <CardHeader>
+                  <CardTitle className="text-white text-center">Actividad Reciente</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/70">Recursos Compartidos</span>
+                      <span className="text-white font-medium">{recursosUsuario.length}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/70">Metas Activas</span>
+                      <span className="text-white font-medium">{metasAcademicas.length}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/70">Notificaciones</span>
+                      <span className="text-white font-medium">{notificaciones.length}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Tab: Académico */}
+          <TabsContent value="academic" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Materias Actuales */}
+              <Card className="bg-[#354B3A] border-white/10">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Clock className="w-5 h-5 text-[#40C9A9]" />
+                    Materias en Curso
+                  </CardTitle>
+                  <CardDescription className="text-white/70">
+                    Gestiona tu progreso actual
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {materiasProximas.map((materia) => (
+                      <div key={materia.id} className="flex items-center justify-between p-3 bg-[#1C2D20] rounded-lg">
+                        <div className="flex items-center gap-3">
+                          {getEstadoIcon(materia.estado)}
+                          <div>
+                            <p className="text-white font-medium">{materia.materia.codigo}</p>
+                            <p className="text-white/70 text-sm">{materia.materia.nombre}</p>
+                            <p className="text-white/50 text-xs">Semestre {materia.materia.semestre}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <Badge className={getEstadoColor(materia.estado)}>
+                            {materia.estado}
+                          </Badge>
+                          {materia.nota && (
+                            <p className="text-white/70 text-sm mt-1">Nota: {materia.nota}</p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex gap-2 mt-4">
+                    <Button asChild className="flex-1 bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white">
+                      <Link href="/academico">
+                        Panel Académico
+                      </Link>
+                    </Button>
+                    <Button asChild variant="outline" className="border-[#40C9A9] text-[#40C9A9] hover:bg-[#40C9A9] hover:text-white">
+                      <Link href="/academico/historial">
+                        Historial
+                      </Link>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Recomendaciones */}
+              <Card className="bg-[#354B3A] border-white/10">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Lightbulb className="w-5 h-5 text-[#40C9A9]" />
+                    Recomendaciones
+                  </CardTitle>
+                  <CardDescription className="text-white/70">
+                    Sugerencias para tu próximo semestre
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="p-3 bg-[#1C2D20] rounded-lg">
+                      <p className="text-white font-medium">Materias Sugeridas</p>
+                      <p className="text-white/70 text-sm">Basado en tu progreso actual</p>
+                    </div>
+                    <div className="p-3 bg-[#1C2D20] rounded-lg">
+                      <p className="text-white font-medium">Mejora tu Promedio</p>
+                      <p className="text-white/70 text-sm">Enfócate en las materias en curso</p>
+                    </div>
+                    <div className="p-3 bg-[#1C2D20] rounded-lg">
+                      <p className="text-white font-medium">Próximas Evaluaciones</p>
+                      <p className="text-white/70 text-sm">Revisa tu calendario académico</p>
+                    </div>
+                  </div>
+                  <Button asChild className="w-full mt-4 bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white">
+                    <Link href="/academico/recomendaciones">
+                      Ver Recomendaciones Completas
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Tab: Caletas */}
+          <TabsContent value="caletas" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Mis Recursos */}
+              <Card className="bg-[#354B3A] border-white/10">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <BookOpen className="w-5 h-5 text-[#40C9A9]" />
+                    Mis Recursos Compartidos
+                  </CardTitle>
+                  <CardDescription className="text-white/70">
+                    Los recursos que has compartido en Caletas
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {recursosUsuario.map((recurso) => (
+                      <div key={recurso.id} className="flex items-center justify-between p-3 bg-[#1C2D20] rounded-lg">
+                        <div className="flex items-center gap-3">
+                          {getTipoIcon(recurso.tipo)}
+                          <div>
+                            <p className="text-white font-medium">{recurso.titulo}</p>
+                            <p className="text-white/70 text-sm">{recurso.materia.codigo}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="flex items-center gap-1 text-yellow-400">
+                            <Star className="w-3 h-3" />
+                            <span className="text-white text-sm">{recurso.calificacion.toFixed(1)}</span>
+                          </div>
+                          <p className="text-white/50 text-xs">{recurso.numVistas} vistas</p>
+                        </div>
                 </div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious />
-          <CarouselNext />
-        </Carousel>
+                    ))}
+                    {recursosUsuario.length === 0 && (
+                      <div className="text-center py-4 text-white/70">
+                        <Share2 className="w-8 h-8 mx-auto mb-2 text-white/30" />
+                        <p>No has compartido recursos aún</p>
+                </div>
+                    )}
+                  </div>
+                  <div className="flex gap-2 mt-4">
+                    <Button asChild className="flex-1 bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white">
+                      <Link href="/caletas/crear">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Compartir Recurso
+                      </Link>
+                    </Button>
+                    <Button asChild variant="outline" className="border-[#40C9A9] text-[#40C9A9] hover:bg-[#40C9A9] hover:text-white">
+                      <Link href="/caletas/mis-recursos">
+                        Ver Todos
+                      </Link>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Recursos Populares */}
+              <Card className="bg-[#354B3A] border-white/10">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-[#40C9A9]" />
+                    Recursos Populares
+                  </CardTitle>
+                  <CardDescription className="text-white/70">
+                    Los recursos más vistos en Caletas
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {recursosPopulares.map((recurso) => (
+                      <div key={recurso.id} className="flex items-center justify-between p-3 bg-[#1C2D20] rounded-lg">
+                        <div className="flex items-center gap-3">
+                          {getTipoIcon(recurso.tipo)}
+                          <div>
+                            <p className="text-white font-medium">{recurso.titulo}</p>
+                            <p className="text-white/70 text-sm">por {recurso.autor.name}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="flex items-center gap-1 text-yellow-400">
+                            <Star className="w-3 h-3" />
+                            <span className="text-white text-sm">{recurso.calificacion.toFixed(1)}</span>
+                          </div>
+                          <p className="text-white/50 text-xs">{recurso.numVistas} vistas</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <Button asChild className="w-full mt-4 bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white">
+                    <Link href="/caletas">
+                      Explorar Caletas
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+      </div>
+          </TabsContent>
+
+          {/* Tab: Metas */}
+          <TabsContent value="goals" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Metas Activas */}
+              <Card className="bg-[#354B3A] border-white/10">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Target className="w-5 h-5 text-[#40C9A9]" />
+                    Mis Metas Académicas
+                  </CardTitle>
+                  <CardDescription className="text-white/70">
+                    Objetivos que te has propuesto alcanzar
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {metasAcademicas.map((meta) => (
+                      <div key={meta.id} className="p-3 bg-[#1C2D20] rounded-lg">
+                        <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                            {getTipoIcon(meta.tipo)}
+                            <p className="text-white font-medium">{meta.titulo}</p>
+                          </div>
+                          <Badge className="bg-[#40C9A9]/10 text-[#40C9A9] border-[#40C9A9]/20">
+                            {getTipoNombre(meta.tipo)}
+                          </Badge>
+                        </div>
+                        <p className="text-white/70 text-sm mb-2">{meta.descripcion || "Sin descripción"}</p>
+                        <div className="flex items-center justify-between text-xs mb-2">
+                          <span className="text-white/50">
+                            {meta.valorActual}/{meta.valorObjetivo}
+                            {meta.tipo === "PROMEDIO_GENERAL" && " pts"}
+                            {meta.tipo === "MATERIAS_APROBADAS" && " materias"}
+                            {meta.tipo === "CREDITOS_COMPLETADOS" && " créditos"}
+                            {meta.tipo === "SEMESTRE_ESPECIFICO" && " sem"}
+                            {meta.tipo === "MATERIA_ESPECIFICA" && (meta.valorActual >= meta.valorObjetivo ? " ✓" : " ✗")}
+                            {meta.tipo === "HORAS_ESTUDIO" && " hrs"}
+                          </span>
+                          <span className="text-white/50">
+                            {meta.fechaLimite ? new Date(meta.fechaLimite).toLocaleDateString() : 'Sin fecha límite'}
+                          </span>
+                        </div>
+                        <Progress 
+                          value={(meta.valorActual / meta.valorObjetivo) * 100} 
+                          className="mt-2"
+                        />
+                        <p className="text-white/50 text-xs mt-1">
+                          {((meta.valorActual / meta.valorObjetivo) * 100).toFixed(1)}% completado
+                        </p>
+                      </div>
+                    ))}
+                    {metasAcademicas.length === 0 && (
+                      <div className="text-center py-4 text-white/70">
+                        <Target className="w-8 h-8 mx-auto mb-2 text-white/30" />
+                        <p>No tienes metas activas</p>
+                        <p className="text-sm mt-1">¡Crea tu primera meta para comenzar!</p>
+                      </div>
+                    )}
+                  </div>
+                  <Button asChild className="w-full mt-4 bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white">
+                    <Link href="/academico/metas">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Crear Nueva Meta
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Logros */}
+              <Card className="bg-[#354B3A] border-white/10">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Trophy className="w-5 h-5 text-[#40C9A9]" />
+                    Logros Recientes
+                  </CardTitle>
+                  <CardDescription className="text-white/70">
+                    Celebra tus éxitos académicos
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {metasCompletadas.length > 0 ? (
+                      metasCompletadas.map((meta) => (
+                        <div key={meta.id} className="p-3 bg-[#1C2D20] rounded-lg">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Trophy className="w-4 h-4 text-yellow-400" />
+                            <p className="text-white font-medium">{meta.titulo}</p>
+                          </div>
+                          <p className="text-white/70 text-sm">
+                            {meta.tipo === "PROMEDIO_GENERAL" && `¡Alcanzaste un promedio de ${meta.valorActual} puntos!`}
+                            {meta.tipo === "MATERIAS_APROBADAS" && `¡Aprobaste ${meta.valorActual} materias!`}
+                            {meta.tipo === "CREDITOS_COMPLETADOS" && `¡Completaste ${meta.valorActual} créditos!`}
+                            {meta.tipo === "SEMESTRE_ESPECIFICO" && `¡Llegaste al semestre ${meta.valorActual}!`}
+                            {meta.tipo === "MATERIA_ESPECIFICA" && "¡Materia específica aprobada!"}
+                            {meta.tipo === "HORAS_ESTUDIO" && `¡Completaste ${meta.valorActual} horas de estudio!`}
+                            {!meta.tipo && "¡Meta alcanzada exitosamente!"}
+                          </p>
+                          <p className="text-white/50 text-xs mt-1">
+                            Completada el {new Date(meta.updatedAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      ))
+                    ) : (
+                      <>
+                        <div className="p-3 bg-[#1C2D20] rounded-lg">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Target className="w-4 h-4 text-[#40C9A9]" />
+                            <p className="text-white font-medium">Primera Meta</p>
+                          </div>
+                          <p className="text-white/70 text-sm">¡Crea tu primera meta académica para comenzar!</p>
+                        </div>
+                        <div className="p-3 bg-[#1C2D20] rounded-lg">
+                          <div className="flex items-center gap-2 mb-2">
+                            <TrendingUp className="w-4 h-4 text-blue-400" />
+                            <p className="text-white font-medium">Progreso Académico</p>
+                          </div>
+                          <p className="text-white/70 text-sm">Establece metas para mejorar tu rendimiento</p>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
+
+        {/* Acciones Rápidas */}
+        <div className="mt-8">
+          <h2 className="text-xl font-special text-white mb-4">Acciones Rápidas</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Button asChild className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white h-16">
+              <Link href="/academico">
+                <GraduationCap className="w-5 h-5 mr-2" />
+                Panel Académico
+              </Link>
+            </Button>
+            <Button asChild className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white h-16">
+              <Link href="/caletas">
+                <BookOpen className="w-5 h-5 mr-2" />
+                Explorar Caletas
+              </Link>
+            </Button>
+            <Button asChild className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white h-16">
+              <Link href="/caletas/crear">
+                <Plus className="w-5 h-5 mr-2" />
+                Compartir Recurso
+              </Link>
+            </Button>
+            <Button asChild className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white h-16">
+              <Link href="/academico/historial">
+                <History className="w-5 h-5 mr-2" />
+                Gestionar Historial
+              </Link>
+            </Button>
+          </div>
+                </div>
       </div>
     </div>
   );

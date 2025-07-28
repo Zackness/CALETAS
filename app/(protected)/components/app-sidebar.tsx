@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, Settings, FileText, ChevronUp, BookOpen, Upload, Heart, Search } from "lucide-react";
+import { Home, Settings, FileText, ChevronUp, BookOpen, Upload, Heart, Search, GraduationCap, Lightbulb, TrendingUp, BarChart3, History, Plus } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../../../components/ui/dropdown-menu";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../../../components/ui/collapsible";
 import { IoBusinessOutline } from "react-icons/io5";
@@ -58,19 +58,60 @@ export function AppSidebar() {
                         <SidebarMenuButton asChild>
                           <Link href="/caletas" className="hover:bg-foreground/50">
                             <Search className="h-4 w-4" />
-                            <span>Buscar Caletas</span>
+                            <span>Recursos Colaborativos</span>
                           </Link>
                         </SidebarMenuButton>
                         <SidebarMenuButton asChild>
-                          <Link href="/caletas/subir" className="hover:bg-foreground/50">
-                            <Upload className="h-4 w-4" />
-                            <span>Subir Caleta</span>
+                          <Link href="/caletas/crear" className="hover:bg-foreground/50">
+                            <Plus className="h-4 w-4" />
+                            <span>Compartir Recurso</span>
                           </Link>
                         </SidebarMenuButton>
                         <SidebarMenuButton asChild>
-                          <Link href="/caletas/favoritos" className="hover:bg-foreground/50">
-                            <Heart className="h-4 w-4" />
-                            <span>Mis Favoritos</span>
+                          <Link href="/caletas/mis-recursos" className="hover:bg-foreground/50">
+                            <FileText className="h-4 w-4" />
+                            <span>Mis Recursos</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuSubItem>
+                    </SidebarMenuSub>
+                  </CollapsibleContent>
+                </SidebarMenuItem>
+              </Collapsible>
+
+              <Collapsible className="group/collapsible">
+                <SidebarMenuItem>
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuButton className="hover:bg-foreground/50">
+                      <GraduationCap />
+                      <p>Académico</p>
+                    </SidebarMenuButton>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <SidebarMenuSub>
+                      <SidebarMenuSubItem>
+                        <SidebarMenuButton asChild>
+                          <Link href="/academico" className="hover:bg-foreground/50">
+                            <TrendingUp className="h-4 w-4" />
+                            <span>Panel de Control</span>
+                          </Link>
+                        </SidebarMenuButton>
+                        <SidebarMenuButton asChild>
+                          <Link href="/academico/recomendaciones" className="hover:bg-foreground/50">
+                            <Lightbulb className="h-4 w-4" />
+                            <span>Recomendaciones</span>
+                          </Link>
+                        </SidebarMenuButton>
+                        <SidebarMenuButton asChild>
+                          <Link href="/academico/estadisticas" className="hover:bg-foreground/50">
+                            <BarChart3 className="h-4 w-4" />
+                            <span>Estadísticas</span>
+                          </Link>
+                        </SidebarMenuButton>
+                        <SidebarMenuButton asChild>
+                          <Link href="/academico/historial" className="hover:bg-foreground/50">
+                            <History className="h-4 w-4" />
+                            <span>Historial</span>
                           </Link>
                         </SidebarMenuButton>
                       </SidebarMenuSubItem>

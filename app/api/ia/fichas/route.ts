@@ -1,79 +1,140 @@
 import { NextRequest, NextResponse } from "next/server";
-import { openai } from "@ai-sdk/openai";
-import { generateText } from "ai";
-import pdfParse from "pdf-parse";
+import { auth } from "@/auth";
+import { db } from "@/lib/db";
+import OpenAI from "openai";
 
-export const maxDuration = 60; // segundos
-export const maxBodySize = "10mb";
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const formData = await req.formData();
-    const file = formData.get("file");
-    console.log("[IA FICHAS] file recibido:", file && 'name' in file ? file.name : typeof file, file);
-    if (!file || !(file instanceof Blob)) {
-      console.error("[IA FICHAS] No se recibió un archivo PDF válido");
-      return NextResponse.json({ error: "Archivo PDF requerido" }, { status: 400 });
-    }
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    console.log("[IA FICHAS] buffer length:", buffer.length);
-    if (buffer.length < 100) {
-      console.error("[IA FICHAS] El buffer del PDF es muy pequeño");
-    }
-    let pdfData;
-    try {
-      pdfData = await pdfParse(buffer);
-    } catch (err) {
-      console.error("[IA FICHAS] Error al procesar el PDF con pdf-parse:", err);
-      return NextResponse.json({ error: "No se pudo procesar el PDF" }, { status: 500 });
-    }
-    const text = pdfData.text;
-    if (!text || text.length < 100) {
-      console.error("[IA FICHAS] El PDF no tiene suficiente texto");
-      return NextResponse.json({ error: "El PDF no tiene suficiente texto" }, { status: 400 });
-    }
-    
-    // Prompt para OpenAI usando AI SDK
-    const prompt = `Eres un asistente educativo universitario. A partir del siguiente texto extraído de un PDF, genera un cuestionario de selección simple para estudiar. El cuestionario debe tener entre 5 y 20 preguntas, cada una con 4 opciones, solo una correcta, y una breve explicación de la respuesta correcta. Devuelve el resultado en JSON con el formato:
+    const session = await auth();
 
-{
-  "questions": [
-    {
-      "question": "...",
-      "options": ["...", "...", "...", "..."],
-      "correct": 0, // índice de la opción correcta
-      "explanation": "..."
-    },
-    ...
-  ]
-}
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
 
-Texto del PDF:
-"""
-${text.slice(0, 8000)}
-"""`;
+    const body = await request.json();
+    const { recursoId } = body;
 
-    const { text: aiResponse } = await generateText({
-      model: openai("gpt-4o"),
-      prompt: prompt,
-      system: "Eres un asistente educativo universitario.",
-      temperature: 0.3,
-      maxTokens: 3000,
+    if (!recursoId) {
+      return NextResponse.json({ error: "ID de recurso requerido" }, { status: 400 });
+    }
+
+    // Obtener el recurso
+    const recurso = await db.recurso.findUnique({
+      where: { id: recursoId },
+      include: {
+        materia: {
+          select: {
+            nombre: true,
+            codigo: true,
+          }
+        },
+        autor: {
+          select: {
+            name: true,
+          }
+        }
+      }
     });
 
-    // Buscar JSON en la respuesta
-    const match = aiResponse.match(/\{[\s\S]*\}/);
-    if (!match) {
-      return NextResponse.json({ error: "No se pudo generar el cuestionario" }, { status: 500 });
+    if (!recurso) {
+      return NextResponse.json({ error: "Recurso no encontrado" }, { status: 404 });
     }
-    const questions = JSON.parse(match[0]).questions;
-    if (!questions || !Array.isArray(questions)) {
-      return NextResponse.json({ error: "El formato del cuestionario es inválido" }, { status: 500 });
+
+    // Verificar que el usuario tiene acceso al recurso
+    const tieneAcceso = recurso.esPublico || recurso.autorId === session.user.id;
+    if (!tieneAcceso) {
+      return NextResponse.json({ error: "No tienes acceso a este recurso" }, { status: 403 });
     }
-    return NextResponse.json({ questions });
+    
+    // Preparar el contenido para la IA
+    const contenidoParaIA = `
+Título del recurso: ${recurso.titulo}
+Descripción: ${recurso.descripcion}
+Contenido: ${recurso.contenido}
+Materia: ${recurso.materia.nombre} (${recurso.materia.codigo})
+Tipo de recurso: ${recurso.tipo}
+Tags: ${recurso.tags || 'N/A'}
+
+Genera 3 fichas de estudio basadas en este contenido. Cada ficha debe incluir:
+1. Un concepto principal
+2. Una definición clara y concisa
+3. 3 ejemplos prácticos
+4. 3 puntos clave para recordar
+
+Responde ÚNICAMENTE con un JSON válido con esta estructura:
+{
+  "fichas": [
+    {
+      "concepto": "Nombre del concepto",
+      "definicion": "Definición clara y concisa",
+      "ejemplos": ["Ejemplo 1", "Ejemplo 2", "Ejemplo 3"],
+      "puntosClave": ["Punto clave 1", "Punto clave 2", "Punto clave 3"]
+    }
+  ]
+}
+`;
+
+    // Generar fichas con OpenAI
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: "Eres un asistente educativo especializado en crear fichas de estudio efectivas. Genera fichas claras, concisas y útiles para estudiantes universitarios."
+        },
+        {
+          role: "user",
+          content: contenidoParaIA
+        }
+      ],
+      temperature: 0.7,
+      max_tokens: 2000,
+    });
+
+    const respuestaIA = response.choices[0]?.message?.content;
+    
+    if (!respuestaIA) {
+      return NextResponse.json({ error: "Error al generar las fichas" }, { status: 500 });
+    }
+
+    // Parsear la respuesta JSON
+    let fichasGeneradas;
+    try {
+      fichasGeneradas = JSON.parse(respuestaIA);
+    } catch (error) {
+      console.error("Error parsing AI response:", error);
+      return NextResponse.json({ error: "Error al procesar la respuesta de la IA" }, { status: 500 });
+    }
+
+    // Validar estructura de la respuesta
+    if (!fichasGeneradas.fichas || !Array.isArray(fichasGeneradas.fichas)) {
+      return NextResponse.json({ error: "Formato de respuesta inválido" }, { status: 500 });
+    }
+
+    // Agregar IDs y recursoId a las fichas
+    const fichasConIds = fichasGeneradas.fichas.map((ficha: any, index: number) => ({
+      id: (index + 1).toString(),
+      ...ficha,
+      recursoId: recursoId
+    }));
+
+    return NextResponse.json({ 
+      fichas: fichasConIds,
+      recurso: {
+        titulo: recurso.titulo,
+        materia: recurso.materia.nombre
+      }
+    });
+
   } catch (error) {
-    console.error("Error generando fichas IA:", error);
-    return NextResponse.json({ error: "Error interno generando el cuestionario" }, { status: 500 });
+    console.error("Error generating fichas:", error);
+    return NextResponse.json(
+      { error: "Error interno del servidor" },
+      { status: 500 }
+    );
   }
 } 

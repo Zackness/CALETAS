@@ -65,7 +65,7 @@ export function DashboardHeader({ session }: AppHeaderProps) {
               <Heart className="h-4 w-4 md:h-5 md:w-5" />
             </Button>
           </Link>
-          <Link href="/caletas/subir">
+          <Link href="/caletas/crear">
             <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 h-8 w-8 md:h-10 md:w-10 cursor-pointer">
               <Upload className="h-4 w-4 md:h-5 md:w-5" />
             </Button>

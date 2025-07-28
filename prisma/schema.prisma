@@ -34,7 +34,10 @@ model User {
   materiasActuales       String?                @db.LongText
   semestreActual         String?
   universidadId          String?
+  carreraId              String?
   userType               String?
+  isCarnetValidado       Boolean                @default(false)
+  carnetValidadoEn       DateTime?
   accounts               Account[]
   blogPosts              BlogPost[]
   caletas                Caleta[]
@@ -48,9 +51,17 @@ model User {
   StripeCustomer         StripeCustomer?
   twoFactorConfirmation  TwoFactorConfirmation?
   universidad            Universidad?           @relation(fields: [universidadId], references: [id])
+  carrera                Carrera?               @relation(fields: [carreraId], references: [id])
   UserSubscription       UserSubscription[]
   empresas               Empresa[]              @relation("UserEmpresa")
   notifications          Notification[]
+  materiasEstudiante     MateriaEstudiante[]
+  recursos                Recurso[]
+  calificaciones         CalificacionRecurso[]
+  comentarios            ComentarioRecurso[]
+  vistas                  VistaRecurso[]
+  descargas              DescargaRecurso[]
+  metas                  MetaAcademica[]
 
   @@index([empresa])
   @@index([role])
@@ -324,6 +335,7 @@ model Carrera {
   caletas       Caleta[]
   universidad   Universidad @relation(fields: [universidadId], references: [id], onDelete: Cascade)
   materias      Materia[]
+  usuarios      User[]
 
   @@index([universidadId])
 }
@@ -345,6 +357,8 @@ model Materia {
   carrera           Carrera                @relation(fields: [carreraId], references: [id], onDelete: Cascade)
   prerrequisitos    MateriaPrerrequisito[] @relation("MateriaPrerrequisito")
   esPrerrequisitoDe MateriaPrerrequisito[] @relation("MateriaQueRequiere")
+  materiasEstudiante MateriaEstudiante[]
+  recursos           Recurso[]
 
   @@index([carreraId])
 }
@@ -361,6 +375,26 @@ model MateriaPrerrequisito {
   @@unique([materiaId, prerrequisitoId])
   @@index([materiaId])
   @@index([prerrequisitoId])
+}
+
+model MateriaEstudiante {
+  id                String              @id @default(uuid())
+  userId            String
+  materiaId         String
+  estado            EstadoMateria       @default(NO_CURSADA)
+  nota              Float?
+  semestreCursado   String?
+  fechaInicio       DateTime?
+  fechaFin          DateTime?
+  observaciones     String?             @db.Text
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  materia           Materia             @relation(fields: [materiaId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, materiaId])
+  @@index([userId])
+  @@index([materiaId])
 }
 
 model BlogPost {
@@ -435,12 +469,128 @@ model Notification {
   createdAt DateTime @default(now())
 }
 
+model Recurso {
+  id          String   @id @default(cuid())
+  titulo      String
+  descripcion String
+  tipo        TipoRecurso
+  contenido   String   // Contenido del recurso (texto, enlaces, etc.)
+  archivoUrl  String?  // URL del archivo si se sube uno
+  materiaId   String
+  materia     Materia  @relation(fields: [materiaId], references: [id], onDelete: Cascade)
+  autorId     String
+  autor       User     @relation(fields: [autorId], references: [id], onDelete: Cascade)
+  calificacion Float   @default(0) // Promedio de calificaciones
+  numCalificaciones Int @default(0) // Número de calificaciones
+  numVistas   Int      @default(0) // Número de veces visto
+  numDescargas Int     @default(0) // Número de descargas
+  esPublico   Boolean  @default(true)
+  tags        String   // Tags para categorización (separados por comas)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relaciones
+  calificaciones CalificacionRecurso[]
+  comentarios    ComentarioRecurso[]
+  vistas         VistaRecurso[]
+  descargas      DescargaRecurso[]
+
+  @@index([materiaId])
+  @@index([autorId])
+  @@index([tipo])
+  @@index([esPublico])
+}
+
+model CalificacionRecurso {
+  id          String   @id @default(cuid())
+  recursoId   String
+  recurso     Recurso  @relation(fields: [recursoId], references: [id], onDelete: Cascade)
+  usuarioId   String
+  usuario     User     @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  calificacion Int     // 1-5 estrellas
+  comentario  String?  // Comentario opcional
+  createdAt   DateTime @default(now())
+
+  @@unique([recursoId, usuarioId]) // Un usuario solo puede calificar una vez
+  @@index([recursoId])
+  @@index([usuarioId])
+}
+
+model ComentarioRecurso {
+  id          String   @id @default(cuid())
+  recursoId   String
+  recurso     Recurso  @relation(fields: [recursoId], references: [id], onDelete: Cascade)
+  autorId     String
+  autor       User     @relation(fields: [autorId], references: [id], onDelete: Cascade)
+  contenido   String
+  esRespuesta Boolean  @default(false) // Si es respuesta a otro comentario
+  comentarioPadreId String? // ID del comentario padre si es respuesta
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([recursoId])
+  @@index([autorId])
+}
+
+model VistaRecurso {
+  id          String   @id @default(cuid())
+  recursoId   String
+  recurso     Recurso  @relation(fields: [recursoId], references: [id], onDelete: Cascade)
+  usuarioId   String?
+  usuario     User?    @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+  ipAddress   String?  // Para tracking de vistas anónimas
+  userAgent   String?  // Información del navegador
+  createdAt   DateTime @default(now())
+
+  @@index([recursoId])
+  @@index([usuarioId])
+}
+
+model DescargaRecurso {
+  id          String   @id @default(cuid())
+  recursoId   String
+  recurso     Recurso  @relation(fields: [recursoId], references: [id], onDelete: Cascade)
+  usuarioId   String
+  usuario     User     @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@index([recursoId])
+  @@index([usuarioId])
+}
+
+model MetaAcademica {
+  id          String   @id @default(cuid())
+  usuarioId   String
+  usuario     User     @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  titulo      String
+  descripcion String?
+  tipo        TipoMeta
+  valorObjetivo Float  // Valor objetivo (promedio, materias, etc.)
+  valorActual  Float   @default(0)
+  fechaLimite DateTime?
+  completada  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([usuarioId])
+  @@index([tipo])
+  @@index([completada])
+}
+
+
+
 enum TipoNotificacion {
   ASIGNACION
   ESTADO_CAMBIO
   DOCUMENTO_EDITABLE
   NOTA_NUEVA
   GENERAL
+  MATERIA_PROXIMA
+  META_COMPLETADA
+  RECURSO_NUEVO
+  CALIFICACION_RECIBIDA
+  COMENTARIO_NUEVO
+  SISTEMA
 }
 
 enum TipoEmpresa {
@@ -524,4 +674,34 @@ enum Semestre {
   S8
   S9
   S10
+}
+
+enum EstadoMateria {
+  NO_CURSADA
+  EN_CURSO
+  APROBADA
+  APLAZADA
+  RETIRADA
+}
+
+enum TipoRecurso {
+  ANOTACION
+  RESUMEN
+  GUIA_ESTUDIO
+  EJERCICIOS
+  PRESENTACION
+  VIDEO
+  AUDIO
+  DOCUMENTO
+  ENLACE
+  TIP
+}
+
+enum TipoMeta {
+  PROMEDIO_GENERAL
+  MATERIAS_APROBADAS
+  CREDITOS_COMPLETADOS
+  SEMESTRE_ESPECIFICO
+  MATERIA_ESPECIFICA
+  HORAS_ESTUDIO
 }

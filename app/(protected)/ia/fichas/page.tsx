@@ -1,157 +1,285 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card } from "@/components/ui/card";
-import { Upload, Loader2, CheckCircle, XCircle } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { BookOpen, Brain, FileText, Save, RotateCcw } from "lucide-react";
+import { toast } from "sonner";
+import { useSession } from "next-auth/react";
 
-interface Question {
-  question: string;
-  options: string[];
-  correct: number; // índice de la respuesta correcta
-  explanation: string;
+interface Recurso {
+  id: string;
+  titulo: string;
+  descripcion: string;
+  tipo: string;
+  materia: {
+    nombre: string;
+  };
+  autor: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  calificaciones: {
+    calificacion: number;
+  }[];
+}
+
+interface Ficha {
+  id: string;
+  concepto: string;
+  definicion: string;
+  ejemplos: string[];
+  puntosClave: string[];
+  recursoId: string;
 }
 
 export default function FichasIA() {
-  const [file, setFile] = useState<File | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [questions, setQuestions] = useState<Question[] | null>(null);
-  const [answers, setAnswers] = useState<(number | null)[]>([]);
-  const [feedback, setFeedback] = useState<{ correct: boolean; explanation: string }[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const { data: session } = useSession();
+  const [recursos, setRecursos] = useState<Recurso[]>([]);
+  const [recursoSeleccionado, setRecursoSeleccionado] = useState<string>("");
+  const [fichas, setFichas] = useState<Ficha[] | null>(null);
+  const [generando, setGenerando] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    if (f && f.type === "application/pdf") {
-      setFile(f);
-      setError(null);
-    } else {
-      setError("Solo se permiten archivos PDF");
-    }
-  };
+  // Cargar recursos del usuario (propios y favoritos)
+  useEffect(() => {
+    fetchRecursos();
+  }, []);
 
-  const handleUpload = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!file) return;
-    setIsLoading(true);
-    setError(null);
-    setQuestions(null);
-    setAnswers([]);
-    setFeedback([]);
+  const fetchRecursos = async () => {
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      const res = await fetch("/api/ia/fichas", {
-        method: "POST",
-        body: formData,
-      });
-      if (!res.ok) throw new Error("Error generando cuestionario");
-      const data = await res.json();
-      setQuestions(data.questions);
-      setAnswers(Array(data.questions.length).fill(null));
-    } catch (err: any) {
-      setError(err.message || "Error generando cuestionario");
-    } finally {
-      setIsLoading(false);
+      const response = await fetch("/api/caletas/recursos");
+      if (response.ok) {
+        const data = await response.json();
+        setRecursos(data.recursos);
+      }
+    } catch (error) {
+      console.error("Error fetching recursos:", error);
+      toast.error("Error al cargar los recursos");
     }
   };
 
-  const handleSelect = (qIdx: number, optIdx: number) => {
-    setAnswers((prev) => prev.map((a, i) => (i === qIdx ? optIdx : a)));
+  const generarFichas = async () => {
+    if (!recursoSeleccionado) {
+      toast.error("Por favor selecciona un recurso");
+      return;
+    }
+
+    setGenerando(true);
+    
+    try {
+      const response = await fetch("/api/ia/fichas", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ recursoId: recursoSeleccionado }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Error al generar las fichas");
+      }
+
+      const data = await response.json();
+      setFichas(data.fichas);
+      toast.success("¡Fichas de estudio generadas exitosamente!");
+    } catch (error) {
+      console.error("Error generating fichas:", error);
+      toast.error(error instanceof Error ? error.message : "Error al generar las fichas");
+    } finally {
+      setGenerando(false);
+    }
   };
 
-  const handleSubmit = () => {
-    if (!questions) return;
-    const fb = questions.map((q, i) => {
-      const correct = answers[i] === q.correct;
-      return {
-        correct,
-        explanation: correct
-          ? "¡Respuesta correcta!"
-          : `Incorrecto. La respuesta correcta es: "${q.options[q.correct]}". ${q.explanation}`,
-      };
-    });
-    setFeedback(fb);
+  const guardarFichas = async () => {
+    if (!fichas) return;
+
+    setLoading(true);
+    try {
+      // Aquí iría la lógica para guardar en la base de datos
+      setTimeout(() => {
+        toast.success("Fichas guardadas exitosamente");
+        setLoading(false);
+      }, 1000);
+    } catch (error) {
+      console.error("Error saving fichas:", error);
+      toast.error("Error al guardar las fichas");
+      setLoading(false);
+    }
+  };
+
+  const reiniciar = () => {
+    setFichas(null);
+    setRecursoSeleccionado("");
+  };
+
+  const getTipoRecurso = (recurso: Recurso) => {
+    if (recurso.autor.id === session?.user?.id) {
+      return { tipo: "propio", label: "Mi Recurso", color: "bg-green-500/10 text-green-300 border-green-500/20" };
+    }
+    if (recurso.calificaciones.length > 0 && recurso.calificaciones[0].calificacion >= 4) {
+      return { tipo: "favorito", label: "Favorito", color: "bg-yellow-500/10 text-yellow-300 border-yellow-500/20" };
+    }
+    return { tipo: "publico", label: "Público", color: "bg-blue-500/10 text-blue-300 border-blue-500/20" };
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-t from-mygreen to-mygreen-light px-2">
-      <div className="w-full max-w-2xl">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl md:text-4xl font-special text-[#40C9A9] mb-2">Fichas de Estudio IA</h1>
-          <p className="text-white/70 text-base md:text-lg">
-            Sube un PDF y la IA generará un cuestionario interactivo para que practiques.
+    <div className="min-h-screen bg-gradient-to-t from-mygreen to-mygreen-light">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-special text-white mb-2">
+            Fichas de Estudio IA
+          </h1>
+          <p className="text-white/70">
+            Genera fichas de estudio personalizadas basadas en tus recursos y caletas favoritas
           </p>
         </div>
-        {!questions && (
-          <form onSubmit={handleUpload} className="bg-[#354B3A] border border-white/10 rounded-2xl shadow-xl p-6 md:p-10 space-y-6">
+
+        {!fichas ? (
+          /* Selección de Recurso */
+          <Card className="bg-[#354B3A] border-white/10 max-w-2xl mx-auto">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Brain className="w-5 h-5 text-[#40C9A9]" />
+                Generar Fichas de Estudio
+              </CardTitle>
+              <CardDescription className="text-white/70">
+                Selecciona un recurso para generar fichas de estudio personalizadas
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="file" className="text-white/80">Archivo PDF *</Label>
-              <Input
-                id="file"
-                type="file"
-                accept=".pdf"
-                onChange={handleFileChange}
-                required
-                className="bg-white/10 border-white/20 text-white file:text-white file:bg-[#40C9A9] file:border-0 file:rounded-lg file:px-4 file:py-2 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1"
-              />
-              {file && <div className="text-[#40C9A9] text-sm mt-1">Archivo seleccionado: {file.name}</div>}
-              {error && <div className="text-red-400 text-sm mt-1">{error}</div>}
+                <label className="text-white font-medium">Seleccionar Recurso</label>
+                <Select value={recursoSeleccionado} onValueChange={setRecursoSeleccionado}>
+                  <SelectTrigger className="bg-[#1C2D20] border-white/10 text-white">
+                    <SelectValue placeholder="Elige un recurso de tus caletas" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#1C2D20] border-white/10">
+                    {recursos.map((recurso) => {
+                      const tipoRecurso = getTipoRecurso(recurso);
+                      return (
+                        <SelectItem key={recurso.id} value={recurso.id} className="text-white">
+                          <div className="flex flex-col">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">{recurso.titulo}</span>
+                              <Badge className={`text-xs ${tipoRecurso.color}`}>
+                                {tipoRecurso.label}
+                              </Badge>
+                            </div>
+                            <span className="text-sm text-white/70">{recurso.materia.nombre}</span>
+                          </div>
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
             </div>
+
             <Button
-              type="submit"
-              className="w-full bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white font-bold text-lg py-3 rounded-xl mt-2 shadow-lg transition-colors"
-              disabled={isLoading}
+                onClick={generarFichas}
+                className="w-full bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                disabled={!recursoSeleccionado || generando}
             >
-              {isLoading ? (
-                <span className="flex items-center justify-center gap-2"><Loader2 className="animate-spin h-5 w-5" /> Generando cuestionario...</span>
+                {generando ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Generando Fichas...
+                  </>
               ) : (
-                <span className="flex items-center justify-center gap-2"><Upload className="h-5 w-5" /> Generar cuestionario</span>
+                  <>
+                    <Brain className="w-4 h-4 mr-2" />
+                    Generar Fichas de Estudio
+                  </>
               )}
             </Button>
-          </form>
-        )}
-        {questions && (
-          <div className="bg-[#354B3A] border border-white/10 rounded-2xl shadow-xl p-6 md:p-10 space-y-8 mt-4">
-            <h2 className="text-xl font-special text-[#40C9A9] mb-4">Cuestionario generado</h2>
-            {questions.map((q, i) => (
-              <div key={i} className="mb-6">
-                <div className="mb-2 text-white font-bold">{i + 1}. {q.question}</div>
-                <div className="flex flex-col gap-2">
-                  {q.options.map((opt, j) => (
-                    <label key={j} className={`flex items-center gap-2 rounded-lg px-3 py-2 cursor-pointer transition-colors
-                      ${answers[i] === j ? "bg-[#40C9A9]/20 border border-[#40C9A9]" : "bg-white/10 border border-white/10"}
-                    `}>
-                      <input
-                        type="radio"
-                        name={`q${i}`}
-                        checked={answers[i] === j}
-                        onChange={() => handleSelect(i, j)}
-                        className="accent-[#40C9A9]"
-                      />
-                      <span className="text-white text-sm">{opt}</span>
-                    </label>
-                  ))}
+            </CardContent>
+          </Card>
+        ) : (
+          /* Fichas Generadas */
+          <div className="max-w-6xl mx-auto space-y-6">
+            {/* Header de las Fichas */}
+            <Card className="bg-[#354B3A] border-white/10">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-white">Fichas de Estudio Generadas</CardTitle>
+                    <CardDescription className="text-white/70">
+                      {fichas.length} fichas basadas en tu recurso
+                    </CardDescription>
                 </div>
-                {feedback[i] && (
-                  <div className={`mt-2 flex items-center gap-2 text-sm ${feedback[i].correct ? "text-[#40C9A9]" : "text-red-400"}`}>
-                    {feedback[i].correct ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-                    {feedback[i].explanation}
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={reiniciar}
+                      className="border-[#40C9A9] text-[#40C9A9] hover:bg-[#40C9A9] hover:text-white"
+                    >
+                      <RotateCcw className="w-4 h-4 mr-1" />
+                      Generar Nuevas
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={guardarFichas}
+                      disabled={loading}
+                      className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                    >
+                      <Save className="w-4 h-4 mr-1" />
+                      {loading ? "Guardando..." : "Guardar Fichas"}
+                    </Button>
                   </div>
-                )}
+                </div>
+              </CardHeader>
+            </Card>
+
+            {/* Lista de Fichas */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {fichas.map((ficha, index) => (
+                <Card key={ficha.id} className="bg-[#354B3A] border-white/10">
+                  <CardHeader>
+                    <div className="flex items-center gap-2">
+                      <FileText className="w-5 h-5 text-[#40C9A9]" />
+                      <CardTitle className="text-white">Ficha {index + 1}: {ficha.concepto}</CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* Definición */}
+                    <div>
+                      <h4 className="text-white font-medium mb-2">Definición</h4>
+                      <p className="text-white/80 text-sm leading-relaxed">{ficha.definicion}</p>
+                    </div>
+
+                    {/* Ejemplos */}
+                    <div>
+                      <h4 className="text-white font-medium mb-2">Ejemplos</h4>
+                      <ul className="space-y-1">
+                        {ficha.ejemplos.map((ejemplo, idx) => (
+                          <li key={idx} className="text-white/70 text-sm flex items-start gap-2">
+                            <span className="text-[#40C9A9] mt-1">•</span>
+                            {ejemplo}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* Puntos Clave */}
+                    <div>
+                      <h4 className="text-white font-medium mb-2">Puntos Clave</h4>
+                      <div className="space-y-1">
+                        {ficha.puntosClave.map((punto, idx) => (
+                          <Badge key={idx} variant="secondary" className="bg-[#1C2D20] text-white/80 border-white/10 mr-1 mb-1">
+                            {punto}
+                          </Badge>
+                        ))}
+                      </div>
               </div>
-            ))}
-            {!feedback.length && (
-              <Button onClick={handleSubmit} className="w-full bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white font-bold text-lg py-3 rounded-xl mt-2 shadow-lg transition-colors">
-                Ver resultados
-              </Button>
-            )}
-            {feedback.length > 0 && (
-              <Button onClick={() => { setQuestions(null); setAnswers([]); setFeedback([]); setFile(null); }} className="w-full mt-4 bg-white/10 hover:bg-white/20 text-white font-bold text-lg py-3 rounded-xl shadow-lg transition-colors">
-                Cargar otro PDF
-              </Button>
-            )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
         )}
       </div>

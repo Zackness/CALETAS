@@ -33,36 +33,11 @@ export default function OnboardingPage() {
   const [carnetFile, setCarnetFile] = useState<File | null>(null);
   const [carnetData, setCarnetData] = useState<any>(null);
   const [semestreActual, setSemestreActual] = useState<string>("");
+  const [carreraSeleccionada, setCarreraSeleccionada] = useState<string>("");
+  const [carreras, setCarreras] = useState<{ id: string; nombre: string; codigo: string; descripcion: string; duracion: number; creditos: number }[]>([]);
   const [materiasActuales, setMateriasActuales] = useState<string[]>([]);
-
-  // Materias de ejemplo para el paso final
-  const materiasEjemplo = [
-    { id: "1", codigo: "MAT-101", nombre: "Matemáticas I", semestre: "S1" },
-    { id: "2", codigo: "FIS-101", nombre: "Física I", semestre: "S1" },
-    { id: "3", codigo: "QUI-101", nombre: "Química General", semestre: "S1" },
-    { id: "4", codigo: "PRO-101", nombre: "Programación I", semestre: "S2" },
-    { id: "5", codigo: "MAT-102", nombre: "Matemáticas II", semestre: "S2" },
-    { id: "6", codigo: "FIS-102", nombre: "Física II", semestre: "S2" },
-    { id: "7", codigo: "EST-101", nombre: "Estadística", semestre: "S3" },
-    { id: "8", codigo: "PRO-102", nombre: "Programación II", semestre: "S3" },
-    { id: "9", codigo: "MAT-103", nombre: "Matemáticas III", semestre: "S3" },
-    { id: "10", codigo: "BD-101", nombre: "Bases de Datos", semestre: "S4" },
-    { id: "11", codigo: "RED-101", nombre: "Redes de Computadoras", semestre: "S4" },
-    { id: "12", codigo: "ALG-101", nombre: "Análisis de Algoritmos", semestre: "S4" },
-    { id: "13", codigo: "SO-101", nombre: "Sistemas Operativos", semestre: "S5" },
-    { id: "14", codigo: "ISW-101", nombre: "Ingeniería de Software", semestre: "S5" },
-    { id: "15", codigo: "BD-102", nombre: "Bases de Datos II", semestre: "S5" },
-    { id: "16", codigo: "IA-101", nombre: "Inteligencia Artificial", semestre: "S6" },
-    { id: "17", codigo: "WEB-101", nombre: "Desarrollo Web", semestre: "S6" },
-    { id: "18", codigo: "MOB-101", nombre: "Desarrollo Móvil", semestre: "S6" },
-  ];
-
-  // Convertir materias a formato para MultiSelect con iconos
-  const materiasOptions = materiasEjemplo.map(materia => ({
-    label: `${materia.codigo} - ${materia.nombre}`,
-    value: materia.id,
-    icon: BookOpen, // Icono de libro para todas las materias
-  }));
+  const [materiasCarrera, setMateriasCarrera] = useState<{ id: string; codigo: string; nombre: string; semestre: string; creditos: number }[]>([]);
+  const [materiasOptions, setMateriasOptions] = useState<{ label: string; value: string; icon: any }[]>([]);
 
   useEffect(() => {
     if (onboardingStatus === OnboardingStatus.FINALIZADO) {
@@ -83,6 +58,55 @@ export default function OnboardingPage() {
     fetchUniversidades();
   }, []);
 
+  // Cargar carreras cuando se selecciona una universidad
+  useEffect(() => {
+    if (universidad) {
+      const fetchCarreras = async () => {
+        try {
+          const response = await axios.get(`/api/user/onboarding/carreras?universidadId=${universidad}`);
+          setCarreras(response.data);
+          // Limpiar carrera seleccionada cuando cambia la universidad
+          setCarreraSeleccionada("");
+        } catch (error) {
+          console.error("Error fetching carreras:", error);
+          setCarreras([]);
+        }
+      };
+      fetchCarreras();
+    } else {
+      setCarreras([]);
+      setCarreraSeleccionada("");
+    }
+  }, [universidad]);
+
+  // Cargar materias cuando se selecciona una carrera
+  useEffect(() => {
+    if (carreraSeleccionada) {
+      const fetchMaterias = async () => {
+        try {
+          const response = await axios.get(`/api/user/onboarding/materias?carreraId=${carreraSeleccionada}`);
+          setMateriasCarrera(response.data);
+          
+          // Convertir materias a formato para MultiSelect
+          const options = response.data.map((materia: any) => ({
+            label: `${materia.codigo} - ${materia.nombre} (${materia.semestre})`,
+            value: materia.id,
+            icon: BookOpen,
+          }));
+          setMateriasOptions(options);
+        } catch (error) {
+          console.error("Error fetching materias:", error);
+          setMateriasCarrera([]);
+          setMateriasOptions([]);
+        }
+      };
+      fetchMaterias();
+    } else {
+      setMateriasCarrera([]);
+      setMateriasOptions([]);
+    }
+  }, [carreraSeleccionada]);
+
   const handleSkip = async () => {
     try {
       // Redirigir directamente al home sin llamar a la API eliminada
@@ -100,6 +124,27 @@ export default function OnboardingPage() {
         setCurrentStep('carnet-semestre');
       }
     } else if (currentStep === 'carnet-semestre') {
+      // Validar que el carnet fue subido y analizado correctamente
+      if (!carnetData) {
+        setError("Debes subir y analizar tu carnet universitario antes de continuar");
+        toast({
+          title: "Carnet requerido",
+          description: "Debes subir y analizar tu carnet universitario antes de continuar",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Validar que se seleccionó una carrera
+      if (!carreraSeleccionada) {
+        setError("Debes seleccionar tu carrera antes de continuar");
+        toast({
+          title: "Carrera requerida",
+          description: "Debes seleccionar tu carrera antes de continuar",
+          variant: "destructive",
+        });
+        return;
+      }
       setCurrentStep('direccion');
     } else if (currentStep === 'direccion') {
       setCurrentStep('materias-actuales');
@@ -151,9 +196,60 @@ export default function OnboardingPage() {
     setIsLoading(true);
 
     try {
+      // Validar materias seleccionadas si hay alguna
+      if (materiasActuales.length > 0) {
+        try {
+          const validationResponse = await axios.post("/api/user/onboarding/validate-materias", {
+            materiasSeleccionadas: materiasActuales
+          });
+
+          if (!validationResponse.data.esValido) {
+            setError("Error de prerrequisitos en las materias seleccionadas");
+            toast({
+              title: "❌ Error de Prerrequisitos",
+              description: (
+                <div className="space-y-2">
+                  <p className="font-medium">Las siguientes materias tienen prerrequisitos faltantes:</p>
+                  <ul className="list-disc list-inside space-y-1 text-sm">
+                    {validationResponse.data.errores.map((error: string, index: number) => (
+                      <li key={index} className="text-red-300">{error}</li>
+                    ))}
+                  </ul>
+                  {validationResponse.data.sugerencias.length > 0 && (
+                    <div className="mt-3 p-2 bg-blue-500/10 rounded border border-blue-500/20">
+                      <p className="text-blue-300 text-sm font-medium mb-2">💡 Sugerencias:</p>
+                      <ul className="list-disc list-inside space-y-1 text-xs text-blue-200">
+                        {validationResponse.data.sugerencias.map((sugerencia: any, index: number) => (
+                          <li key={index}>{sugerencia.mensaje}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              ),
+              variant: "destructive",
+              duration: 10000,
+            });
+            setIsLoading(false);
+            return;
+          }
+        } catch (validationError) {
+          console.error("Error validando materias:", validationError);
+          setError("Error al validar las materias seleccionadas");
+          toast({
+            title: "Error de Validación",
+            description: "No se pudieron validar las materias seleccionadas",
+            variant: "destructive",
+          });
+          setIsLoading(false);
+          return;
+        }
+      }
+
       const formData = new FormData();
       formData.append("userType", userType || "");
       formData.append("universidad", universidad);
+      formData.append("carrera", carreraSeleccionada);
       formData.append("telefono", telefono);
       formData.append("estado", estado);
       formData.append("ciudad", ciudad);
@@ -176,14 +272,26 @@ export default function OnboardingPage() {
       });
 
       router.push("/home");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error completing onboarding:", error);
-      setError("Error al completar el perfil. Por favor, intenta de nuevo.");
-      toast({
-        title: "Error",
-        description: "Hubo un error al completar tu perfil. Por favor, intenta nuevamente.",
-        variant: "destructive",
-      });
+      
+      // Manejar errores específicos del backend
+      if (error.response?.status === 400) {
+        const errorMessage = error.response.data.error || "Error al completar el perfil";
+        setError(errorMessage);
+        toast({
+          title: "Error de validación",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      } else {
+        setError("Error al completar el perfil. Por favor, intenta de nuevo.");
+        toast({
+          title: "Error",
+          description: "Hubo un error al completar tu perfil. Por favor, intenta nuevamente.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -203,6 +311,7 @@ export default function OnboardingPage() {
     try {
       const formData = new FormData();
       formData.append("file", file);
+      formData.append("universidadId", universidad);
 
       const response = await axios.post("/api/user/onboarding/analyze-carnet", formData, {
         headers: {
@@ -213,18 +322,32 @@ export default function OnboardingPage() {
       const data = response.data;
       setCarnetData(data);
         
-          toast({
+      toast({
         title: "Carnet analizado",
         description: "Se ha procesado tu carnet universitario correctamente.",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error analyzing carnet:", error);
-      setError("Error al analizar el carnet universitario. Por favor, intenta de nuevo.");
-      toast({
-        title: "Error",
-        description: "Hubo un error al procesar el carnet universitario. Por favor, intenta nuevamente.",
-        variant: "destructive",
-      });
+      
+      // Manejar errores específicos de validación
+      if (error.response?.status === 400) {
+        const errorMessage = error.response.data.error || "Error al analizar el carnet";
+        const details = error.response.data.details;
+        
+        setError(`${errorMessage}${details ? `: ${details}` : ''}`);
+        toast({
+          title: "Error de validación",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      } else {
+        setError("Error al analizar el carnet universitario. Por favor, intenta de nuevo.");
+        toast({
+          title: "Error",
+          description: "Hubo un error al procesar el carnet universitario. Por favor, intenta nuevamente.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -312,28 +435,60 @@ export default function OnboardingPage() {
           <div className="space-y-4 p-4 border-2 border-mygreen/30 rounded-lg bg-mygreen/10">
                       <div className="space-y-2 mt-2">
             <Label htmlFor="carnet" className="text-white font-medium">
-              Sube una foto de tu carnet universitario (opcional)
-              </Label>
-              <Input
+              Sube una foto de tu carnet universitario <span className="text-red-400">*</span>
+            </Label>
+            <Input
               id="carnet"
-                type="file"
-                accept="image/*,.pdf"
+              type="file"
+              accept="image/*,.pdf"
               onChange={handleCarnetChange}
-                disabled={isLoading}
+              disabled={isLoading}
               className="border-2 border-mygreen/30 bg-white/10 text-white"
             />
             <p className="text-xs text-white/60 mt-1">
-              💡 Solo necesitas seleccionar tu semestre actual para continuar. El carnet es opcional por ahora.
+              💡 El carnet debe pertenecer a la universidad seleccionada: <strong>{universidades.find(u => u.id === universidad)?.nombre}</strong>
             </p>
               {carnetData && (
-                <div className="space-y-2 p-2 bg-white/5 rounded-lg border border-white/10 mt-2">
-                  <p className="text-white/80 text-xs">Nombre: {carnetData.nombre}</p>
-                  <p className="text-white/80 text-xs">Expediente: {carnetData.expediente}</p>
-                  <p className="text-white/80 text-xs">Carrera: {carnetData.carrera}</p>
-                  <p className="text-white/80 text-xs">Semestre sugerido: {carnetData.semestre}</p>
+                <div className="space-y-2 p-3 bg-green-500/10 rounded-lg border border-green-500/20 mt-2">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                    <p className="text-green-400 text-sm font-medium">✅ Carnet validado correctamente</p>
+                  </div>
+                  <div className="grid grid-cols-1 gap-1 text-xs">
+                    <p className="text-white/80"><strong>Nombre:</strong> {carnetData.nombre}</p>
+                    <p className="text-white/80"><strong>Expediente:</strong> {carnetData.expediente}</p>
+                    <p className="text-white/80"><strong>Universidad:</strong> {carnetData.universidad}</p>
+                    <p className="text-white/80"><strong>Siglas:</strong> {carnetData.siglas}</p>
+                  </div>
                 </div>
               )}
             </div>
+            <div className="space-y-2 mt-4">
+              <Label htmlFor="carreraSeleccionada" className="text-white font-medium">
+                ¿Qué carrera estás cursando?
+              </Label>
+              <Select
+                value={carreraSeleccionada}
+                onValueChange={setCarreraSeleccionada}
+              >
+                <SelectTrigger className="border-mygreen/30 bg-white/10 text-white">
+                  <SelectValue placeholder="Selecciona tu carrera" />
+                </SelectTrigger>
+                <SelectContent>
+                  {carreras.map((carrera) => (
+                    <SelectItem key={carrera.id} value={carrera.id}>
+                      {carrera.codigo} - {carrera.nombre}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {carreras.length === 0 && universidad && (
+                <p className="text-xs text-yellow-400 mt-1">
+                  ⚠️ No se encontraron carreras para esta universidad. Contacta al administrador.
+                </p>
+              )}
+            </div>
+
             <div className="space-y-2 mt-4">
               <Label htmlFor="semestreActual" className="text-white font-medium">
                 ¿En qué semestre estás actualmente?
@@ -418,7 +573,7 @@ export default function OnboardingPage() {
         );
       case 'materias-actuales':
         return (
-          <div className="space-y-4 p-4 border-2 border-mygreen/30 rounded-lg bg-mygreen/10">
+          <div className="space-y-6 p-6 border-2 border-mygreen/30 rounded-lg bg-mygreen/10 min-h-[600px]">
             {/* Resumen de información */}
             <div className="mb-4 p-3 bg-white/5 rounded-lg border border-white/10">
               <h3 className="text-white font-medium mb-2">📋 Resumen de tu información:</h3>
@@ -427,11 +582,15 @@ export default function OnboardingPage() {
                 {userType === 'allied' && universidad && (
                   <p><strong>Universidad:</strong> {universidades.find(u => u.id === universidad)?.nombre}</p>
                 )}
+                {carreraSeleccionada && (
+                  <p><strong>Carrera:</strong> {carreras.find(c => c.id === carreraSeleccionada)?.nombre}</p>
+                )}
                 {carnetData && (
                   <>
                     <p><strong>Nombre:</strong> {carnetData.nombre}</p>
                     <p><strong>Expediente:</strong> {carnetData.expediente}</p>
-                    <p><strong>Carrera:</strong> {carnetData.carrera}</p>
+                    <p><strong>Universidad validada:</strong> {carnetData.universidad}</p>
+                    <p><strong>Estado del carnet:</strong> <span className="text-green-400">✅ Validado</span></p>
                   </>
                 )}
                 {semestreActual && (
@@ -462,13 +621,24 @@ export default function OnboardingPage() {
                 defaultValue={materiasActuales}
                 placeholder="Busca y selecciona las materias que estás cursando..."
                 className="bg-white/10 border-mygreen/30 text-white hover:bg-white/20"
-                maxCount={4}
+                maxCount={8}
                 variant="secondary"
                 animation={0.5}
               />
-              <p className="text-xs text-white/60 mt-1">
-                💡 Escribe en el campo para buscar materias por nombre o código. Puedes seleccionar múltiples materias de cualquier semestre.
-              </p>
+              <div className="space-y-2 mt-2">
+                <p className="text-xs text-white/60">
+                  💡 Escribe en el campo para buscar materias por nombre o código. Puedes seleccionar múltiples materias de cualquier semestre.
+                </p>
+                <div className="p-3 bg-green-500/10 rounded-lg border border-green-500/20">
+                  <p className="text-green-300 text-sm font-medium mb-1">✅ Sistema de Prerrequisitos Automático:</p>
+                  <ul className="text-xs text-green-200 space-y-1">
+                    <li>• Selecciona <strong>solo las materias que estás cursando actualmente</strong></li>
+                    <li>• Los prerrequisitos se marcarán <strong>automáticamente como APROBADAS</strong></li>
+                    <li>• No necesitas seleccionar materias que ya cursaste</li>
+                    <li>• Ejemplo: Si seleccionas &quot;Electrónica II&quot;, automáticamente se marcará &quot;Electrónica I&quot; como aprobada</li>
+                  </ul>
+                </div>
+              </div>
             </div>
           </div>
         );
@@ -510,7 +680,7 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen p-4">
+    <div className="h-full flex items-center justify-center m-16">
       <Card className="w-full max-w-2xl bg-white/10 backdrop-blur-sm border-white/20">
         <CardHeader className="text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
@@ -540,7 +710,7 @@ export default function OnboardingPage() {
 
           <CardDescription className="text-white/80">
             {currentStep === 'company-selection' && "Para comenzar, selecciona la opción que mejor se adapte a tu situación"}
-            {currentStep === 'carnet-semestre' && "Sube tu carnet universitario (opcional) y selecciona tu semestre actual"}
+            {currentStep === 'carnet-semestre' && "Sube tu carnet universitario y selecciona tu semestre actual"}
             {currentStep === 'direccion' && "Ingresa tu información de contacto"}
             {currentStep === 'materias-actuales' && "Selecciona las materias que estás cursando actualmente"}
           </CardDescription>
@@ -585,7 +755,7 @@ export default function OnboardingPage() {
                     !userType || 
                     (userType === 'allied' && !universidad)
                   )) ||
-                  (currentStep === 'carnet-semestre' && !semestreActual) ||
+                  (currentStep === 'carnet-semestre' && (!semestreActual || !carnetData || !carreraSeleccionada)) ||
                   (currentStep === 'direccion' && (
                     !telefono || 
                     !ciudad

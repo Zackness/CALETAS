@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { Upload, FileText, BookOpen, GraduationCap } from "lucide-react";
+import { Upload, FileText, BookOpen, GraduationCap, Shield, AlertTriangle, CheckCircle } from "lucide-react";
 import { auth } from "@/auth";
 
 interface Universidad {
@@ -37,11 +37,17 @@ export default function SubirCaletaPage() {
   const [selectedUniversidad, setSelectedUniversidad] = useState<string>("");
   const [selectedCarrera, setSelectedCarrera] = useState<string>("");
   const [selectedMateria, setSelectedMateria] = useState<string>("");
-  const [nombre, setNombre] = useState("");
-  const [tema, setTema] = useState("");
+  const [titulo, setTitulo] = useState("");
+  const [descripcion, setDescripcion] = useState("");
+  const [tipo, setTipo] = useState<string>("DOCUMENTO");
+  const [tags, setTags] = useState("");
+  const [esPublico, setEsPublico] = useState(true);
   const [archivo, setArchivo] = useState<File | null>(null);
+  const [fileKey, setFileKey] = useState(0); // Key única para forzar re-renderizado
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
+  const [moderacionEstado, setModeracionEstado] = useState<'pendiente' | 'verificando' | 'aprobado' | 'rechazado'>('pendiente');
+  const [moderacionMensaje, setModeracionMensaje] = useState("");
   
   const { toast } = useToast();
   const router = useRouter();
@@ -99,8 +105,10 @@ export default function SubirCaletaPage() {
     }
   }, [selectedCarrera, carreras]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    console.log("🔄 Archivo seleccionado:", file?.name, "Tipo:", file?.type, "Tamaño:", file?.size);
+    
     if (file) {
       // Validar tipo de archivo
       const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
@@ -124,16 +132,72 @@ export default function SubirCaletaPage() {
       }
       
       setArchivo(file);
+      setFileKey(prevKey => prevKey + 1); // Incrementar key para forzar re-renderizado
+      
+      // Análisis automático del contenido
+      setModeracionEstado('verificando');
+      setModeracionMensaje("Analizando contenido del archivo...");
+      
+      console.log("🔍 Iniciando análisis de contenido para:", file.name);
+      
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("titulo", titulo);
+        formData.append("descripcion", descripcion);
+
+        const response = await fetch("/api/ia/analizar-contenido", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (response.ok) {
+          const resultado = await response.json();
+          console.log("✅ Resultado del análisis:", resultado);
+          
+          if (resultado.esApropiado) {
+            setModeracionEstado('aprobado');
+            setModeracionMensaje("✅ Contenido aprobado: " + resultado.razon);
+          } else {
+            setModeracionEstado('rechazado');
+            setModeracionMensaje("❌ Contenido rechazado: " + resultado.razon);
+          }
+        } else {
+          const error = await response.json();
+          console.error("❌ Error en análisis:", error);
+          setModeracionEstado('rechazado');
+          setModeracionMensaje("Error en análisis: " + (error.error || "Error desconocido"));
+        }
+      } catch (error) {
+        console.error("❌ Error en análisis automático:", error);
+        setModeracionEstado('rechazado');
+        setModeracionMensaje("Error al analizar el contenido");
+      }
+    } else {
+      console.log("⚠️ No se seleccionó ningún archivo");
+      setArchivo(null);
+      setModeracionEstado('verificando');
+      setModeracionMensaje("Selecciona un archivo para analizar");
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!archivo || !selectedMateria || !nombre || !tema) {
+    if (!archivo || !selectedMateria || !titulo || !descripcion) {
       toast({
         title: "Campos requeridos",
         description: "Por favor completa todos los campos obligatorios",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Verificar que el contenido fue aprobado
+    if (moderacionEstado !== 'aprobado') {
+      toast({
+        title: "Contenido no aprobado",
+        description: "El contenido debe ser aprobado antes de subir",
         variant: "destructive",
       });
       return;
@@ -143,31 +207,34 @@ export default function SubirCaletaPage() {
 
     try {
       const formData = new FormData();
-      formData.append("nombre", nombre);
-      formData.append("tema", tema);
+      formData.append("titulo", titulo);
+      formData.append("descripcion", descripcion);
+      formData.append("tipo", tipo);
       formData.append("materiaId", selectedMateria);
-      formData.append("archivo", archivo);
+      formData.append("tags", tags);
+      formData.append("esPublico", esPublico.toString());
+      formData.append("file", archivo);
 
-      const response = await fetch("/api/caletas", {
+      const response = await fetch("/api/caletas/upload", {
         method: "POST",
         body: formData,
       });
 
       if (response.ok) {
         toast({
-          title: "¡Caleta subida exitosamente!",
-          description: "Tu caleta ha sido guardada y está disponible para otros estudiantes",
+          title: "¡Recurso subido exitosamente!",
+          description: "Tu recurso ha sido verificado y está disponible para otros estudiantes",
         });
         router.push("/caletas");
       } else {
         const error = await response.json();
-        throw new Error(error.message || "Error al subir la caleta");
+        throw new Error(error.error || "Error al subir el recurso");
       }
     } catch (error) {
-      console.error("Error subiendo caleta:", error);
+      console.error("Error subiendo recurso:", error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Error al subir la caleta",
+        description: error instanceof Error ? error.message : "Error al subir el recurso",
         variant: "destructive",
       });
     } finally {
@@ -190,34 +257,93 @@ export default function SubirCaletaPage() {
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-t from-mygreen to-mygreen-light px-2">
       <div className="w-full max-w-lg">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl md:text-4xl font-special text-[#40C9A9] mb-2">Subir Caleta</h1>
+          <h1 className="text-3xl md:text-4xl font-special text-[#40C9A9] mb-2">Compartir Recurso</h1>
           <p className="text-white/70 text-base md:text-lg">
             Comparte tus apuntes, exámenes y materiales de estudio con otros estudiantes
           </p>
         </div>
         <form onSubmit={handleSubmit} className="bg-[#354B3A] border border-white/10 rounded-2xl shadow-xl p-6 md:p-10 space-y-6">
+          {/* Aviso de moderación */}
+          <div className="bg-[#1C2D20] border border-[#40C9A9]/20 rounded-lg p-4 mb-6">
+            <div className="flex items-start gap-3">
+              <Shield className="w-5 h-5 text-[#40C9A9] mt-0.5 flex-shrink-0" />
+              <div>
+                <h3 className="text-white font-semibold mb-2">Moderación de Contenido</h3>
+                <p className="text-white/70 text-sm mb-3">
+                  Todos los archivos son revisados por IA para asegurar que contengan solo contenido académico apropiado. 
+                  No se permiten memes, contenido ofensivo, fotos personales o material no educativo.
+                </p>
+                {moderacionEstado === 'verificando' && (
+                  <div className="flex items-center gap-2 text-[#40C9A9]">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#40C9A9]"></div>
+                    <span className="text-sm">Verificando contenido...</span>
+                  </div>
+                )}
+                {moderacionEstado === 'aprobado' && (
+                  <div className="flex items-center gap-2 text-green-400">
+                    <CheckCircle className="w-4 h-4" />
+                    <span className="text-sm">Contenido aprobado</span>
+                  </div>
+                )}
+                {moderacionEstado === 'rechazado' && (
+                  <div className="flex items-center gap-2 text-red-400">
+                    <AlertTriangle className="w-4 h-4" />
+                    <span className="text-sm">{moderacionMensaje}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
           {/* Información básica */}
           <div className="space-y-4">
             <div>
-              <Label htmlFor="nombre" className="text-white/80">Nombre de la caleta *</Label>
+              <Label htmlFor="titulo" className="text-white/80">Título del recurso *</Label>
               <Input
-                id="nombre"
-                value={nombre}
-                onChange={(e) => setNombre(e.target.value)}
+                id="titulo"
+                value={titulo}
+                onChange={(e) => setTitulo(e.target.value)}
                 placeholder="Ej: Examen parcial de Cálculo I"
                 required
                 className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1"
               />
             </div>
             <div>
-              <Label htmlFor="tema" className="text-white/80">Tema o descripción *</Label>
+              <Label htmlFor="descripcion" className="text-white/80">Descripción *</Label>
               <Textarea
-                id="tema"
-                value={tema}
-                onChange={(e) => setTema(e.target.value)}
-                placeholder="Describe brevemente el contenido de la caleta"
+                id="descripcion"
+                value={descripcion}
+                onChange={(e) => setDescripcion(e.target.value)}
+                placeholder="Describe brevemente el contenido del recurso"
                 rows={3}
                 required
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1"
+              />
+            </div>
+            <div>
+              <Label htmlFor="tipo" className="text-white/80">Tipo de recurso *</Label>
+              <Select value={tipo} onValueChange={setTipo}>
+                <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1">
+                  <SelectValue placeholder="Selecciona el tipo de recurso" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#203324] text-white">
+                  <SelectItem value="DOCUMENTO" className="hover:bg-[#40C9A9]/10">Documento</SelectItem>
+                  <SelectItem value="ANOTACION" className="hover:bg-[#40C9A9]/10">Anotación</SelectItem>
+                  <SelectItem value="RESUMEN" className="hover:bg-[#40C9A9]/10">Resumen</SelectItem>
+                  <SelectItem value="GUIA_ESTUDIO" className="hover:bg-[#40C9A9]/10">Guía de Estudio</SelectItem>
+                  <SelectItem value="EJERCICIOS" className="hover:bg-[#40C9A9]/10">Ejercicios</SelectItem>
+                  <SelectItem value="PRESENTACION" className="hover:bg-[#40C9A9]/10">Presentación</SelectItem>
+                  <SelectItem value="TIP" className="hover:bg-[#40C9A9]/10">Tip/Consejo</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="tags" className="text-white/80">Tags (opcional)</Label>
+              <Input
+                id="tags"
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
+                placeholder="Ej: examen, parcial, calculo, derivadas"
                 className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1"
               />
             </div>
@@ -281,6 +407,7 @@ export default function SubirCaletaPage() {
           <div className="space-y-2">
             <Label htmlFor="archivo" className="text-white/80">Archivo (PDF, JPG, PNG) *</Label>
             <Input
+              key={fileKey} // Key única para forzar re-renderizado
               id="archivo"
               type="file"
               accept=".pdf,.jpg,.jpeg,.png"
@@ -299,7 +426,7 @@ export default function SubirCaletaPage() {
             className="w-full bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white font-bold text-lg py-3 rounded-xl mt-2 shadow-lg transition-colors"
             disabled={isLoading}
           >
-            {isLoading ? "Subiendo..." : "Subir Caleta"}
+            {isLoading ? "Verificando y subiendo..." : "Compartir Recurso"}
           </Button>
         </form>
       </div>

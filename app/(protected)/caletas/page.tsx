@@ -2,509 +2,495 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
-import { useRouter } from "next/navigation";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { 
+  BookOpen,
+  Plus,
   Search, 
-  Filter, 
-  Heart, 
-  HeartOff, 
-  Download, 
-  FileText, 
-  BookOpen, 
-  GraduationCap,
-  Upload,
+  Star,
   Eye,
-  Calendar,
-  User
+  Download,
+  MessageCircle,
+  Filter,
+  TrendingUp,
+  Clock,
+  Award,
+  Users,
+  FileText,
+  Video,
+  Link,
+  Lightbulb
 } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { redirect } from "next/navigation";
+import axios from "axios";
+import { toast } from "sonner";
 
-interface Caleta {
+interface Recurso {
   id: string;
-  nombre: string;
-  tema: string;
-  urlArchivo: string;
-  tipoArchivo: string;
-  tamanio: number;
+  titulo: string;
+  descripcion: string;
+  tipo: string;
+  contenido: string;
+  archivoUrl?: string;
+  calificacion: number;
+  numCalificaciones: number;
+  numVistas: number;
+  numDescargas: number;
+  tags: string;
   createdAt: string;
-  isFavorita: boolean;
-  usuario: {
-    id: string;
-    name: string;
-    image: string;
-  };
   materia: {
     id: string;
-    nombre: string;
     codigo: string;
-    carrera: {
-      id: string;
       nombre: string;
-      universidad: {
-        id: string;
-        nombre: string;
-      };
-    };
+    semestre: string;
   };
-}
-
-interface Universidad {
-  id: string;
-  nombre: string;
-  carreras: Carrera[];
-}
-
-interface Carrera {
-  id: string;
-  nombre: string;
-  materias: Materia[];
+  autor: {
+        id: string;
+    name: string;
+    email: string;
+  };
 }
 
 interface Materia {
   id: string;
-  nombre: string;
   codigo: string;
+  nombre: string;
+  semestre: string;
 }
 
 export default function CaletasPage() {
-  const [caletas, setCaletas] = useState<Caleta[]>([]);
-  const [universidades, setUniversidades] = useState<Universidad[]>([]);
-  const [carreras, setCarreras] = useState<Carrera[]>([]);
+  const { data: session, status } = useSession();
+  const [recursos, setRecursos] = useState<Recurso[]>([]);
   const [materias, setMaterias] = useState<Materia[]>([]);
-  const [filteredCaletas, setFilteredCaletas] = useState<Caleta[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedUniversidad, setSelectedUniversidad] = useState<string>("all");
-  const [selectedCarrera, setSelectedCarrera] = useState<string>("all");
-  const [selectedMateria, setSelectedMateria] = useState<string>("all");
-  const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingFavorites, setIsLoadingFavorites] = useState<string | null>(null);
-  
-  const { toast } = useToast();
-  const router = useRouter();
+  const [filterMateria, setFilterMateria] = useState<string>("todas");
+  const [filterTipo, setFilterTipo] = useState<string>("todos");
+  const [sortBy, setSortBy] = useState<string>("recientes");
 
-  // Cargar caletas y universidades al montar el componente
   useEffect(() => {
-    const cargarDatos = async () => {
-      try {
-        const [caletasResponse, universidadesResponse] = await Promise.all([
-          fetch("/api/caletas"),
-          fetch("/api/universidades")
-        ]);
-
-        if (caletasResponse.ok && universidadesResponse.ok) {
-          const [caletasData, universidadesData] = await Promise.all([
-            caletasResponse.json(),
-            universidadesResponse.json()
-          ]);
-          
-          setCaletas(caletasData);
-          setFilteredCaletas(caletasData);
-          setUniversidades(universidadesData);
-        }
-      } catch (error) {
-        console.error("Error cargando datos:", error);
-        toast({
-          title: "Error",
-          description: "No se pudieron cargar las caletas",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    cargarDatos();
-  }, [toast]);
-
-  // Cargar carreras cuando se selecciona una universidad
-  useEffect(() => {
-    if (selectedUniversidad !== "all") {
-      const universidad = universidades.find(u => u.id === selectedUniversidad);
-      if (universidad) {
-        setCarreras(universidad.carreras);
-        setSelectedCarrera("all");
-        setSelectedMateria("all");
-        setMaterias([]);
-      }
-    } else {
-      setCarreras([]);
-      setMaterias([]);
-    }
-  }, [selectedUniversidad, universidades]);
-
-  // Cargar materias cuando se selecciona una carrera
-  useEffect(() => {
-    if (selectedCarrera !== "all") {
-      const carrera = carreras.find(c => c.id === selectedCarrera);
-      if (carrera) {
-        setMaterias(carrera.materias);
-        setSelectedMateria("all");
-      }
-    } else {
-      setMaterias([]);
-    }
-  }, [selectedCarrera, carreras]);
-
-  // Filtrar caletas cuando cambian los filtros
-  useEffect(() => {
-    let filtered = caletas;
-
-    // Filtro por búsqueda
-    if (searchTerm) {
-      filtered = filtered.filter(caleta =>
-        caleta.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        caleta.tema.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        caleta.materia.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        caleta.materia.codigo.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Filtro por universidad
-    if (selectedUniversidad !== "all") {
-      filtered = filtered.filter(caleta =>
-        caleta.materia.carrera.universidad.id === selectedUniversidad
-      );
-    }
-
-    // Filtro por carrera
-    if (selectedCarrera !== "all") {
-      filtered = filtered.filter(caleta =>
-        caleta.materia.carrera.id === selectedCarrera
-      );
-    }
-
-    // Filtro por materia
-    if (selectedMateria !== "all") {
-      filtered = filtered.filter(caleta =>
-        caleta.materia.id === selectedMateria
-      );
-    }
-
-    setFilteredCaletas(filtered);
-  }, [caletas, searchTerm, selectedUniversidad, selectedCarrera, selectedMateria]);
-
-  const toggleFavorito = async (caletaId: string) => {
-    setIsLoadingFavorites(caletaId);
+    if (status === "loading") return;
     
-    try {
-      const caleta = caletas.find(c => c.id === caletaId);
-      const isFavorita = caleta?.isFavorita;
-      
-      const response = await fetch(`/api/caletas/${caletaId}/favorito`, {
-        method: isFavorita ? "DELETE" : "POST",
-      });
+    if (!session) {
+      redirect("/auth/signin");
+    }
 
-      if (response.ok) {
-        setCaletas(prev => prev.map(c => 
-          c.id === caletaId 
-            ? { ...c, isFavorita: !c.isFavorita }
-            : c
-        ));
-        
-        toast({
-          title: isFavorita ? "Removida de favoritos" : "Agregada a favoritos",
-          description: isFavorita 
-            ? "La caleta ha sido removida de tus favoritos"
-            : "La caleta ha sido agregada a tus favoritos",
-        });
-      } else {
-        throw new Error("Error al actualizar favoritos");
-      }
+    fetchRecursos();
+    fetchMaterias();
+  }, [session, status]);
+
+  const fetchRecursos = async () => {
+    try {
+      const response = await axios.get("/api/caletas/recursos");
+      setRecursos(response.data.recursos);
     } catch (error) {
-      console.error("Error toggleando favorito:", error);
-      toast({
-        title: "Error",
-        description: "No se pudo actualizar el favorito",
-        variant: "destructive",
-      });
+      console.error("Error fetching recursos:", error);
+      toast.error("Error al cargar los recursos");
     } finally {
-      setIsLoadingFavorites(null);
+      setLoading(false);
     }
   };
 
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return "0 Bytes";
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  const fetchMaterias = async () => {
+    try {
+      const response = await axios.get("/api/user/academico/materias");
+      setMaterias(response.data.materias);
+    } catch (error) {
+      console.error("Error fetching materias:", error);
+    }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("es-ES", {
-      year: "numeric",
-      month: "short",
-      day: "numeric"
+  const getTipoIcon = (tipo: string) => {
+    switch (tipo) {
+      case "ANOTACION":
+        return <FileText className="w-4 h-4" />;
+      case "RESUMEN":
+        return <BookOpen className="w-4 h-4" />;
+      case "GUIA_ESTUDIO":
+        return <Award className="w-4 h-4" />;
+      case "EJERCICIOS":
+        return <TrendingUp className="w-4 h-4" />;
+      case "PRESENTACION":
+        return <Video className="w-4 h-4" />;
+      case "VIDEO":
+        return <Video className="w-4 h-4" />;
+      case "AUDIO":
+        return <Video className="w-4 h-4" />;
+      case "DOCUMENTO":
+        return <FileText className="w-4 h-4" />;
+      case "ENLACE":
+        return <Link className="w-4 h-4" />;
+      case "TIP":
+        return <Lightbulb className="w-4 h-4" />;
+      default:
+        return <FileText className="w-4 h-4" />;
+    }
+  };
+
+  const getTipoColor = (tipo: string) => {
+    switch (tipo) {
+      case "ANOTACION":
+        return "bg-blue-500/10 text-blue-300 border-blue-500/20";
+      case "RESUMEN":
+        return "bg-green-500/10 text-green-300 border-green-500/20";
+      case "GUIA_ESTUDIO":
+        return "bg-purple-500/10 text-purple-300 border-purple-500/20";
+      case "EJERCICIOS":
+        return "bg-orange-500/10 text-orange-300 border-orange-500/20";
+      case "PRESENTACION":
+        return "bg-red-500/10 text-red-300 border-red-500/20";
+      case "VIDEO":
+        return "bg-pink-500/10 text-pink-300 border-pink-500/20";
+      case "AUDIO":
+        return "bg-indigo-500/10 text-indigo-300 border-indigo-500/20";
+      case "DOCUMENTO":
+        return "bg-gray-500/10 text-gray-300 border-gray-500/20";
+      case "ENLACE":
+        return "bg-cyan-500/10 text-cyan-300 border-cyan-500/20";
+      case "TIP":
+        return "bg-yellow-500/10 text-yellow-300 border-yellow-500/20";
+      default:
+        return "bg-gray-500/10 text-gray-300 border-gray-500/20";
+    }
+  };
+
+  const getTipoNombre = (tipo: string) => {
+    switch (tipo) {
+      case "ANOTACION":
+        return "Anotación";
+      case "RESUMEN":
+        return "Resumen";
+      case "GUIA_ESTUDIO":
+        return "Guía de Estudio";
+      case "EJERCICIOS":
+        return "Ejercicios";
+      case "PRESENTACION":
+        return "Presentación";
+      case "VIDEO":
+        return "Video";
+      case "AUDIO":
+        return "Audio";
+      case "DOCUMENTO":
+        return "Documento";
+      case "ENLACE":
+        return "Enlace";
+      case "TIP":
+        return "Tip";
+      default:
+        return tipo;
+    }
+  };
+
+  // Filtrar y ordenar recursos
+  const filteredRecursos = recursos
+    .filter(recurso => {
+      const matchesSearch = recurso.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           recurso.descripcion.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           recurso.tags.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesMateria = filterMateria === "todas" || recurso.materia.id === filterMateria;
+      const matchesTipo = filterTipo === "todos" || recurso.tipo === filterTipo;
+      return matchesSearch && matchesMateria && matchesTipo;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case "recientes":
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        case "populares":
+          return b.numVistas - a.numVistas;
+        case "mejor-calificados":
+          return b.calificacion - a.calificacion;
+        case "mas-descargados":
+          return b.numDescargas - a.numDescargas;
+        default:
+          return 0;
+      }
     });
-  };
 
-  const getFileIcon = (tipoArchivo: string) => {
-    if (tipoArchivo.includes("pdf")) return "📄";
-    if (tipoArchivo.includes("image")) return "🖼️";
-    return "📎";
-  };
-
-  if (isLoading) {
+  if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p>Cargando caletas...</p>
+      <div className="min-h-screen bg-gradient-to-t from-mygreen to-mygreen-light flex items-center justify-center">
+        <div className="text-white text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          <p>Cargando recursos de Caletas...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 p-6 space-y-6 bg-gradient-to-t from-mygreen to-mygreen-light">
+    <div className="min-h-screen bg-gradient-to-t from-mygreen to-mygreen-light">
+      <div className="container mx-auto px-4 py-8">
       {/* Header */}
-      <div className="space-y-2">
-        <h1 className="text-3xl font-special text-white">📚 Caletas</h1>
+        <div className="mb-8">
+          <h1 className="text-3xl font-special text-white mb-2 flex items-center gap-3">
+            <BookOpen className="w-8 h-8 text-[#40C9A9]" />
+            Caletas - Recursos Colaborativos
+          </h1>
         <p className="text-white/70">
-              Encuentra y comparte materiales de estudio con otros estudiantes
+            Comparte y descubre recursos académicos con otros estudiantes
             </p>
           </div>
 
-      {/* Acción rápida */}
-      <div className="flex justify-end">
-          <Button 
-            onClick={() => router.push("/caletas/subir")} 
-          className="bg-[#40C9A9] hover:bg-[#3AB89A] text-white border-0 shadow-lg"
-          >
-          <Upload className="h-5 w-5 mr-2" />
-            Subir Caleta
-          </Button>
-        </div>
+        {/* Estadísticas */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card className="bg-[#354B3A] border-white/10">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-white/70">
+                Total Recursos
+              </CardTitle>
+              <BookOpen className="h-4 w-4 text-[#40C9A9]" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">
+                {recursos.length}
+              </div>
+              <p className="text-xs text-white/70 mt-1">
+                Recursos compartidos
+              </p>
+            </CardContent>
+          </Card>
 
-        {/* Filtros */}
-        <Card className="bg-[#354B3A] border-white/10 text-white shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white font-special">
-              <Filter className="h-5 w-5 text-[#40C9A9]" />
-              FILTROS DE BÚSQUEDA
+          <Card className="bg-[#354B3A] border-white/10">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-white/70">
+                Total Vistas
+              </CardTitle>
+              <Eye className="h-4 w-4 text-[#40C9A9]" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">
+                {recursos.reduce((sum, r) => sum + r.numVistas, 0)}
+              </div>
+              <p className="text-xs text-white/70 mt-1">
+                Visualizaciones
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-[#354B3A] border-white/10">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-white/70">
+                Promedio Calificación
+              </CardTitle>
+              <Star className="h-4 w-4 text-[#40C9A9]" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">
+                {recursos.length > 0 
+                  ? (recursos.reduce((sum, r) => sum + r.calificacion, 0) / recursos.length).toFixed(1)
+                  : "0.0"
+                }
+        </div>
+              <p className="text-xs text-white/70 mt-1">
+                Calificación promedio
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-[#354B3A] border-white/10">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-white/70">
+                Total Descargas
             </CardTitle>
+              <Download className="h-4 w-4 text-[#40C9A9]" />
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Búsqueda */}
-              <div>
-                <Label htmlFor="search" className="text-white/70 font-medium">Buscar</Label>
+              <div className="text-2xl font-bold text-white">
+                {recursos.reduce((sum, r) => sum + r.numDescargas, 0)}
+              </div>
+              <p className="text-xs text-white/70 mt-1">
+                Descargas realizadas
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Controles de búsqueda y filtros */}
+        <div className="flex flex-col md:flex-row gap-4 mb-6">
+          <div className="flex-1">
                 <div className="relative">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-white/50" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50 w-4 h-4" />
                   <Input
-                    id="search"
-                    placeholder="Buscar caletas..."
+                placeholder="Buscar recursos por título, descripción o tags..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:bg-white/20 focus:border-[#40C9A9]"
+                className="pl-10 bg-[#354B3A] border-white/10 text-white placeholder:text-white/50"
                   />
                 </div>
               </div>
 
-              {/* Universidad */}
-              <div>
-                <Label htmlFor="universidad" className="text-white/70">Universidad</Label>
-                <Select value={selectedUniversidad} onValueChange={setSelectedUniversidad}>
-                  <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-[#40C9A9]">
-                    <SelectValue placeholder="Todas las universidades" />
+          <Select value={filterMateria} onValueChange={setFilterMateria}>
+            <SelectTrigger className="w-full md:w-48 bg-[#354B3A] border-white/10 text-white">
+              <SelectValue placeholder="Filtrar por materia" />
                   </SelectTrigger>
                   <SelectContent className="bg-[#354B3A] border-white/10">
-                    <SelectItem value="all" className="text-white hover:bg-white/10">Todas las universidades</SelectItem>
-                    {universidades.map((universidad) => (
-                      <SelectItem key={universidad.id} value={universidad.id} className="text-white hover:bg-white/10">
-                        <div className="flex items-center gap-2">
-                          <GraduationCap className="h-4 w-4" />
-                          {universidad.nombre}
-                        </div>
+              <SelectItem value="todas" className="text-white">Todas las materias</SelectItem>
+              {materias.map((materia) => (
+                <SelectItem key={materia.id} value={materia.id} className="text-white">
+                  {materia.codigo} - {materia.nombre}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
 
-              {/* Carrera */}
-              <div>
-                <Label htmlFor="carrera" className="text-white/70">Carrera</Label>
-                <Select 
-                  value={selectedCarrera} 
-                  onValueChange={setSelectedCarrera}
-                  disabled={!selectedUniversidad}
-                >
-                  <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-[#40C9A9] disabled:opacity-50">
-                    <SelectValue placeholder="Todas las carreras" />
+          <Select value={filterTipo} onValueChange={setFilterTipo}>
+            <SelectTrigger className="w-full md:w-48 bg-[#354B3A] border-white/10 text-white">
+              <SelectValue placeholder="Filtrar por tipo" />
                   </SelectTrigger>
                   <SelectContent className="bg-[#354B3A] border-white/10">
-                    <SelectItem value="all" className="text-white hover:bg-white/10">Todas las carreras</SelectItem>
-                    {carreras.map((carrera) => (
-                      <SelectItem key={carrera.id} value={carrera.id} className="text-white hover:bg-white/10">
-                        <div className="flex items-center gap-2">
-                          <BookOpen className="h-4 w-4" />
-                          {carrera.nombre}
-                        </div>
-                      </SelectItem>
-                    ))}
+              <SelectItem value="todos" className="text-white">Todos los tipos</SelectItem>
+              <SelectItem value="ANOTACION" className="text-white">Anotaciones</SelectItem>
+              <SelectItem value="RESUMEN" className="text-white">Resúmenes</SelectItem>
+              <SelectItem value="GUIA_ESTUDIO" className="text-white">Guías de Estudio</SelectItem>
+              <SelectItem value="EJERCICIOS" className="text-white">Ejercicios</SelectItem>
+              <SelectItem value="PRESENTACION" className="text-white">Presentaciones</SelectItem>
+              <SelectItem value="VIDEO" className="text-white">Videos</SelectItem>
+              <SelectItem value="AUDIO" className="text-white">Audios</SelectItem>
+              <SelectItem value="DOCUMENTO" className="text-white">Documentos</SelectItem>
+              <SelectItem value="ENLACE" className="text-white">Enlaces</SelectItem>
+              <SelectItem value="TIP" className="text-white">Tips</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
 
-              {/* Materia */}
-              <div>
-                <Label htmlFor="materia" className="text-white/70">Materia</Label>
-                <Select 
-                  value={selectedMateria} 
-                  onValueChange={setSelectedMateria}
-                  disabled={!selectedCarrera}
-                >
-                  <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-[#40C9A9] disabled:opacity-50">
-                    <SelectValue placeholder="Todas las materias" />
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-full md:w-48 bg-[#354B3A] border-white/10 text-white">
+              <SelectValue placeholder="Ordenar por" />
                   </SelectTrigger>
                   <SelectContent className="bg-[#354B3A] border-white/10">
-                    <SelectItem value="all" className="text-white hover:bg-white/10">Todas las materias</SelectItem>
-                    {materias.map((materia) => (
-                      <SelectItem key={materia.id} value={materia.id} className="text-white hover:bg-white/10">
-                        <div className="flex items-center gap-2">
-                          <FileText className="h-4 w-4" />
-                          {materia.codigo} - {materia.nombre}
-                        </div>
-                      </SelectItem>
-                    ))}
+              <SelectItem value="recientes" className="text-white">Más recientes</SelectItem>
+              <SelectItem value="populares" className="text-white">Más populares</SelectItem>
+              <SelectItem value="mejor-calificados" className="text-white">Mejor calificados</SelectItem>
+              <SelectItem value="mas-descargados" className="text-white">Más descargados</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      
 
-      {/* Resultados */}
-      <div className="mb-4">
-        <p className="text-white/70">
-          {filteredCaletas.length} caleta{filteredCaletas.length !== 1 ? 's' : ''} encontrada{filteredCaletas.length !== 1 ? 's' : ''}
-        </p>
+          <Button
+            onClick={() => window.location.href = "/caletas/crear"}
+            className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Compartir Recurso
+          </Button>
       </div>
 
-      {/* Lista de caletas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredCaletas.map((caleta) => (
-          <Card key={caleta.id} className="bg-[#354B3A] border-white/10 text-white hover:shadow-lg transition-shadow">
-            <CardHeader className="pb-3">
+        {/* Lista de recursos */}
+        <div className="space-y-4">
+          {filteredRecursos.map((recurso) => (
+            <Card key={recurso.id} className="bg-[#354B3A] border-white/10 hover:bg-[#1C2D20] transition-colors">
+              <CardHeader>
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <CardTitle className="text-lg mb-2 line-clamp-2 text-white">{caleta.nombre}</CardTitle>
-                  <CardDescription className="line-clamp-2 text-white/70">{caleta.tema}</CardDescription>
+                    <div className="flex items-center gap-3 mb-2">
+                      {getTipoIcon(recurso.tipo)}
+                      <h3 className="text-lg font-semibold text-white">
+                        {recurso.titulo}
+                      </h3>
+                      <Badge className={getTipoColor(recurso.tipo)}>
+                        {getTipoNombre(recurso.tipo)}
+                      </Badge>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => toggleFavorito(caleta.id)}
-                  disabled={isLoadingFavorites === caleta.id}
-                  className="ml-2 text-white hover:bg-white/10"
-                >
-                  {isLoadingFavorites === caleta.id ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#40C9A9]"></div>
-                  ) : caleta.isFavorita ? (
-                    <Heart className="h-4 w-4 text-red-400 fill-current" />
-                  ) : (
-                    <Heart className="h-4 w-4" />
-                  )}
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-0">
-              {/* Información del archivo */}
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-2xl">{getFileIcon(caleta.tipoArchivo)}</span>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-white">{caleta.tipoArchivo.toUpperCase()}</p>
-                  <p className="text-xs text-white/70">{formatFileSize(caleta.tamanio)}</p>
+                    <p className="text-white/70 mb-3">
+                      {recurso.descripcion}
+                    </p>
+                    <div className="flex items-center gap-4 text-sm text-white/60">
+                      <span className="flex items-center gap-1">
+                        <BookOpen className="w-4 h-4" />
+                        {recurso.materia.codigo} - {recurso.materia.nombre}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-4 h-4" />
+                        {new Date(recurso.createdAt).toLocaleDateString()}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Users className="w-4 h-4" />
+                        {recurso.autor.name}
+                      </span>
                 </div>
               </div>
-
-              {/* Materia y carrera */}
-              <div className="space-y-2 mb-4">
+                  <div className="flex items-center gap-4 text-sm text-white/60">
+                    <span className="flex items-center gap-1">
+                      <Star className="w-4 h-4 text-yellow-400" />
+                      {recurso.calificacion.toFixed(1)} ({recurso.numCalificaciones})
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Eye className="w-4 h-4" />
+                      {recurso.numVistas}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Download className="w-4 h-4" />
+                      {recurso.numDescargas}
+                    </span>
+                </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <FileText className="h-3 w-3 text-white/50" />
-                  <span className="text-sm font-medium text-white">{caleta.materia.codigo} - {caleta.materia.nombre}</span>
+                    {recurso.tags && (
+                      <div className="flex gap-1">
+                        {recurso.tags.split(',').map((tag, index) => (
+                          <Badge key={index} className="bg-white/10 text-white/70 border-white/20">
+                            {tag.trim()}
+                          </Badge>
+                        ))}
+                </div>
+                    )}
                 </div>
                 <div className="flex items-center gap-2">
-                  <BookOpen className="h-3 w-3 text-white/50" />
-                  <span className="text-sm text-white/70">{caleta.materia.carrera.nombre}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <GraduationCap className="h-3 w-3 text-white/50" />
-                  <span className="text-sm text-white/70">{caleta.materia.carrera.universidad.nombre}</span>
-                </div>
-              </div>
-
-              {/* Información del usuario y fecha */}
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <User className="h-3 w-3 text-white/50" />
-                  <span className="text-xs text-white/70">{caleta.usuario.name}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-3 w-3 text-white/50" />
-                  <span className="text-xs text-white/70">{formatDate(caleta.createdAt)}</span>
-                </div>
-              </div>
-
-              {/* Botones de acción */}
-              <div className="flex gap-2">
                 <Button
                   variant="outline"
                   size="sm"
-                  className="flex-1 border-[#40C9A9] text-[#40C9A9] hover:bg-[#40C9A9] hover:text-white"
-                  onClick={() => window.open(caleta.urlArchivo, '_blank')}
+                      onClick={() => window.location.href = `/caletas/${recurso.id}`}
+                      className="border-[#40C9A9] text-[#40C9A9] hover:bg-[#40C9A9] hover:text-white"
                 >
-                  <Eye className="h-4 w-4 mr-2" />
-                  Ver
+                      Ver Detalles
                 </Button>
+                    {recurso.archivoUrl && (
                 <Button
-                  variant="outline"
                   size="sm"
-                  className="flex-1 border-[#40C9A9] text-[#40C9A9] hover:bg-[#40C9A9] hover:text-white"
-                  onClick={() => {
-                    const link = document.createElement('a');
-                    link.href = caleta.urlArchivo;
-                    link.download = caleta.nombre;
-                    link.click();
-                  }}
-                >
-                  <Download className="h-4 w-4 mr-2" />
+                        onClick={() => window.open(recurso.archivoUrl, '_blank')}
+                        className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                      >
+                        <Download className="w-4 h-4 mr-2" />
                   Descargar
                 </Button>
+                    )}
+                  </div>
               </div>
             </CardContent>
           </Card>
         ))}
-      </div>
-
-      {/* Estado vacío */}
-      {filteredCaletas.length === 0 && !isLoading && (
-        <Card className="text-center py-12 bg-[#354B3A] border-white/10 text-white">
-          <CardContent>
-            <FileText className="h-12 w-12 text-white/30 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2 text-white">No se encontraron caletas</h3>
-            <p className="text-white/70 mb-4">
-              {searchTerm || selectedUniversidad !== "all" || selectedCarrera !== "all" || selectedMateria !== "all"
+          
+          {filteredRecursos.length === 0 && (
+            <div className="text-center py-12 text-white/70">
+              <BookOpen className="w-16 h-16 mx-auto mb-4 text-white/30" />
+              <h3 className="text-xl font-medium text-white mb-2">
+                {searchTerm || filterMateria !== "todas" || filterTipo !== "todos"
+                  ? "No se encontraron recursos" 
+                  : "No hay recursos disponibles"
+                }
+              </h3>
+              <p className="text-white/70">
+                {searchTerm || filterMateria !== "todas" || filterTipo !== "todos"
                 ? "Intenta ajustar los filtros de búsqueda"
-                : "Sé el primero en subir una caleta"}
-            </p>
-            <Button 
-              onClick={() => router.push("/caletas/subir")}
-              className="bg-[#40C9A9] hover:bg-[#3AB89A] text-white"
-            >
-              <Upload className="h-4 w-4 mr-2" />
-              Subir Caleta
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+                  : "Sé el primero en compartir un recurso académico"
+                }
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 } 

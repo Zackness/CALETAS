@@ -43,3 +43,38 @@ interface BunnyConfig {
       fileUrl,
     };
   };
+
+export const uploadToBunny = async (file: File): Promise<string> => {
+  // Generar nombre único para el archivo
+  const timestamp = Date.now();
+  const extension = file.name.split('.').pop();
+  const fileName = `caletas/${timestamp}-${Math.random().toString(36).substring(2)}.${extension}`;
+
+  try {
+    const { url, headers, fileUrl } = await generateUploadUrl(fileName);
+    
+    // Convertir archivo a buffer
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    // Subir archivo usando fetch
+    const uploadResponse = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        ...headers,
+        'Content-Type': file.type,
+        'Content-Length': buffer.length.toString(),
+      },
+      body: buffer,
+    });
+
+    if (!uploadResponse.ok) {
+      throw new Error(`Error uploading to Bunny.net: ${uploadResponse.status} ${uploadResponse.statusText}`);
+    }
+
+    return fileUrl;
+  } catch (error) {
+    console.error('Error uploading to Bunny.net:', error);
+    throw new Error('Failed to upload file to Bunny.net');
+  }
+};

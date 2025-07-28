@@ -17,6 +17,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { UserRole, EstadoDeResidencia } from "@prisma/client";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "react-hot-toast";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Settings, User, Shield, Phone, MapPin } from "lucide-react";
 
 type ExtendedUser = {
     id: string;
@@ -114,25 +116,39 @@ export default function Ajustes() {
   }
 
   return (
-    <div className="w-full flex flex-col items-center text-foreground py-10 bg-mygreen-light">
-      <h1 className="font-special text-3xl md:text-3xl mb-8 text-center text-white bg-clip-text">
-        Ajustes de la cuenta
-      </h1>
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-t from-mygreen to-mygreen-light px-4 py-8">
+      <div className="w-full max-w-4xl">
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl md:text-4xl font-special text-[#40C9A9] mb-2">Ajustes de la Cuenta</h1>
+          <p className="text-white/70 text-base md:text-lg">
+            Gestiona tu información personal y configuración de seguridad
+          </p>
+        </div>
+
         <Form {...form}>
-        <form 
-          className="space-y-6 w-screen px-20 md:px-48 lg:w-[1135px] lg:px-[200px] 2xl:w-[1615px] 2xl:px-[300px] mb-10" 
-          onSubmit={form.handleSubmit(onSubmit)}
-        >
-          <div className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {/* Información Personal */}
+            <Card className="bg-[#354B3A] border-white/10">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-white">
+                  <User className="w-5 h-5 text-[#40C9A9]" />
+                  Información Personal
+                </CardTitle>
+                <CardDescription className="text-white/70">
+                  Datos básicos de tu perfil (solo lectura)
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField 
               control={form.control}
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Primer nombre del usuario</FormLabel>
+                        <FormLabel className="text-white/80">Primer nombre</FormLabel>
                   <FormControl>
                     <Input
-                      className="text-foreground border-none bg-fm-blue-3 rounded-xl"
+                            className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg"
                       {...field}
                       disabled={true}
                     />
@@ -146,10 +162,10 @@ export default function Ajustes() {
               name="name2"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Segundo nombre del usuario</FormLabel>
+                        <FormLabel className="text-white/80">Segundo nombre</FormLabel>
                   <FormControl>
                     <Input
-                      className="border-none bg-fm-blue-3 rounded-xl text-foreground"
+                            className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg"
                       {...field}
                       disabled={true}
                     />
@@ -158,15 +174,17 @@ export default function Ajustes() {
                 </FormItem>
               )}
             />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField 
               control={form.control}
               name="apellido"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Primer apellido del usuario</FormLabel>
+                        <FormLabel className="text-white/80">Primer apellido</FormLabel>
                   <FormControl>
                     <Input
-                      className="border-none bg-fm-blue-3 rounded-xl text-foreground"
+                            className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg"
                       {...field}
                       disabled={true}
                     />
@@ -180,10 +198,10 @@ export default function Ajustes() {
               name="apellido2"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Segundo apellido del usuario</FormLabel>
+                        <FormLabel className="text-white/80">Segundo apellido</FormLabel>
                   <FormControl>
                     <Input
-                      className="border-none bg-fm-blue-3 rounded-xl text-foreground"
+                            className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg"
                       {...field}
                       disabled={true}
                     />
@@ -192,16 +210,16 @@ export default function Ajustes() {
                 </FormItem>
               )}
             />
-
+                </div>
             <FormField 
                 control={form.control}
                 name="cedula"
                 render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Cédula de identidad</FormLabel>
+                      <FormLabel className="text-white/80">Cédula de identidad</FormLabel>
                         <FormControl>
                             <Input
-                                className="border-none bg-fm-blue-3 rounded-xl text-foreground"
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg"
                                 {...field}
                                 disabled={true}
                             />
@@ -210,19 +228,32 @@ export default function Ajustes() {
                     </FormItem>
                 )}
             />
+              </CardContent>
+            </Card>
 
+            {/* Verificación de Cédula */}
+            <Card className="bg-[#354B3A] border-white/10">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-white">
+                  <Shield className="w-5 h-5 text-[#40C9A9]" />
+                  Verificación de Cédula
+                </CardTitle>
+                <CardDescription className="text-white/70">
+                  Sube una imagen de tu cédula para verificar y actualizar tus datos
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
             <FormField 
                 control={form.control}
                 name="ciPhoto"
                 render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Subir imagen de cédula</FormLabel>
                         <FormControl>
-                            <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-3">
                                 <Input
                                     type="file"
                                     accept="image/*"
-                                    className="border-none bg-blue-500 rounded-xl text-foreground"
+                            className="bg-white/10 border-white/20 text-white file:text-white file:bg-[#40C9A9] file:border-0 file:rounded-lg file:px-4 file:py-2 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg"
                                     onChange={(e) => {
                                         const file = e.target.files?.[0];
                                         if (file) {
@@ -237,8 +268,7 @@ export default function Ajustes() {
                                 />
                                 <Button
                                     type="button"
-                                    variant="outline"
-                                    className="w-full"
+                            className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
                                     disabled={isPending || isSubmitting || !field.value}
                                     onClick={async () => {
                                         try {
@@ -276,25 +306,35 @@ export default function Ajustes() {
                                 </Button>
                             </div>
                         </FormControl>
-                        <FormDescription>
-                            Sube una imagen de tu cédula para verificar y actualizar tus datos
-                        </FormDescription>
                         <FormMessage />
                     </FormItem>
                 )}
             />
+              </CardContent>
+            </Card>
 
-            {/* Campos de contacto y residencia */}
+            {/* Información de Contacto */}
+            <Card className="bg-[#354B3A] border-white/10">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-white">
+                  <Phone className="w-5 h-5 text-[#40C9A9]" />
+                  Información de Contacto
+                </CardTitle>
+                <CardDescription className="text-white/70">
+                  Datos de contacto y ubicación
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField 
                 control={form.control}
                 name="telefono"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Teléfono</FormLabel>
+                        <FormLabel className="text-white/80">Teléfono</FormLabel>
                     <FormControl>
                       <Input
-                        className="border-none bg-fm-blue-3 rounded-xl text-foreground"
+                            className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg"
                         {...field}
                         disabled={isPending || isSubmitting}
                       />
@@ -308,20 +348,20 @@ export default function Ajustes() {
                 name="EstadoDeResidencia"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Estado de residencia</FormLabel>
+                        <FormLabel className="text-white/80">Estado de residencia</FormLabel>
                     <Select
                       disabled={isPending || isSubmitting}
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger className="border-blue-500 bg-fm-blue-3 rounded-xl text-foreground">
+                            <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg">
                           <SelectValue placeholder="Selecciona un estado" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                          <SelectContent className="bg-[#203324] text-white">
                         {Object.values(EstadoDeResidencia).map((estado) => (
-                          <SelectItem key={estado} value={estado}>
+                              <SelectItem key={estado} value={estado} className="hover:bg-[#40C9A9]/10">
                             {estado.replace(/_/g, " ")}
                           </SelectItem>
                         ))}
@@ -332,16 +372,15 @@ export default function Ajustes() {
                 )}
               />
             </div>
-
             <FormField 
               control={form.control}
               name="ciudadDeResidencia"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Ciudad de residencia</FormLabel>
+                      <FormLabel className="text-white/80">Ciudad de residencia</FormLabel>
                   <FormControl>
                     <Input
-                      className="border-none bg-fm-blue-3 rounded-xl text-foreground"
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg"
                       {...field}
                       disabled={isPending || isSubmitting}
                     />
@@ -350,18 +389,31 @@ export default function Ajustes() {
                 </FormItem>
               )}
             />
+              </CardContent>
+            </Card>
 
+            {/* Seguridad y Autenticación */}
             {user?.isOAuth === false && (
-            <>
+              <Card className="bg-[#354B3A] border-white/10">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-white">
+                    <Shield className="w-5 h-5 text-[#40C9A9]" />
+                    Seguridad y Autenticación
+                  </CardTitle>
+                  <CardDescription className="text-white/70">
+                    Configura tu email, contraseña y autenticación en dos pasos
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
               <FormField 
                 control={form.control}
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Correo del usuario</FormLabel>
+                        <FormLabel className="text-white/80">Correo electrónico</FormLabel>
                     <FormControl>
                       <Input
-                        className="border-none bg-fm-blue-3 rounded-xl text-foreground"
+                            className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg"
                         {...field}
                         disabled={isPending || isSubmitting}
                         type="email"
@@ -371,15 +423,16 @@ export default function Ajustes() {
                   </FormItem>
                 )}
               />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField 
                 control={form.control}
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Contraseña actual</FormLabel>
+                          <FormLabel className="text-white/80">Contraseña actual</FormLabel>
                     <FormControl>
                       <Input
-                        className="border-none bg-fm-blue-3 rounded-xl text-foreground"
+                              className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg"
                         {...field}
                         disabled={isPending || isSubmitting}
                         type="password"
@@ -395,10 +448,10 @@ export default function Ajustes() {
                 name="newPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nueva contraseña</FormLabel>
+                          <FormLabel className="text-white/80">Nueva contraseña</FormLabel>
                     <FormControl>
                       <Input
-                        className="border-none bg-fm-blue-3 rounded-xl text-foreground"
+                              className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg"
                         {...field}
                         disabled={isPending || isSubmitting}
                         type="password"
@@ -409,61 +462,58 @@ export default function Ajustes() {
                   </FormItem>
                 )}
               />
-            </>
-            )}
-
-            {user?.isOAuth === false && (
+                  </div>
               <FormField 
                 control={form.control}
                 name="isTwoFactorEnabled"
                 render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-xl p-3 bg-fm-blue-3">
-                    <div className="space-y-0.5">
-                      <FormLabel>Autenticacion en dos pasos (2FA)</FormLabel>
-                      <FormDescription className="text-foreground">
-                        Activa la Autenticacion en dos pasos para tu cuenta (Autenticacion por Email)
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg p-4 bg-white/5 border border-white/10">
+                        <div className="space-y-1">
+                          <FormLabel className="text-white/80">Autenticación en dos pasos (2FA)</FormLabel>
+                          <FormDescription className="text-white/60">
+                            Activa la autenticación en dos pasos para tu cuenta (Autenticación por Email)
                       </FormDescription>
                     </div>
                     <FormControl>
-                      <div className="flex items-center gap-2">
-                        <span className={`text-sm font-medium ${field.value ? 'text-green-500' : 'text-gray-500'}`}>
+                          <div className="flex items-center gap-3">
+                            <span className={`text-sm font-medium ${field.value ? 'text-green-400' : 'text-white/60'}`}>
                           {field.value ? "Activado" : "Desactivado"}
                         </span>
-                        <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${field.value ? 'bg-green-500' : 'bg-gray-400'}`}>
                           <Switch 
                             disabled={isPending || isSubmitting}
                             checked={field.value}
                             onCheckedChange={field.onChange}
-                            className="absolute inset-0"
+                              className="data-[state=checked]:bg-[#40C9A9] data-[state=unchecked]:bg-white/20"
                           />
-                        </div>
                       </div>
                     </FormControl>
                   </FormItem>
                 )}
               />
+                </CardContent>
+              </Card>
             )}
-          </div>
+
+            {/* Mensajes de estado */}
           <FormError message={error}/>
           <FormSucces message={succes}/>
+
+            {/* Botón de guardar */}
           <Button 
             disabled={isPending || isSubmitting || !hasChanges} 
             type="submit"
-            variant="form"
-            className="w-full mb-8"
+              className="w-full bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white font-bold text-lg py-3 rounded-xl shadow-lg transition-colors"
           >
             {isPending || isSubmitting ? (
               <div className="flex items-center gap-2">
-                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                </svg>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                 Guardando...
               </div>
-            ) : "Guardar ajustes"}
+              ) : "Guardar Ajustes"}
           </Button>
         </form>
       </Form>
+      </div>
     </div>
   );
 }
