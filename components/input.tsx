@@ -52,6 +52,7 @@ const Input: React.FC<InputProps> = ({
             transition-all
             duration-200
             pr-12
+            font-normal
             "
             placeholder=" "
         />
@@ -73,6 +74,7 @@ const Input: React.FC<InputProps> = ({
         peer-focus:scale-75
         peer-focus:-translate-y-3
         peer-focus:text-white
+        font-normal
         "
         htmlFor={id}>
             {label}

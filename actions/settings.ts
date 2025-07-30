@@ -66,7 +66,6 @@ export const settings = async (
                         apellido: ciData.apellido,
                         apellido2: ciData.apellido2 || null,
                         cedula: ciData.cedula,
-                        estadoCivil: ciData.estadoCivil,
                         fechaNacimiento: ciData.fechaNacimiento,
                         isCiVerified: true,
                     }

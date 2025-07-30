@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { 
   Users, 
   Building2, 
-  ShoppingCart, 
   Code, 
   GraduationCap, 
   Handshake, 
@@ -19,7 +18,7 @@ import {
   CheckCircle
 } from "lucide-react";
 import Link from "next/link";
-import { Header } from "../caracteristicas/components/Header";
+import { Header } from "../components/Header";
 
 interface Aliado {
   id: string;

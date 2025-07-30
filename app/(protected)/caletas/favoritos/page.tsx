@@ -1,35 +1,30 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { 
   Search, 
   Heart, 
-  Download, 
   FileText, 
   BookOpen, 
   GraduationCap,
-  Eye,
   Calendar,
   User,
   ArrowLeft
 } from "lucide-react";
 
-interface Caleta {
+interface Recurso {
   id: string;
-  nombre: string;
-  tema: string;
-  urlArchivo: string;
-  tipoArchivo: string;
-  tamanio: number;
+  titulo: string;
+  descripcion: string;
+  tipo: string;
+  archivoUrl?: string;
   createdAt: string;
-  isFavorita: boolean;
-  usuario: {
+  esFavorito: boolean;
+  autor: {
     id: string;
     name: string;
     image: string;
@@ -50,8 +45,8 @@ interface Caleta {
 }
 
 export default function FavoritosPage() {
-  const [caletas, setCaletas] = useState<Caleta[]>([]);
-  const [filteredCaletas, setFilteredCaletas] = useState<Caleta[]>([]);
+  const [recursos, setRecursos] = useState<Recurso[]>([]);
+  const [filteredRecursos, setFilteredRecursos] = useState<Recurso[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingFavorites, setIsLoadingFavorites] = useState<string | null>(null);
@@ -59,17 +54,15 @@ export default function FavoritosPage() {
   const { toast } = useToast();
   const router = useRouter();
 
-  // Cargar caletas favoritas al montar el componente
+  // Cargar recursos favoritos al montar el componente
   useEffect(() => {
     const cargarFavoritos = async () => {
       try {
-        const response = await fetch("/api/caletas");
+        const response = await fetch("/api/caletas/recursos?favoritos=true");
         if (response.ok) {
           const data = await response.json();
-          // Filtrar solo las caletas que son favoritas
-          const favoritas = data.filter((caleta: Caleta) => caleta.isFavorita);
-          setCaletas(favoritas);
-          setFilteredCaletas(favoritas);
+          setRecursos(data);
+          setFilteredRecursos(data);
         }
       } catch (error) {
         console.error("Error cargando favoritos:", error);
@@ -86,36 +79,36 @@ export default function FavoritosPage() {
     cargarFavoritos();
   }, [toast]);
 
-  // Filtrar caletas cuando cambia el término de búsqueda
+  // Filtrar recursos cuando cambia el término de búsqueda
   useEffect(() => {
     if (searchTerm) {
-      const filtered = caletas.filter(caleta =>
-        caleta.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        caleta.tema.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        caleta.materia.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        caleta.materia.codigo.toLowerCase().includes(searchTerm.toLowerCase())
+      const filtered = recursos.filter(recurso =>
+        recurso.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        recurso.descripcion.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        recurso.materia.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        recurso.materia.codigo.toLowerCase().includes(searchTerm.toLowerCase())
       );
-      setFilteredCaletas(filtered);
+      setFilteredRecursos(filtered);
     } else {
-      setFilteredCaletas(caletas);
+      setFilteredRecursos(recursos);
     }
-  }, [caletas, searchTerm]);
+  }, [recursos, searchTerm]);
 
-  const toggleFavorito = async (caletaId: string) => {
-    setIsLoadingFavorites(caletaId);
+  const toggleFavorito = async (recursoId: string) => {
+    setIsLoadingFavorites(recursoId);
     
     try {
-      const response = await fetch(`/api/caletas/${caletaId}/favorito`, {
+      const response = await fetch(`/api/caletas/recursos/${recursoId}/favorito`, {
         method: "DELETE",
       });
 
       if (response.ok) {
-        // Remover la caleta de la lista local
-        setCaletas(prev => prev.filter(c => c.id !== caletaId));
+        // Remover el recurso de la lista local
+        setRecursos(prev => prev.filter(r => r.id !== recursoId));
         
         toast({
-          title: "Removida de favoritos",
-          description: "La caleta ha sido removida de tus favoritos",
+          title: "Removido de favoritos",
+          description: "El recurso ha sido removido de tus favoritos",
         });
       } else {
         throw new Error("Error al remover de favoritos");
@@ -184,11 +177,11 @@ export default function FavoritosPage() {
               <div>
                 <h1 className="text-3xl md:text-4xl font-special text-[#40C9A9] mb-2">Mis Favoritos</h1>
                 <p className="text-white/70 text-base md:text-lg">
-                  Tus caletas guardadas para acceso rápido
+                  Tus recursos guardados para acceso rápido
                 </p>
               </div>
             </div>
-            <Button onClick={() => router.push("/caletas")} variant="outline" className="border-[#40C9A9] text-[#40C9A9] hover:bg-[#40C9A9]/10 cursor-pointer">
+            <Button onClick={() => router.push("/recursos")} variant="outline" className="border-[#40C9A9] text-[#40C9A9] hover:bg-[#40C9A9]/10 cursor-pointer">
               <FileText className="h-4 w-4 mr-2" />
               Ver Todas las Caletas
             </Button>
@@ -215,27 +208,27 @@ export default function FavoritosPage() {
         {/* Resultados */}
         <div className="mb-4">
           <p className="text-[#40C9A9] font-bold">
-            {filteredCaletas.length} caleta{filteredCaletas.length !== 1 ? 's' : ''} favorita{filteredCaletas.length !== 1 ? 's' : ''}
+            {filteredRecursos.length} recurso{filteredRecursos.length !== 1 ? 's' : ''} favorito{filteredRecursos.length !== 1 ? 's' : ''}
           </p>
         </div>
 
-        {/* Lista de caletas favoritas */}
+        {/* Lista de recursos favoritos */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCaletas.map((caleta) => (
-            <div key={caleta.id} className="bg-[#354B3A] border border-white/10 rounded-2xl shadow-xl p-4 flex flex-col justify-between text-white hover:shadow-2xl transition-shadow">
+          {filteredRecursos.map((recurso) => (
+            <div key={recurso.id} className="bg-[#354B3A] border border-white/10 rounded-2xl shadow-xl p-4 flex flex-col justify-between text-white hover:shadow-2xl transition-shadow">
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1">
-                  <h2 className="text-lg font-special text-[#40C9A9] mb-1 line-clamp-2">{caleta.nombre}</h2>
-                  <p className="text-white/70 text-sm line-clamp-2 mb-1">{caleta.tema}</p>
+                  <h2 className="text-lg font-special text-[#40C9A9] mb-1 line-clamp-2">{recurso.titulo}</h2>
+                  <p className="text-white/70 text-sm line-clamp-2 mb-1">{recurso.descripcion}</p>
                 </div>
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => toggleFavorito(caleta.id)}
-                  disabled={isLoadingFavorites === caleta.id}
+                  onClick={() => toggleFavorito(recurso.id)}
+                  disabled={isLoadingFavorites === recurso.id}
                   className="ml-2 text-red-500 hover:text-red-700 cursor-pointer"
                 >
-                  {isLoadingFavorites === caleta.id ? (
+                  {isLoadingFavorites === recurso.id ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-500"></div>
                   ) : (
                     <Heart className="h-4 w-4 fill-current" />
@@ -245,31 +238,32 @@ export default function FavoritosPage() {
               <div className="flex flex-col gap-2 mb-2">
                 <div className="flex items-center gap-2 text-white/80 text-xs">
                   <BookOpen className="h-4 w-4 text-[#40C9A9]" />
-                  <span>{caleta.materia.nombre}</span>
+                  <span>{recurso.materia.nombre}</span>
                   <span className="text-white/40">|</span>
                   <GraduationCap className="h-4 w-4 text-[#40C9A9]" />
-                  <span>{caleta.materia.carrera.nombre}</span>
+                  <span>{recurso.materia.carrera.nombre}</span>
                 </div>
                 <div className="flex items-center gap-2 text-white/80 text-xs">
                   <User className="h-4 w-4 text-[#40C9A9]" />
-                  <span>{caleta.usuario.name}</span>
+                  <span>{recurso.autor.name}</span>
                   <span className="text-white/40">|</span>
                   <Calendar className="h-4 w-4 text-[#40C9A9]" />
-                  <span>{formatDate(caleta.createdAt)}</span>
+                  <span>{formatDate(recurso.createdAt)}</span>
                 </div>
               </div>
-              <div className="flex items-center gap-2 mt-2">
-                <span className="text-2xl">{getFileIcon(caleta.tipoArchivo)}</span>
-                <span className="text-white/70 text-xs">{formatFileSize(caleta.tamanio)}</span>
-                <a
-                  href={caleta.urlArchivo}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="ml-auto text-[#40C9A9] hover:underline text-sm font-bold cursor-pointer"
-                >
-                  Ver archivo
-                </a>
-              </div>
+              {recurso.archivoUrl && (
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="text-2xl">{getFileIcon(recurso.tipo)}</span>
+                  <a
+                    href={recurso.archivoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ml-auto text-[#40C9A9] hover:underline text-sm font-bold cursor-pointer"
+                  >
+                    Ver archivo
+                  </a>
+                </div>
+              )}
             </div>
           ))}
         </div>

@@ -38,7 +38,9 @@ export function Header() {
   return (
     <header className="relative w-full shadow z-50">
       <nav className="flex flex-row w-full max-w-[1400px] mx-auto justify-between items-center px-4 sm:px-8 lg:px-12 font-semibold text-[16px] sm:text-[18px] py-3 sm:py-4 relative">
-        <Logo />
+        <div className="hover:opacity-80 transition-opacity cursor-pointer">
+          <Logo />
+        </div>
         {/* Menú de escritorio */}
         <div className="hidden md:flex md:flex-row md:gap-4 lg:gap-6 items-center">
           <a href="/caracteristicas" className="hover:text-[#40C9A9] transition-colors cursor-pointer text-white text-base px-2 py-1 rounded-md hover:bg-white/10">
@@ -66,7 +68,7 @@ export function Header() {
         </button>
         {/* Botón Agrega tu uni para escritorio */}
         <a
-          href="/login"
+          href="/agregar-universidad"
           className="font-special hidden md:block ml-2"
         >
           <Button
@@ -109,6 +111,13 @@ export function Header() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Blog
+              </a>
+              <a
+                href="/agregar-universidad"
+                className="text-white font-special text-base py-2 px-2 rounded-md hover:bg-white/10 transition-colors text-left"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Agregar Universidad
               </a>
               <a href="/login" className="mt-2 mb-1 block">
                 <Button

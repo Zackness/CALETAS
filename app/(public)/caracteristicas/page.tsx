@@ -1,5 +1,4 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { 
   BookOpen, 
@@ -13,22 +12,18 @@ import {
   Shield, 
   Zap,
   CheckCircle,
-  Star,
   TrendingUp,
   Calendar,
   MessageSquare,
   Download,
-  Eye,
   Heart,
   Search,
-  Filter,
   Bell,
-  Award,
   Lightbulb,
   ArrowRight
 } from "lucide-react";
 import Link from "next/link";
-import { Header } from "./components/Header";
+import { Header } from "../components/Header";
 
 export default function CaracteristicasPage() {
   return (

@@ -681,7 +681,7 @@ async function main() {
     // Obtener la carrera de Ing. Mecatrónica
     const carrera = await prisma.carrera.findFirst({
       where: {
-        nombre: "Ing. Mecatrónica",
+        nombre: "Ingeniería Mecatrónica",
         universidad: {
           siglas: "UNEXPO"
         }
@@ -689,7 +689,7 @@ async function main() {
     });
     
     if (!carrera) {
-      throw new Error('No se encontró la carrera Ing. Mecatrónica en UNEXPO');
+      throw new Error('No se encontró la carrera Ingeniería Mecatrónica en UNEXPO');
     }
     
     console.log(`📚 Carrera encontrada: ${carrera.nombre} (ID: ${carrera.id})`);

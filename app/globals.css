@@ -153,3 +153,24 @@ body {
     }
 
 }
+
+body {
+    background: linear-gradient(to top, var(--mygreen), var(--mygreen-light));
+    min-height: 100vh;
+    color: white;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeInDown {
+  animation: fadeInDown 0.3s ease-out;
+}

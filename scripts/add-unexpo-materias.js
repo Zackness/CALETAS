@@ -24,18 +24,6 @@ async function main() {
     
     // Materias por carrera
     const materiasPorCarrera = {
-      "Ing. Mecatrónica": [
-        { codigo: "IM-MAT-101", nombre: "Matemáticas I", semestre: "S1", creditos: 4, horasTeoria: 3, horasPractica: 2 },
-        { codigo: "IM-FIS-101", nombre: "Física I", semestre: "S1", creditos: 4, horasTeoria: 3, horasPractica: 2 },
-        { codigo: "IM-PRO-101", nombre: "Programación I", semestre: "S1", creditos: 3, horasTeoria: 2, horasPractica: 2 },
-        { codigo: "IM-MAT-102", nombre: "Matemáticas II", semestre: "S2", creditos: 4, horasTeoria: 3, horasPractica: 2 },
-        { codigo: "IM-FIS-102", nombre: "Física II", semestre: "S2", creditos: 4, horasTeoria: 3, horasPractica: 2 },
-        { codigo: "IM-ELC-101", nombre: "Electrónica Básica", semestre: "S2", creditos: 3, horasTeoria: 2, horasPractica: 2 },
-        { codigo: "IM-MEC-101", nombre: "Mecánica I", semestre: "S3", creditos: 4, horasTeoria: 3, horasPractica: 2 },
-        { codigo: "IM-CON-101", nombre: "Control I", semestre: "S3", creditos: 3, horasTeoria: 2, horasPractica: 2 },
-        { codigo: "IM-ROB-101", nombre: "Robótica I", semestre: "S4", creditos: 4, horasTeoria: 2, horasPractica: 4 },
-        { codigo: "IM-AUT-101", nombre: "Automatización", semestre: "S4", creditos: 4, horasTeoria: 2, horasPractica: 4 }
-      ],
       "Ing. Rural": [
         { codigo: "IR-MAT-101", nombre: "Matemáticas I", semestre: "S1", creditos: 4, horasTeoria: 3, horasPractica: 2 },
         { codigo: "IR-QUI-101", nombre: "Química General", semestre: "S1", creditos: 4, horasTeoria: 3, horasPractica: 2 },

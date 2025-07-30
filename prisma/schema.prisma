@@ -24,7 +24,6 @@ model User {
   cedula                 String?                @unique
   ciudadDeResidencia     String?
   empresa                String?
-  estadoCivil            EstadoCivil            @default(SOLTERO)
   fechaNacimiento        DateTime?
   isCiVerified           Boolean                @default(false)
   name2                  String?
@@ -40,20 +39,11 @@ model User {
   carnetValidadoEn       DateTime?
   accounts               Account[]
   blogPosts              BlogPost[]
-  caletas                Caleta[]
-  caletasFavoritas       CaletaFavorita[]
-  documentosHabilitados  DocumentoEditable[]
-  familiares             Familiar[]
-  notificaciones         Notificacion[]
-  solicitudes            Solicitud[]
-  solicitudesAsignadas   SolicitudAbogado[]
-  asignacionesRealizadas SolicitudAbogado[]     @relation("Asignador")
   StripeCustomer         StripeCustomer?
   twoFactorConfirmation  TwoFactorConfirmation?
   universidad            Universidad?           @relation(fields: [universidadId], references: [id])
   carrera                Carrera?               @relation(fields: [carreraId], references: [id])
   UserSubscription       UserSubscription[]
-  empresas               Empresa[]              @relation("UserEmpresa")
   notifications          Notification[]
   materiasEstudiante     MateriaEstudiante[]
   recursos                Recurso[]
@@ -131,175 +121,20 @@ model StripeCustomer {
 }
 
 model UserSubscription {
-  id                     String   @id @default(cuid())
-  userId                 String
-  stripeCustomerId       String   @unique
-  stripeSubscriptionId   String   @unique
-  stripePriceId          String
-  stripeCurrentPeriodEnd DateTime
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
-  subscriptionTypeId     String
-  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([subscriptionTypeId])
-}
-
-model Familiar {
-  id              String      @id @default(uuid())
-  nombre          String
-  nombre2         String?
-  apellido        String?
-  apellido2       String?
-  cedula          String      @unique
-  telefono        String?     @unique
-  parentesco      Parentesco
-  fechaNacimiento DateTime?
-  usuarioId       String
-  usuario         User        @relation(fields: [usuarioId], references: [id])
-  solicitudes     Solicitud[]
-
-  @@index([usuarioId], map: "Familiar_usuarioId_fkey")
-}
-
-model Servicio {
-  id          String      @id @default(uuid())
-  nombre      String
-  descripcion String?
-  documentos  Documento[]
-}
-
-model Documento {
-  id         String      @id @default(uuid())
-  nombre     String
-  servicioId String
-  servicio   Servicio    @relation(fields: [servicioId], references: [id])
-  solicitud  Solicitud[]
-
-  @@index([servicioId], map: "Documento_servicioId_fkey")
-}
-
-model Solicitud {
-  id                  Int                 @id @default(autoincrement())
-  documentoId         String
-  usuarioId           String
-  createdAt           DateTime            @default(now())
-  estado              Estado              @default(PENDIENTE)
-  updatedAt           DateTime            @updatedAt
-  familiarId          String?
-  notaId              String?
-  detalle             Detalle?
-  documentosEditables DocumentoEditable[]
-  notificaciones      Notificacion[]
-  documento           Documento           @relation(fields: [documentoId], references: [id])
-  familiar            Familiar?           @relation(fields: [familiarId], references: [id])
-  nota                Nota?               @relation(fields: [notaId], references: [id])
-  usuario             User                @relation(fields: [usuarioId], references: [id])
-  abogadosAsignados   SolicitudAbogado[]
-
-  @@index([documentoId], map: "Solicitud_documentoId_fkey")
-  @@index([familiarId], map: "Solicitud_familiarId_fkey")
-  @@index([notaId], map: "Solicitud_notaId_fkey")
-  @@index([usuarioId], map: "Solicitud_usuarioId_fkey")
-}
-
-model SolicitudAbogado {
-  id          String    @id @default(uuid())
-  solicitudId Int
-  abogadoId   String
-  asignadoPor String
-  asignadoEn  DateTime  @default(now())
-  abogado     User      @relation(fields: [abogadoId], references: [id], onDelete: Cascade)
-  asignador   User      @relation("Asignador", fields: [asignadoPor], references: [id], onDelete: Cascade)
-  solicitud   Solicitud @relation(fields: [solicitudId], references: [id], onDelete: Cascade)
-
-  @@unique([solicitudId, abogadoId])
-  @@index([solicitudId])
-  @@index([abogadoId])
-  @@index([asignadoPor])
-}
-
-model DocumentoEditable {
-  id              String    @id @default(uuid())
-  solicitudId     Int
-  nombreDocumento String
-  editable        Boolean   @default(false)
-  habilitadoPor   String
-  habilitadoEn    DateTime  @default(now())
-  habilitador     User      @relation(fields: [habilitadoPor], references: [id], onDelete: Cascade)
-  solicitud       Solicitud @relation(fields: [solicitudId], references: [id], onDelete: Cascade)
-
-  @@unique([solicitudId, nombreDocumento])
-  @@index([solicitudId])
-  @@index([habilitadoPor])
-}
-
-model Notificacion {
-  id          String           @id @default(uuid())
-  titulo      String
-  mensaje     String           @db.Text
-  leida       Boolean          @default(false)
-  createdAt   DateTime         @default(now())
-  tipo        TipoNotificacion
-  solicitudId Int?
-  usuarioId   String
-  solicitud   Solicitud?       @relation(fields: [solicitudId], references: [id])
-  usuario     User             @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-
-  @@index([usuarioId])
-  @@index([solicitudId])
-}
-
-model Detalle {
-  id                   String    @id @default(uuid())
-  solicitudId          Int       @unique
-  Testigo1             String?
-  Testigo2             String?
-  Acta_de_nacimiento   String?
-  Acta_de_matrimonio   String?
-  Acta_de_defuncion    String?
-  Acta_de_divorcio     String?
-  Testigo3             String?
-  Testigo4             String?
-  generic_text         String?
-  bienes_generico1     String?
-  bienes_generico2     String?
-  bienes_generico3     String?
-  bienes_generico4     String?
-  bienes_generico5     String?
-  solicitud_finalizada String?
-  solicitud            Solicitud @relation(fields: [solicitudId], references: [id])
-}
-
-model Nota {
-  id          String      @id @default(uuid())
-  contenido   String      @db.Text
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  solicitudes Solicitud[]
-}
-
-model NotaPredefinida {
   id        String   @id @default(uuid())
-  contenido String   @db.Text
+  userId    String
+  stripeCustomerId String?
+  stripeSubscriptionId String?
+  stripePriceId String?
+  stripeCurrentPeriodEnd DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
-model Empresa {
-  id                  String      @id @default(uuid())
-  nombre              String      @unique
-  direccion           String
-  telefono            String
-  createdAt           DateTime    @default(now())
-  RIF                 String      @unique
-  persona_de_contacto String
-  email               String
-  password            String?
-  tipo                TipoEmpresa
-  users               User[]      @relation("UserEmpresa")
-}
+
 
 model Universidad {
   id        String    @id @default(uuid())
@@ -332,7 +167,6 @@ model Carrera {
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   isActive      Boolean     @default(true)
-  caletas       Caleta[]
   universidad   Universidad @relation(fields: [universidadId], references: [id], onDelete: Cascade)
   materias      Materia[]
   usuarios      User[]
@@ -353,7 +187,6 @@ model Materia {
   createdAt         DateTime               @default(now())
   updatedAt         DateTime               @updatedAt
   isActive          Boolean                @default(true)
-  caletas           Caleta[]
   carrera           Carrera                @relation(fields: [carreraId], references: [id], onDelete: Cascade)
   prerrequisitos    MateriaPrerrequisito[] @relation("MateriaPrerrequisito")
   esPrerrequisitoDe MateriaPrerrequisito[] @relation("MateriaQueRequiere")
@@ -418,46 +251,9 @@ model BlogPost {
 }
 
 model BlogCategory {
-  id    String     @id @default(cuid())
-  name  String     @unique
+  id    String @id @default(cuid())
+  name  String @unique
   posts BlogPost[]
-}
-
-model Caleta {
-  id          String           @id @default(uuid())
-  nombre      String
-  tema        String
-  urlArchivo  String
-  tipoArchivo String
-  tamanio     Int
-  carreraId   String
-  materiaId   String
-  usuarioId   String
-  isActive    Boolean          @default(true)
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  carrera     Carrera          @relation(fields: [carreraId], references: [id], onDelete: Cascade)
-  materia     Materia          @relation(fields: [materiaId], references: [id], onDelete: Cascade)
-  usuario     User             @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-  favoritos   CaletaFavorita[]
-
-  @@index([carreraId])
-  @@index([materiaId])
-  @@index([usuarioId])
-  @@index([isActive])
-}
-
-model CaletaFavorita {
-  id        String   @id @default(uuid())
-  usuarioId String
-  caletaId  String
-  createdAt DateTime @default(now())
-  caleta    Caleta   @relation(fields: [caletaId], references: [id], onDelete: Cascade)
-  usuario   User     @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-
-  @@unique([usuarioId, caletaId])
-  @@index([usuarioId])
-  @@index([caletaId])
 }
 
 model Notification {
@@ -579,29 +375,6 @@ model MetaAcademica {
 
 
 
-enum TipoNotificacion {
-  ASIGNACION
-  ESTADO_CAMBIO
-  DOCUMENTO_EDITABLE
-  NOTA_NUEVA
-  GENERAL
-  MATERIA_PROXIMA
-  META_COMPLETADA
-  RECURSO_NUEVO
-  CALIFICACION_RECIBIDA
-  COMENTARIO_NUEVO
-  SISTEMA
-}
-
-enum TipoEmpresa {
-  SEGURO
-  TELECOMUNICACIONES
-  BANCO
-  INDUSTRIAL
-  UNIVERSIDAD
-  NINGUNO
-}
-
 enum UserRole {
   CLIENT
   ADMIN
@@ -614,15 +387,6 @@ enum Estado {
   EN_PROGRESO
   FINALIZADA
   RECHAZADA
-}
-
-enum Parentesco {
-  PADRE
-  MADRE
-  HIJO
-  HIJA
-  ESPOSO
-  ESPOSA
 }
 
 enum OnboardingStatus {
@@ -650,11 +414,6 @@ enum EstadoDeResidencia {
   Trujillo
   Yaracuy
   Zulia
-}
-
-enum EstadoCivil {
-  SOLTERO
-  CASADO
 }
 
 enum TipoPrerrequisito {

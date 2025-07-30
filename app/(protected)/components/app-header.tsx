@@ -1,11 +1,11 @@
 "use client";
 
-import { Bell, LogOut, Heart, Upload, Search as SearchIcon, BarChart3 } from "lucide-react";
+import { Bell, LogOut, Heart, Upload, Search as SearchIcon, BarChart3, Menu, X, FileText, BookOpen, GraduationCap, Calendar, User } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { signOut } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 
 interface AppHeaderProps {
@@ -16,6 +16,8 @@ export function DashboardHeader({ session }: AppHeaderProps) {
   const [mounted, setMounted] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -27,6 +29,30 @@ export function DashboardHeader({ session }: AppHeaderProps) {
         setLoading(false);
       });
   }, []);
+
+  // Bloquear scroll de fondo cuando el menú está abierto
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isMenuOpen]);
+
+  // Cerrar menú al hacer clic fuera
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    const handleClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [isMenuOpen]);
 
   const handleSignOut = () => {
     signOut({ callbackUrl: "/" });
@@ -49,6 +75,17 @@ export function DashboardHeader({ session }: AppHeaderProps) {
   return (
     <header className="border-b border-white/10 w-full h-16 py-4 bg-[#203324]">
       <div className="flex h-full items-center justify-between px-2 md:px-4 gap-2 md:gap-4">
+        {/* Izquierda: Botón de menú móvil */}
+        <button
+          className="md:hidden flex flex-col space-y-1 p-2 focus:outline-none z-[110]"
+          onClick={() => setIsMenuOpen((v) => !v)}
+          aria-label="Abrir menú"
+        >
+          <span className={`block w-6 h-0.5 bg-white transition-all duration-300 ${isMenuOpen ? 'rotate-45 translate-y-1.5' : ''}`}></span>
+          <span className={`block w-6 h-0.5 bg-white transition-all duration-300 ${isMenuOpen ? 'opacity-0' : ''}`}></span>
+          <span className={`block w-6 h-0.5 bg-white transition-all duration-300 ${isMenuOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></span>
+        </button>
+        
         {/* Centro: Buscador centrado */}
         <form className="relative flex-1 max-w-lg mx-auto flex justify-center">
           <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-white/60 h-4 w-4 md:h-5 md:w-5" />
@@ -130,6 +167,129 @@ export function DashboardHeader({ session }: AppHeaderProps) {
           </DropdownMenu>
         </div>
       </div>
+      
+      {/* Menú móvil tipo dropdown */}
+      {isMenuOpen && (
+        <div className="md:hidden fixed inset-0 z-[100] flex flex-col items-stretch bg-black/40" style={{backdropFilter: 'blur(2px)'}}>
+          <div ref={menuRef} className="w-full bg-gradient-to-t from-mygreen to-mygreen-light border-b border-white/10 shadow-lg animate-fadeInDown">
+            <nav className="flex flex-col gap-1 py-2 px-4">
+              {/* Sección: Caletas */}
+              <div className="text-[#40C9A9] font-semibold text-sm px-2 py-1 mt-2">Caletas</div>
+              <Link
+                href="/caletas"
+                className="text-white font-special text-base py-2 px-2 rounded-md hover:bg-white/10 transition-colors text-left flex items-center gap-3"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <FileText className="h-4 w-4" />
+                Explorar Caletas
+              </Link>
+              <Link
+                href="/caletas/crear"
+                className="text-white font-special text-base py-2 px-2 rounded-md hover:bg-white/10 transition-colors text-left flex items-center gap-3"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Upload className="h-4 w-4" />
+                Subir Caleta
+              </Link>
+              <Link
+                href="/caletas/favoritos"
+                className="text-white font-special text-base py-2 px-2 rounded-md hover:bg-white/10 transition-colors text-left flex items-center gap-3"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Heart className="h-4 w-4" />
+                Mis Favoritos
+              </Link>
+              <Link
+                href="/caletas/mis-recursos"
+                className="text-white font-special text-base py-2 px-2 rounded-md hover:bg-white/10 transition-colors text-left flex items-center gap-3"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <BookOpen className="h-4 w-4" />
+                Mis Recursos
+              </Link>
+              
+              {/* Sección: Académico */}
+              <div className="text-[#40C9A9] font-semibold text-sm px-2 py-1 mt-4">Académico</div>
+              <Link
+                href="/academico"
+                className="text-white font-special text-base py-2 px-2 rounded-md hover:bg-white/10 transition-colors text-left flex items-center gap-3"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <GraduationCap className="h-4 w-4" />
+                Panel de Control
+              </Link>
+              <Link
+                href="/academico/historial"
+                className="text-white font-special text-base py-2 px-2 rounded-md hover:bg-white/10 transition-colors text-left flex items-center gap-3"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Calendar className="h-4 w-4" />
+                Historial Académico
+              </Link>
+              <Link
+                href="/academico/metas"
+                className="text-white font-special text-base py-2 px-2 rounded-md hover:bg-white/10 transition-colors text-left flex items-center gap-3"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <BarChart3 className="h-4 w-4" />
+                Metas Académicas
+              </Link>
+              
+              {/* Sección: IA */}
+              <div className="text-[#40C9A9] font-semibold text-sm px-2 py-1 mt-4">Herramientas IA</div>
+              <Link
+                href="/ia/fichas"
+                className="text-white font-special text-base py-2 px-2 rounded-md hover:bg-white/10 transition-colors text-left flex items-center gap-3"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <FileText className="h-4 w-4" />
+                Fichas de Estudio
+              </Link>
+              <Link
+                href="/ia/cuestionario"
+                className="text-white font-special text-base py-2 px-2 rounded-md hover:bg-white/10 transition-colors text-left flex items-center gap-3"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <BookOpen className="h-4 w-4" />
+                Cuestionarios
+              </Link>
+              <Link
+                href="/ia/resumir"
+                className="text-white font-special text-base py-2 px-2 rounded-md hover:bg-white/10 transition-colors text-left flex items-center gap-3"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <FileText className="h-4 w-4" />
+                Resúmenes
+              </Link>
+              
+              {/* Sección: Configuración */}
+              <div className="text-[#40C9A9] font-semibold text-sm px-2 py-1 mt-4">Configuración</div>
+              <Link
+                href="/ajustes"
+                className="text-white font-special text-base py-2 px-2 rounded-md hover:bg-white/10 transition-colors text-left flex items-center gap-3"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <User className="h-4 w-4" />
+                Ajustes
+              </Link>
+              
+              {/* Botón de cerrar sesión */}
+              <div className="mt-4 pt-2 border-t border-white/10">
+                <button
+                  className="w-full text-left text-red-400 font-special text-base py-2 px-2 rounded-md hover:bg-red-500/10 transition-colors flex items-center gap-3"
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    handleSignOut();
+                  }}
+                >
+                  <LogOut className="h-4 w-4" />
+                  Cerrar Sesión
+                </button>
+              </div>
+            </nav>
+          </div>
+        </div>
+      )}
     </header>
   );
 } 

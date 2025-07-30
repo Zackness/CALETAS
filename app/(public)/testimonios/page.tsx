@@ -5,19 +5,16 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   Star, 
   Quote, 
-  GraduationCap, 
   Users, 
   TrendingUp, 
   Heart, 
   ArrowRight,
-  Calendar,
   BookOpen,
-  Target,
   Award,
   MessageSquare
 } from "lucide-react";
 import Link from "next/link";
-import { Header } from "../caracteristicas/components/Header";
+import { Header } from "../components/Header";
 
 interface Testimonio {
   id: string;

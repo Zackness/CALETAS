@@ -166,15 +166,15 @@ export default async function HomePage() {
     .slice(0, 5);
 
   // Obtener notificaciones recientes
-  const notificaciones = await db.notificacion.findMany({
+  const notificaciones = await db.notification.findMany({
     where: {
-      usuarioId: session.user.id,
-      leida: false,
-      },
-      orderBy: {
-        createdAt: 'desc'
-      },
-    take: 5
+      userId: session.user.id,
+      read: false,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+    take: 5,
   });
 
   // Obtener metas académicas del usuario
@@ -471,9 +471,8 @@ export default async function HomePage() {
                       <div key={notificacion.id} className="flex items-start gap-3 p-3 bg-[#1C2D20] rounded-lg">
                         <div className="w-2 h-2 bg-[#40C9A9] rounded-full mt-2 flex-shrink-0"></div>
                         <div className="flex-1">
-                          <p className="text-white font-medium text-sm">{notificacion.titulo}</p>
-                          <p className="text-white/70 text-xs">{notificacion.mensaje}</p>
-                          <p className="text-white/50 text-xs mt-1">
+                          <p className="text-white font-medium text-sm">{notificacion.message}</p>
+                          <p className="text-white/50 text-xs">
                             {new Date(notificacion.createdAt).toLocaleDateString()}
                           </p>
                         </div>
