@@ -2,10 +2,11 @@ const { PrismaClient } = require('@prisma/client');
 
 const prisma = new PrismaClient();
 
-// Pensum real de Ing. Mecatrónica UNEXPO
+// Pensum real de Ing. Mecatrónica UNEXPO con IDs fijos
 const pensumMecatronica = [
   // SEMESTRE I
   {
+    id: "mecatronica-aau1111",
     codigo: "AAU1111",
     nombre: "Autodesarrollo",
     descripcion: "Desarrollo personal y autoconocimiento",
@@ -17,6 +18,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-abi1212",
     codigo: "ABI1212",
     nombre: "Dibujo I",
     descripcion: "Fundamentos del dibujo técnico",
@@ -28,6 +30,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-abi1313",
     codigo: "ABI1313",
     nombre: "Inglés I",
     descripcion: "Inglés técnico nivel básico",
@@ -39,6 +42,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-abi1413",
     codigo: "ABI1413",
     nombre: "Lenguaje y Redacción",
     descripcion: "Comunicación escrita y oral",
@@ -50,6 +54,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-abb1515",
     codigo: "ABB1515",
     nombre: "Matemática I",
     descripcion: "Cálculo diferencial e integral",
@@ -61,6 +66,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-app1611",
     codigo: "APP1611",
     nombre: "Práctica Profesional",
     descripcion: "Introducción a la práctica profesional",
@@ -72,6 +78,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-iqu1713",
     codigo: "IQU1713",
     nombre: "Química General",
     descripcion: "Fundamentos de química general",
@@ -85,6 +92,7 @@ const pensumMecatronica = [
 
   // SEMESTRE II
   {
+    id: "mecatronica-abi2122",
     codigo: "ABI2122",
     nombre: "Dibujo II",
     descripcion: "Dibujo técnico avanzado",
@@ -96,6 +104,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-abb2214",
     codigo: "ABB2214",
     nombre: "Física I",
     descripcion: "Mecánica clásica y termodinámica",
@@ -107,6 +116,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-abi2323",
     codigo: "ABI2323",
     nombre: "Inglés II",
     descripcion: "Inglés técnico nivel intermedio",
@@ -118,6 +128,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-abb2425",
     codigo: "ABB2425",
     nombre: "Matemática II",
     descripcion: "Cálculo vectorial y ecuaciones diferenciales",
@@ -129,6 +140,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-abi2513",
     codigo: "ABI2513",
     nombre: "Solución de Problemas",
     descripcion: "Metodología para resolución de problemas",
@@ -140,6 +152,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-abi2612",
     codigo: "ABI2612",
     nombre: "Técnicas de Lectura",
     descripcion: "Comprensión lectora y análisis de textos",
@@ -153,6 +166,7 @@ const pensumMecatronica = [
 
   // SEMESTRE III
   {
+    id: "mecatronica-abb3113",
     codigo: "ABB3113",
     nombre: "Álgebra Lineal",
     descripcion: "Vectores, matrices y transformaciones lineales",
@@ -164,6 +178,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-abi3212",
     codigo: "ABI3212",
     nombre: "Computación I",
     descripcion: "Programación básica y algoritmos",
@@ -175,6 +190,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-abi3313",
     codigo: "ABI3313",
     nombre: "Creatividad",
     descripcion: "Desarrollo del pensamiento creativo",
@@ -186,6 +202,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-ime3412",
     codigo: "IME3412",
     nombre: "Estática",
     descripcion: "Equilibrio de cuerpos rígidos",
@@ -197,6 +214,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-abb3524",
     codigo: "ABB3524",
     nombre: "Física II",
     descripcion: "Electricidad y magnetismo",
@@ -208,6 +226,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-abb3611",
     codigo: "ABB3611",
     nombre: "Laboratorio de Física",
     descripcion: "Prácticas de laboratorio de física",
@@ -219,6 +238,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-abb3734",
     codigo: "ABB3734",
     nombre: "Matemática III",
     descripcion: "Cálculo multivariable y series",
@@ -232,6 +252,7 @@ const pensumMecatronica = [
 
   // SEMESTRE IV
   {
+    id: "mecatronica-iei4114",
     codigo: "IEI4114",
     nombre: "Circuitos Eléctricos I",
     descripcion: "Análisis de circuitos eléctricos",
@@ -243,6 +264,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-abi4222",
     codigo: "ABI4222",
     nombre: "Computación II",
     descripcion: "Programación orientada a objetos",
@@ -254,6 +276,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-ime4314",
     codigo: "IME4314",
     nombre: "Dinámica",
     descripcion: "Movimiento de cuerpos rígidos",
@@ -265,6 +288,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-imt4413",
     codigo: "IMT4413",
     nombre: "Ingeniería de Materiales",
     descripcion: "Propiedades y selección de materiales",
@@ -276,6 +300,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-imc4512",
     codigo: "IMC4512",
     nombre: "Laboratorio de Instrumentación y Mediciones",
     descripcion: "Prácticas de instrumentación",
@@ -287,6 +312,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-abb4644",
     codigo: "ABB4644",
     nombre: "Matemáticas IV",
     descripcion: "Ecuaciones diferenciales y transformadas",
@@ -300,6 +326,7 @@ const pensumMecatronica = [
 
   // SEMESTRE V
   {
+    id: "mecatronica-iei5125",
     codigo: "IEI5125",
     nombre: "Circuitos Eléctricos II",
     descripcion: "Análisis avanzado de circuitos",
@@ -311,6 +338,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-iel5214",
     codigo: "IEL5214",
     nombre: "Electrónica I",
     descripcion: "Dispositivos electrónicos básicos",
@@ -322,6 +350,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-ime5313",
     codigo: "IME5313",
     nombre: "Mecánica de Materiales",
     descripcion: "Resistencia de materiales",
@@ -333,6 +362,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-ime5413",
     codigo: "IME5413",
     nombre: "Mecanismos",
     descripcion: "Análisis y diseño de mecanismos",
@@ -344,6 +374,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-iin5513",
     codigo: "IIN5513",
     nombre: "Probabilidad y Estadística",
     descripcion: "Estadística aplicada a la ingeniería",
@@ -355,6 +386,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-ime5613",
     codigo: "IME5613",
     nombre: "Tecnología de Manufactura",
     descripcion: "Procesos de manufactura",
@@ -368,6 +400,7 @@ const pensumMecatronica = [
 
   // SEMESTRE VI
   {
+    id: "mecatronica-imc6113",
     codigo: "IMC6113",
     nombre: "Control I",
     descripcion: "Sistemas de control automático",
@@ -379,6 +412,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-ime6213",
     codigo: "IME6213",
     nombre: "Diseño de Elementos de Máquinas",
     descripcion: "Diseño mecánico de componentes",
@@ -386,10 +420,11 @@ const pensumMecatronica = [
     semestre: "S6",
     horasTeoria: 3,
     horasPractica: 1,
-    prerrequisitos: ["IME6613"],
+    prerrequisitos: ["IME5313"],
     coRequisitos: []
   },
   {
+    id: "mecatronica-iel6313",
     codigo: "IEL6313",
     nombre: "Diseño de Sistemas Lógicos",
     descripcion: "Lógica digital y sistemas combinacionales",
@@ -401,6 +436,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-afg6413",
     codigo: "AFG6413",
     nombre: "Ecología y Ambiente",
     descripcion: "Impacto ambiental en la ingeniería",
@@ -412,6 +448,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-iel6523",
     codigo: "IEL6523",
     nombre: "Electrónica II",
     descripcion: "Electrónica analógica avanzada",
@@ -423,6 +460,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-ime6613",
     codigo: "IME6613",
     nombre: "Mecánica de los Fluidos",
     descripcion: "Hidráulica y neumática",
@@ -434,6 +472,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-ime6713",
     codigo: "IME6713",
     nombre: "Transferencia de Energía",
     descripcion: "Transferencia de calor y masa",
@@ -447,6 +486,7 @@ const pensumMecatronica = [
 
   // SEMESTRE VII
   {
+    id: "mecatronica-iei7114",
     codigo: "IEI7114",
     nombre: "Actuadores Eléctricos",
     descripcion: "Motores y actuadores eléctricos",
@@ -458,6 +498,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-imc7223",
     codigo: "IMC7223",
     nombre: "Control II",
     descripcion: "Control digital y sistemas avanzados",
@@ -469,6 +510,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-iin7313",
     codigo: "IIN7313",
     nombre: "Economía",
     descripcion: "Economía aplicada a la ingeniería",
@@ -480,6 +522,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-iel7411",
     codigo: "IEL7411",
     nombre: "Laboratorio de Diseño de Sistemas Lógicos",
     descripcion: "Prácticas de sistemas digitales",
@@ -491,6 +534,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-iel7513",
     codigo: "IEL7513",
     nombre: "Laboratorio de Electrónica Industrial",
     descripcion: "Prácticas de electrónica industrial",
@@ -502,6 +546,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-imc7614",
     codigo: "IMC7614",
     nombre: "Metodologías de Diseño Mecatrónico",
     descripcion: "Metodologías para diseño mecatrónico",
@@ -515,6 +560,7 @@ const pensumMecatronica = [
 
   // SEMESTRE VIII
   {
+    id: "mecatronica-imc8113",
     codigo: "IMC8113",
     nombre: "Automatización Industrial I",
     descripcion: "Sistemas de automatización industrial",
@@ -526,6 +572,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-imc8211",
     codigo: "IMC8211",
     nombre: "Laboratorio de Control Automático",
     descripcion: "Prácticas de control automático",
@@ -537,6 +584,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-iel8313",
     codigo: "IEL8313",
     nombre: "Microcontroladores",
     descripcion: "Programación de microcontroladores",
@@ -548,6 +596,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-imc8413",
     codigo: "IMC8413",
     nombre: "Neumática y Óleohidráulica",
     descripcion: "Sistemas neumáticos e hidráulicos",
@@ -559,6 +608,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-imc8513",
     codigo: "IMC8513",
     nombre: "Proyectos de Ingeniería Mecatrónica I",
     descripcion: "Proyecto integrador I",
@@ -570,6 +620,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-iei8613",
     codigo: "IEI8613",
     nombre: "Redes Industriales",
     descripcion: "Comunicaciones industriales",
@@ -583,6 +634,7 @@ const pensumMecatronica = [
 
   // SEMESTRE IX
   {
+    id: "mecatronica-imc9123",
     codigo: "IMC9123",
     nombre: "Automatización Industrial II",
     descripcion: "Automatización avanzada y robótica",
@@ -594,6 +646,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-afg9211",
     codigo: "AFG9211",
     nombre: "Desarrollo de Emprendedores",
     descripcion: "Emprendimiento e innovación",
@@ -605,6 +658,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-imc9313",
     codigo: "IMC9313",
     nombre: "Electiva Profesional",
     descripcion: "Materia electiva de la carrera",
@@ -616,6 +670,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-imc9413",
     codigo: "IMC9413",
     nombre: "Electiva Profesional",
     descripcion: "Materia electiva de la carrera",
@@ -627,6 +682,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-imc9524",
     codigo: "IMC9524",
     nombre: "Proyectos de Ingeniería Mecatrónica II",
     descripcion: "Proyecto integrador II",
@@ -638,6 +694,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-imc9613",
     codigo: "IMC9613",
     nombre: "Tópicos Especiales de Mecatrónica",
     descripcion: "Temas avanzados de mecatrónica",
@@ -649,6 +706,7 @@ const pensumMecatronica = [
     coRequisitos: []
   },
   {
+    id: "mecatronica-afg9713",
     codigo: "AFG9713",
     nombre: "Valores en el Ejercicio Profesional",
     descripcion: "Ética y valores profesionales",
@@ -662,6 +720,7 @@ const pensumMecatronica = [
 
   // SEMESTRE X (Entrenamiento Industrial)
   {
+    id: "mecatronica-app1016",
     codigo: "APP1016",
     nombre: "Entrenamiento Industrial",
     descripcion: "Práctica profesional en empresa",
@@ -694,40 +753,70 @@ async function main() {
     
     console.log(`📚 Carrera encontrada: ${carrera.nombre} (ID: ${carrera.id})`);
     
-    // Eliminar materias existentes
-    console.log('🗑️ Eliminando materias existentes...');
-    const deletedMaterias = await prisma.materia.deleteMany({
+    // Eliminar prerrequisitos existentes para evitar duplicados
+    console.log('🗑️ Eliminando prerrequisitos existentes...');
+    await prisma.materiaPrerrequisito.deleteMany({
       where: {
-        carreraId: carrera.id
+        materia: {
+          carreraId: carrera.id
+        }
       }
     });
-    console.log(`✅ Eliminadas ${deletedMaterias.count} materias existentes`);
     
-    // Crear las nuevas materias
-    console.log('📖 Creando materias del pensum real...');
+    // Crear o actualizar las materias
+    console.log('📖 Creando/actualizando materias del pensum real...');
     
     const materiasCreadas = [];
     
     for (const materia of pensumMecatronica) {
-      const nuevaMateria = await prisma.materia.create({
-        data: {
+      // Buscar si la materia ya existe por código
+      const materiaExistente = await prisma.materia.findFirst({
+        where: {
           codigo: materia.codigo,
-          nombre: materia.nombre,
-          descripcion: materia.descripcion,
-          creditos: materia.creditos,
-          semestre: materia.semestre,
-          horasTeoria: materia.horasTeoria,
-          horasPractica: materia.horasPractica,
           carreraId: carrera.id
         }
       });
       
+      let materiaActualizada;
+      
+      if (materiaExistente) {
+        // Actualizar la materia existente
+        materiaActualizada = await prisma.materia.update({
+          where: { id: materiaExistente.id },
+          data: {
+            codigo: materia.codigo,
+            nombre: materia.nombre,
+            descripcion: materia.descripcion,
+            creditos: materia.creditos,
+            semestre: materia.semestre,
+            horasTeoria: materia.horasTeoria,
+            horasPractica: materia.horasPractica,
+            carreraId: carrera.id
+          }
+        });
+        console.log(`  🔄 Actualizada: ${materia.codigo} - ${materia.nombre} (${materia.semestre})`);
+      } else {
+        // Crear nueva materia con ID fijo
+        materiaActualizada = await prisma.materia.create({
+          data: {
+            id: materia.id,
+            codigo: materia.codigo,
+            nombre: materia.nombre,
+            descripcion: materia.descripcion,
+            creditos: materia.creditos,
+            semestre: materia.semestre,
+            horasTeoria: materia.horasTeoria,
+            horasPractica: materia.horasPractica,
+            carreraId: carrera.id
+          }
+        });
+        console.log(`  ✅ Creada: ${materia.codigo} - ${materia.nombre} (${materia.semestre})`);
+      }
+      
       materiasCreadas.push({
-        ...nuevaMateria,
+        ...materiaActualizada,
         prerrequisitos: materia.prerrequisitos
       });
-      
-      console.log(`  ✅ ${materia.codigo} - ${materia.nombre} (${materia.semestre})`);
     }
     
     // Crear los prerrequisitos
@@ -766,7 +855,8 @@ async function main() {
       }
     }
     
-    console.log(`🎉 ¡Materias actualizadas exitosamente! Se crearon ${pensumMecatronica.length} materias.`);
+    console.log(`🎉 ¡Materias actualizadas exitosamente! Se procesaron ${pensumMecatronica.length} materias.`);
+    console.log('💾 El historial académico de los usuarios se ha preservado.');
     
   } catch (error) {
     console.error('❌ Error actualizando materias:', error);

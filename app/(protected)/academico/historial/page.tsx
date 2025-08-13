@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Combobox } from "@/components/ui/combobox";
+import { PensumFlowchart } from "@/components/pensum-flowchart";
 import {
   Select,
   SelectContent,
@@ -45,7 +47,9 @@ import {
   AlertCircle,
   Calendar,
   Award,
-  Search
+  Search,
+  List,
+  GitBranch
 } from "lucide-react";
 import { EstadoMateria } from "@prisma/client";
 import { toast } from "sonner";
@@ -78,9 +82,12 @@ export default function HistorialPage() {
   const { data: session, status } = useSession();
   const [materiasEstudiante, setMateriasEstudiante] = useState<MateriaEstudiante[]>([]);
   const [materiasDisponibles, setMateriasDisponibles] = useState<Materia[]>([]);
+  const [materiasOptions, setMateriasOptions] = useState<{ label: string; value: string; icon: any; semestre: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterEstado, setFilterEstado] = useState<string>("todos");
+  const [viewMode, setViewMode] = useState<"list" | "flowchart">("list");
+  const [pensumMaterias, setPensumMaterias] = useState<Materia[]>([]);
 
   // Estados para el diálogo de agregar/editar
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -103,6 +110,7 @@ export default function HistorialPage() {
     }
 
     fetchHistorial();
+    fetchPensum();
   }, [session, status]);
 
   const fetchHistorial = async () => {
@@ -110,11 +118,29 @@ export default function HistorialPage() {
       const response = await axios.get("/api/user/academico/historial");
       setMateriasEstudiante(response.data.materiasEstudiante);
       setMateriasDisponibles(response.data.materiasDisponibles);
+      
+      // Convertir materias a formato para Combobox
+      const options = response.data.materiasDisponibles.map((materia: any) => ({
+        label: `${materia.codigo} - ${materia.nombre}`,
+        value: materia.id,
+        icon: BookOpen,
+        semestre: materia.semestre,
+      }));
+      setMateriasOptions(options);
     } catch (error) {
       console.error("Error fetching history:", error);
       toast.error("Error al cargar el historial");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchPensum = async () => {
+    try {
+      const response = await axios.get("/api/user/academico/pensum");
+      setPensumMaterias(response.data.materias);
+    } catch (error) {
+      console.error("Error fetching pensum:", error);
     }
   };
 
@@ -327,6 +353,32 @@ export default function HistorialPage() {
             </SelectContent>
           </Select>
 
+          {/* Selector de vista */}
+          <div className="flex gap-2">
+            <Button
+              variant={viewMode === "list" ? "default" : "outline"}
+              onClick={() => setViewMode("list")}
+              className={viewMode === "list" 
+                ? "bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white" 
+                : "bg-[#354B3A] border-white/10 text-white hover:bg-white/10"
+              }
+            >
+              <List className="w-4 h-4 mr-2" />
+              Lista
+            </Button>
+            <Button
+              variant={viewMode === "flowchart" ? "default" : "outline"}
+              onClick={() => setViewMode("flowchart")}
+              className={viewMode === "flowchart" 
+                ? "bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white" 
+                : "bg-[#354B3A] border-white/10 text-white hover:bg-white/10"
+              }
+            >
+              <GitBranch className="w-4 h-4 mr-2" />
+              Pensum
+            </Button>
+          </div>
+
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button 
@@ -356,22 +408,14 @@ export default function HistorialPage() {
                     <Label htmlFor="materiaId" className="text-white/70">
                       Materia
                     </Label>
-                    <Select 
-                      value={formData.materiaId} 
-                      onValueChange={(value) => setFormData({...formData, materiaId: value})}
+                    <Combobox
+                      options={materiasOptions}
+                      value={formData.materiaId}
+                      onChange={(value: string) => setFormData({...formData, materiaId: value})}
+                      placeholder="Buscar y seleccionar materia..."
                       disabled={!!editingMateria}
-                    >
-                      <SelectTrigger className="bg-[#1C2D20] border-white/10 text-white">
-                        <SelectValue placeholder="Seleccionar materia" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-[#1C2D20] border-white/10">
-                        {materiasDisponibles.map((materia) => (
-                          <SelectItem key={materia.id} value={materia.id} className="text-white">
-                            {materia.codigo} - {materia.nombre}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      variant="academic"
+                    />
                   </div>
                   
                   <div className="space-y-2">
@@ -488,18 +532,19 @@ export default function HistorialPage() {
           </Dialog>
         </div>
 
-        {/* Lista de materias */}
-        <Card className="bg-[#354B3A] border-white/10">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <Award className="w-5 h-5 text-[#40C9A9]" />
-              Historial Académico ({filteredMaterias.length} materias)
-            </CardTitle>
-            <CardDescription className="text-white/70">
-              Todas las materias que has cursado o estás cursando
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+        {/* Contenido según el modo de vista */}
+        {viewMode === "list" ? (
+          <Card className="bg-[#354B3A] border-white/10">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Award className="w-5 h-5 text-[#40C9A9]" />
+                Historial Académico ({filteredMaterias.length} materias)
+              </CardTitle>
+              <CardDescription className="text-white/70">
+                Todas las materias que has cursado o estás cursando
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
             <div className="space-y-4">
               {filteredMaterias.map((materia) => (
                 <div
@@ -609,6 +654,46 @@ export default function HistorialPage() {
             </div>
           </CardContent>
         </Card>
+        ) : (
+          <Card className="bg-[#354B3A] border-white/10">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <GitBranch className="w-5 h-5 text-[#40C9A9]" />
+                Diagrama de Flujo del Pensum
+              </CardTitle>
+              <CardDescription className="text-white/70">
+                Visualiza la progresión de materias y sus prerrequisitos. Las flechas indican las dependencias entre materias.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="h-[600px] w-full">
+                <PensumFlowchart
+                  materias={pensumMaterias}
+                  materiasEstudiante={materiasEstudiante}
+                  onMateriaClick={(materia) => {
+                    // Buscar si la materia está en el historial del estudiante
+                    const materiaEnHistorial = materiasEstudiante.find(me => me.materia.id === materia.id);
+                    if (materiaEnHistorial) {
+                      openEditDialog(materiaEnHistorial);
+                    } else {
+                      // Si no está en el historial, abrir diálogo para agregarla
+                      setFormData({
+                        materiaId: materia.id,
+                        estado: "",
+                        nota: "",
+                        semestreCursado: "",
+                        fechaInicio: "",
+                        fechaFin: "",
+                        observaciones: "",
+                      });
+                      setDialogOpen(true);
+                    }
+                  }}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

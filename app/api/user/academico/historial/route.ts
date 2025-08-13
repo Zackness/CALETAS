@@ -3,6 +3,49 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { EstadoMateria } from "@prisma/client";
 
+// Función para obtener todos los prerrequisitos en cascada de una materia
+async function obtenerPrerrequisitosEnCascada(materiaId: string): Promise<string[]> {
+  const prerrequisitosCascada: string[] = [];
+  const materiasProcesadas = new Set<string>();
+
+  async function procesarMateria(materiaId: string) {
+    if (materiasProcesadas.has(materiaId)) return;
+    materiasProcesadas.add(materiaId);
+
+    const materia = await db.materia.findUnique({
+      where: { id: materiaId },
+      include: {
+        prerrequisitos: {
+          include: {
+            prerrequisito: true
+          }
+        }
+      }
+    });
+
+    if (materia && materia.prerrequisitos.length > 0) {
+      for (const prerreq of materia.prerrequisitos) {
+        const prerrequisitoId = prerreq.prerrequisito.id;
+        
+        // Solo procesar prerrequisitos de semestres anteriores
+        const semestreMateria = parseInt(materia.semestre.replace('S', ''));
+        const semestrePrerreq = parseInt(prerreq.prerrequisito.semestre.replace('S', ''));
+        
+        if (semestrePrerreq < semestreMateria) {
+          if (!prerrequisitosCascada.includes(prerrequisitoId)) {
+            prerrequisitosCascada.push(prerrequisitoId);
+          }
+          // Procesar recursivamente los prerrequisitos del prerrequisito
+          await procesarMateria(prerrequisitoId);
+        }
+      }
+    }
+  }
+
+  await procesarMateria(materiaId);
+  return prerrequisitosCascada;
+}
+
 // GET - Obtener historial académico
 export async function GET(request: NextRequest) {
   try {
@@ -45,7 +88,12 @@ export async function GET(request: NextRequest) {
       include: {
         carrera: {
           include: {
-            materias: true,
+            materias: {
+              orderBy: [
+                { semestre: 'asc' },
+                { codigo: 'asc' }
+              ]
+            },
           },
         },
       },
@@ -188,6 +236,87 @@ export async function POST(request: NextRequest) {
             })),
             mensaje: `No puedes marcar ${materia.codigo} - ${materia.nombre} como aprobada sin haber aprobado sus prerrequisitos.`,
           }, { status: 400 });
+        }
+      }
+    }
+
+    // Si se está agregando automáticamente, agregar todos los prerrequisitos en cascada
+    if (agregadoAutomatico) {
+      // Obtener la materia principal para calcular fechas
+      const materiaPrincipal = await db.materia.findUnique({
+        where: { id: materiaId }
+      });
+      
+      if (!materiaPrincipal) {
+        return NextResponse.json(
+          { error: "Materia no encontrada" },
+          { status: 404 }
+        );
+      }
+      
+      // Obtener todos los prerrequisitos en cascada
+      const prerrequisitosCascada = await obtenerPrerrequisitosEnCascada(materiaId);
+      
+      // Obtener las materias aprobadas del estudiante
+      const materiasAprobadas = await db.materiaEstudiante.findMany({
+        where: {
+          userId: session.user.id,
+          estado: "APROBADA",
+        },
+        select: {
+          materiaId: true,
+        },
+      });
+
+      const materiasAprobadasIds = new Set(materiasAprobadas.map(m => m.materiaId));
+
+      // Agregar todos los prerrequisitos faltantes en cascada
+      for (const prerrequisitoId of prerrequisitosCascada) {
+        if (!materiasAprobadasIds.has(prerrequisitoId)) {
+          // Obtener información de la materia prerrequisito
+          const materiaPrerrequisito = await db.materia.findUnique({
+            where: { id: prerrequisitoId }
+          });
+
+          if (materiaPrerrequisito) {
+            // Calcular fecha de aprobación basada en el semestre
+            const semestreNum = parseInt(materiaPrerrequisito.semestre.replace('S', ''));
+            const mesesAtras = (parseInt(materiaPrincipal.semestre.replace('S', '')) - semestreNum) * 6;
+            
+            const fechaInicio = new Date(Date.now() - (mesesAtras + 6) * 30 * 24 * 60 * 60 * 1000);
+            const fechaFin = new Date(Date.now() - mesesAtras * 30 * 24 * 60 * 60 * 1000);
+
+            // Crear o actualizar el registro del prerrequisito
+            await db.materiaEstudiante.upsert({
+              where: {
+                userId_materiaId: {
+                  userId: session.user.id,
+                  materiaId: prerrequisitoId
+                }
+              },
+              update: {
+                estado: "APROBADA",
+                nota: 16.0,
+                semestreCursado: materiaPrerrequisito.semestre,
+                fechaInicio,
+                fechaFin,
+                observaciones: "Prerrequisito agregado automáticamente en cascada",
+                updatedAt: new Date(),
+              },
+              create: {
+                userId: session.user.id,
+                materiaId: prerrequisitoId,
+                estado: "APROBADA",
+                nota: 16.0,
+                semestreCursado: materiaPrerrequisito.semestre,
+                fechaInicio,
+                fechaFin,
+                observaciones: "Prerrequisito agregado automáticamente en cascada",
+              },
+            });
+
+            console.log(`Prerrequisito agregado automáticamente: ${materiaPrerrequisito.codigo} - ${materiaPrerrequisito.nombre}`);
+          }
         }
       }
     }

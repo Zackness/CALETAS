@@ -14,7 +14,7 @@ import { FormSucces } from "@/components/form-succes";
 import { FormError } from "@/components/form-error";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UserRole, EstadoDeResidencia } from "@prisma/client";
+import { UserRole } from "@prisma/client";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "react-hot-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,9 +30,7 @@ type ExtendedUser = {
     role: UserRole;
     isTwoFactorEnabled: boolean;
     isOAuth: boolean;
-    cedula: string | null;
     telefono: string | null;
-    EstadoDeResidencia: EstadoDeResidencia | null;
     ciudadDeResidencia: string | null;
 };
 
@@ -54,9 +52,7 @@ export default function Ajustes() {
           name2: user?.name2 || undefined,
           apellido: user?.apellido || undefined,
           apellido2: user?.apellido2 || undefined,
-          cedula: user?.cedula || undefined,
           telefono: user?.telefono || undefined,
-          EstadoDeResidencia: user?.EstadoDeResidencia || undefined,
           ciudadDeResidencia: user?.ciudadDeResidencia || undefined,
           email: user?.email || undefined,
           password: undefined,
@@ -67,7 +63,7 @@ export default function Ajustes() {
 
   // Detectar cambios en el formulario
   useEffect(() => {
-    const subscription = form.watch((value, { name, type }) => {
+    const subscription = form.watch((value: any, { name, type }: any) => {
       if (type === "change") {
         setHasChanges(true);
       }
@@ -211,107 +207,10 @@ export default function Ajustes() {
               )}
             />
                 </div>
-            <FormField 
-                control={form.control}
-                name="cedula"
-                render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-white/80">Cédula de identidad</FormLabel>
-                        <FormControl>
-                            <Input
-                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg"
-                                {...field}
-                                disabled={true}
-                            />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                )}
-            />
               </CardContent>
             </Card>
 
-            {/* Verificación de Cédula */}
-            <Card className="bg-[#354B3A] border-white/10">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-white">
-                  <Shield className="w-5 h-5 text-[#40C9A9]" />
-                  Verificación de Cédula
-                </CardTitle>
-                <CardDescription className="text-white/70">
-                  Sube una imagen de tu cédula para verificar y actualizar tus datos
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-            <FormField 
-                control={form.control}
-                name="ciPhoto"
-                render={({ field }) => (
-                    <FormItem>
-                        <FormControl>
-                        <div className="flex flex-col gap-3">
-                                <Input
-                                    type="file"
-                                    accept="image/*"
-                            className="bg-white/10 border-white/20 text-white file:text-white file:bg-[#40C9A9] file:border-0 file:rounded-lg file:px-4 file:py-2 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg"
-                                    onChange={(e) => {
-                                        const file = e.target.files?.[0];
-                                        if (file) {
-                                            const reader = new FileReader();
-                                            reader.onloadend = () => {
-                                                field.onChange(reader.result as string);
-                                            };
-                                            reader.readAsDataURL(file);
-                                        }
-                                    }}
-                                    disabled={isPending || isSubmitting}
-                                />
-                                <Button
-                                    type="button"
-                            className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
-                                    disabled={isPending || isSubmitting || !field.value}
-                                    onClick={async () => {
-                                        try {
-                                            const response = await fetch('/api/user/onboarding/analyze', {
-                                                method: 'POST',
-                                                headers: {
-                                                    'Content-Type': 'application/json',
-                                                },
-                                                body: JSON.stringify({
-                                                    ciPhoto: field.value,
-                                                }),
-                                            });
 
-                                            if (!response.ok) {
-                                                throw new Error('Error al analizar la cédula');
-                                            }
-
-                                            const data = await response.json();
-                                            
-                                            // Actualizar los campos del formulario con los datos analizados
-                                            form.setValue('name', data.name || user?.name);
-                                            form.setValue('name2', data.name2 || user?.name2);
-                                            form.setValue('apellido', data.apellido || user?.apellido);
-                                            form.setValue('apellido2', data.apellido2 || user?.apellido2);
-                                            form.setValue('cedula', data.cedula || user?.cedula);
-                                            
-                                            toast.success('Cédula analizada correctamente');
-                                        } catch (error) {
-                                            console.error('Error:', error);
-                                            toast.error('Error al analizar la cédula');
-                                        }
-                                    }}
-                                >
-                                    Analizar cédula
-                                </Button>
-                            </div>
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                )}
-            />
-              </CardContent>
-            </Card>
 
             {/* Información de Contacto */}
             <Card className="bg-[#354B3A] border-white/10">
@@ -325,53 +224,23 @@ export default function Ajustes() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField 
-                control={form.control}
-                name="telefono"
-                render={({ field }) => (
-                  <FormItem>
-                        <FormLabel className="text-white/80">Teléfono</FormLabel>
-                    <FormControl>
-                      <Input
-                            className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg"
-                        {...field}
-                        disabled={isPending || isSubmitting}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField 
-                control={form.control}
-                name="EstadoDeResidencia"
-                render={({ field }) => (
-                  <FormItem>
-                        <FormLabel className="text-white/80">Estado de residencia</FormLabel>
-                    <Select
+            <FormField 
+              control={form.control}
+              name="telefono"
+              render={({ field }) => (
+                <FormItem>
+                      <FormLabel className="text-white/80">Teléfono</FormLabel>
+                  <FormControl>
+                    <Input
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg"
+                      {...field}
                       disabled={isPending || isSubmitting}
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                            <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg">
-                          <SelectValue placeholder="Selecciona un estado" />
-                        </SelectTrigger>
-                      </FormControl>
-                          <SelectContent className="bg-[#203324] text-white">
-                        {Object.values(EstadoDeResidencia).map((estado) => (
-                              <SelectItem key={estado} value={estado} className="hover:bg-[#40C9A9]/10">
-                            {estado.replace(/_/g, " ")}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField 
               control={form.control}
               name="ciudadDeResidencia"

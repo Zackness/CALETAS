@@ -154,8 +154,7 @@ export async function POST(request: NextRequest) {
             emailVerified: new Date(), // Marcar como verificado
             universidadId: universidadId,
             carreraId: nuevaCarrera.id,
-            onboardingStatus: 'FINALIZADO', // Saltar onboarding
-            userType: 'ESTUDIANTE'
+            onboardingStatus: 'FINALIZADO' // Saltar onboarding
           }
         });
 

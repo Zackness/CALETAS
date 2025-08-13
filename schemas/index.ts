@@ -1,5 +1,5 @@
 import { newPassword } from "@/actions/new-password";
-import { UserRole, EstadoDeResidencia } from "@prisma/client";
+import { UserRole } from "@prisma/client";
 import * as z from "zod";
 
 export const SettingsSchema = z.object ({
@@ -8,30 +8,25 @@ export const SettingsSchema = z.object ({
     name2: z.string().optional(),
     apellido: z.string().optional(),
     apellido2: z.string().optional(),
-    cedula: z.string().optional(),
     estadoCivil: z.string().optional(),
     
     // Campos editables
-    telefono: z.optional(z.string().min(11, {
+    telefono: z.string().min(11, {
         message: "Por favor, ingresa un numero de telefono valido"
-    })),
-    email: z.optional(z.string().email({
+    }).optional(),
+    email: z.string().email({
         message: "Por favor, ingresa un correo electrónico válido"
-    })),
-    password: z.optional(z.string().min(6, {
+    }).optional(),
+    password: z.string().min(6, {
         message: "La contraseña debe tener al menos 6 caracteres"
-    })),
-    newPassword: z.optional(z.string().min(6, {
+    }).optional(),
+    newPassword: z.string().min(6, {
         message: "La nueva contraseña debe tener al menos 6 caracteres"
-    })),
-    isTwoFactorEnabled: z.optional(z.boolean()),
+    }).optional(),
+    isTwoFactorEnabled: z.boolean().optional(),
     
     // Nuevos campos para residencia
-    EstadoDeResidencia: z.optional(z.nativeEnum(EstadoDeResidencia)),
-    ciudadDeResidencia: z.optional(z.string()),
-    
-    // Campo para subir nueva CI
-    ciPhoto: z.optional(z.string()),
+    ciudadDeResidencia: z.string().optional(),
 })
     .refine((data) => {
         if (data.password && !data.newPassword) {
@@ -121,8 +116,7 @@ export const RegisterSchema = z.object({
   })
   .transform(name => name.trim()),
   
-  EstadoDeResidencia: z.optional(z.string()),
-    acceptTerms: z.boolean().refine((val) => val === true, {
-      message: "Debes aceptar los términos y condiciones para registrarte",
+  acceptTerms: z.boolean().refine((val) => val === true, {
+    message: "Debes aceptar los términos y condiciones para registrarte",
   }),
 }); 

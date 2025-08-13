@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Building2, User, GraduationCap, MapPin, FileText, BookOpen } from "lucide-react";
-import { OnboardingStatus, EstadoDeResidencia } from "@prisma/client";
+import { OnboardingStatus } from "@prisma/client";
 import { useToast } from "@/components/ui/use-toast";
 import axios from "axios";
 import { useOnboarding } from "../(protected)/home/hooks/use-onboarding";
@@ -23,7 +23,7 @@ export default function OnboardingPage() {
   const [currentStep, setCurrentStep] = useState<Step>('company-selection');
   const [error, setError] = useState<string | null>(null);
   const [telefono, setTelefono] = useState("");
-  const [estado, setEstado] = useState<EstadoDeResidencia>(EstadoDeResidencia.Carabobo);
+  const [estado, setEstado] = useState<string>("Carabobo");
   const [ciudad, setCiudad] = useState("");
   const [universidad, setUniversidad] = useState("");
   const [universidades, setUniversidades] = useState<{ id: string; nombre: string; siglas: string; tipo: string; estado: string; ciudad: string; ranking: number | null }[]>([]);
@@ -555,13 +555,13 @@ export default function OnboardingPage() {
               </Label>
               <Select
                 value={estado}
-                onValueChange={(value) => setEstado(value as EstadoDeResidencia)}
+                                    onValueChange={(value) => setEstado(value)}
               >
                 <SelectTrigger className="border-2 border-mygreen/30 bg-white/10 text-white">
                   <SelectValue placeholder="Selecciona tu estado" />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.values(EstadoDeResidencia).map((estado) => (
+                  {["Amazonas", "Apure", "Aragua", "Barinas", "Carabobo", "Cojedes", "Delta Amacuro", "Distrito Capital", "Lara", "La Guaira", "Miranda", "Monagas", "Nueva Esparta", "Portuguesa", "Sucre", "Trujillo", "Yaracuy", "Zulia"].map((estado) => (
                     <SelectItem key={estado} value={estado}>
                       {estado.replace(/_/g, " ")}
                     </SelectItem>

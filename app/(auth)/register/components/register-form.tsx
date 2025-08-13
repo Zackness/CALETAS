@@ -134,6 +134,10 @@ export const RegisterForm = () => {
             </div>
             <FormError message={error} />
             <FormSucces message={succes} />
+            
+            {/* Campo oculto para acceptTerms - siempre true */}
+            <input type="hidden" name="acceptTerms" value="true" />
+            
             <Button 
               disabled={isPending} 
               className="w-full mt-2 font-special text-white" 

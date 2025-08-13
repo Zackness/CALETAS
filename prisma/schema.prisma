@@ -18,15 +18,8 @@ model User {
   isTwoFactorEnabled     Boolean                @default(false)
   createdAt              DateTime               @default(now())
   updatedAt              DateTime               @updatedAt
-  EstadoDeResidencia     EstadoDeResidencia?
   apellido               String?
-  apellido2              String?
-  cedula                 String?                @unique
   ciudadDeResidencia     String?
-  empresa                String?
-  fechaNacimiento        DateTime?
-  isCiVerified           Boolean                @default(false)
-  name2                  String?
   onboardingStatus       OnboardingStatus       @default(PENDIENTE)
   telefono               String?                @unique
   expediente             String?
@@ -34,9 +27,6 @@ model User {
   semestreActual         String?
   universidadId          String?
   carreraId              String?
-  userType               String?
-  isCarnetValidado       Boolean                @default(false)
-  carnetValidadoEn       DateTime?
   accounts               Account[]
   blogPosts              BlogPost[]
   StripeCustomer         StripeCustomer?
@@ -53,7 +43,6 @@ model User {
   descargas              DescargaRecurso[]
   metas                  MetaAcademica[]
 
-  @@index([empresa])
   @@index([role])
   @@index([universidadId])
 }
@@ -395,26 +384,7 @@ enum OnboardingStatus {
   CANCELADO
 }
 
-enum EstadoDeResidencia {
-  Amazonas
-  Apure
-  Aragua
-  Barinas
-  Carabobo
-  Cojedes
-  Delta_Amacuro
-  Distrito_Capital
-  Lara
-  La_Guaira
-  Miranda
-  Monagas
-  Nueva_Esparta
-  Portuguesa
-  Sucre
-  Trujillo
-  Yaracuy
-  Zulia
-}
+
 
 enum TipoPrerrequisito {
   OBLIGATORIO

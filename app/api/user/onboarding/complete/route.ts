@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
-import { OnboardingStatus, EstadoDeResidencia, EstadoMateria } from "@prisma/client";
+import { OnboardingStatus, EstadoMateria } from "@prisma/client";
 
 export async function POST(request: NextRequest) {
   try {
@@ -100,7 +100,6 @@ export async function POST(request: NextRequest) {
       data: {
         // Información básica
         telefono: telefono || null,
-        EstadoDeResidencia: estado as EstadoDeResidencia || null,
         ciudadDeResidencia: ciudad || null,
         
         // Estado del onboarding

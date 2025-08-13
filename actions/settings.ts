@@ -12,6 +12,16 @@ import bcrypt from "bcrypt";
 export const settings = async (
     values: z.infer<typeof SettingsSchema>
 ) => {
+    // Cast values to proper types
+    const typedValues = values as {
+        email?: string;
+        password?: string;
+        newPassword?: string;
+        isTwoFactorEnabled?: boolean;
+        telefono?: string;
+        EstadoDeResidencia?: any;
+        ciudadDeResidencia?: string;
+    };
     console.log("Iniciando actualización de configuración con valores:", values);
     
     try {
@@ -36,51 +46,11 @@ export const settings = async (
             values.isTwoFactorEnabled = undefined;
         }
 
-        // Si se subió una nueva CI, analizarla y actualizar los datos
-        if (values.ciPhoto) {
-            try {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/user/onboarding/analyze`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ ciPhoto: values.ciPhoto }),
-                });
 
-                if (!response.ok) {
-                    throw new Error('Error al analizar la CI');
-                }
-
-                const ciData = await response.json();
-                
-                if (!ciData) {
-                    return { error: "No se pudo analizar la cédula de identidad" };
-                }
-
-                // Actualizar los datos del usuario con la información de la CI
-                await db.user.update({
-                    where: { id: user.id },
-                    data: {
-                        name: ciData.nombre,
-                        name2: ciData.nombre2 || null,
-                        apellido: ciData.apellido,
-                        apellido2: ciData.apellido2 || null,
-                        cedula: ciData.cedula,
-                        fechaNacimiento: ciData.fechaNacimiento,
-                        isCiVerified: true,
-                    }
-                });
-
-                return { succes: "Datos actualizados correctamente" };
-            } catch (error) {
-                console.error("Error al analizar la CI:", error);
-                return { error: "Error al analizar la cédula de identidad" };
-            }
-        }
 
         // Actualizar email si es necesario
-        if (values.email && values.email !== user.email) {
-            const existingUser = await getUserByEmail(values.email);
+        if (typedValues.email && typedValues.email !== user.email) {
+            const existingUser = await getUserByEmail(typedValues.email);
 
             if (existingUser && existingUser.id !== user.id) {
                 console.error("El correo electrónico ya está en uso");
@@ -88,7 +58,7 @@ export const settings = async (
             }
 
             const verificationToken = await generateVerificationToken(
-                values.email
+                typedValues.email
             );
             await sendVerificationEmail(
                 verificationToken.email,
@@ -99,9 +69,9 @@ export const settings = async (
         }
 
         // Actualizar contraseña si es necesario
-        if (values.password && values.newPassword) {
+        if (typedValues.password && typedValues.newPassword) {
             const passwordsMatch = await bcrypt.compare(
-                values.password,
+                typedValues.password,
                 dbUser.password!
             );
 
@@ -109,21 +79,20 @@ export const settings = async (
                 return { error: "Contraseña incorrecta" };
             }
 
-            const hashedPassword = await bcrypt.hash(values.newPassword, 10);
-            values.password = hashedPassword;
-            values.newPassword = undefined;
+            const hashedPassword = await bcrypt.hash(typedValues.newPassword, 10);
+            typedValues.password = hashedPassword;
+            typedValues.newPassword = undefined;
         }
 
         // Actualizar los datos del usuario
         await db.user.update({
             where: { id: user.id },
             data: {
-                email: values.email,
-                password: values.password,
-                isTwoFactorEnabled: values.isTwoFactorEnabled,
-                telefono: values.telefono,
-                EstadoDeResidencia: values.EstadoDeResidencia,
-                ciudadDeResidencia: values.ciudadDeResidencia,
+                email: typedValues.email || undefined,
+                password: typedValues.password || undefined,
+                isTwoFactorEnabled: typedValues.isTwoFactorEnabled || undefined,
+                telefono: typedValues.telefono || undefined,
+                ciudadDeResidencia: typedValues.ciudadDeResidencia || undefined,
             }
         });
 

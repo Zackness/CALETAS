@@ -1,5 +1,5 @@
 import { newPassword } from "@/actions/new-password";
-import { UserRole, EstadoDeResidencia } from "@prisma/client";
+import { UserRole } from "@prisma/client";
 import * as z from "zod";
 
 export const SettingsSchema = z.object ({
@@ -27,7 +27,7 @@ export const SettingsSchema = z.object ({
     isTwoFactorEnabled: z.optional(z.boolean()),
     
     // Nuevos campos para residencia
-    EstadoDeResidencia: z.optional(z.nativeEnum(EstadoDeResidencia)),
+    EstadoDeResidencia: z.optional(z.string()),
     ciudadDeResidencia: z.optional(z.string()),
     
     // Campo para subir nueva CI
