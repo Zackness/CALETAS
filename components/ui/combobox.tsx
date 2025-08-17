@@ -68,7 +68,7 @@ export const Combobox = ({
           className={cn(
             "w-full justify-between",
             isAcademicVariant 
-              ? "bg-[#1C2D20] border-white/10 text-white hover:bg-white/10" 
+              ? "bg-white/10 border-white/20 text-white hover:bg-white/20 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg" 
               : "text-foreground hover:text-foreground/50",
             className
           )}
@@ -83,11 +83,11 @@ export const Combobox = ({
       </PopoverTrigger>
       <PopoverContent className={cn(
         "w-[var(--radix-popover-trigger-width)] p-0 m-0 border-none",
-        isAcademicVariant ? "bg-[#1C2D20] border-white/10" : "text-foreground"
+        isAcademicVariant ? "bg-[#203324] border-white/20" : "text-foreground"
       )}>
         <Command className={cn(
           "w-full p-0 m-0 border-none rounded-xl",
-          isAcademicVariant ? "bg-[#1C2D20]" : "text-black"
+          isAcademicVariant ? "bg-[#203324]" : "text-black"
         )}>
           <CommandInput 
             className={cn(

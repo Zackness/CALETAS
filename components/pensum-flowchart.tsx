@@ -48,6 +48,11 @@ export const PensumFlowchart = ({ materias, materiasEstudiante, onMateriaClick }
   const [panY, setPanY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  
+  // Estados para gestos táctiles
+  const [isTouching, setIsTouching] = useState(false);
+  const [touchStart, setTouchStart] = useState({ x: 0, y: 0, distance: 0 });
+  const [lastTouchDistance, setLastTouchDistance] = useState(0);
 
   // Agrupar materias por semestre
   const materiasPorSemestre = materias.reduce((acc, materia) => {
@@ -168,16 +173,29 @@ export const PensumFlowchart = ({ materias, materiasEstudiante, onMateriaClick }
   const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.1, 2));
   const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.1, 0.5));
 
-  // Manejar scroll con rueda del ratón
+  // Manejar scroll con rueda del ratón y trackpad
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault();
     
-    // Si se mantiene presionada la tecla Shift, hacer scroll horizontal
-    if (e.shiftKey) {
-      setPanX(prev => prev - e.deltaY * 0.5);
+    // Detectar si es un gesto de trackpad (deltaX presente) o rueda de ratón
+    const isTrackpad = Math.abs(e.deltaX) > 0;
+    
+    if (isTrackpad) {
+      // Gesto de trackpad - usar deltaX para movimiento horizontal
+      setPanX(prev => prev - e.deltaX * 0.5);
+      // También usar deltaY para movimiento vertical si está presente
+      if (Math.abs(e.deltaY) > 0) {
+        setPanY(prev => prev - e.deltaY * 0.5);
+      }
     } else {
-      // Scroll vertical normal
-      setPanY(prev => prev - e.deltaY * 0.5);
+      // Rueda de ratón tradicional
+      // Si se mantiene presionada la tecla Shift, hacer scroll horizontal
+      if (e.shiftKey) {
+        setPanX(prev => prev - e.deltaY * 0.5);
+      } else {
+        // Scroll vertical normal
+        setPanY(prev => prev - e.deltaY * 0.5);
+      }
     }
   };
 
@@ -200,6 +218,82 @@ export const PensumFlowchart = ({ materias, materiasEstudiante, onMateriaClick }
 
   const handleMouseUp = () => {
     setIsDragging(false);
+  };
+
+  // Funciones auxiliares para gestos táctiles
+  const getDistance = (touch1: React.Touch, touch2: React.Touch) => {
+    const dx = touch1.clientX - touch2.clientX;
+    const dy = touch1.clientY - touch2.clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
+  const getCenter = (touch1: React.Touch, touch2: React.Touch) => {
+    return {
+      x: (touch1.clientX + touch2.clientX) / 2,
+      y: (touch1.clientY + touch2.clientY) / 2
+    };
+  };
+
+  // Manejar gestos táctiles
+  const handleTouchStart = (e: React.TouchEvent) => {
+    e.preventDefault();
+    
+    // Solo activar si no se toca una materia
+    if (e.target === e.currentTarget || (e.target as HTMLElement).closest('.materia-card')) {
+      return;
+    }
+
+    const touches = e.touches;
+    
+    if (touches.length === 1) {
+      // Un dedo - pan
+      setIsTouching(true);
+      setTouchStart({ 
+        x: touches[0].clientX - panX, 
+        y: touches[0].clientY - panY, 
+        distance: 0 
+      });
+    } else if (touches.length === 2) {
+      // Dos dedos - zoom
+      setIsTouching(true);
+      const distance = getDistance(touches[0], touches[1]);
+      setTouchStart({ 
+        x: 0, 
+        y: 0, 
+        distance: distance 
+      });
+      setLastTouchDistance(distance);
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    e.preventDefault();
+    
+    if (!isTouching) return;
+
+    const touches = e.touches;
+    
+    if (touches.length === 1) {
+      // Un dedo - pan
+      setPanX(touches[0].clientX - touchStart.x);
+      setPanY(touches[0].clientY - touchStart.y);
+    } else if (touches.length === 2) {
+      // Dos dedos - zoom
+      const distance = getDistance(touches[0], touches[1]);
+      const scale = distance / lastTouchDistance;
+      
+      setZoom(prev => {
+        const newZoom = prev * scale;
+        return Math.max(0.5, Math.min(3, newZoom));
+      });
+      
+      setLastTouchDistance(distance);
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    e.preventDefault();
+    setIsTouching(false);
   };
 
   // Generar conexiones solo entre prerrequisitos inmediatos
@@ -288,12 +382,15 @@ export const PensumFlowchart = ({ materias, materiasEstudiante, onMateriaClick }
 
       {/* Contenedor del diagrama */}
       <div
-        className="w-full h-full relative cursor-grab active:cursor-grabbing"
+        className="w-full h-full relative cursor-grab active:cursor-grabbing touch-none"
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
         onWheel={handleWheel}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
         style={{
           transform: `scale(${zoom}) translate(${panX}px, ${panY}px)`,
           transformOrigin: 'top left',

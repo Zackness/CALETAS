@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Combobox } from "@/components/ui/combobox";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { Upload, FileText, BookOpen, GraduationCap, Shield, AlertTriangle, CheckCircle, Search, ArrowRight } from "lucide-react";
@@ -28,6 +29,7 @@ interface Materia {
   id: string;
   nombre: string;
   codigo: string;
+  semestre?: string;
 }
 
 interface ArchivoAnalizado {
@@ -41,6 +43,7 @@ export default function SubirCaletaPage() {
   const [universidades, setUniversidades] = useState<Universidad[]>([]);
   const [carreras, setCarreras] = useState<Carrera[]>([]);
   const [materias, setMaterias] = useState<Materia[]>([]);
+  const [materiasOptions, setMateriasOptions] = useState<Array<{value: string, label: string, semestre?: string}>>([]);
   const [selectedUniversidad, setSelectedUniversidad] = useState<string>("");
   const [selectedCarrera, setSelectedCarrera] = useState<string>("");
   const [selectedMateria, setSelectedMateria] = useState<string>("");
@@ -129,10 +132,20 @@ export default function SubirCaletaPage() {
       const carrera = carreras.find(c => c.id === selectedCarrera);
       if (carrera) {
         setMaterias(carrera.materias);
+        
+        // Convertir materias a formato para Combobox
+        const options = carrera.materias.map((materia: any) => ({
+          label: `${materia.codigo} - ${materia.nombre}`,
+          value: materia.id,
+          semestre: (materia as any).semestre || "Sin semestre",
+        }));
+        setMateriasOptions(options);
+        
         setSelectedMateria("");
       }
     } else {
       setMaterias([]);
+      setMateriasOptions([]);
     }
   }, [selectedCarrera, carreras]);
 
@@ -544,19 +557,14 @@ export default function SubirCaletaPage() {
                   </div>
                   <div>
                     <Label htmlFor="materia" className="text-white/80">Materia *</Label>
-                    <Select value={selectedMateria} onValueChange={setSelectedMateria} disabled={!selectedCarrera} required>
-                      <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1 disabled:opacity-50">
-                        <SelectValue placeholder="Selecciona una materia" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-[#203324] text-white">
-                        {materias.map((materia) => (
-                          <SelectItem key={materia.id} value={materia.id} className="hover:bg-[#40C9A9]/10">
-                            <FileText className="h-4 w-4 text-[#40C9A9] mr-1" />
-                            {materia.nombre}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Combobox
+                      options={materiasOptions}
+                      value={selectedMateria}
+                      onChange={setSelectedMateria}
+                      placeholder="Buscar materia..."
+                      variant="academic"
+                      disabled={!selectedCarrera}
+                    />
                   </div>
                 </div>
 
