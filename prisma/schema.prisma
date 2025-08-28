@@ -42,6 +42,7 @@ model User {
   vistas                  VistaRecurso[]
   descargas              DescargaRecurso[]
   metas                  MetaAcademica[]
+  favoritos              Favorito[]
 
   @@index([role])
   @@index([universidadId])
@@ -279,6 +280,7 @@ model Recurso {
   comentarios    ComentarioRecurso[]
   vistas         VistaRecurso[]
   descargas      DescargaRecurso[]
+  favoritos      Favorito[]
 
   @@index([materiaId])
   @@index([autorId])
@@ -424,6 +426,19 @@ enum TipoRecurso {
   DOCUMENTO
   ENLACE
   TIP
+}
+
+model Favorito {
+  id          String   @id @default(cuid())
+  usuarioId   String
+  usuario     User     @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  recursoId   String
+  recurso     Recurso  @relation(fields: [recursoId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@unique([usuarioId, recursoId]) // Un usuario solo puede tener un recurso como favorito una vez
+  @@index([usuarioId])
+  @@index([recursoId])
 }
 
 enum TipoMeta {

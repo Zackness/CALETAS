@@ -220,45 +220,64 @@ export default function SubirCaletaPage() {
       const formData = new FormData();
       formData.append("file", archivoAnalisis);
 
-      const response = await fetch("/api/ia/analizar-contenido", {
-        method: "POST",
-        body: formData,
-      });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 segundos timeout
 
-      if (response.ok) {
-        const resultado = await response.json();
-        
-        if (resultado.esApropiado) {
-          setModeracionEstado('aprobado');
-          setModeracionMensaje("✅ Contenido aprobado: " + resultado.razon);
+      try {
+        const response = await fetch("/api/ia/analizar-contenido", {
+          method: "POST",
+          body: formData,
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+
+        if (response.ok) {
+          const resultado = await response.json();
           
-          // Guardar información del archivo analizado
-          const hash = await generateFileHash(archivoAnalisis);
-          setArchivoAnalizado({
-            file: archivoAnalisis,
-            titulo: "", // No se usa en análisis
-            descripcion: "", // No se usa en análisis
-            hash
-          });
-          
-          toast({
-            title: "Contenido aprobado",
-            description: "Puedes proceder a completar el formulario de subida",
-          });
+          if (resultado.esApropiado) {
+            setModeracionEstado('aprobado');
+            setModeracionMensaje("✅ Contenido aprobado: " + resultado.razon);
+            
+            // Guardar información del archivo analizado
+            const hash = await generateFileHash(archivoAnalisis);
+            setArchivoAnalizado({
+              file: archivoAnalisis,
+              titulo: "", // No se usa en análisis
+              descripcion: "", // No se usa en análisis
+              hash
+            });
+            
+            toast({
+              title: "Contenido aprobado",
+              description: "Puedes proceder a completar el formulario de subida",
+            });
+          } else {
+            setModeracionEstado('rechazado');
+            setModeracionMensaje("❌ Contenido rechazado: " + resultado.razon);
+          }
         } else {
+          const error = await response.json();
           setModeracionEstado('rechazado');
-          setModeracionMensaje("❌ Contenido rechazado: " + resultado.razon);
+          setModeracionMensaje("Error en análisis: " + (error.error || "Error desconocido"));
         }
-      } else {
-        const error = await response.json();
+      } catch (error) {
+        clearTimeout(timeoutId);
+        console.error("Error en análisis:", error);
         setModeracionEstado('rechazado');
-        setModeracionMensaje("Error en análisis: " + (error.error || "Error desconocido"));
+        
+        if (error instanceof Error && error.name === 'AbortError') {
+          setModeracionMensaje("❌ Timeout: El análisis tardó demasiado tiempo");
+        } else {
+          setModeracionMensaje("Error al analizar el contenido");
+        }
+      } finally {
+        setIsAnalizando(false);
       }
     } catch (error) {
-      console.error("Error en análisis:", error);
+      console.error("Error general en análisis:", error);
       setModeracionEstado('rechazado');
       setModeracionMensaje("Error al analizar el contenido");
-    } finally {
       setIsAnalizando(false);
     }
   };
@@ -311,7 +330,7 @@ export default function SubirCaletaPage() {
       formData.append("esPublico", esPublico.toString());
       formData.append("file", archivoSubida);
 
-      const response = await fetch("/api/caletas/upload", {
+      const response = await fetch("/api/caletas/upload-cpanel", {
         method: "POST",
         body: formData,
       });

@@ -49,6 +49,7 @@ interface Recurso {
   numDescargas: number;
   tags: string;
   createdAt: string;
+  isFavorito?: boolean;
   materia: {
     id: string;
     codigo: string;
@@ -93,7 +94,27 @@ export default function CaletasPage() {
   const fetchRecursos = async () => {
     try {
       const response = await axios.get("/api/caletas/recursos");
-      setRecursos(response.data.recursos);
+      const recursos = response.data.recursos;
+      
+      // Verificar favoritos para cada recurso
+      const recursosConFavoritos = await Promise.all(
+        recursos.map(async (recurso: Recurso) => {
+          try {
+            const favoritoResponse = await axios.get(`/api/caletas/favoritos/check?recursoId=${recurso.id}`);
+            return {
+              ...recurso,
+              isFavorito: favoritoResponse.data.isFavorito
+            };
+          } catch (error) {
+            return {
+              ...recurso,
+              isFavorito: false
+            };
+          }
+        })
+      );
+      
+      setRecursos(recursosConFavoritos);
     } catch (error) {
       console.error("Error fetching recursos:", error);
       toast.error("Error al cargar los recursos");
@@ -108,6 +129,33 @@ export default function CaletasPage() {
       setMaterias(response.data.materias);
     } catch (error) {
       console.error("Error fetching materias:", error);
+    }
+  };
+
+  const toggleFavorito = async (recursoId: string) => {
+    try {
+      const recurso = recursos.find(r => r.id === recursoId);
+      if (!recurso) return;
+
+      if (recurso.isFavorito) {
+        // Quitar de favoritos
+        await axios.delete(`/api/caletas/favoritos?recursoId=${recursoId}`);
+        toast.success("Eliminado de favoritos");
+      } else {
+        // Agregar a favoritos
+        await axios.post("/api/caletas/favoritos", { recursoId });
+        toast.success("Agregado a favoritos");
+      }
+
+      // Actualizar estado local
+      setRecursos(prev => prev.map(r => 
+        r.id === recursoId 
+          ? { ...r, isFavorito: !r.isFavorito }
+          : r
+      ));
+    } catch (error) {
+      console.error("Error toggling favorito:", error);
+      toast.error("Error al actualizar favoritos");
     }
   };
 
@@ -427,10 +475,7 @@ export default function CaletasPage() {
                       <Eye className="w-4 h-4" />
                       {recurso.numVistas}
                     </span>
-                    <span className="flex items-center gap-1">
-                      <Download className="w-4 h-4" />
-                      {recurso.numDescargas}
-                    </span>
+
                 </div>
                 </div>
               </CardHeader>
@@ -451,21 +496,35 @@ export default function CaletasPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                      onClick={() => window.location.href = `/caletas/${recurso.id}`}
-                      className="border-[#40C9A9] text-[#40C9A9] hover:bg-[#40C9A9] hover:text-white"
+                  onClick={() => {
+                    if (recurso.archivoUrl) {
+                      // Extraer el nombre del archivo de la URL
+                      const urlParts = recurso.archivoUrl.split('/');
+                      const filename = urlParts[urlParts.length - 1];
+                      // Redirigir a la página de visualización de PDF
+                      window.location.href = `/view-pdf/${encodeURIComponent(filename)}`;
+                    } else {
+                      // Si no hay archivo, ir a la página de detalles
+                      window.location.href = `/caletas/${recurso.id}`;
+                    }
+                  }}
+                  className="border-[#40C9A9] text-[#40C9A9] hover:bg-[#40C9A9] hover:text-white"
                 >
-                      Ver Detalles
+                  Ver Caleta
                 </Button>
-                    {recurso.archivoUrl && (
-                <Button
-                  size="sm"
-                        onClick={() => window.open(recurso.archivoUrl, '_blank')}
-                        className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
-                      >
-                        <Download className="w-4 h-4 mr-2" />
-                  Descargar
-                </Button>
-                    )}
+                    <Button
+                      size="sm"
+                      variant={recurso.isFavorito ? "default" : "outline"}
+                      onClick={() => toggleFavorito(recurso.id)}
+                      className={
+                        recurso.isFavorito 
+                          ? "bg-yellow-500 hover:bg-yellow-600 text-white border-yellow-500" 
+                          : "border-[#40C9A9] text-[#40C9A9] hover:bg-[#40C9A9] hover:text-white"
+                      }
+                    >
+                      <Star className={`w-4 h-4 mr-2 ${recurso.isFavorito ? 'fill-current' : ''}`} />
+                      {recurso.isFavorito ? 'Favorito' : 'Favorito'}
+                    </Button>
                   </div>
               </div>
             </CardContent>
