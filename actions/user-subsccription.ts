@@ -1,12 +1,12 @@
 "use server";
 
-import { getUserSubscription } from "@/data/subscription-queries";
+import { getUserSubscriptionById } from "@/data/subscription-queries";
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
 import { absoluteUrl } from "@/lib/utils";
 
-const returnUrl = absoluteUrl("/shop/game"); // URL de retorno
+const returnUrl = absoluteUrl("/suscripcion"); // URL de retorno
 
 export async function createStripeUrl(subscriptionTypeId: string) {
   try {
@@ -26,15 +26,10 @@ export async function createStripeUrl(subscriptionTypeId: string) {
       throw new Error("Tipo de suscripción no encontrado");
     }
 
-    // Verifica si ya existe una suscripción activa de este tipo
-    const existingSubscription = await db.userSubscription.findFirst({
-      where: {
-        userId: user.id,
-        subscriptionTypeId: subscriptionType.id,
-      },
-    });
+    // Si ya tiene una suscripción activa, manda al portal de Stripe
+    const existingSubscription = await getUserSubscriptionById(user.id);
 
-    if (existingSubscription) {
+    if (existingSubscription?.isActive) {
       // Si ya tiene una suscripción activa, crea una sesión para el Customer Portal
       const stripeCustomer = await db.stripeCustomer.findUnique({
         where: { userId: user.id },
@@ -85,14 +80,15 @@ export async function createStripeUrl(subscriptionTypeId: string) {
               description: subscriptionType.description || "Suscripción",
             },
             recurring: {
-              interval: subscriptionType.period as "month" | "year",
+              // Stripe soporta day|week|month|year. Nosotros usaremos "day" (BASICS) y "month" (PRO).
+              interval: subscriptionType.period as "day" | "month" | "year",
             },
             unit_amount: subscriptionType.price,
           },
         },
       ],
-      success_url: returnUrl,
-      cancel_url: returnUrl,
+      success_url: `${returnUrl}?success=1`,
+      cancel_url: `${returnUrl}?canceled=1`,
       metadata: {
         subscriptionTypeId: subscriptionType.id,
         userId: user.id,

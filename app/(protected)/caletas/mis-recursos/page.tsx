@@ -31,7 +31,6 @@ interface Recurso {
   tipo: string;
   contenido: string;
   archivoUrl: string | null;
-  esPublico: boolean;
   tags: string | null;
   calificacion: number;
   numCalificaciones: number;
@@ -438,7 +437,7 @@ export default function MisRecursosPage() {
                           <span className="ml-1">{getTipoNombre(recurso.tipo)}</span>
                         </Badge>
                         <Badge variant="outline" className="text-xs border-white/20 text-white/70">
-                          {recurso.esPublico ? "Público" : "Privado"}
+                          Visible para todos
                         </Badge>
                       </div>
                     </div>

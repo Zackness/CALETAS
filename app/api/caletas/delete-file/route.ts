@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { deleteFromCPanel } from "@/lib/cpanel-storage";
+import { deleteFromBunny } from "@/lib/bunny";
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -25,8 +25,8 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Intentar eliminar el archivo de cPanel
-    const success = await deleteFromCPanel(fileUrl);
+    // Intentar eliminar el archivo de Bunny.net
+    const success = await deleteFromBunny(fileUrl);
 
     if (success) {
       return NextResponse.json({

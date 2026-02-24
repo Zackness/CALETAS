@@ -94,7 +94,6 @@ export const settings = async (
             data: {
                 email: typedValues.email || undefined,
                 password: typedValues.password || undefined,
-                isTwoFactorEnabled: typedValues.isTwoFactorEnabled ?? undefined,
                 telefono: typedValues.telefono || undefined,
                 ciudadDeResidencia: typedValues.ciudadDeResidencia || undefined,
             }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { cpanelStorage } from "@/lib/cpanel-storage";
+import { listBunnyFiles } from "@/lib/bunny";
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,8 +18,9 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const subfolder = searchParams.get("subfolder") || "";
 
-    // Listar archivos de cPanel
-    const files = await cpanelStorage.listFiles(subfolder);
+    // Listar archivos de Bunny.net
+    const folderToList = ["caletas", subfolder].filter(Boolean).join("/");
+    const files = await listBunnyFiles(folderToList);
 
     return NextResponse.json({
       success: true,

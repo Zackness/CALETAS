@@ -12,13 +12,13 @@ interface CPanelConfig {
 }
 
 const cpanelConfig: CPanelConfig = {
-  host: process.env.CPANEL_HOST || "ftp.startupven.com",
-  user: process.env.CPANEL_USER || "caletas@startupven.com",
-  password: process.env.CPANEL_PASSWORD || "09231306FaCg*.*",
-  port: parseInt(process.env.CPANEL_PORT || "21"),
+  host: process.env.CPANEL_HOST || "",
+  user: process.env.CPANEL_USER || "",
+  password: process.env.CPANEL_PASSWORD || "",
+  port: parseInt(process.env.CPANEL_PORT || "21", 10),
   secure: process.env.CPANEL_SECURE === "true",
-  basePath: "/home/nrektwbx/public_html/caletas", // Forzar valor correcto
-  publicUrl: "https://startupven.com/caletas/home/nrektwbx/public_html/caletas", // Forzar valor correcto
+  basePath: process.env.CPANEL_BASE_PATH || "",
+  publicUrl: process.env.CPANEL_PUBLIC_URL || "",
 };
 
 export class CPanelStorage {

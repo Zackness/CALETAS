@@ -47,7 +47,7 @@ export default function FileUploadTest() {
       formData.append("tipo", "DOCUMENTO");
       formData.append("materiaId", "test-materia");
       formData.append("tags", "test, manual");
-      formData.append("esPublico", "false");
+      // Todos los recursos son visibles para todos; ya no existe toggle de visibilidad.
 
       console.log("📤 Subiendo archivo manual...");
 

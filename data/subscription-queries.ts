@@ -12,9 +12,11 @@ export const getUserSubscriptionById = async (userId: string) => {
 
   if (!data) return null;
 
-  const isActive = 
-    data.stripePriceId &&
-    data.stripeCurrentPeriodEnd?.getTime()! + DAY_IN_MS > Date.now();
+  // Activa si el periodo actual no ha expirado (con 1 día de gracia).
+  // Esto permite Stripe y pagos manuales (Bs) usando el mismo campo de expiración.
+  const isActive =
+    !!data.stripeCurrentPeriodEnd &&
+    data.stripeCurrentPeriodEnd.getTime() + DAY_IN_MS > Date.now();
 
   return {
     ...data,
@@ -53,9 +55,9 @@ export const getCurrentUserSubscription = async () => {
 
   if (!data) return null;
 
-  const isActive = 
-    data.stripePriceId &&
-    data.stripeCurrentPeriodEnd?.getTime()! + DAY_IN_MS > Date.now();
+  const isActive =
+    !!data.stripeCurrentPeriodEnd &&
+    data.stripeCurrentPeriodEnd.getTime() + DAY_IN_MS > Date.now();
 
   return {
     ...data,

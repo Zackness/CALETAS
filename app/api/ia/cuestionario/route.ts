@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import OpenAI from "openai";
+import { getActiveSubscriptionForUser } from "@/lib/subscription";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -15,6 +16,14 @@ export async function POST(request: NextRequest) {
 
     if (!session?.user?.id) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+
+    const sub = await getActiveSubscriptionForUser(session.user.id);
+    if (!sub) {
+      return NextResponse.json(
+        { error: "Necesitas una suscripción activa para usar IA" },
+        { status: 402 },
+      );
     }
 
     const body = await request.json();
@@ -46,11 +55,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Recurso no encontrado" }, { status: 404 });
     }
 
-    // Verificar que el usuario tiene acceso al recurso
-    const tieneAcceso = recurso.esPublico || recurso.autorId === session.user.id;
-    if (!tieneAcceso) {
-      return NextResponse.json({ error: "No tienes acceso a este recurso" }, { status: 403 });
-    }
+    const autorNombre =
+      (recurso as any).esAnonimo && recurso.autorId !== session.user.id
+        ? "Anónimo"
+        : recurso.autor?.name || "N/A";
 
     // Preparar el contenido para la IA
     const contenidoParaIA = `
@@ -60,6 +68,7 @@ Contenido: ${recurso.contenido}
 Materia: ${recurso.materia.nombre} (${recurso.materia.codigo})
 Tipo de recurso: ${recurso.tipo}
 Tags: ${recurso.tags || 'N/A'}
+Autor: ${autorNombre}
 
 Genera un cuestionario de 5 preguntas basado en este contenido. Cada pregunta debe tener:
 1. Una pregunta clara y específica

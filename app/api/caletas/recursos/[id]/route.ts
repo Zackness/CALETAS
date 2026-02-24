@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 
+const ANON_AUTHOR = {
+  id: "anon",
+  name: "Anónimo",
+  email: null as string | null,
+};
+
 // GET - Obtener un recurso específico
 export async function GET(
   request: NextRequest,
@@ -48,16 +54,12 @@ export async function GET(
       );
     }
 
-    // Verificar que el usuario tiene acceso al recurso
-    const tieneAcceso = recurso.esPublico || recurso.autor.id === session.user.id;
-    if (!tieneAcceso) {
-      return NextResponse.json(
-        { error: "No tienes acceso a este recurso" },
-        { status: 403 }
-      );
-    }
+    const masked =
+      recurso.esAnonimo && recurso.autorId !== session.user.id
+        ? { ...recurso, autor: ANON_AUTHOR }
+        : recurso;
 
-    return NextResponse.json(recurso);
+    return NextResponse.json(masked);
 
   } catch (error) {
     console.error("Error fetching recurso:", error);
@@ -176,6 +178,7 @@ export async function PUT(
       archivoUrl, 
       materiaId, 
       esPublico, 
+      esAnonimo,
       tags 
     } = body;
 
@@ -232,7 +235,8 @@ export async function PUT(
         contenido: contenido || descripcion,
         archivoUrl,
         materiaId,
-        esPublico: esPublico ?? true,
+        esPublico: true,
+        esAnonimo: typeof esAnonimo === "boolean" ? esAnonimo : undefined,
         tags: tags || null,
         updatedAt: new Date(),
       },

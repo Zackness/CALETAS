@@ -1,5 +1,5 @@
 "use client";
-import { BookOpen, FileText, Menu, Home, GraduationCap, Target, History, Search, Upload, Settings, BarChart3, Lightbulb, HelpCircle } from "lucide-react";
+import { BookOpen, FileText, Menu, Home, GraduationCap, Target, History, Search, Upload, Settings, BarChart3, Lightbulb, HelpCircle, MessageCircle } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -78,6 +78,10 @@ export function IASidebar() {
                 <FileText className="h-5 w-5 text-[#40C9A9]" />
                 <span>Resumir/Explicar PDF</span>
               </Link>
+              <Link href="/ia/chat" className="flex items-center gap-3 text-white hover:bg-[#354B3A] rounded-lg px-3 py-2 transition-colors">
+                <MessageCircle className="h-5 w-5 text-[#40C9A9]" />
+                <span>Chat IA</span>
+              </Link>
                 <Link href="/ia/cuestionario" className="flex items-center gap-3 text-white hover:bg-[#354B3A] rounded-lg px-3 py-2 transition-colors">
                   <HelpCircle className="h-5 w-5 text-[#40C9A9]" />
                   <span>Cuestionarios</span>
@@ -152,6 +156,10 @@ export function IASidebar() {
           <Link href="/ia/resumir" className="flex items-center gap-3 text-white hover:bg-[#354B3A] rounded-lg px-3 py-2 transition-colors">
             <FileText className="h-5 w-5 text-[#40C9A9]" />
             <span>Resumir/Explicar PDF</span>
+          </Link>
+          <Link href="/ia/chat" className="flex items-center gap-3 text-white hover:bg-[#354B3A] rounded-lg px-3 py-2 transition-colors">
+            <MessageCircle className="h-5 w-5 text-[#40C9A9]" />
+            <span>Chat IA</span>
           </Link>
             <Link href="/ia/cuestionario" className="flex items-center gap-3 text-white hover:bg-[#354B3A] rounded-lg px-3 py-2 transition-colors">
               <HelpCircle className="h-5 w-5 text-[#40C9A9]" />

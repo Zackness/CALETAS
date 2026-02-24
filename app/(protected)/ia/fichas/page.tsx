@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { BookOpen, Brain, FileText, Save, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
+import { useSubscriptionRequired } from "@/hooks/use-subscription-required";
 
 interface Recurso {
   id: string;
@@ -36,6 +37,7 @@ interface Ficha {
 }
 
 export default function FichasIA() {
+  const { loading: subLoading, isActive } = useSubscriptionRequired();
   const { data: session } = authClient.useSession();
   const [recursos, setRecursos] = useState<Recurso[]>([]);
   const [recursoSeleccionado, setRecursoSeleccionado] = useState<string>("");
@@ -62,6 +64,10 @@ export default function FichasIA() {
   };
 
   const generarFichas = async () => {
+    if (subLoading || !isActive) {
+      toast.error("Necesitas una suscripción para usar IA");
+      return;
+    }
     if (!recursoSeleccionado) {
       toast.error("Por favor selecciona un recurso");
       return;

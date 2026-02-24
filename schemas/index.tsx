@@ -4,16 +4,20 @@ import * as z from "zod";
 export const SettingsSchema = z.object ({
     // Campos de solo lectura (mostrados pero no editables)
     name: z.string().optional(),
-    name2: z.string().optional(),
     apellido: z.string().optional(),
-    apellido2: z.string().optional(),
     cedula: z.string().optional(),
     estadoCivil: z.string().optional(),
     
     // Campos editables
-    telefono: z.optional(z.string().min(11, {
-        message: "Por favor, ingresa un numero de telefono valido"
-    })),
+    telefono: z.preprocess(
+      (v) => (typeof v === "string" && v.trim() === "" ? undefined : v),
+      z
+        .string()
+        .min(11, {
+          message: "Por favor, ingresa un numero de telefono valido",
+        })
+        .optional(),
+    ),
     email: z.optional(z.string().email({
         message: "Por favor, ingresa un correo electrónico válido"
     })),

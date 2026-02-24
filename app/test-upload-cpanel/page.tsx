@@ -25,7 +25,6 @@ export default function TestUploadCPanelPage() {
   const [tipo, setTipo] = useState("DOCUMENTO");
   const [materiaId, setMateriaId] = useState("test-materia-id");
   const [tags, setTags] = useState("test, cpanel, pdf");
-  const [esPublico, setEsPublico] = useState(true);
 
   useEffect(() => {
     if (isPending) return;
@@ -67,7 +66,7 @@ export default function TestUploadCPanelPage() {
       formData.append("tipo", tipo);
       formData.append("materiaId", materiaId);
       formData.append("tags", tags);
-      formData.append("esPublico", esPublico.toString());
+      // Todos los recursos son visibles para todos; ya no existe toggle de visibilidad.
 
       console.log("📤 Enviando archivo a cPanel...");
 
@@ -106,7 +105,7 @@ export default function TestUploadCPanelPage() {
     }
   };
 
-  if (isLoading || status === "loading") {
+  if (isLoading || isPending) {
     return (
       <div className="min-h-screen bg-gradient-to-t from-mygreen to-mygreen-light flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
@@ -207,18 +206,6 @@ export default function TestUploadCPanelPage() {
                 onChange={(e) => setTags(e.target.value)}
                 className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1"
               />
-            </div>
-
-            {/* Es público */}
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="esPublico"
-                checked={esPublico}
-                onChange={(e) => setEsPublico(e.target.checked)}
-                className="rounded border-white/20 bg-white/10 text-[#40C9A9] focus:ring-[#40C9A9]"
-              />
-              <Label htmlFor="esPublico" className="text-white/80">Es público</Label>
             </div>
 
             {/* Botón subir */}

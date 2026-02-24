@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { FileText, Upload, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { useSubscriptionRequired } from "@/hooks/use-subscription-required";
 
 export default function ResumirPage() {
+  const { loading: subLoading, isActive } = useSubscriptionRequired();
   const [file, setFile] = useState<File | null>(null);
   const [text, setText] = useState("");
   const [result, setResult] = useState("");
@@ -23,6 +25,11 @@ export default function ResumirPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (subLoading || !isActive) {
+      toast.error("Necesitas una suscripción para usar IA");
+      return;
+    }
     
     if (!file && !text.trim()) {
       toast.error("Por favor, sube un archivo o ingresa texto");

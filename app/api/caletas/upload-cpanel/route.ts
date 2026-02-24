@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { uploadToCPanel } from "@/lib/cpanel-storage";
+import { uploadToBunny } from "@/lib/bunny";
 import { validateFile } from "@/lib/file-utils";
 import { db } from "@/lib/db";
 import { TipoRecurso } from "@prisma/client";
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     const tipo = formData.get("tipo") as string;
     const materiaId = formData.get("materiaId") as string;
     const tags = formData.get("tags") as string;
-    const esPublico = formData.get("esPublico") as string;
+    const esAnonimo = formData.get("esAnonimo") as string;
     const subfolder = formData.get("subfolder") as string || "";
 
     // Validar campos requeridos
@@ -60,12 +60,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log("📤 Subiendo archivo a cPanel (Banna Hosting)...");
+    console.log("📤 Subiendo archivo a Bunny.net...");
     
     try {
-      // Subir archivo a cPanel
-      const archivoUrl = await uploadToCPanel(file, subfolder);
-      console.log("✅ Archivo subido exitosamente a cPanel:", archivoUrl);
+      // Subir archivo a Bunny.net
+      // Respetamos subfolder: si viene, prefijamos el nombre del archivo dentro del storage.
+      const archivoUrl = await uploadToBunny(file, {
+        subfolder,
+        prefix: "caletas",
+      });
+
+      console.log("✅ Archivo subido exitosamente a Bunny.net:", archivoUrl);
 
       // Registrar en la base de datos
       const recurso = await db.recurso.create({
@@ -74,7 +79,8 @@ export async function POST(request: NextRequest) {
           descripcion,
           tipo: tipo as TipoRecurso,
           tags: tags || "",
-          esPublico: esPublico === "true",
+          esPublico: true,
+          esAnonimo: esAnonimo === "true",
           archivoUrl,
           contenido: `Archivo: ${file.name} (${file.type}, ${file.size} bytes)`,
           materiaId: materiaIdToUse,
@@ -107,13 +113,13 @@ export async function POST(request: NextRequest) {
         success: true,
         recurso,
         fileUrl: archivoUrl,
-        mensaje: "Recurso subido exitosamente a cPanel y registrado en la base de datos"
+        mensaje: "Recurso subido exitosamente a Bunny.net y registrado en la base de datos"
       }, { status: 201 });
 
     } catch (uploadError) {
-      console.error("Error subiendo archivo a cPanel:", uploadError);
+      console.error("Error subiendo archivo a Bunny.net:", uploadError);
       return NextResponse.json(
-        { error: "Error al subir el archivo a cPanel" },
+        { error: "Error al subir el archivo a Bunny.net" },
         { status: 500 }
       );
     }

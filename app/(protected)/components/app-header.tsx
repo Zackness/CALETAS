@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, LogOut, Heart, Upload, Search as SearchIcon, BarChart3, Menu, X, FileText, BookOpen, GraduationCap, Calendar, User } from "lucide-react";
+import { Bell, LogOut, Heart, Upload, Search as SearchIcon, BarChart3, Menu, X, FileText, BookOpen, GraduationCap, Calendar, User, ShieldCheck, CreditCard } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -17,6 +17,7 @@ export function DashboardHeader({ session }: AppHeaderProps) {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -27,6 +28,18 @@ export function DashboardHeader({ session }: AppHeaderProps) {
       .then((data) => {
         setNotifications(data);
         setLoading(false);
+      });
+  }, []);
+
+  useEffect(() => {
+    // Cargar rol (para mostrar panel admin)
+    fetch("/api/user")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        setIsAdmin(data?.user?.role === "ADMIN");
+      })
+      .catch(() => {
+        // ignore
       });
   }, []);
 
@@ -160,9 +173,32 @@ export function DashboardHeader({ session }: AppHeaderProps) {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 bg-[#203324] border-white/10 text-white">
               <DropdownMenuItem asChild className="gap-2 hover:bg-white/10 cursor-pointer">
+                <Link href="/suscripcion">
+                  <CreditCard className="h-4 w-4 text-[#40C9A9]" />
+                  <span>Suscripción</span>
+                </Link>
+              </DropdownMenuItem>
+
+              <DropdownMenuItem asChild className="gap-2 hover:bg-white/10 cursor-pointer">
                 <Link href="/caletas/estadisticas">
                   <BarChart3 className="h-4 w-4 text-[#40C9A9]" />
                   <span>Estadísticas de mis caletas</span>
+                </Link>
+              </DropdownMenuItem>
+
+              {isAdmin ? (
+                <DropdownMenuItem asChild className="gap-2 hover:bg-white/10 cursor-pointer">
+                  <Link href="/admin">
+                    <ShieldCheck className="h-4 w-4 text-[#40C9A9]" />
+                    <span>Panel admin</span>
+                  </Link>
+                </DropdownMenuItem>
+              ) : null}
+
+              <DropdownMenuItem asChild className="gap-2 hover:bg-white/10 cursor-pointer">
+                <Link href="/ajustes">
+                  <User className="h-4 w-4 text-[#40C9A9]" />
+                  <span>Ajustes</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem className="gap-2 text-red-400 hover:bg-red-500/10 cursor-pointer" onClick={handleSignOut}>

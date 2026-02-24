@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Combobox } from "@/components/ui/combobox";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { Upload, FileText, BookOpen, GraduationCap, Shield, AlertTriangle, CheckCircle, Search, ArrowRight } from "lucide-react";
@@ -50,7 +51,7 @@ export default function SubirCaletaPage() {
   const [descripcion, setDescripcion] = useState("");
   const [tipo, setTipo] = useState<string>("DOCUMENTO");
   const [tags, setTags] = useState("");
-  const [esPublico, setEsPublico] = useState(true);
+  const [esAnonimo, setEsAnonimo] = useState(false);
   
   // Estados para el análisis
   const [archivoAnalisis, setArchivoAnalisis] = useState<File | null>(null);
@@ -326,7 +327,7 @@ export default function SubirCaletaPage() {
       formData.append("tipo", tipo);
       formData.append("materiaId", selectedMateria);
       formData.append("tags", tags);
-      formData.append("esPublico", esPublico.toString());
+      formData.append("esAnonimo", esAnonimo.toString());
       formData.append("file", archivoSubida);
 
       const response = await fetch("/api/caletas/upload-cpanel", {
@@ -535,6 +536,29 @@ export default function SubirCaletaPage() {
                     placeholder="Ej: examen, parcial, calculo, derivadas"
                     className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1"
                   />
+                </div>
+
+                {/* Privacidad */}
+                <div className="bg-[#1C2D20] border border-white/10 rounded-lg p-4 space-y-3">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <div className="text-white font-semibold">Privacidad</div>
+                      <div className="text-white/70 text-sm">
+                        Puedes compartir el recurso mostrando tu usuario o publicarlo como anónimo.
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="text-white/80 text-sm font-medium">
+                      Publicar como anónimo
+                    </div>
+                    <Switch
+                      checked={esAnonimo}
+                      onCheckedChange={setEsAnonimo}
+                      className="data-[state=checked]:bg-[#40C9A9] data-[state=unchecked]:bg-white/20"
+                    />
+                  </div>
                 </div>
 
                 {/* Selección de universidad, carrera y materia */}

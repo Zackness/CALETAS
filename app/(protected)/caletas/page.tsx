@@ -96,26 +96,9 @@ export default function CaletasPage() {
     try {
       const response = await axios.get("/api/caletas/recursos");
       const recursos = response.data.recursos;
-      
-      // Verificar favoritos para cada recurso
-      const recursosConFavoritos = await Promise.all(
-        recursos.map(async (recurso: Recurso) => {
-          try {
-            const favoritoResponse = await axios.get(`/api/caletas/favoritos/check?recursoId=${recurso.id}`);
-            return {
-              ...recurso,
-              isFavorito: favoritoResponse.data.isFavorito
-            };
-          } catch (error) {
-            return {
-              ...recurso,
-              isFavorito: false
-            };
-          }
-        })
-      );
-      
-      setRecursos(recursosConFavoritos);
+
+      // `isFavorito` viene resuelto desde el backend (evitamos N+1 requests)
+      setRecursos(recursos);
     } catch (error) {
       console.error("Error fetching recursos:", error);
       toast.error("Error al cargar los recursos");

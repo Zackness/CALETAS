@@ -37,7 +37,7 @@ interface Recurso {
   tipo: string;
   contenido: string;
   archivoUrl: string | null;
-  esPublico: boolean;
+  esAnonimo?: boolean;
   tags: string | null;
   materiaId: string;
   materia: {
@@ -58,7 +58,7 @@ export default function EditarRecursoPage({ params }: { params: Promise<{ id: st
   const [descripcion, setDescripcion] = useState("");
   const [tipo, setTipo] = useState<string>("DOCUMENTO");
   const [tags, setTags] = useState("");
-  const [esPublico, setEsPublico] = useState(true);
+  const [esAnonimo, setEsAnonimo] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [recurso, setRecurso] = useState<Recurso | null>(null);
@@ -98,7 +98,7 @@ export default function EditarRecursoPage({ params }: { params: Promise<{ id: st
           setDescripcion(recursoData.descripcion);
           setTipo(recursoData.tipo);
           setTags(recursoData.tags || "");
-          setEsPublico(recursoData.esPublico);
+          setEsAnonimo(!!recursoData.esAnonimo);
           setSelectedMateria(recursoData.materiaId);
         } else {
           throw new Error("Recurso no encontrado");
@@ -189,7 +189,7 @@ export default function EditarRecursoPage({ params }: { params: Promise<{ id: st
           tipo,
           materiaId: selectedMateria,
           tags,
-          esPublico,
+          esAnonimo,
           contenido: descripcion,
         }),
       });
@@ -398,28 +398,28 @@ export default function EditarRecursoPage({ params }: { params: Promise<{ id: st
             </CardContent>
           </Card>
 
-          {/* Configuración de visibilidad */}
+          {/* Privacidad */}
           <Card className="bg-[#354B3A] border-white/10">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-white">
                 <FileText className="w-5 h-5 text-[#40C9A9]" />
-                Configuración de Visibilidad
+                Privacidad
               </CardTitle>
               <CardDescription className="text-white/70">
-                Controla quién puede ver tu recurso
+                Puedes mostrar tu usuario o publicarlo como anónimo
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between rounded-lg p-4 bg-white/5 border border-white/10">
                 <div className="space-y-1">
-                  <Label className="text-white/80">Recurso público</Label>
+                  <Label className="text-white/80">Publicar como anónimo</Label>
                   <p className="text-white/60 text-sm">
-                    Permitir que otros estudiantes vean y descarguen este recurso
+                    Si lo activas, los demás verán “Anónimo” como autor
                   </p>
                 </div>
                 <Switch 
-                  checked={esPublico}
-                  onCheckedChange={setEsPublico}
+                  checked={esAnonimo}
+                  onCheckedChange={setEsAnonimo}
                   className="data-[state=checked]:bg-[#40C9A9] data-[state=unchecked]:bg-white/20"
                 />
               </div>

@@ -31,6 +31,10 @@ export const LoginForm = () => {
   const urlError = searchParams.get("error") || "";
 
   const [showTwoFactor, setShowTwoFactor] = useState(false);
+  const [twoFactorMethod, setTwoFactorMethod] = useState<
+    "app" | "email" | "backup"
+  >("app");
+  const [otpSent, setOtpSent] = useState(false);
   const [error, setError] = useState<string | undefined>("");
   const [succes, setSucces] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
@@ -57,9 +61,12 @@ export const LoginForm = () => {
               return;
             }
 
-            const { error: verifyError } = await authClient.twoFactor.verifyOtp({
-              code,
-            });
+            const { error: verifyError } =
+              twoFactorMethod === "email"
+                ? await authClient.twoFactor.verifyOtp({ code })
+                : twoFactorMethod === "backup"
+                  ? await authClient.twoFactor.verifyBackupCode({ code })
+                  : await authClient.twoFactor.verifyTotp({ code });
 
             if (verifyError) {
               setError(verifyError.message || "Código inválido");
@@ -90,7 +97,10 @@ export const LoginForm = () => {
 
           if (data && "twoFactorRedirect" in data && (data as any).twoFactorRedirect) {
             setShowTwoFactor(true);
-            setSucces("Te enviamos un código de verificación");
+            setSucces("Verifica tu identidad para continuar");
+            setTwoFactorMethod("app");
+            setOtpSent(false);
+            form.setValue("code", "");
             return;
           }
 
@@ -120,24 +130,121 @@ export const LoginForm = () => {
           <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
             <div className="flex flex-col gap-4">
               {showTwoFactor && (
-                <FormField
-                  control={form.control}
-                  name="code"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          disable={isPending}
-                          label="2FA Code"
-                          id="code"
-                          value={field.value || ""}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                <>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setTwoFactorMethod("app");
+                        setError("");
+                        setSucces("");
+                        form.setValue("code", "");
+                      }}
+                      className={`flex-1 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors ${
+                        twoFactorMethod === "app"
+                          ? "bg-white/20 border-white/30 text-white"
+                          : "bg-white/10 border-white/10 text-white/80 hover:bg-white/20"
+                      }`}
+                    >
+                      App (Google Authenticator)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        setTwoFactorMethod("email");
+                        setError("");
+                        setSucces("");
+                        form.setValue("code", "");
+                        if (!otpSent) {
+                          const { error: sendError } =
+                            await authClient.twoFactor.sendOtp({});
+                          if (sendError) {
+                            setError(
+                              sendError.message ||
+                                "No se pudo enviar el código por correo",
+                            );
+                            return;
+                          }
+                          setOtpSent(true);
+                          setSucces("Te enviamos un código a tu correo");
+                        }
+                      }}
+                      className={`flex-1 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors ${
+                        twoFactorMethod === "email"
+                          ? "bg-white/20 border-white/30 text-white"
+                          : "bg-white/10 border-white/10 text-white/80 hover:bg-white/20"
+                      }`}
+                    >
+                      Correo
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setTwoFactorMethod("backup");
+                        setError("");
+                        setSucces("");
+                        form.setValue("code", "");
+                      }}
+                      className={`flex-1 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors ${
+                        twoFactorMethod === "backup"
+                          ? "bg-white/20 border-white/30 text-white"
+                          : "bg-white/10 border-white/10 text-white/80 hover:bg-white/20"
+                      }`}
+                    >
+                      Backup
+                    </button>
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="code"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            disable={isPending}
+                            label={
+                              twoFactorMethod === "app"
+                                ? "Código de la app"
+                                : twoFactorMethod === "backup"
+                                  ? "Código de respaldo"
+                                  : "Código por correo"
+                            }
+                            id="code"
+                            value={field.value || ""}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {twoFactorMethod === "email" && (
+                    <button
+                      type="button"
+                      disabled={isPending}
+                      onClick={async () => {
+                        setError("");
+                        setSucces("");
+                        const { error: sendError } =
+                          await authClient.twoFactor.sendOtp({});
+                        if (sendError) {
+                          setError(
+                            sendError.message ||
+                              "No se pudo reenviar el código",
+                          );
+                          return;
+                        }
+                        setOtpSent(true);
+                        setSucces("Código reenviado a tu correo");
+                      }}
+                      className="text-sm font-semibold text-white/80 hover:text-white underline underline-offset-4"
+                    >
+                      Reenviar código
+                    </button>
                   )}
-                />
+                </>
               )}
               {!showTwoFactor && (
                 <>

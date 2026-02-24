@@ -137,19 +137,28 @@ export default async function HomePage() {
 
   // Obtener recursos más populares de Caletas
   const recursosPopulares = await db.recurso.findMany({
-      where: {
-      esPublico: true,
-      },
-      include: {
-        materia: {
+    // Todos los recursos son visibles para todos los estudiantes
+    select: {
+      id: true,
+      titulo: true,
+      descripcion: true,
+      tipo: true,
+      createdAt: true,
+      calificacion: true,
+      numCalificaciones: true,
+      numVistas: true,
+      numDescargas: true,
+      esAnonimo: true,
+      autorId: true,
+      materia: {
         select: {
           codigo: true,
           nombre: true,
         },
       },
       autor: {
-          select: {
-            name: true,
+        select: {
+          name: true,
         },
       },
     },
@@ -159,6 +168,11 @@ export default async function HomePage() {
     ],
     take: 5
   });
+
+  const recursosPopularesMasked = recursosPopulares.map((r) => ({
+    ...r,
+    autor: r.esAnonimo && r.autorId !== session.user.id ? { name: "Anónimo" } : r.autor,
+  }));
 
   // Obtener materias próximas a vencer (materias en curso)
   const materiasProximas = materiasEstudiante
@@ -722,7 +736,7 @@ export default async function HomePage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {recursosPopulares.map((recurso) => (
+                    {recursosPopularesMasked.map((recurso) => (
                       <div key={recurso.id} className="flex items-center justify-between p-3 bg-[#1C2D20] rounded-lg">
                         <div className="flex items-center gap-3">
                           {getTipoIcon(recurso.tipo)}

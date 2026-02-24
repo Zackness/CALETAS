@@ -2,6 +2,25 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 
+const ANON_AUTHOR = {
+  id: "anon",
+  name: "Anónimo",
+  email: null as string | null,
+};
+
+const maskFavorito = (favorito: any, viewerUserId: string) => {
+  const recurso = favorito?.recurso;
+  if (!recurso?.esAnonimo) return favorito;
+  if (recurso.autorId === viewerUserId) return favorito;
+  return {
+    ...favorito,
+    recurso: {
+      ...recurso,
+      autor: ANON_AUTHOR,
+    },
+  };
+};
+
 // POST: Agregar a favoritos
 export async function POST(request: NextRequest) {
   try {
@@ -78,7 +97,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      favorito,
+      favorito: maskFavorito(favorito, session.user.id),
       message: "Recurso agregado a favoritos"
     }, { status: 201 });
 
@@ -184,7 +203,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      favoritos
+      favoritos: favoritos.map((f) => maskFavorito(f, session.user.id)),
     });
 
   } catch (error) {

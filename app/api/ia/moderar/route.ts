@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import OpenAI from "openai";
+import { getActiveSubscriptionForUser } from "@/lib/subscription";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -14,6 +15,14 @@ export async function POST(request: NextRequest) {
 
     if (!session?.user?.id) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+
+    const sub = await getActiveSubscriptionForUser(session.user.id);
+    if (!sub) {
+      return NextResponse.json(
+        { error: "Necesitas una suscripción activa para usar IA" },
+        { status: 402 },
+      );
     }
 
     const formData = await request.formData();

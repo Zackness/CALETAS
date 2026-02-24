@@ -58,7 +58,7 @@ export default function FileManager() {
             name: file.name,
             size: file.size || 0,
             type: file.type || 'application/octet-stream',
-            url: file.url || `https://startupven.com/caletas/home/nrektwbx/public_html/caletas/${folder}/${file.name}`,
+            url: file.url || file.name,
             lastModified: file.lastModified || new Date().toISOString()
           }));
           setFiles(realFiles);
@@ -127,7 +127,12 @@ export default function FileManager() {
   const handleDeleteFile = async (fileName: string) => {
     if (confirm(`¿Estás seguro de que quieres eliminar "${fileName}"?`)) {
       try {
-        const response = await fetch(`/api/caletas/delete-file?fileUrl=${encodeURIComponent(fileName)}`);
+        const file = files.find((f) => f.name === fileName);
+        const fileUrl = file?.url || fileName;
+        const response = await fetch(
+          `/api/caletas/delete-file?fileUrl=${encodeURIComponent(fileUrl)}`,
+          { method: "DELETE" },
+        );
         if (response.ok) {
           setFiles(files.filter(f => f.name !== fileName));
         } else {
@@ -145,7 +150,7 @@ export default function FileManager() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-white font-special">
           <FolderOpen className="h-5 w-5 text-[#40C9A9]" />
-          Gestor de Archivos - cPanel
+          Gestor de Archivos - Bunny.net
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">

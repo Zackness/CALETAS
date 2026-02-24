@@ -22,7 +22,8 @@
     "update-mecatronica-materias": "node scripts/update-mecatronica-materias.js",
     "add-mecatronica-electivas": "node scripts/add-mecatronica-electivas.js",
     "fix-onboarding-prerequisites": "node scripts/fix-onboarding-prerequisites.js",
-    "setup-cpanel": "node scripts/setup-cpanel.js"
+    "setup-cpanel": "node scripts/setup-cpanel.js",
+    "ensure-subscriptions": "node scripts/ensure-subscription-types.js"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.3.16",
@@ -77,6 +78,7 @@
     "react-icons": "^5.4.0",
     "react-markdown": "^10.1.0",
     "react-pdf": "^9.2.1",
+    "react-qr-code": "^2.0.18",
     "react-spinners": "^0.15.0",
     "remark-gfm": "^4.0.1",
     "resend": "^4.1.2",

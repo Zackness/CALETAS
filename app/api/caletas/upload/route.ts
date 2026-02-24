@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     const tipo = formData.get("tipo") as "ANOTACION" | "RESUMEN" | "GUIA_ESTUDIO" | "EJERCICIOS" | "PRESENTACION" | "VIDEO" | "AUDIO" | "DOCUMENTO" | "ENLACE" | "TIP";
     const materiaId = formData.get("materiaId") as string;
     const tags = formData.get("tags") as string;
-    const esPublico = formData.get("esPublico") === "true";
+    const esAnonimo = formData.get("esAnonimo") === "true";
     const file = formData.get("file") as File;
 
     // Validar campos requeridos
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
     console.log("📤 Subiendo archivo a Bunny.net...");
     
     try {
-      const archivoUrl = await uploadToBunny(file);
+      const archivoUrl = await uploadToBunny(file, { prefix: "caletas" });
       console.log("✅ Archivo subido exitosamente:", archivoUrl);
 
       // PASO 3: CREAR RECURSO EN LA BASE DE DATOS
@@ -94,7 +94,8 @@ export async function POST(request: NextRequest) {
           archivoUrl,
           materiaId,
           autorId: session.user.id,
-          esPublico,
+          esPublico: true,
+          esAnonimo,
           tags: tags || "",
           calificacion: 0,
           numCalificaciones: 0,

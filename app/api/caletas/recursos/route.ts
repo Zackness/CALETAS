@@ -2,6 +2,24 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 
+const ANON_AUTHOR = {
+  id: "anon",
+  name: "Anónimo",
+  email: null as string | null,
+};
+
+const maskAutorIfAnon = <T extends { esAnonimo?: boolean; autorId?: string; autor?: any }>(
+  recurso: T,
+  viewerUserId: string,
+): T => {
+  if (!recurso?.esAnonimo) return recurso;
+  if (recurso.autorId === viewerUserId) return recurso;
+  return {
+    ...recurso,
+    autor: ANON_AUTHOR,
+  };
+};
+
 // GET - Obtener recursos de Caletas
 export async function GET(request: NextRequest) {
   try {
@@ -20,26 +38,9 @@ export async function GET(request: NextRequest) {
     const misRecursos = searchParams.get('misRecursos') === 'true';
 
     // Construir filtros según el tipo de consulta
-    const whereClause: any = {};
-
-    if (misRecursos) {
-      // Solo recursos del usuario actual
-      whereClause.autorId = session.user.id;
-    } else {
-      // Recursos públicos, del usuario y favoritos
-      whereClause.OR = [
-        { esPublico: true },
-        { autorId: session.user.id },
-        {
-          calificaciones: {
-            some: {
-              usuarioId: session.user.id,
-              calificacion: { gte: 4 }
-            }
-          }
-        }
-      ];
-    }
+    // Todos los recursos son visibles para todos los estudiantes.
+    // `misRecursos=true` se mantiene para filtrar por autor.
+    const whereClause: any = misRecursos ? { autorId: session.user.id } : {};
 
     // Obtener recursos según los filtros
     const recursos = await db.recurso.findMany({
@@ -67,15 +68,31 @@ export async function GET(request: NextRequest) {
           select: {
             calificacion: true
           }
-        }
+        },
+        favoritos: {
+          where: {
+            usuarioId: session.user.id,
+          },
+          select: {
+            id: true,
+          },
+        },
       },
       orderBy: [
         { createdAt: 'desc' }
       ],
     });
 
+    const recursosConFavorito = recursos.map(({ favoritos, ...r }) => {
+      const masked = maskAutorIfAnon(r as any, session.user.id);
+      return {
+        ...masked,
+        isFavorito: favoritos.length > 0,
+      };
+    });
+
     return NextResponse.json({
-      recursos,
+      recursos: recursosConFavorito,
     });
 
   } catch (error) {
@@ -110,6 +127,7 @@ export async function POST(request: NextRequest) {
       archivoUrl, 
       materiaId, 
       esPublico, 
+      esAnonimo,
       tags 
     } = body;
 
@@ -151,7 +169,8 @@ export async function POST(request: NextRequest) {
         archivoUrl,
         materiaId,
         autorId: session.user.id,
-        esPublico: esPublico ?? true,
+        esPublico: true,
+        esAnonimo: !!esAnonimo,
         tags: tags || "",
       },
       include: {
@@ -175,7 +194,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       message: "Recurso creado exitosamente",
-      recurso,
+      recurso: maskAutorIfAnon(recurso as any, session.user.id),
     });
 
   } catch (error) {
