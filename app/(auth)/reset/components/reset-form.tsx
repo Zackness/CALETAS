@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { ResetSchema } from "@/schemas";
 import { FormError } from "@/components/form-error";
 import { FormSucces } from "@/components/form-succes";
-import { reset } from "@/actions/reset";
+import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
 
 export const ResetForm = () => {
@@ -32,11 +32,25 @@ export const ResetForm = () => {
     setSucces("");
 
     startTransition(() => {
-      reset(values)
-        .then((data) => {
-          setError(data?.error);
-          setSucces(data?.succes);
-        });
+      (async () => {
+        try {
+          const redirectTo = `${window.location.origin}/new-password`;
+          const { error: requestError } =
+            await authClient.requestPasswordReset({
+              email: values.email,
+              redirectTo,
+            });
+
+          if (requestError) {
+            setError(requestError.message || "Algo ha salido mal!");
+            return;
+          }
+
+          setSucces("La solicitud ha sido enviada correctamente");
+        } catch {
+          setError("Algo ha salido mal!");
+        }
+      })();
     });
   };
 

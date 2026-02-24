@@ -11,8 +11,9 @@ import { Button } from "@/components/ui/button";
 import { LoginSchema } from "@/schemas";
 import { FormError } from "@/components/form-error";
 import { FormSucces } from "@/components/form-succes";
-import { login } from "@/actions/login";
-import { useSearchParams } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
+import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 
@@ -24,11 +25,10 @@ export const LoginForm = () => {
     setIsMounted(true);
   }, []);
   
+  const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl");
-  const urlError = searchParams.get("error") === "OAuthAccountNotLinked"
-    ? "El correo ya está en uso con un proveedor diferente"
-    : "";
+  const urlError = searchParams.get("error") || "";
 
   const [showTwoFactor, setShowTwoFactor] = useState(false);
   const [error, setError] = useState<string | undefined>("");
@@ -48,23 +48,58 @@ export const LoginForm = () => {
     setSucces("");
 
     startTransition(() => {
-      login(values, callbackUrl)
-        .then((data) => {
-          if (data?.error) {
+      (async () => {
+        try {
+          if (showTwoFactor) {
+            const code = values.code;
+            if (!code) {
+              setError("Ingresa el código de verificación");
+              return;
+            }
+
+            const { error: verifyError } = await authClient.twoFactor.verifyOtp({
+              code,
+            });
+
+            if (verifyError) {
+              setError(verifyError.message || "Código inválido");
+              return;
+            }
+
             form.reset();
-            setError(data.error);
+            router.push(callbackUrl || DEFAULT_LOGIN_REDIRECT);
+            return;
           }
 
-          if (data?.succes) {
-            form.reset();
-            setSucces(data.succes);
+          const { data, error: signInError } = await authClient.signIn.email({
+            email: values.email,
+            password: values.password,
+            callbackURL: callbackUrl || DEFAULT_LOGIN_REDIRECT,
+          });
+
+          if (signInError) {
+            // 403: requireEmailVerification
+            if (signInError.status === 403) {
+              setError("Por favor verifica tu correo para iniciar sesión");
+              return;
+            }
+
+            setError(signInError.message || "Algo ha salido mal!");
+            return;
           }
 
-          if (data?.twoFactor) {
+          if (data && "twoFactorRedirect" in data && (data as any).twoFactorRedirect) {
             setShowTwoFactor(true);
+            setSucces("Te enviamos un código de verificación");
+            return;
           }
-        })
-        .catch(() => setError("Algo ha salido mal!"));
+
+          form.reset();
+          router.push(callbackUrl || DEFAULT_LOGIN_REDIRECT);
+        } catch {
+          setError("Algo ha salido mal!");
+        }
+      })();
     });
   };
 

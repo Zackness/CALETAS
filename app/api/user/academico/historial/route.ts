@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/auth";
+import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { EstadoMateria } from "@prisma/client";
 
@@ -49,7 +49,9 @@ async function obtenerPrerrequisitosEnCascada(materiaId: string): Promise<string
 // GET - Obtener historial académico
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
 
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -124,7 +126,9 @@ export async function GET(request: NextRequest) {
 // POST - Agregar materia al historial
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
 
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -378,7 +382,9 @@ export async function POST(request: NextRequest) {
 // PUT - Actualizar materia del historial
 export async function PUT(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
 
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -480,7 +486,9 @@ export async function PUT(request: NextRequest) {
 // DELETE - Eliminar materia del historial
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
 
     if (!session?.user?.id) {
       return NextResponse.json(

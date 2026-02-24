@@ -21,8 +21,8 @@ import {
   Plus
 } from "lucide-react";
 import axios from "axios";
-import { useSession } from "next-auth/react";
-import { redirect, useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
 import { UpdateGradeDialog } from "@/components/academico/update-grade-dialog";
 
 interface MateriaEstudiante {
@@ -55,17 +55,18 @@ interface Estadisticas {
 }
 
 export default function PanelAcademico() {
-  const { data: session, status } = useSession();
+  const { data: session, isPending } = authClient.useSession();
   const router = useRouter();
   const [materiasEstudiante, setMateriasEstudiante] = useState<MateriaEstudiante[]>([]);
   const [estadisticas, setEstadisticas] = useState<Estadisticas | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (status === "loading") return;
+    if (isPending) return;
     
     if (!session) {
-      redirect("/auth/signin");
+      router.replace("/login");
+      return;
     }
 
     const fetchDatosAcademicos = async () => {
@@ -81,7 +82,7 @@ export default function PanelAcademico() {
     };
 
     fetchDatosAcademicos();
-  }, [session, status]);
+  }, [session, isPending, router]);
 
   const getEstadoColor = (estado: string) => {
     switch (estado) {

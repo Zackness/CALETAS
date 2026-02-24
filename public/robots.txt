@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://globalegal.org
+
+# Sitemaps
+Sitemap: https://globalegal.org/sitemap.xml

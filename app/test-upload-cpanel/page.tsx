@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Upload, CheckCircle, AlertTriangle } from "lucide-react";
 
 export default function TestUploadCPanelPage() {
-  const { data: session, status } = useSession();
+  const { data: session, isPending } = authClient.useSession();
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
@@ -28,7 +28,7 @@ export default function TestUploadCPanelPage() {
   const [esPublico, setEsPublico] = useState(true);
 
   useEffect(() => {
-    if (status === "loading") return;
+    if (isPending) return;
     
     if (!session?.user?.id) {
       router.push("/login");
@@ -36,7 +36,7 @@ export default function TestUploadCPanelPage() {
     }
     
     setIsLoading(false);
-  }, [session, status, router]);
+  }, [session, isPending, router]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];

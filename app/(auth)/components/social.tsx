@@ -4,15 +4,18 @@ import { FcGoogle } from "react-icons/fc";
 import { FaTwitch } from "react-icons/fa";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { authClient } from "@/lib/auth-client";
 
 export const Social = () => {
     const searchParams = useSearchParams();
     const callbackUrl = searchParams.get("callbackUrl");
 
     const onClick = (provider: "google" | "twitch") => {
-        // TODO: Implementar con Better Auth
-        console.log(`Sign in with ${provider}`);
-        window.location.href = `/api/auth/signin/${provider}?callbackUrl=${callbackUrl || "/home"}`;
+        void authClient.signIn.social({
+            provider,
+            callbackURL: callbackUrl || "/home",
+            errorCallbackURL: "/error",
+        });
     }
 
     return (

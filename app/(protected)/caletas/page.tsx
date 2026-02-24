@@ -31,8 +31,8 @@ import {
   Link,
   Lightbulb
 } from "lucide-react";
-import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
 import axios from "axios";
 import { toast } from "sonner";
 
@@ -71,7 +71,8 @@ interface Materia {
 }
 
 export default function CaletasPage() {
-  const { data: session, status } = useSession();
+  const router = useRouter();
+  const { data: session, isPending } = authClient.useSession();
   const [recursos, setRecursos] = useState<Recurso[]>([]);
   const [materias, setMaterias] = useState<Materia[]>([]);
   const [loading, setLoading] = useState(true);
@@ -81,15 +82,15 @@ export default function CaletasPage() {
   const [sortBy, setSortBy] = useState<string>("recientes");
 
   useEffect(() => {
-    if (status === "loading") return;
-    
+    if (isPending) return;
     if (!session) {
-      redirect("/auth/signin");
+      router.replace("/login");
+      return;
     }
 
     fetchRecursos();
     fetchMaterias();
-  }, [session, status]);
+  }, [session, isPending, router]);
 
   const fetchRecursos = async () => {
     try {

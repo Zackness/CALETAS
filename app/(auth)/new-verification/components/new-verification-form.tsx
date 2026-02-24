@@ -1,9 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { CardWrapper } from "@/components/card-wrapper";
-import { newVerification } from "@/actions/new-verification";
 import { FormError } from "@/components/form-error";
 import { FormSucces } from "@/components/form-succes";
 import { BeatLoader } from "react-spinners";
@@ -16,35 +15,28 @@ export const NewVerificationForm = () => {
   const [succes, setSucces] = useState<string | undefined>();
 
   const searchParams = useSearchParams();
-  const token = searchParams.get("token");
-
-  const onSubmit = useCallback(() => {
-    if (succes || error) return;
-
-    if (!token) {
-      setError("Token perdido!");
-      return;
-    }
-
-    newVerification(token)
-      .then((data) => {
-        setSucces(data.succses);
-        setError(data.error);
-      })
-      .catch(() => {
-        setError("Algo ha salido mal");
-      });
-  }, [token, succes, error]);
+  const errorParam = searchParams.get("error");
+  const successParam = searchParams.get("success");
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
   useEffect(() => {
-    if (isMounted) {
-      onSubmit();
+    if (!isMounted) return;
+
+    if (errorParam) {
+      setError("El enlace de verificación es inválido o expiró.");
+      return;
     }
-  }, [onSubmit, isMounted]);
+
+    if (successParam) {
+      setSucces("¡Correo verificado!");
+      return;
+    }
+
+    setSucces("Si abriste el enlace de verificación, tu correo ya quedó verificado.");
+  }, [isMounted, errorParam, successParam]);
 
   if (!isMounted) {
     return null;

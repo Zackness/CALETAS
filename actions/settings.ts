@@ -4,9 +4,8 @@ import * as z from "zod";
 import { db } from "@/lib/db";
 import { SettingsSchema } from "@/schemas";
 import { getUserByEmail, getUserById } from "@/data/user";
-import { currentUser } from "@/lib/auth"
-import { generateVerificationToken } from "@/lib/tokens";
-import { sendVerificationEmail } from "@/lib/mail";
+import { currentUser, auth } from "@/lib/auth";
+import { headers } from "next/headers";
 import bcrypt from "bcrypt";
 
 export const settings = async (
@@ -39,11 +38,16 @@ export const settings = async (
             return { error: "No tienes autorizacion"}
         }
 
-        if (user.isOAuth) {
+        const linkedAccounts = await db.authAccount.findMany({
+            where: { userId: user.id },
+            select: { providerId: true },
+        });
+
+        const isOAuth = linkedAccounts.some((a) => a.providerId !== "credential");
+        if (isOAuth) {
             values.email = undefined;
             values.password = undefined;
             values.newPassword = undefined;
-            values.isTwoFactorEnabled = undefined;
         }
 
 
@@ -57,13 +61,13 @@ export const settings = async (
                 return { error: "El correo electronico se encuentra en uso" }
             }
 
-            const verificationToken = await generateVerificationToken(
-                typedValues.email
-            );
-            await sendVerificationEmail(
-                verificationToken.email,
-                verificationToken.token,
-            );
+            await auth.api.changeEmail({
+                body: {
+                    newEmail: typedValues.email,
+                    callbackURL: "/ajustes",
+                },
+                headers: await headers(),
+            });
 
             return { succes: "Hemos enviado un correo para verificar tu nuevo Email" };
         }
@@ -72,7 +76,7 @@ export const settings = async (
         if (typedValues.password && typedValues.newPassword) {
             const passwordsMatch = await bcrypt.compare(
                 typedValues.password,
-                dbUser.password!
+                dbUser.password || ""
             );
 
             if (!passwordsMatch) {
@@ -90,7 +94,7 @@ export const settings = async (
             data: {
                 email: typedValues.email || undefined,
                 password: typedValues.password || undefined,
-                isTwoFactorEnabled: typedValues.isTwoFactorEnabled || undefined,
+                isTwoFactorEnabled: typedValues.isTwoFactorEnabled ?? undefined,
                 telefono: typedValues.telefono || undefined,
                 ciudadDeResidencia: typedValues.ciudadDeResidencia || undefined,
             }

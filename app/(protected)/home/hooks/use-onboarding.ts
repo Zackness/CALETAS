@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { OnboardingStatus } from "@prisma/client";
-import { useSession } from "next-auth/react";
+import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 
 export const useOnboarding = () => {
-  const { data: session } = useSession();
+  const { data: session } = authClient.useSession();
   const [onboardingStatus, setOnboardingStatus] = useState<OnboardingStatus | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();

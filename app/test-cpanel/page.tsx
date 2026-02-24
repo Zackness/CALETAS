@@ -1,4 +1,4 @@
-import { auth } from "@/auth";
+import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import FileManager from "@/components/file-manager";
 import CPanelStatus from "@/components/cpanel-status";
@@ -7,7 +7,7 @@ import FileUploadTest from "@/components/file-upload-test";
 import SuppressHydrationWarning from "@/components/suppress-hydration-warning";
 
 export default async function TestCPanelPage() {
-  const session = await auth();
+  const session = await getSession();
   
   if (!session?.user?.id) {
     redirect("/login");

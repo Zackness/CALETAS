@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/auth";
+import { auth } from "@/lib/auth";
 import { uploadToCPanel } from "@/lib/cpanel-storage";
 import { validateFile } from "@/lib/file-utils";
 import { db } from "@/lib/db";
@@ -7,7 +7,9 @@ import { TipoRecurso } from "@prisma/client";
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
     
     if (!session?.user?.id) {
       return NextResponse.json(

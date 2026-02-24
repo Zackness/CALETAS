@@ -3,14 +3,20 @@
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { logout } from "@/actions/logout";
+import { authClient } from "@/lib/auth-client";
 import { Button } from "./ui/button";
 import { ExitIcon } from "@radix-ui/react-icons";
 
 export function DashboardHeader() {
 
   const onClick = () => {
-    logout();
+    authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          window.location.href = "/login";
+        },
+      },
+    });
 };
   
   return (

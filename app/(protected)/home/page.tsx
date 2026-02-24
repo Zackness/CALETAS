@@ -1,5 +1,5 @@
 
-import { auth } from "@/auth";
+import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { OnboardingStatus } from "@prisma/client";
@@ -44,7 +44,7 @@ import Link from "next/link";
 export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
-  const session = await auth();
+  const session = await getSession();
 
   if (!session?.user?.id) {
     return null;

@@ -18,8 +18,8 @@ import {
   Star
 } from "lucide-react";
 import axios from "axios";
-import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
 
 interface EstadisticasDetalladas {
   totalMaterias: number;
@@ -43,15 +43,17 @@ interface EstadisticasDetalladas {
 }
 
 export default function EstadisticasPage() {
-  const { data: session, status } = useSession();
+  const router = useRouter();
+  const { data: session, isPending } = authClient.useSession();
   const [estadisticas, setEstadisticas] = useState<EstadisticasDetalladas | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (status === "loading") return;
+    if (isPending) return;
     
     if (!session) {
-      redirect("/auth/signin");
+      router.replace("/login");
+      return;
     }
 
     const fetchEstadisticas = async () => {
@@ -66,7 +68,7 @@ export default function EstadisticasPage() {
     };
 
     fetchEstadisticas();
-  }, [session, status]);
+  }, [session, isPending, router]);
 
   const getEstadoColor = (estado: string) => {
     switch (estado) {

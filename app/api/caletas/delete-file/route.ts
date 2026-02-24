@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/auth";
+import { auth } from "@/lib/auth";
 import { deleteFromCPanel } from "@/lib/cpanel-storage";
 
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
     
     if (!session?.user?.id) {
       return NextResponse.json(

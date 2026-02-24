@@ -15,8 +15,8 @@ import {
   Award
 } from "lucide-react";
 import axios from "axios";
-import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
 
 interface Materia {
   id: string;
@@ -46,17 +46,19 @@ interface Estadisticas {
 }
 
 export default function RecomendacionesPage() {
-  const { data: session, status } = useSession();
+  const router = useRouter();
+  const { data: session, isPending } = authClient.useSession();
   const [recomendaciones, setRecomendaciones] = useState<Recomendacion[]>([]);
   const [estadisticas, setEstadisticas] = useState<Estadisticas | null>(null);
   const [proximoSemestre, setProximoSemestre] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (status === "loading") return;
+    if (isPending) return;
     
     if (!session) {
-      redirect("/auth/signin");
+      router.replace("/login");
+      return;
     }
 
     const fetchRecomendaciones = async () => {
@@ -73,7 +75,7 @@ export default function RecomendacionesPage() {
     };
 
     fetchRecomendaciones();
-  }, [session, status]);
+  }, [session, isPending, router]);
 
   const getPrioridadColor = (prioridad: string) => {
     switch (prioridad) {

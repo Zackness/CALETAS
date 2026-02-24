@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { HelpCircle, BookOpen, Save, RotateCcw, CheckCircle, XCircle, Brain } from "lucide-react";
 import { toast } from "sonner";
-import { useSession } from "next-auth/react";
+import { authClient } from "@/lib/auth-client";
 
 interface Recurso {
   id: string;
@@ -45,7 +45,7 @@ interface Cuestionario {
 }
 
 export default function CuestionarioPage() {
-  const { data: session } = useSession();
+  const { data: session } = authClient.useSession();
   const [recursos, setRecursos] = useState<Recurso[]>([]);
   const [recursoSeleccionado, setRecursoSeleccionado] = useState<string>("");
   const [cuestionario, setCuestionario] = useState<Cuestionario | null>(null);

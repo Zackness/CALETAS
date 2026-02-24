@@ -11,7 +11,6 @@ import { Combobox } from "@/components/ui/combobox";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { Upload, FileText, BookOpen, GraduationCap, Shield, AlertTriangle, CheckCircle, Search, ArrowRight } from "lucide-react";
-import { auth } from "@/auth";
 
 interface Universidad {
   id: string;

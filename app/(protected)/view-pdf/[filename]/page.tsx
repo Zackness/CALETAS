@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import FullscreenPDFViewer from "@/components/fullscreen-pdf-viewer";
@@ -15,7 +15,7 @@ interface PDFFile {
 }
 
 export default function ViewPDFPage() {
-  const { data: session, status } = useSession();
+  const { data: session, isPending } = authClient.useSession();
   const router = useRouter();
   const params = useParams();
   const [isLoading, setIsLoading] = useState(true);
@@ -23,7 +23,7 @@ export default function ViewPDFPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (status === "loading") return;
+    if (isPending) return;
     
     if (!session?.user?.id) {
       router.push("/login");
@@ -31,7 +31,7 @@ export default function ViewPDFPage() {
     }
     
     setIsLoading(false);
-  }, [session, status, router]);
+  }, [session, isPending, router]);
 
   useEffect(() => {
     const loadFileInfo = async () => {

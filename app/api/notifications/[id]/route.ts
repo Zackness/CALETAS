@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { markNotificationRead, deleteNotification } from "@/lib/notifications";
-import { auth } from "@/auth";
+import { auth } from "@/lib/auth";
 
 export async function PATCH(req: Request) {
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: req.headers,
+  });
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -15,7 +17,9 @@ export async function PATCH(req: Request) {
 }
 
 export async function DELETE(req: Request) {
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: req.headers,
+  });
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

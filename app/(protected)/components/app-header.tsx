@@ -4,7 +4,7 @@ import { Bell, LogOut, Heart, Upload, Search as SearchIcon, BarChart3, Menu, X, 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { signOut } from "next-auth/react";
+import { authClient } from "@/lib/auth-client";
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 
@@ -54,8 +54,14 @@ export function DashboardHeader({ session }: AppHeaderProps) {
     return () => document.removeEventListener("mousedown", handleClick);
   }, [isMenuOpen]);
 
-  const handleSignOut = () => {
-    signOut({ callbackUrl: "/" });
+  const handleSignOut = async () => {
+    await authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          window.location.href = "/";
+        },
+      },
+    });
   };
 
   const getUserInitials = (name: string) => {

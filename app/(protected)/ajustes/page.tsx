@@ -9,7 +9,6 @@ import { useTransition, useState, useEffect } from "react";
 import { SettingsSchema } from "@/schemas";
 import { Form, FormField, FormControl, FormItem, FormLabel, FormDescription, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useSession } from "next-auth/react";
 import { FormSucces } from "@/components/form-succes";
 import { FormError } from "@/components/form-error";
 import { useCurrentUser } from "@/hooks/use-current-user";
@@ -22,21 +21,20 @@ import { Settings, User, Shield, Phone, MapPin } from "lucide-react";
 
 type ExtendedUser = {
     id: string;
-    name: string;
-    name2: string | null;
-    apellido: string | null;
-    apellido2: string | null;
-    email: string;
-    role: UserRole;
-    isTwoFactorEnabled: boolean;
-    isOAuth: boolean;
-    telefono: string | null;
-    ciudadDeResidencia: string | null;
+    name?: string;
+    name2?: string | null;
+    apellido?: string | null;
+    apellido2?: string | null;
+    email?: string;
+    role?: UserRole;
+    isTwoFactorEnabled?: boolean;
+    isOAuth?: boolean;
+    telefono?: string | null;
+    ciudadDeResidencia?: string | null;
 };
 
 export default function Ajustes() {
-  const user = useCurrentUser() as ExtendedUser;
-  const { update } = useSession();
+  const user = useCurrentUser() as unknown as ExtendedUser;
 
   const [error, setError] = useState<string | undefined>();
   const [succes, setSucces] = useState<string | undefined>();
@@ -92,7 +90,6 @@ export default function Ajustes() {
 
         if (data.succes) {
           console.log("Éxito al guardar:", data.succes);
-          await update();
           setSucces(data.succes);
           toast.success(data.succes);
           setHasChanges(false);

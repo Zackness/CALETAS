@@ -4,8 +4,10 @@ import { UploadThingError } from "uploadthing/server";
 
 const f = createUploadthing();
 
-const handleAuth = async () => {
-  const session = await auth(); // Asegúrate de obtener la sesión de forma asíncrona
+const handleAuth = async (req: Request) => {
+  const session = await auth.api.getSession({
+    headers: req.headers,
+  });
 
   if (!session?.user?.id) {
     throw new UploadThingError("No tienes autorización"); // Lanzar el error específico de UploadThing
@@ -16,12 +18,12 @@ const handleAuth = async () => {
 
 export const ourFileRouter = {
   Testigo1: f(["image", "pdf"])
-    .middleware(() => handleAuth())
+    .middleware(async ({ req }) => handleAuth(req))
     .onUploadComplete(({ metadata }) => {
       console.log("Upload complete for Testigo1:", metadata);
     }),
   Testigo2: f(["image", "pdf"])
-    .middleware(() => handleAuth())
+    .middleware(async ({ req }) => handleAuth(req))
     .onUploadComplete(({ metadata }) => {
       console.log("Upload complete for Testigo2:", metadata);
     }),

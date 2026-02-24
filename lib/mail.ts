@@ -201,6 +201,33 @@ export const sendPasswordResetEmail = async (
     });
 };
 
+export const sendBetterAuthResetPasswordEmail = async (
+    email: string,
+    url: string,
+) => {
+    const content = `
+        <h2>Restablecer tu contraseña</h2>
+        <p>¡Hola!</p>
+        <p>Has solicitado restablecer tu contraseña en Caletas.</p>
+        <p>Haz clic en el siguiente botón para crear una nueva contraseña:</p>
+        <p style="text-align: center;">
+            <a href="${url}" class="button">Restablecer Contraseña</a>
+        </p>
+        <div class="highlight">
+            <p>🔒 Este enlace expirará en 1 hora por seguridad.</p>
+        </div>
+        <p>Si no has solicitado restablecer tu contraseña, por favor ignora este correo y contacta a soporte inmediatamente.</p>
+        <p>¡Gracias por usar Caletas!</p>
+    `;
+
+    await resend.emails.send({
+        from: "Caletas <bienvenido@caleta.top>",
+        to: email,
+        subject: "Restablecer contraseña - Caletas",
+        html: baseTemplate(content),
+    });
+};
+
 export const sendVerificationEmail = async (
     email: string, 
     token: string
@@ -228,5 +255,32 @@ export const sendVerificationEmail = async (
         to: email,
         subject: "¡Bienvenido a Caletas! Verifica tu correo",
         html: baseTemplate(content)
+    });
+};
+
+export const sendBetterAuthVerificationEmail = async (
+    email: string,
+    url: string,
+) => {
+    const content = `
+        <h2>¡Bienvenido a Caletas!</h2>
+        <p>¡Hola!</p>
+        <p>Gracias por registrarte en Caletas. Para completar tu registro y acceder a todo el material universitario, por favor verifica tu correo electrónico.</p>
+        <p>Haz clic en el siguiente botón para verificar tu correo:</p>
+        <p style="text-align: center;">
+            <a href="${url}" class="button">Verificar Correo</a>
+        </p>
+        <div class="highlight">
+            <p>📚 Una vez verificado, podrás acceder a material universitario creado por estudiantes para estudiantes.</p>
+        </div>
+        <p>Si no has creado una cuenta en Caletas, por favor ignora este correo.</p>
+        <p>¡Nos vemos en la comunidad!</p>
+    `;
+
+    await resend.emails.send({
+        from: "Caletas <bienvenido@caleta.top>",
+        to: email,
+        subject: "¡Bienvenido a Caletas! Verifica tu correo",
+        html: baseTemplate(content),
     });
 };

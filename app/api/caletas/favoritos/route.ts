@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/auth";
+import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 
 // POST: Agregar a favoritos
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
     
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -92,7 +94,9 @@ export async function POST(request: NextRequest) {
 // DELETE: Quitar de favoritos
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
     
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -136,7 +140,9 @@ export async function DELETE(request: NextRequest) {
 // GET: Obtener favoritos del usuario
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
     
     if (!session?.user?.id) {
       return NextResponse.json(

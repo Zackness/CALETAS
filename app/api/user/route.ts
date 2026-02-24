@@ -1,11 +1,13 @@
 import { db } from '@/lib/db';
 import { NextResponse } from 'next/server';
-import { auth } from '@/lib/auth'; // Asegúrate de que la ruta sea correcta
+import { auth } from '@/lib/auth';
 
 export async function GET(req: Request) {
   try {
     // Obtén la sesión del usuario
-    const session = await auth();
+    const session = await auth.api.getSession({
+      headers: req.headers,
+    });
 
     // Verifica si el usuario está autenticado
     if (!session?.user?.id) {

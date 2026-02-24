@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import '@fontsource-variable/montserrat';
 import "@/app/globals.css";
-import { SessionProvider } from "next-auth/react";
-import { auth } from "@/auth";
+import { getSession } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Onboarding - Caletas",
@@ -21,17 +20,13 @@ export default async function OnboardingLayout ({
  }: {
   children: React.ReactNode
  }) {
-    const session = await auth();
+    const session = await getSession();
 
   return (
-    <SessionProvider session={session}>
-      <html lang="es">
-        <body className="flex flex-col h-full bg-gradient-to-br from-mygreen-dark via-mygreen to-mygreen-light text-white">
-            <main className="flex flex-col h-full w-full">
-              {children}
-            </main>
-          </body>
-      </html>
-    </SessionProvider>
+    <html lang="es">
+      <body className="flex flex-col h-full bg-gradient-to-br from-mygreen-dark via-mygreen to-mygreen-light text-white">
+        <main className="flex flex-col h-full w-full">{children}</main>
+      </body>
+    </html>
   );
 }

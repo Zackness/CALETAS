@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { RegisterSchema } from "@/schemas";
 import { FormError } from "@/components/form-error";
 import { FormSucces } from "@/components/form-succes";
-import { register } from "@/actions/register";
+import { authClient } from "@/lib/auth-client";
 import { Eye, EyeOff, Info } from "lucide-react";
 import Link from "next/link";
 
@@ -42,10 +42,41 @@ export const RegisterForm = () => {
     setSucces("");
 
     startTransition(() => {
-      register(values).then((data) => {
-        setError(data.error);
-        setSucces(data.succes);
-      });
+      (async () => {
+        try {
+          const { error: signUpError } = await authClient.signUp.email({
+            name: values.name,
+            email: values.email,
+            password: values.password,
+            callbackURL: "/new-verification?success=1",
+          });
+
+          if (signUpError) {
+            setError(signUpError.message || "Algo ha salido mal!");
+            return;
+          }
+
+          const { error: verificationError } =
+            await authClient.sendVerificationEmail({
+              email: values.email,
+              callbackURL: "/new-verification?success=1",
+            });
+
+          if (verificationError) {
+            setSucces(
+              "Cuenta creada. Inicia sesión para recibir el correo de verificación.",
+            );
+            return;
+          }
+
+          form.reset();
+          setSucces(
+            "Cuenta creada. Te enviamos un correo para verificar tu cuenta.",
+          );
+        } catch {
+          setError("Algo ha salido mal!");
+        }
+      })();
     });
   };
 

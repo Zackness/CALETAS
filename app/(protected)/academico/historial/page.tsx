@@ -54,8 +54,8 @@ import {
 import { EstadoMateria } from "@prisma/client";
 import { toast } from "sonner";
 import axios from "axios";
-import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
 
 interface Materia {
   id: string;
@@ -79,7 +79,8 @@ interface MateriaEstudiante {
 }
 
 export default function HistorialPage() {
-  const { data: session, status } = useSession();
+  const { data: session, isPending } = authClient.useSession();
+  const router = useRouter();
   const [materiasEstudiante, setMateriasEstudiante] = useState<MateriaEstudiante[]>([]);
   const [materiasDisponibles, setMateriasDisponibles] = useState<Materia[]>([]);
   const [materiasOptions, setMateriasOptions] = useState<{ label: string; value: string; icon: any; semestre: string }[]>([]);
@@ -103,10 +104,11 @@ export default function HistorialPage() {
   });
 
   useEffect(() => {
-    if (status === "loading") return;
+    if (isPending) return;
     
     if (!session) {
-      redirect("/auth/signin");
+      router.replace("/login");
+      return;
     }
 
     fetchHistorial();

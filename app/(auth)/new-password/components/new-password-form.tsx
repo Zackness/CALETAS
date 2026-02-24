@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { NewPasswordSchema } from "@/schemas";
 import { FormError } from "@/components/form-error";
 import { FormSucces } from "@/components/form-succes";
-import { newPassword } from "@/actions/new-password";
+import { authClient } from "@/lib/auth-client";
 import { useSearchParams } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
@@ -38,11 +38,28 @@ export const NewPasswordForm = () => {
     setSucces("");
 
     startTransition(() => {
-      newPassword(values, token)
-        .then((data) => {
-          setError(data?.error);
-          setSucces(data?.succes);
-        });
+      (async () => {
+        try {
+          if (!token) {
+            setError("El token no existe!");
+            return;
+          }
+
+          const { error: resetError } = await authClient.resetPassword({
+            newPassword: values.password,
+            token,
+          });
+
+          if (resetError) {
+            setError(resetError.message || "Token inválido!");
+            return;
+          }
+
+          setSucces("Contraseña actualizada!");
+        } catch {
+          setError("Algo ha salido mal!");
+        }
+      })();
     });
   };
 

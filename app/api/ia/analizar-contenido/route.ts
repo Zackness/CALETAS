@@ -149,7 +149,9 @@ export async function POST(request: NextRequest) {
   try {
     console.log("🚀 Iniciando análisis de contenido...");
     
-    const session = await auth();
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
     if (!session?.user?.id) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }

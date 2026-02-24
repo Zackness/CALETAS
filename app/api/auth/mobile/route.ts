@@ -1,6 +1,5 @@
 import bcrypt from "bcrypt";
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import * as jwt from "jsonwebtoken";
 
@@ -43,6 +42,20 @@ export async function POST(req: Request) {
     }
 
     // Verificar contraseña
+    if (!user.password) {
+      return NextResponse.json(
+        { error: "Credenciales inválidas" },
+        {
+          status: 401,
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization",
+          },
+        },
+      );
+    }
+
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
       return NextResponse.json(

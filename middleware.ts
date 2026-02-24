@@ -1,115 +1,108 @@
-import { auth } from "@/auth";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { DEFAULT_LOGIN_REDIRECT, apiAuthPrefix, authRoutes, publicRoutes } from "@/routes";
-import type { NextRequest } from 'next/server';
+import { getSessionCookie } from "better-auth/cookies";
 
-export default auth((req) => {
-  const { nextUrl } = req;
-  const isLoggedIn = !!req.auth;
+import {
+  DEFAULT_LOGIN_REDIRECT,
+  apiAuthPrefix,
+  authRoutes,
+  publicRoutes,
+} from "@/routes";
 
-  // Permitir acceso sin autenticación a la ruta del webhook
-  if (nextUrl.pathname.startsWith('/api/uploadthing')) {
-    return;
-  }
+const allowedOrigins = [
+  "http://localhost:8081", // Expo web local
+  "http://localhost:19006", // Expo web alternativo
+  "exp://localhost:19000", // Expo Go local
+  "exp://192.168.137.1:19000", // Expo Go en red local
+  "http://localhost:19000", // Expo web en red local
+  "http://192.168.137.1:19000", // Expo web en red local
+];
 
-  const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
-  const isPublicRoute = publicRoutes.some(route => {
+const isPublicRoute = (pathname: string) => {
+  return publicRoutes.some((route) => {
     if (route.includes(".*")) {
-      const regex = new RegExp(route);
-      return regex.test(nextUrl.pathname);
+      return new RegExp(route).test(pathname);
     }
-    return nextUrl.pathname === route;
+    return pathname === route;
   });
-  const isAuthRoute = authRoutes.includes(nextUrl.pathname);
-  const isOnboardingRoute = nextUrl.pathname === '/onboarding';
+};
 
-  if (isApiAuthRoute) {
-    return;
+const withCors = (request: NextRequest, response: NextResponse) => {
+  const origin = request.headers.get("origin") || "";
+  const isAllowedOrigin = allowedOrigins.includes(origin);
+
+  if (isAllowedOrigin) {
+    response.headers.set("Access-Control-Allow-Origin", origin);
   }
 
-  if (isAuthRoute) {
-    if (isLoggedIn) {
-      return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
-    }
-    return;
-  }
+  response.headers.set(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, OPTIONS",
+  );
+  response.headers.set(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization",
+  );
+  response.headers.set("Access-Control-Allow-Credentials", "true");
 
-  if (!isLoggedIn && !isPublicRoute) {
-    let callbackUrl = nextUrl.pathname;
-    if (nextUrl.search) {
-      callbackUrl += nextUrl.search;
-    }
-
-    const encodedCallbackUrl = encodeURIComponent(callbackUrl);
-
-    return Response.redirect(new URL(
-      `/login?callbackUrl=${encodedCallbackUrl}`, 
-      nextUrl
-    ));
-  }
-
-  // No verificamos el estado del onboarding en el middleware para evitar problemas con Prisma en Edge Runtime
-  // En su lugar, lo manejaremos en el componente de página
-
-  return;
-});
-
-export const config = {
-  matcher: [
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    '/(api|trpc)(.*)',
-  ],
+  return response;
 };
 
 export function middleware(request: NextRequest) {
-  // Obtener el origen de la petición
-  const origin = request.headers.get('origin') || '';
-  
-  // Lista de orígenes permitidos
-  const allowedOrigins = [
-    'http://localhost:8081',     // Expo web local
-    'http://localhost:19006',    // Expo web alternativo
-    'exp://localhost:19000',     // Expo Go local
-    'exp://192.168.137.1:19000',  // Expo Go en red local (reemplaza X con tu IP)
-    'http://localhost:19000',    // Expo web en red local
-    'http://192.168.137.1:19000',  // Expo web en red local (reemplaza X con tu IP)
-  ];
+  const { nextUrl } = request;
 
-  // Verificar si el origen está permitido
-  const isAllowedOrigin = allowedOrigins.includes(origin);
-
-  // Crear los headers de respuesta
-  const headers = new Headers(request.headers);
-  
-  if (isAllowedOrigin) {
-    headers.set('Access-Control-Allow-Origin', origin);
-  }
-  
-  headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  headers.set('Access-Control-Allow-Credentials', 'true');
-
-  // Manejar preflight requests
-  if (request.method === 'OPTIONS') {
-    return new NextResponse(null, {
-      status: 204,
-      headers,
-    });
+  // CORS (solo API)
+  if (nextUrl.pathname.startsWith("/api")) {
+    if (request.method === "OPTIONS") {
+      return withCors(request, new NextResponse(null, { status: 204 }));
+    }
   }
 
-  // Continuar con la petición normal
-  const response = NextResponse.next();
-  
-  // Agregar los headers CORS a la respuesta
-  Object.entries(headers).forEach(([key, value]) => {
-    response.headers.set(key, value);
-  });
+  const sessionCookie = getSessionCookie(request);
+  const isLoggedIn = !!sessionCookie;
 
-  return response;
+  // Permitir UploadThing sin autenticación (webhook/endpoints internos)
+  if (nextUrl.pathname.startsWith("/api/uploadthing")) {
+    const res = NextResponse.next();
+    return nextUrl.pathname.startsWith("/api") ? withCors(request, res) : res;
+  }
+
+  const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
+  const isAuthRoute = authRoutes.includes(nextUrl.pathname);
+  const isPublic = isPublicRoute(nextUrl.pathname);
+
+  // Dejar pasar endpoints de auth de Better Auth
+  if (isApiAuthRoute) {
+    const res = NextResponse.next();
+    return nextUrl.pathname.startsWith("/api") ? withCors(request, res) : res;
+  }
+
+  // Si ya está logueado, no permitir entrar a /login o /register, etc.
+  if (isAuthRoute && isLoggedIn) {
+    const res = NextResponse.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
+    return nextUrl.pathname.startsWith("/api") ? withCors(request, res) : res;
+  }
+
+  // Si NO está logueado y la ruta no es pública, mandar a /login con callback
+  if (!isLoggedIn && !isPublic && !isAuthRoute) {
+    let callbackUrl = nextUrl.pathname;
+    if (nextUrl.search) callbackUrl += nextUrl.search;
+    const encodedCallbackUrl = encodeURIComponent(callbackUrl);
+
+    const res = NextResponse.redirect(
+      new URL(`/login?callbackUrl=${encodedCallbackUrl}`, nextUrl),
+    );
+    return nextUrl.pathname.startsWith("/api") ? withCors(request, res) : res;
+  }
+
+  const res = NextResponse.next();
+  return nextUrl.pathname.startsWith("/api") ? withCors(request, res) : res;
 }
 
-// Configurar en qué rutas se ejecutará el middleware
-export const configCors = {
-  matcher: '/api/:path*',
+export const config = {
+  matcher: [
+    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    "/(api|trpc)(.*)",
+  ],
 };
 
