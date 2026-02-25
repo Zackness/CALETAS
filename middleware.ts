@@ -2,21 +2,13 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getSessionCookie } from "better-auth/cookies";
 
+import { allowedOrigins } from "@/lib/cors";
 import {
   DEFAULT_LOGIN_REDIRECT,
   apiAuthPrefix,
   authRoutes,
   publicRoutes,
 } from "@/routes";
-
-const allowedOrigins = [
-  "http://localhost:8081", // Expo web local
-  "http://localhost:19006", // Expo web alternativo
-  "exp://localhost:19000", // Expo Go local
-  "exp://192.168.137.1:19000", // Expo Go en red local
-  "http://localhost:19000", // Expo web en red local
-  "http://192.168.137.1:19000", // Expo web en red local
-];
 
 const isPublicRoute = (pathname: string) => {
   return publicRoutes.some((route) => {
@@ -29,9 +21,7 @@ const isPublicRoute = (pathname: string) => {
 
 const withCors = (request: NextRequest, response: NextResponse) => {
   const origin = request.headers.get("origin") || "";
-  const isAllowedOrigin = allowedOrigins.includes(origin);
-
-  if (isAllowedOrigin) {
+  if (allowedOrigins.includes(origin)) {
     response.headers.set("Access-Control-Allow-Origin", origin);
   }
 
