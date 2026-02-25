@@ -1,10 +1,22 @@
 "use client";
-import { BookOpen, FileText, Menu, Home, GraduationCap, Target, History, Search, Upload, Settings, BarChart3, Lightbulb, HelpCircle, MessageCircle } from "lucide-react";
+import { BookOpen, FileText, Menu, Home, GraduationCap, Target, History, Search, Upload, Settings, BarChart3, Lightbulb, HelpCircle, MessageCircle, ShieldCheck, Library } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export function IASidebar() {
   const [open, setOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/user")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        setIsAdmin(data?.user?.role === "ADMIN");
+      })
+      .catch(() => {
+        // ignorar errores silenciosamente
+      });
+  }, []);
 
   // Sidebar fijo en escritorio, Drawer en móvil
   return (
@@ -47,6 +59,10 @@ export function IASidebar() {
                 <Link href="/caletas/mis-recursos" className="flex items-center gap-3 text-white hover:bg-[#354B3A] rounded-lg px-3 py-2 transition-colors">
                   <Upload className="h-5 w-5 text-[#40C9A9]" />
                   <span>Mis Recursos</span>
+                </Link>
+                <Link href="/cursos" className="flex items-center gap-3 text-white hover:bg-[#354B3A] rounded-lg px-3 py-2 transition-colors">
+                  <Library className="h-5 w-5 text-[#40C9A9]" />
+                  <span>Cursos</span>
                 </Link>
               </div>
 
@@ -96,6 +112,27 @@ export function IASidebar() {
                   <span>Ajustes</span>
                 </Link>
               </div>
+
+              {/* Admin */}
+              {isAdmin && (
+                <div className="mb-2">
+                  <h3 className="text-sm font-semibold text-white/70 mb-2 px-2">Admin</h3>
+                  <Link
+                    href="/admin"
+                    className="flex items-center gap-3 text-white hover:bg-[#354B3A] rounded-lg px-3 py-2 transition-colors"
+                  >
+                    <ShieldCheck className="h-5 w-5 text-[#40C9A9]" />
+                    <span>Panel admin</span>
+                  </Link>
+                  <Link
+                    href="/admin/cursos"
+                    className="flex items-center gap-3 text-white hover:bg-[#354B3A] rounded-lg px-3 py-2 transition-colors"
+                  >
+                    <Library className="h-5 w-5 text-[#40C9A9]" />
+                    <span>Cursos</span>
+                  </Link>
+                </div>
+              )}
             </nav>
           </aside>
           {/* Clic fuera cierra el Drawer */}
@@ -126,6 +163,10 @@ export function IASidebar() {
             <Link href="/caletas/mis-recursos" className="flex items-center gap-3 text-white hover:bg-[#354B3A] rounded-lg px-3 py-2 transition-colors">
               <Upload className="h-5 w-5 text-[#40C9A9]" />
               <span>Mis Recursos</span>
+            </Link>
+            <Link href="/cursos" className="flex items-center gap-3 text-white hover:bg-[#354B3A] rounded-lg px-3 py-2 transition-colors">
+              <Library className="h-5 w-5 text-[#40C9A9]" />
+              <span>Cursos</span>
             </Link>
           </div>
 
@@ -175,6 +216,27 @@ export function IASidebar() {
               <span>Ajustes</span>
             </Link>
           </div>
+
+          {/* Admin */}
+          {isAdmin && (
+            <div className="mb-4">
+              <h3 className="text-sm font-semibold text-white/70 mb-2 px-2">Admin</h3>
+              <Link
+                href="/admin"
+                className="flex items-center gap-3 text-white hover:bg-[#354B3A] rounded-lg px-3 py-2 transition-colors"
+              >
+                <ShieldCheck className="h-5 w-5 text-[#40C9A9]" />
+                <span>Panel admin</span>
+              </Link>
+              <Link
+                href="/admin/cursos"
+                className="flex items-center gap-3 text-white hover:bg-[#354B3A] rounded-lg px-3 py-2 transition-colors"
+              >
+                <Library className="h-5 w-5 text-[#40C9A9]" />
+                <span>Cursos</span>
+              </Link>
+            </div>
+          )}
         </nav>
       </aside>
     </>

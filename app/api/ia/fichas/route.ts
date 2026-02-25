@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import OpenAI from "openai";
 import { getActiveSubscriptionForUser } from "@/lib/subscription";
+import { logAiUsage } from "@/lib/ai-usage";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -113,6 +114,8 @@ Estructura JSON esperada:
     if (!respuestaIA) {
       return NextResponse.json({ error: "Error al generar las fichas" }, { status: 500 });
     }
+
+    logAiUsage({ userId: session.user.id, endpoint: "ia/fichas", usage: response.usage ?? null });
 
     // Parsear la respuesta JSON
     let fichasGeneradas;

@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
 import { twoFactor } from "better-auth/plugins";
+import { expo } from "@better-auth/expo";
 import { headers } from "next/headers";
 import bcrypt from "bcryptjs";
 import { createAuthMiddleware } from "better-auth/api";
@@ -19,11 +20,12 @@ const trustedOrigins = [
   process.env.NEXT_PUBLIC_APP_URL,
   "http://localhost:3000",
   "http://127.0.0.1:3000",
-  // Expo / React Native (mismos orígenes que permites en middleware CORS)
+  // Expo / React Native
   "http://localhost:8081",
   "http://localhost:19006",
   "exp://localhost:19000",
   "exp://192.168.*.*:*/**",
+  "caletas://",
 ].filter(Boolean) as string[];
 
 const socialProviders: Record<string, any> = {};
@@ -136,6 +138,7 @@ export const auth = betterAuth({
     }),
   },
   plugins: [
+    expo(),
     twoFactor({
       schema: {
         user: {

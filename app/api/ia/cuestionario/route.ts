@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import OpenAI from "openai";
 import { getActiveSubscriptionForUser } from "@/lib/subscription";
+import { logAiUsage } from "@/lib/ai-usage";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -115,6 +116,8 @@ Las preguntas deben ser variadas y cubrir diferentes aspectos del contenido, des
     if (!respuestaIA) {
       return NextResponse.json({ error: "Error al generar el cuestionario" }, { status: 500 });
     }
+
+    logAiUsage({ userId: session.user.id, endpoint: "ia/cuestionario", usage: response.usage ?? null });
 
     // Parsear la respuesta JSON
     let cuestionarioGenerado;

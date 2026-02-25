@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import OpenAI from "openai";
 import { getActiveSubscriptionForUser } from "@/lib/subscription";
+import { logAiUsage } from "@/lib/ai-usage";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -122,6 +123,8 @@ El resumen debe ser claro, educativo y útil para estudiantes universitarios.
     if (!respuestaIA) {
       return NextResponse.json({ error: "Error al generar el resumen" }, { status: 500 });
     }
+
+    logAiUsage({ userId: session.user.id, endpoint: "ia/resumir", usage: response.usage ?? null });
 
     // Parsear la respuesta JSON
     let resumenGenerado;

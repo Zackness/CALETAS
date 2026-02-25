@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { CreditCard, Shield, Clock, Crown, Banknote, ReceiptText, ExternalLink, BarChart3 } from "lucide-react";
+import { PagoBsDialog } from "./components/pago-bs-dialog";
 
 type SubscriptionType = {
   id: string;
@@ -29,6 +31,7 @@ type StatusResponse = {
 };
 
 export default function SuscripcionPage() {
+  const searchParams = useSearchParams();
   const [types, setTypes] = useState<SubscriptionType[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState<string | null>(null);
@@ -36,6 +39,21 @@ export default function SuscripcionPage() {
   const [historyLoading, setHistoryLoading] = useState(true);
   const [stripeInvoices, setStripeInvoices] = useState<any[]>([]);
   const [bsPayments, setBsPayments] = useState<any[]>([]);
+  const [pagoBsDialogOpen, setPagoBsDialogOpen] = useState(false);
+  const [pagoBsPlanId, setPagoBsPlanId] = useState<string>("");
+
+  const loadHistory = async () => {
+    try {
+      const historyRes = await fetch("/api/subscription/history");
+      if (historyRes.ok) {
+        const h = await historyRes.json();
+        setStripeInvoices(Array.isArray(h?.stripe?.invoices) ? h.stripe.invoices : []);
+        setBsPayments(Array.isArray(h?.bs?.payments) ? h.bs.payments : []);
+      }
+    } catch {
+      // ignore
+    }
+  };
 
   useEffect(() => {
     (async () => {
@@ -69,6 +87,18 @@ export default function SuscripcionPage() {
       }
     })();
   }, []);
+
+  // Abrir diálogo de pago Bs si viene por URL (ej. desde /suscripcion/bs?plan=...)
+  useEffect(() => {
+    const plan = searchParams.get("pagoBs") || searchParams.get("plan");
+    if (plan) {
+      setPagoBsPlanId(plan);
+      setPagoBsDialogOpen(true);
+      if (typeof window !== "undefined") {
+        window.history.replaceState({}, "", "/suscripcion");
+      }
+    }
+  }, [searchParams]);
 
   const currentPlan = status?.subscription?.subscriptionType?.name || null;
 
@@ -389,11 +419,12 @@ export default function SuscripcionPage() {
                         variant="outline"
                         className="bg-white/10 border-white/20 text-white hover:bg-white/20"
                         onClick={() => {
-                          window.location.href = `/suscripcion/bs?plan=${encodeURIComponent(t.id)}`;
+                          setPagoBsPlanId(t.id);
+                          setPagoBsDialogOpen(true);
                         }}
                       >
                         <Banknote className="w-4 h-4 mr-2" />
-                        Pagar en Bs (verificación admin)
+                        Pagar en Bs (pago móvil)
                       </Button>
                     </div>
                   </CardContent>
@@ -403,6 +434,14 @@ export default function SuscripcionPage() {
           )}
         </div>
       </div>
+
+      <PagoBsDialog
+        open={pagoBsDialogOpen}
+        onOpenChange={setPagoBsDialogOpen}
+        initialPlanId={pagoBsPlanId}
+        types={types}
+        onSuccess={loadHistory}
+      />
     </div>
   );
 }

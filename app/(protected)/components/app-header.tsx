@@ -1,12 +1,13 @@
 "use client";
 
-import { Bell, LogOut, Heart, Upload, Search as SearchIcon, BarChart3, Menu, X, FileText, BookOpen, GraduationCap, Calendar, User, ShieldCheck, CreditCard } from "lucide-react";
+import { Bell, LogOut, Heart, Upload, BarChart3, Menu, X, FileText, BookOpen, GraduationCap, Calendar, User, ShieldCheck, CreditCard } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { authClient } from "@/lib/auth-client";
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
+import { HeaderSearch } from "./header-search";
 
 interface AppHeaderProps {
   session: any;
@@ -105,15 +106,8 @@ export function DashboardHeader({ session }: AppHeaderProps) {
           <span className={`block w-6 h-0.5 bg-white transition-all duration-300 ${isMenuOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></span>
         </button>
         
-        {/* Centro: Buscador centrado */}
-        <form className="relative flex-1 max-w-lg mx-auto flex justify-center">
-          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-white/60 h-4 w-4 md:h-5 md:w-5" />
-          <input
-            type="text"
-            placeholder="Buscar caletas, materias, universidades..."
-            className="w-full pl-8 md:pl-10 pr-2 md:pr-4 py-2 rounded-lg bg-white/10 text-white placeholder:text-white/60 border border-white/10 focus:outline-none focus:border-[#40C9A9] text-sm md:text-base"
-          />
-        </form>
+        {/* Centro: Buscador con sugerencias tipo YouTube */}
+        <HeaderSearch />
         {/* Derecha: Favoritos, subir, notificaciones, avatar */}
         <div className="flex items-center gap-1 md:gap-2">
           <Link href="/caletas/favoritos">

@@ -4,6 +4,7 @@ import OpenAI from "openai";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getActiveSubscriptionForUser } from "@/lib/subscription";
+import { logAiUsage } from "@/lib/ai-usage";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -152,6 +153,8 @@ export async function POST(request: NextRequest) {
     if (!answer) {
       return NextResponse.json({ error: "No se pudo generar respuesta" }, { status: 500 });
     }
+
+    logAiUsage({ userId: session.user.id, endpoint: "ia/chat", usage: resp.usage ?? null });
 
     return NextResponse.json({
       message: answer,

@@ -82,6 +82,7 @@ export async function POST(request: NextRequest) {
           esPublico: true,
           esAnonimo: esAnonimo === "true",
           archivoUrl,
+          archivoSizeBytes: file.size ?? undefined,
           contenido: `Archivo: ${file.name} (${file.type}, ${file.size} bytes)`,
           materiaId: materiaIdToUse,
           autorId: session.user.id,

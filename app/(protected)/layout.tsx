@@ -3,7 +3,9 @@ import '@fontsource-variable/montserrat';
 import "../globals.css";
 import { DashboardHeader } from "./components/app-header";
 import { IASidebar } from "./components/ia-sidebar";
+import { EmailVerificationBanner } from "./components/email-verification-banner";
 import { getSession } from "@/lib/auth";
+import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
@@ -25,6 +27,14 @@ export default async function ProtectedLayout({
     return redirect("/login");
   }
 
+  const user = await db.user.findUnique({
+    where: { id: session.user.id },
+    select: { isEmailVerified: true },
+  });
+
+  const showVerificationBanner = !user?.isEmailVerified;
+  const userEmail = session.user.email ?? "";
+
   return (
     <html lang="es">
       <body>
@@ -32,6 +42,9 @@ export default async function ProtectedLayout({
           <IASidebar />
           <div className="flex-1 flex flex-col">
             <DashboardHeader session={session} />
+            {showVerificationBanner && userEmail ? (
+              <EmailVerificationBanner email={userEmail} />
+            ) : null}
             <main className="flex-1 w-full max-w-7xl mx-auto px-4 md:px-8 py-6">
               {children}
             </main>

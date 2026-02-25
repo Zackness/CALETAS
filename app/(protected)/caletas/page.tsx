@@ -32,7 +32,7 @@ import {
   Lightbulb
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import { toast } from "sonner";
 
@@ -72,6 +72,7 @@ interface Materia {
 
 export default function CaletasPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session, isPending } = authClient.useSession();
   const [recursos, setRecursos] = useState<Recurso[]>([]);
   const [materias, setMaterias] = useState<Materia[]>([]);
@@ -80,6 +81,11 @@ export default function CaletasPage() {
   const [filterMateria, setFilterMateria] = useState<string>("todas");
   const [filterTipo, setFilterTipo] = useState<string>("todos");
   const [sortBy, setSortBy] = useState<string>("recientes");
+
+  useEffect(() => {
+    const materiaId = searchParams.get("materia");
+    if (materiaId) setFilterMateria(materiaId);
+  }, [searchParams]);
 
   useEffect(() => {
     if (isPending) return;

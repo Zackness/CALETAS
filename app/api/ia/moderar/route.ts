@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import OpenAI from "openai";
 import { getActiveSubscriptionForUser } from "@/lib/subscription";
+import { logAiUsage } from "@/lib/ai-usage";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -131,6 +132,8 @@ Si el contenido es inapropiado, proporciona una razón clara y específica.
     if (!respuestaIA) {
       return NextResponse.json({ error: "Error en la moderación" }, { status: 500 });
     }
+
+    logAiUsage({ userId: session.user.id, endpoint: "ia/moderar", usage: response.usage ?? null });
 
     // Parsear la respuesta JSON
     let resultadoModeracion;

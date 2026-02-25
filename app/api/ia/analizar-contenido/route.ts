@@ -2,13 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import OpenAI from "openai";
 import { getActiveSubscriptionForUser } from "@/lib/subscription";
+import { logAiUsage } from "@/lib/ai-usage";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
 // Función para analizar PDFs directamente con GPT-4o
-async function analyzePDFWithGPT(buffer: Buffer, fileType: string): Promise<any> {
+async function analyzePDFWithGPT(buffer: Buffer, fileType: string, userId?: string | null): Promise<any> {
   try {
     console.log("🔍 Iniciando análisis de PDF con GPT-4o...");
     console.log("📄 Tipo de archivo:", fileType);
@@ -107,6 +108,8 @@ Ejemplo de respuesta esperada:
       console.error("❌ No se recibió respuesta de OpenAI");
       throw new Error("No se recibió respuesta de OpenAI");
     }
+
+    logAiUsage({ userId: userId ?? null, endpoint: "ia/analizar-contenido", usage: completion.usage ?? null });
 
     console.log("📄 Respuesta de GPT-4o recibida:", responseText.substring(0, 200));
     
@@ -212,7 +215,7 @@ export async function POST(request: NextRequest) {
         console.log("📄 Buffer creado, tamaño:", buffer.length);
         
         // Analizar PDF directamente con GPT-4o
-        resultado = await analyzePDFWithGPT(buffer, file.type);
+        resultado = await analyzePDFWithGPT(buffer, file.type, session.user.id);
         
         if (!resultado) {
           throw new Error("Análisis de PDF falló");
@@ -286,6 +289,8 @@ Responde ÚNICAMENTE con JSON:
           max_tokens: 500,
         });
         
+        logAiUsage({ userId: session.user.id, endpoint: "ia/analizar-contenido", usage: visionResponse.usage ?? null });
+
         const visionResult = visionResponse.choices[0]?.message?.content;
         if (visionResult) {
           // Parsear respuesta de Vision API

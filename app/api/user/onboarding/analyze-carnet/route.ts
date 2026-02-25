@@ -3,6 +3,7 @@ import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
 import OpenAI from "openai";
 import { db } from "@/lib/db";
+import { logAiUsage } from "@/lib/ai-usage";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -123,6 +124,8 @@ NO necesitas extraer carrera ni semestre del carnet. Solo extrae la información
         { status: 500 }
       );
     }
+
+    logAiUsage({ userId: null, endpoint: "user/onboarding/analyze-carnet", usage: response.usage ?? null });
 
     // Intentar parsear la respuesta JSON
     let parsedData;

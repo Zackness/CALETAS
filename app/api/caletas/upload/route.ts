@@ -92,6 +92,7 @@ export async function POST(request: NextRequest) {
           tipo,
           contenido: descripcion, // Usar descripción como contenido
           archivoUrl,
+          archivoSizeBytes: file.size ?? undefined,
           materiaId,
           autorId: session.user.id,
           esPublico: true,

@@ -49,6 +49,7 @@ model User {
   favoritos              Favorito[]
   manualPayments         ManualPayment[]
   manualPaymentsReviewed ManualPayment[] @relation("ManualPaymentReviewedBy")
+  cursos                 Curso[]
 
   @@index([role])
   @@index([universidadId])
@@ -328,6 +329,26 @@ model BlogCategory {
   posts BlogPost[]
 }
 
+// Cursos y tutoriales subidos por admin para estudiantes
+model Curso {
+  id          String   @id @default(cuid())
+  titulo      String
+  slug        String?  @unique
+  descripcion String   @db.Text
+  contenido   String   @db.LongText
+  urlVideo    String?
+  imagenUrl   String?
+  tema        String?  // Tema/categoría (ej. Programación, Matemáticas)
+  orden       Int      @default(0)
+  autorId    String
+  autor       User     @relation(fields: [autorId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([autorId])
+  @@index([tema])
+}
+
 model Notification {
   id        String   @id @default(uuid())
   user      User     @relation(fields: [userId], references: [id])
@@ -338,13 +359,14 @@ model Notification {
 }
 
 model Recurso {
-  id          String   @id @default(cuid())
-  titulo      String
-  descripcion String
-  tipo        TipoRecurso
-  contenido   String   // Contenido del recurso (texto, enlaces, etc.)
-  archivoUrl  String?  // URL del archivo si se sube uno
-  materiaId   String
+  id               String   @id @default(cuid())
+  titulo           String
+  descripcion      String
+  tipo             TipoRecurso
+  contenido        String   // Contenido del recurso (texto, enlaces, etc.)
+  archivoUrl       String?  // URL del archivo si se sube uno
+  archivoSizeBytes Int?     // Tamaño en bytes del archivo subido (para estadísticas admin)
+  materiaId        String
   materia     Materia  @relation(fields: [materiaId], references: [id], onDelete: Cascade)
   autorId     String
   autor       User     @relation(fields: [autorId], references: [id], onDelete: Cascade)
@@ -451,7 +473,6 @@ model MetaAcademica {
 enum UserRole {
   CLIENT
   ADMIN
-  ABOGADO
 }
 
 enum ManualPaymentStatus {
@@ -559,4 +580,18 @@ enum TipoMeta {
   SEMESTRE_ESPECIFICO
   MATERIA_ESPECIFICA
   HORAS_ESTUDIO
+}
+
+// Log de consumo de IA para estadísticas de administración
+model AiUsageLog {
+  id              String   @id @default(cuid())
+  userId          String?
+  endpoint        String   // ej. "ia/chat", "ia/resumir"
+  promptTokens    Int      @default(0)
+  completionTokens Int    @default(0)
+  totalTokens     Int      @default(0)
+  createdAt       DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([endpoint])
 }
