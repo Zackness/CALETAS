@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { auth } from "@/lib/auth";
+import { getCorsHeaders } from "@/lib/cors";
 import { getActiveSubscriptionForUser } from "@/lib/subscription";
+
+function withCors(res: NextResponse, req: Request) {
+  const cors = getCorsHeaders(req);
+  Object.entries(cors).forEach(([k, v]) => res.headers.set(k, v));
+  return res;
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,12 +17,15 @@ export async function GET(request: NextRequest) {
     });
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+      return withCors(
+        NextResponse.json({ error: "No autorizado" }, { status: 401 }),
+        request,
+      );
     }
 
     const sub = await getActiveSubscriptionForUser(session.user.id);
 
-    return NextResponse.json({
+    return withCors(NextResponse.json({
       isActive: !!sub,
       subscription: sub
         ? {
@@ -30,10 +40,13 @@ export async function GET(request: NextRequest) {
             currentPeriodEnd: sub.stripeCurrentPeriodEnd,
           }
         : null,
-    });
+    }), request);
   } catch (error) {
     console.error("Error reading subscription status:", error);
-    return NextResponse.json({ error: "Error interno" }, { status: 500 });
+    return withCors(
+      NextResponse.json({ error: "Error interno" }, { status: 500 }),
+      request,
+    );
   }
 }
 

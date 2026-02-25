@@ -1,6 +1,6 @@
 /**
  * Orígenes permitidos para CORS (app Expo, Expo Go, etc.).
- * Usado por middleware y por el route de auth para enviar Access-Control-Allow-Origin correcto.
+ * Con credentials: 'include' NUNCA usar Access-Control-Allow-Origin: *.
  */
 export const allowedOrigins = [
   "http://localhost:8081",
@@ -13,6 +13,13 @@ export const allowedOrigins = [
   "http://192.168.137.1:19000",
 ];
 
+/** Permite localhost/127.0.0.1 con cualquier puerto (dev). */
+export function isAllowedOrigin(origin: string): boolean {
+  if (!origin) return false;
+  if (allowedOrigins.includes(origin)) return true;
+  return /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+}
+
 export function getCorsHeaders(request: Request): HeadersInit {
   const origin = request.headers.get("origin") || "";
   const headers: Record<string, string> = {
@@ -21,7 +28,7 @@ export function getCorsHeaders(request: Request): HeadersInit {
     "Access-Control-Allow-Headers":
       "Content-Type, Authorization, X-CSRF-Token, X-Requested-With, Accept",
   };
-  if (allowedOrigins.includes(origin)) {
+  if (isAllowedOrigin(origin)) {
     headers["Access-Control-Allow-Origin"] = origin;
   }
   return headers;

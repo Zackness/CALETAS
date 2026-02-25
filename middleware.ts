@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getSessionCookie } from "better-auth/cookies";
 
-import { allowedOrigins } from "@/lib/cors";
+import { isAllowedOrigin } from "@/lib/cors";
 import {
   DEFAULT_LOGIN_REDIRECT,
   apiAuthPrefix,
@@ -21,20 +21,18 @@ const isPublicRoute = (pathname: string) => {
 
 const withCors = (request: NextRequest, response: NextResponse) => {
   const origin = request.headers.get("origin") || "";
-  if (allowedOrigins.includes(origin)) {
+  if (isAllowedOrigin(origin)) {
     response.headers.set("Access-Control-Allow-Origin", origin);
   }
-
   response.headers.set(
     "Access-Control-Allow-Methods",
     "GET, POST, PUT, DELETE, OPTIONS",
   );
   response.headers.set(
     "Access-Control-Allow-Headers",
-    "Content-Type, Authorization",
+    "Content-Type, Authorization, Accept",
   );
   response.headers.set("Access-Control-Allow-Credentials", "true");
-
   return response;
 };
 

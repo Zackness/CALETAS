@@ -1,17 +1,19 @@
 import { db } from '@/lib/db';
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
+import { getCorsHeaders } from '@/lib/cors';
 
 export async function GET(req: Request) {
+  const cors = getCorsHeaders(req);
   try {
-    // Obtén la sesión del usuario
     const session = await auth.api.getSession({
       headers: req.headers,
     });
 
-    // Verifica si el usuario está autenticado
     if (!session?.user?.id) {
-      return new NextResponse("No tienes autorización", { status: 401 });
+      const res = new NextResponse("No tienes autorización", { status: 401 });
+      Object.entries(cors).forEach(([k, v]) => res.headers.set(k, v));
+      return res;
     }
 
     // Obtén los datos del usuario autenticado (sin campos sensibles como `password`)
@@ -46,14 +48,16 @@ export async function GET(req: Request) {
     });
 
     if (!user) {
-      return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
+      const res = NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
+      Object.entries(cors).forEach(([k, v]) => res.headers.set(k, v));
+      return res;
     }
 
     const providers = user.authAccounts.map((a) => a.providerId);
     const hasCredentialAccount = providers.includes("credential");
     const isOAuth = providers.some((p) => p !== "credential");
 
-    return NextResponse.json(
+    const res = NextResponse.json(
       {
         user: {
           ...user,
@@ -64,8 +68,12 @@ export async function GET(req: Request) {
       },
       { status: 200 },
     );
+    Object.entries(cors).forEach(([k, v]) => res.headers.set(k, v));
+    return res;
   } catch (error) {
     console.error("Error interno del servidor:", error);
-    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
+    const res = NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
+    Object.entries(cors).forEach(([k, v]) => res.headers.set(k, v));
+    return res;
   }
 }
