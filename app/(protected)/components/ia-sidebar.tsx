@@ -69,8 +69,8 @@ export function IASidebar() {
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
         const cursos = Array.isArray(data?.cursos) ? data.cursos : [];
-        const categorias = Array.from(
-          new Set(
+        const categorias: string[] = Array.from(
+          new Set<string>(
             cursos
               .map((c: { tema?: string | null }) => c.tema?.trim())
               .filter((t: string | undefined): t is string => !!t),

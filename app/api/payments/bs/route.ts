@@ -48,9 +48,18 @@ export async function POST(request: NextRequest) {
         { status: 400 },
       );
     }
+    const subscriptionTypeId = body.subscriptionTypeId;
+    const amountBs = Number(body.amountBs);
+    if (!Number.isFinite(amountBs) || amountBs <= 0) {
+      return NextResponse.json({ error: "Monto en Bs inválido" }, { status: 400 });
+    }
+    const reference = body.reference.trim();
+    if (!reference) {
+      return NextResponse.json({ error: "Referencia inválida" }, { status: 400 });
+    }
 
     const type = await db.subscriptionType.findUnique({
-      where: { id: body.subscriptionTypeId },
+      where: { id: subscriptionTypeId },
       select: { id: true },
     });
     if (!type) {
@@ -61,9 +70,9 @@ export async function POST(request: NextRequest) {
       const created = await tx.manualPayment.create({
         data: {
           userId: session.user.id,
-          subscriptionTypeId: body.subscriptionTypeId,
-          amountBs: Math.max(1, Math.floor(body.amountBs)),
-          reference: body.reference.trim(),
+          subscriptionTypeId,
+          amountBs: Math.max(1, Math.floor(amountBs)),
+          reference,
           proofUrl: body.proofUrl?.trim() || null,
         },
         include: {
@@ -78,7 +87,7 @@ export async function POST(request: NextRequest) {
         await txAny.paymentRecord.create({
           data: {
             userId: session.user.id,
-            subscriptionTypeId: body.subscriptionTypeId,
+            subscriptionTypeId,
             source: "MOBILE_BS",
             status: "PENDING",
             amountBs: created.amountBs,

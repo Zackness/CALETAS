@@ -348,7 +348,14 @@ export const LoginForm = () => {
                     },
                   });
                   if (passkeyError) {
-                    setError(passkeyError.message || "No se pudo iniciar con passkey");
+                    const passkeyMessage: string =
+                      typeof passkeyError === "string"
+                        ? passkeyError
+                        : String(
+                            (passkeyError as { message?: unknown })?.message ??
+                              "No se pudo iniciar con passkey",
+                          );
+                    setError(passkeyMessage);
                   }
                 }}
               >

@@ -2,12 +2,14 @@
 
 import { Button } from "@/components/ui/button";
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 // import { useAuth } from "@/lib/auth";
 import { Logo } from "@/components/marca/Logo";
 
 export function Header() {
   // const { user, signOut } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const router = useRouter();
   const menuRef = useRef<HTMLDivElement>(null);
   const toggleButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -38,6 +40,11 @@ export function Header() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, [isMenuOpen]);
 
+  const goTo = (path: string) => {
+    router.push(path);
+    setIsMenuOpen(false);
+  };
+
   return (
     <header className="relative w-full shadow z-50">
       <nav className="flex w-full max-w-[1400px] mx-auto items-center gap-2 px-3 sm:px-6 lg:px-12 font-semibold text-[15px] sm:text-[18px] py-3 sm:py-4 relative">
@@ -55,9 +62,9 @@ export function Header() {
           <a href="/aliados" className="hover:text-[#40C9A9] transition-colors text-white text-base px-2 py-1 rounded-md hover:bg-white/10">
             Aliados
           </a>
-          <a href="/blog" className="hover:text-[#40C9A9] transition-colors text-white text-base px-2 py-1 rounded-md hover:bg-white/10">
+          <button type="button" onClick={() => goTo("/blog")} className="hover:text-[#40C9A9] transition-colors text-white text-base px-2 py-1 rounded-md hover:bg-white/10">
             Blog
-          </a>
+          </button>
         </div>
         {/* Botón de menú móvil */}
         <button
@@ -109,13 +116,13 @@ export function Header() {
               >
                 Aliados
               </a>
-              <a
-                href="/blog"
+              <button
+                type="button"
                 className="text-white font-special text-base py-2 px-2 rounded-md hover:bg-white/10 transition-colors text-left"
-                onClick={() => setIsMenuOpen(false)}
+                onClick={() => goTo("/blog")}
               >
                 Blog
-              </a>
+              </button>
               <a
                 href="/agregar-universidad"
                 className="text-white font-special text-base py-2 px-2 rounded-md hover:bg-white/10 transition-colors text-left"
