@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import type { MouseEvent, Touch, TouchEvent, WheelEvent } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,12 +11,10 @@ import {
   Clock, 
   XCircle, 
   AlertCircle,
-  ArrowRight,
-  ChevronLeft,
-  ChevronRight,
   ZoomIn,
   ZoomOut,
-  Move
+  Move,
+  LocateFixed
 } from "lucide-react";
 
 interface Materia {
@@ -53,6 +52,7 @@ export const PensumFlowchart = ({ materias, materiasEstudiante, onMateriaClick }
   const [isTouching, setIsTouching] = useState(false);
   const [touchStart, setTouchStart] = useState({ x: 0, y: 0, distance: 0 });
   const [lastTouchDistance, setLastTouchDistance] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Agrupar materias por semestre
   const materiasPorSemestre = materias.reduce((acc, materia) => {
@@ -71,6 +71,37 @@ export const PensumFlowchart = ({ materias, materiasEstudiante, onMateriaClick }
     return numA - numB;
   });
 
+  const ORDEN_PENSUM_POR_SEMESTRE: Record<string, string[]> = {
+    // Orden oficial compartido por el usuario (azul/verde)
+    S1: ["AAU1111", "ABB1515", "APP1611", "ABI1212", "ABI1413", "ABI1313", "IQU1713"],
+    S2: ["ABB2425", "ABB2214", "ABI2122", "ABI2513", "ABI2612", "ABI2323"],
+    S3: ["ABB3734", "ABB3113", "ABB3524", "ABB3611", "IME3412", "ABI3212", "ABI3313"],
+    S4: ["ABB4644", "IEI4114", "IMC4512", "IME4314", "ABI4222", "IMT4413"],
+    S5: ["IIN5513", "IEI5125", "IEL5214", "IME5413", "IME5313", "IME5613"],
+    S6: ["IMC6113", "AFG6413", "IEL6523", "IME6613", "IME6713", "IEL6313", "IME6213"],
+    S7: ["IMC7223", "IIN7313", "IEI7114", "IEL7513", "IEL7411", "IMC7614"],
+    S8: ["IMC8211", "IMC8413", "IEL8313", "IEI8613", "IMC8113", "IMC8513"],
+    S9: ["AFG9211", "AFG9713", "IMC9413", "IMC9313", "IMC9123", "IMC9524", "IMC9613"],
+    S10: ["APP1016"],
+  };
+
+  const ordenarPorConfiguracion = (semestre: string, materiasSemestre: Materia[]) => {
+    const orden = ORDEN_PENSUM_POR_SEMESTRE[semestre];
+    if (!orden) return null;
+
+    const prioridad = new Map(orden.map((codigo, index) => [codigo, index]));
+    return [...materiasSemestre].sort((a, b) => {
+      const posA = prioridad.get(a.codigo);
+      const posB = prioridad.get(b.codigo);
+
+      // Si alguna materia no está en la lista, va al final sin perderse.
+      if (posA === undefined && posB === undefined) return a.codigo.localeCompare(b.codigo);
+      if (posA === undefined) return 1;
+      if (posB === undefined) return -1;
+      return posA - posB;
+    });
+  };
+
   // Reordenar materias dentro de cada semestre para que los prerrequisitos estén cerca
   const reordenarMateriasPorPrerrequisitos = () => {
     const materiasReordenadas: Record<string, Materia[]> = {};
@@ -78,6 +109,13 @@ export const PensumFlowchart = ({ materias, materiasEstudiante, onMateriaClick }
     // Para cada semestre, reordenar las materias
     semestresOrdenados.forEach(semestre => {
       const materiasDelSemestre = [...materiasPorSemestre[semestre]];
+
+      // Si existe orden oficial configurado, siempre priorizarlo.
+      const materiasConOrdenOficial = ordenarPorConfiguracion(semestre, materiasDelSemestre);
+      if (materiasConOrdenOficial) {
+        materiasReordenadas[semestre] = materiasConOrdenOficial;
+        return;
+      }
       
       // Si es el primer semestre, mantener el orden original
       if (semestre === 'S1') {
@@ -174,7 +212,7 @@ export const PensumFlowchart = ({ materias, materiasEstudiante, onMateriaClick }
   const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.1, 0.5));
 
   // Manejar scroll con rueda del ratón y trackpad
-  const handleWheel = (e: React.WheelEvent) => {
+  const handleWheel = (e: WheelEvent<HTMLDivElement>) => {
     e.preventDefault();
     
     // Detectar si es un gesto de trackpad (deltaX presente) o rueda de ratón
@@ -200,16 +238,16 @@ export const PensumFlowchart = ({ materias, materiasEstudiante, onMateriaClick }
   };
 
   // Manejar pan
-  const handleMouseDown = (e: React.MouseEvent) => {
-    // Solo activar drag si no se hace clic en una materia
-    if (e.target === e.currentTarget || (e.target as HTMLElement).closest('.materia-card')) {
+  const handleMouseDown = (e: MouseEvent<HTMLDivElement>) => {
+    // No activar drag si se hace clic en una materia
+    if ((e.target as HTMLElement).closest('.materia-card')) {
       return;
     }
     setIsDragging(true);
     setDragStart({ x: e.clientX - panX, y: e.clientY - panY });
   };
 
-  const handleMouseMove = (e: React.MouseEvent) => {
+  const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
     if (isDragging) {
       setPanX(e.clientX - dragStart.x);
       setPanY(e.clientY - dragStart.y);
@@ -221,13 +259,13 @@ export const PensumFlowchart = ({ materias, materiasEstudiante, onMateriaClick }
   };
 
   // Funciones auxiliares para gestos táctiles
-  const getDistance = (touch1: React.Touch, touch2: React.Touch) => {
+  const getDistance = (touch1: Touch, touch2: Touch) => {
     const dx = touch1.clientX - touch2.clientX;
     const dy = touch1.clientY - touch2.clientY;
     return Math.sqrt(dx * dx + dy * dy);
   };
 
-  const getCenter = (touch1: React.Touch, touch2: React.Touch) => {
+  const getCenter = (touch1: Touch, touch2: Touch) => {
     return {
       x: (touch1.clientX + touch2.clientX) / 2,
       y: (touch1.clientY + touch2.clientY) / 2
@@ -235,11 +273,11 @@ export const PensumFlowchart = ({ materias, materiasEstudiante, onMateriaClick }
   };
 
   // Manejar gestos táctiles
-  const handleTouchStart = (e: React.TouchEvent) => {
+  const handleTouchStart = (e: TouchEvent<HTMLDivElement>) => {
     e.preventDefault();
     
-    // Solo activar si no se toca una materia
-    if (e.target === e.currentTarget || (e.target as HTMLElement).closest('.materia-card')) {
+    // No activar gestos de navegación si se toca una materia
+    if ((e.target as HTMLElement).closest('.materia-card')) {
       return;
     }
 
@@ -266,7 +304,7 @@ export const PensumFlowchart = ({ materias, materiasEstudiante, onMateriaClick }
     }
   };
 
-  const handleTouchMove = (e: React.TouchEvent) => {
+  const handleTouchMove = (e: TouchEvent<HTMLDivElement>) => {
     e.preventDefault();
     
     if (!isTouching) return;
@@ -291,30 +329,38 @@ export const PensumFlowchart = ({ materias, materiasEstudiante, onMateriaClick }
     }
   };
 
-  const handleTouchEnd = (e: React.TouchEvent) => {
+  const handleTouchEnd = (e: TouchEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsTouching(false);
   };
 
-  // Generar conexiones solo entre prerrequisitos inmediatos
+  const normalizeText = (value: string) =>
+    value
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+
+  // Evitar "espagueti" visual en materias con muchos requisitos globales
+  // (ej. Entrenamiento Industrial), sin alterar la lógica real de prerrequisitos.
+  const shouldHideIncomingArrows = (materia: Materia) => {
+    const nombre = normalizeText(materia.nombre);
+    if (nombre.includes("entrenamiento industrial")) return true;
+    return (materia.prerrequisitos?.length ?? 0) >= 8;
+  };
+
+  // Generar conexiones de TODOS los prerrequisitos (con filtros visuales)
   const generarConexiones = () => {
     const conexiones: { from: string; to: string }[] = [];
     
     materias.forEach(materia => {
+      if (shouldHideIncomingArrows(materia)) return;
       if (materia.prerrequisitos) {
         materia.prerrequisitos.forEach(prerreq => {
           const prerrequisito = prerreq.prerrequisito;
-          
-          // Solo conectar si el prerrequisito está en el semestre inmediatamente anterior
-          const semestreMateria = parseInt(materia.semestre.replace('S', ''));
-          const semestrePrerreq = parseInt(prerrequisito.semestre.replace('S', ''));
-          
-          if (semestrePrerreq === semestreMateria - 1) {
-            conexiones.push({
-              from: prerrequisito.id,
-              to: materia.id
-            });
-          }
+          conexiones.push({
+            from: prerrequisito.id,
+            to: materia.id
+          });
         });
       }
     });
@@ -326,6 +372,45 @@ export const PensumFlowchart = ({ materias, materiasEstudiante, onMateriaClick }
 
   // Calcular altura total necesaria
   const alturaMaxima = Math.max(...Object.values(materiasPorSemestreReordenadas).map(materias => materias.length * 120 + 80));
+  const anchoDiagrama = Math.max(semestresOrdenados.length * 320, 320);
+  const altoDiagrama = Math.max(alturaMaxima + 80, 600);
+
+  const centerDiagram = useCallback((nextZoom?: number) => {
+    if (!containerRef.current) return;
+    const viewportW = containerRef.current.clientWidth;
+    const viewportH = containerRef.current.clientHeight;
+    const effectiveZoom = nextZoom ?? zoom;
+    const newPanX = (viewportW - (anchoDiagrama * effectiveZoom)) / 2;
+    const newPanY = (viewportH - (altoDiagrama * effectiveZoom)) / 2;
+    setPanX(newPanX);
+    setPanY(newPanY);
+  }, [zoom, anchoDiagrama, altoDiagrama]);
+
+  const fitToScreen = useCallback(() => {
+    if (!containerRef.current) return;
+    const viewportW = containerRef.current.clientWidth;
+    const viewportH = containerRef.current.clientHeight;
+    const fitScale = Math.max(
+      0.5,
+      Math.min(
+        1.2,
+        (viewportW - 48) / anchoDiagrama,
+        (viewportH - 48) / altoDiagrama
+      )
+    );
+    setZoom(fitScale);
+    requestAnimationFrame(() => centerDiagram(fitScale));
+  }, [anchoDiagrama, altoDiagrama, centerDiagram]);
+
+  useEffect(() => {
+    fitToScreen();
+  }, [fitToScreen]);
+
+  useEffect(() => {
+    const onResize = () => fitToScreen();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [fitToScreen]);
 
   // Calcular posición de una materia
   const getMateriaPosition = (materia: Materia) => {
@@ -338,10 +423,31 @@ export const PensumFlowchart = ({ materias, materiasEstudiante, onMateriaClick }
     return { x, y };
   };
 
+  // Una materia está desbloqueada si no tiene prerrequisitos
+  // o si todos sus prerrequisitos están aprobados.
+  const isMateriaUnlocked = (materia: Materia) => {
+    if (!materia.prerrequisitos || materia.prerrequisitos.length === 0) return true;
+    const aprobadas = new Set(
+      materiasEstudiante
+        .filter((me) => me.estado === "APROBADA")
+        .map((me) => me.materia.id)
+    );
+    return materia.prerrequisitos.every((p) => aprobadas.has(p.prerrequisito.id));
+  };
+
   return (
-    <div className="w-full h-full relative overflow-hidden bg-[#1C2D20] rounded-lg">
+    <div ref={containerRef} className="w-full h-full relative overflow-hidden bg-[#1C2D20] rounded-lg">
       {/* Controles de zoom */}
       <div className="absolute top-4 right-4 z-10 flex gap-2">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={fitToScreen}
+          className="bg-[#354B3A] border-white/10 text-white hover:bg-white/10"
+          title="Centrar y ajustar diagrama"
+        >
+          <LocateFixed className="w-4 h-4" />
+        </Button>
         <Button
           size="sm"
           variant="outline"
@@ -375,6 +481,9 @@ export const PensumFlowchart = ({ materias, materiasEstudiante, onMateriaClick }
               <div className="flex items-center gap-2">
                 <span>⇧ + Rueda: Scroll horizontal</span>
               </div>
+              <div className="flex items-center gap-2">
+                <span>📱 1 dedo: mover · 2 dedos: zoom</span>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -392,10 +501,11 @@ export const PensumFlowchart = ({ materias, materiasEstudiante, onMateriaClick }
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         style={{
-          transform: `scale(${zoom}) translate(${panX}px, ${panY}px)`,
-          transformOrigin: 'top left',
+          transform: `translate(${panX}px, ${panY}px) scale(${zoom})`,
+          transformOrigin: "top left",
           minHeight: `${alturaMaxima}px`,
-          padding: '40px'
+          width: `${anchoDiagrama}px`,
+          padding: "40px",
         }}
       >
         {/* Conexiones */}
@@ -403,6 +513,18 @@ export const PensumFlowchart = ({ materias, materiasEstudiante, onMateriaClick }
           className="absolute inset-0 w-full h-full pointer-events-none"
           style={{ zIndex: 1 }}
         >
+          <defs>
+            <marker
+              id="arrowhead-main"
+              markerWidth="10"
+              markerHeight="7"
+              refX="9"
+              refY="3.5"
+              orient="auto"
+            >
+              <polygon points="0 0, 10 3.5, 0 7" fill="#40C9A9" />
+            </marker>
+          </defs>
           {conexiones.map((conexion, index) => {
             const fromMateria = materias.find(m => m.id === conexion.from);
             const toMateria = materias.find(m => m.id === conexion.to);
@@ -412,32 +534,26 @@ export const PensumFlowchart = ({ materias, materiasEstudiante, onMateriaClick }
             const fromPos = getMateriaPosition(fromMateria);
             const toPos = getMateriaPosition(toMateria);
             
+            // Curva suave entre materias para una lectura visual más limpia
+            const deltaX = toPos.x - fromPos.x;
+            const controlOffset = Math.max(60, Math.abs(deltaX) * 0.35);
+            const path = `M ${fromPos.x} ${fromPos.y} C ${fromPos.x + controlOffset} ${fromPos.y}, ${toPos.x - controlOffset} ${toPos.y}, ${toPos.x} ${toPos.y}`;
+
             return (
               <g key={index}>
-                <defs>
-                  <marker
-                    id={`arrowhead-${index}`}
-                    markerWidth="10"
-                    markerHeight="7"
-                    refX="9"
-                    refY="3.5"
-                    orient="auto"
-                  >
-                    <polygon
-                      points="0 0, 10 3.5, 0 7"
-                      fill="#40C9A9"
-                    />
-                  </marker>
-                </defs>
-                <line
-                  x1={fromPos.x}
-                  y1={fromPos.y}
-                  x2={toPos.x}
-                  y2={toPos.y}
-                  stroke="#40C9A9"
-                  strokeWidth="2"
-                  markerEnd={`url(#arrowhead-${index})`}
-                  opacity="0.6"
+                <path
+                  d={path}
+                  stroke="rgba(64, 201, 169, 0.95)"
+                  strokeWidth="2.5"
+                  fill="none"
+                  markerEnd="url(#arrowhead-main)"
+                  opacity="0.95"
+                />
+                <path
+                  d={path}
+                  stroke="rgba(64, 201, 169, 0.25)"
+                  strokeWidth="6"
+                  fill="none"
                 />
               </g>
             );
@@ -468,6 +584,8 @@ export const PensumFlowchart = ({ materias, materiasEstudiante, onMateriaClick }
                 {materiasPorSemestreReordenadas[semestre].map((materia, materiaIndex) => {
                   const estado = getMateriaEstado(materia.id);
                   const estadoInfo = getEstadoInfo(estado);
+                  const unlocked = isMateriaUnlocked(materia);
+                  const hiddenArrows = shouldHideIncomingArrows(materia);
                   
                   return (
                     <Card
@@ -475,6 +593,10 @@ export const PensumFlowchart = ({ materias, materiasEstudiante, onMateriaClick }
                       className={`materia-card cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-lg ${
                         estadoInfo.color
                       } border-2`}
+                      style={{
+                        opacity: !estado && !unlocked ? 0.65 : 1,
+                        filter: !estado && !unlocked ? "saturate(0.7)" : "none",
+                      }}
                       onClick={() => onMateriaClick?.(materia)}
                     >
                       <CardHeader className="p-3">
@@ -494,7 +616,17 @@ export const PensumFlowchart = ({ materias, materiasEstudiante, onMateriaClick }
                               {estado}
                             </Badge>
                           )}
+                          {!estado && !unlocked && (
+                            <Badge variant="outline" className="text-xs border-yellow-500/30 text-yellow-300">
+                              Bloqueada
+                            </Badge>
+                          )}
                         </div>
+                        {hiddenArrows && (materia.prerrequisitos?.length ?? 0) > 0 && (
+                          <p className="mt-2 text-[10px] text-white/70">
+                            Requisito especial: requiere materias previas del plan.
+                          </p>
+                        )}
                       </CardContent>
                     </Card>
                   );

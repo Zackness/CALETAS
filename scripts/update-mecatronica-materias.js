@@ -432,7 +432,7 @@ const pensumMecatronica = [
     semestre: "S6",
     horasTeoria: 3,
     horasPractica: 0,
-    prerrequisitos: [],
+    prerrequisitos: ["IEL5214"],
     coRequisitos: []
   },
   {
@@ -518,7 +518,7 @@ const pensumMecatronica = [
     semestre: "S7",
     horasTeoria: 3,
     horasPractica: 0,
-    prerrequisitos: ["IEL6313"],
+    prerrequisitos: [],
     coRequisitos: []
   },
   {
@@ -530,7 +530,7 @@ const pensumMecatronica = [
     semestre: "S7",
     horasTeoria: 0,
     horasPractica: 2,
-    prerrequisitos: ["IEL6523"],
+    prerrequisitos: ["IEL6313"],
     coRequisitos: []
   },
   {
@@ -542,7 +542,7 @@ const pensumMecatronica = [
     semestre: "S7",
     horasTeoria: 2,
     horasPractica: 0,
-    prerrequisitos: ["IEL6313"],
+    prerrequisitos: ["IEL6523"],
     coRequisitos: []
   },
   {
@@ -554,7 +554,7 @@ const pensumMecatronica = [
     semestre: "S7",
     horasTeoria: 3,
     horasPractica: 0,
-    prerrequisitos: [],
+    prerrequisitos: ["IEL6313"],
     coRequisitos: []
   },
 
@@ -592,7 +592,7 @@ const pensumMecatronica = [
     semestre: "S8",
     horasTeoria: 2,
     horasPractica: 0,
-    prerrequisitos: ["IEL7513"],
+    prerrequisitos: ["IEL7411"],
     coRequisitos: []
   },
   {

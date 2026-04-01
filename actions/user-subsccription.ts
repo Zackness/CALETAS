@@ -69,12 +69,14 @@ export async function createStripeUrl(subscriptionTypeId: string) {
     const session = await stripe.checkout.sessions.create({
       customer: stripeCustomer.stripeCustomerId,
       mode: "subscription",
-      payment_method_types: ["card"],
+      // No forzamos métodos aquí para que Stripe Checkout muestre
+      // automáticamente los métodos habilitados para la cuenta/región
+      // (por ejemplo PayPal cuando esté disponible).
       line_items: [
         {
           quantity: 1,
           price_data: {
-            currency: "USD",
+            currency: "usd",
             product_data: {
               name: subscriptionType.name,
               description: subscriptionType.description || "Suscripción",

@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
 import { twoFactor } from "better-auth/plugins";
+import { passkey } from "@better-auth/passkey";
 import { expo } from "@better-auth/expo";
 import { headers } from "next/headers";
 import bcrypt from "bcryptjs";
@@ -153,6 +154,7 @@ export const auth = betterAuth({
         },
       },
     }),
+    passkey(),
     nextCookies(),
   ],
 });

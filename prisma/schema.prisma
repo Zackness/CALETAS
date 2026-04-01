@@ -17,6 +17,8 @@ model User {
   password               String?
   role                   UserRole               @default(CLIENT)
   isTwoFactorEnabled     Boolean                @default(false)
+  twoFactorPreferredMethod String               @default("TOTP")
+  twoFactorEmailFallbackEnabled Boolean         @default(true)
   createdAt              DateTime               @default(now())
   updatedAt              DateTime               @updatedAt
   apellido               String?
@@ -32,6 +34,7 @@ model User {
   authSessions           AuthSession[]
   authAccounts           AuthAccount[]
   authTwoFactors         TwoFactor[]
+  passkeys               Passkey[]
   blogPosts              BlogPost[]
   StripeCustomer         StripeCustomer?
   twoFactorConfirmation  TwoFactorConfirmation?
@@ -50,6 +53,8 @@ model User {
   manualPayments         ManualPayment[]
   manualPaymentsReviewed ManualPayment[] @relation("ManualPaymentReviewedBy")
   cursos                 Curso[]
+  paymentRecords         PaymentRecord[]
+  pensumVersions         PensumVersion[]      @relation("PensumVersionCreatedBy")
 
   @@index([role])
   @@index([universidadId])
@@ -113,6 +118,25 @@ model TwoFactor {
   @@index([secret(length: 191)])
   @@index([userId])
   @@map("ba_twoFactor")
+}
+
+model Passkey {
+  id           String   @id
+  name         String?  @db.Text
+  publicKey    String   @db.Text
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  credentialID String   @db.Text
+  counter      Int
+  deviceType   String   @db.Text
+  backedUp     Boolean
+  transports   String?  @db.Text
+  createdAt    DateTime?
+  aaguid       String?  @db.Text
+
+  @@index([userId])
+  @@index([credentialID(length: 191)])
+  @@map("passkey")
 }
 
 model Account {
@@ -205,6 +229,7 @@ model SubscriptionType {
 
   subscriptions UserSubscription[]
   manualPayments ManualPayment[]
+  paymentRecords PaymentRecord[]
 }
 
 
@@ -227,6 +252,7 @@ model Universidad {
   isActive  Boolean   @default(true)
   carreras  Carrera[]
   users     User[]
+  pensumVersions PensumVersion[]
 }
 
 model Carrera {
@@ -243,8 +269,38 @@ model Carrera {
   universidad   Universidad @relation(fields: [universidadId], references: [id], onDelete: Cascade)
   materias      Materia[]
   usuarios      User[]
+  pensumVersions PensumVersion[]
 
   @@index([universidadId])
+}
+
+enum PensumVersionStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model PensumVersion {
+  id             String             @id @default(cuid())
+  universidadId  String
+  carreraId      String
+  versionNumber  Int
+  name           String
+  notes          String?            @db.Text
+  status         PensumVersionStatus @default(DRAFT)
+  snapshot       Json
+  createdById    String
+  createdAt      DateTime           @default(now())
+  publishedAt    DateTime?
+
+  universidad    Universidad        @relation(fields: [universidadId], references: [id], onDelete: Cascade)
+  carrera        Carrera            @relation(fields: [carreraId], references: [id], onDelete: Cascade)
+  createdBy      User               @relation("PensumVersionCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([universidadId])
+  @@index([carreraId])
+  @@index([status])
+  @@unique([carreraId, versionNumber])
 }
 
 model Materia {
@@ -497,11 +553,48 @@ model ManualPayment {
   user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   subscriptionType   SubscriptionType    @relation(fields: [subscriptionTypeId], references: [id], onDelete: Cascade)
   reviewedBy         User?               @relation("ManualPaymentReviewedBy", fields: [reviewedById], references: [id], onDelete: SetNull)
+  paymentRecord      PaymentRecord?
 
   @@index([userId])
   @@index([subscriptionTypeId])
   @@index([status])
   @@index([reviewedById])
+}
+
+enum PaymentSource {
+  MOBILE_BS
+  CARD
+}
+
+model PaymentRecord {
+  id                    String              @id @default(cuid())
+  userId                String
+  subscriptionTypeId    String?
+  source                PaymentSource
+  status                ManualPaymentStatus @default(PENDING)
+  amountBs              Int?
+  amountUsdCents        Int?
+  reference             String?
+  operationCode         String?
+  rejectionReason       String?             @db.Text
+  periodStart           DateTime?
+  periodEnd             DateTime?
+  paidAt                DateTime?
+  manualPaymentId       String?             @unique
+  stripeInvoiceId       String?             @unique
+  stripePaymentIntentId String?
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  user                  User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscriptionType      SubscriptionType?   @relation(fields: [subscriptionTypeId], references: [id], onDelete: SetNull)
+  manualPayment         ManualPayment?      @relation(fields: [manualPaymentId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([subscriptionTypeId])
+  @@index([status])
+  @@index([source])
+  @@index([periodEnd])
 }
 
 enum Estado {

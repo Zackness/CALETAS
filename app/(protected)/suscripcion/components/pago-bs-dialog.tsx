@@ -128,6 +128,11 @@ export function PagoBsDialog({
         </DialogHeader>
 
         <div className="space-y-4 pt-2">
+          <div className="rounded-lg border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-100">
+            Este método es el más lento y puede tardar hasta 24h en verificarse.
+            Si necesitas validación más rápida, comunícate con soporte al 0414-5005456.
+          </div>
+
           <div className="space-y-2">
             <Label className="text-white/80">Plan</Label>
             <Input

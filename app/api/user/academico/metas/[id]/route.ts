@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { getCorsHeaders } from "@/lib/cors";
+
+function withCors(res: NextResponse, req: NextRequest) {
+  Object.entries(getCorsHeaders(req)).forEach(([k, v]) => res.headers.set(k, v));
+  return res;
+}
 
 export async function PUT(
   request: NextRequest,
@@ -12,7 +18,7 @@ export async function PUT(
     });
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+      return withCors(NextResponse.json({ error: "No autorizado" }, { status: 401 }), request);
     }
 
     const body = await request.json();
@@ -29,7 +35,7 @@ export async function PUT(
     });
 
     if (!existingMeta) {
-      return NextResponse.json({ error: "Meta no encontrada" }, { status: 404 });
+      return withCors(NextResponse.json({ error: "Meta no encontrada" }, { status: 404 }), request);
     }
 
     // Validaciones
@@ -86,13 +92,13 @@ export async function PUT(
       },
     });
 
-    return NextResponse.json({ meta: updatedMeta });
+    return withCors(NextResponse.json({ meta: updatedMeta }), request);
   } catch (error) {
     console.error("Error updating meta:", error);
-    return NextResponse.json(
+    return withCors(NextResponse.json(
       { error: "Error interno del servidor" },
       { status: 500 }
-    );
+    ), request);
   }
 }
 
@@ -106,7 +112,7 @@ export async function DELETE(
     });
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+      return withCors(NextResponse.json({ error: "No autorizado" }, { status: 401 }), request);
     }
 
     const { id } = await params;
@@ -120,7 +126,7 @@ export async function DELETE(
     });
 
     if (!existingMeta) {
-      return NextResponse.json({ error: "Meta no encontrada" }, { status: 404 });
+      return withCors(NextResponse.json({ error: "Meta no encontrada" }, { status: 404 }), request);
     }
 
     // Eliminar la meta
@@ -130,12 +136,12 @@ export async function DELETE(
       },
     });
 
-    return NextResponse.json({ message: "Meta eliminada exitosamente" });
+    return withCors(NextResponse.json({ message: "Meta eliminada exitosamente" }), request);
   } catch (error) {
     console.error("Error deleting meta:", error);
-    return NextResponse.json(
+    return withCors(NextResponse.json(
       { error: "Error interno del servidor" },
       { status: 500 }
-    );
+    ), request);
   }
 } 

@@ -42,8 +42,16 @@ async function main() {
     period: "month",
   });
 
+  const iaTools = await upsertByName({
+    name: "CALETA IA TOOLS",
+    description: "Acceso a herramientas IA (sin Chat IA). Cobro mensual ($3/mes).",
+    price: 300,
+    period: "month",
+  });
+
   console.log("✅ Listo.");
   console.log(`- CALETA BASICS: ${basics.id} (${basics.created ? "creado" : "actualizado"})`);
+  console.log(`- CALETA IA TOOLS: ${iaTools.id} (${iaTools.created ? "creado" : "actualizado"})`);
   console.log(`- CALETA PRO:    ${pro.id} (${pro.created ? "creado" : "actualizado"})`);
 }
 

@@ -5,14 +5,21 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Bot, Send, Trash2, MessageCircle } from "lucide-react";
+import { Bot, Edit3, Plus, Send, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { useSubscriptionRequired } from "@/hooks/use-subscription-required";
+import {
+  createThread,
+  IAChatMessage,
+  IAChatThread,
+  IA_STORE_EVENT,
+  loadIAStore,
+  saveIAStore,
+  threadTitleFromText,
+  updateThread,
+} from "@/lib/ia-chat-store";
 
-type ChatMessage = {
-  role: "user" | "assistant";
-  content: string;
-};
+type ChatMessage = IAChatMessage;
 
 type ProfileResponse = {
   user: {
@@ -22,14 +29,12 @@ type ProfileResponse = {
 };
 
 export default function ChatIA() {
-  const { loading: subLoading, isActive } = useSubscriptionRequired();
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      role: "assistant",
-      content:
-        "Hola. Soy tu tutor IA. Dime tu materia, tema y qué necesitas (explicar, resolver, practicar, repasar) y lo adapto a tu carrera.",
-    },
-  ]);
+  const { loading: subLoading, isActive, canUseChat } = useSubscriptionRequired({
+    requireChat: true,
+    noChatMessage: "Este plan no incluye Chat IA. Puedes usar las otras herramientas IA.",
+  });
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [activeThread, setActiveThread] = useState<IAChatThread | null>(null);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [careerName, setCareerName] = useState<string | null>(null);
@@ -39,6 +44,25 @@ export default function ChatIA() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, sending]);
+
+  useEffect(() => {
+    const sync = () => {
+      const store = loadIAStore();
+      let thread = store.threads.find((t) => t.id === store.activeThreadId) || null;
+      if (!thread) {
+        const next = createThread(store, store.activeProjectId);
+        saveIAStore(next);
+        thread = next.threads.find((t) => t.id === next.activeThreadId) || null;
+      }
+      if (!thread) return;
+      setActiveThread(thread);
+      setMessages(thread.messages);
+    };
+
+    sync();
+    window.addEventListener(IA_STORE_EVENT, sync as EventListener);
+    return () => window.removeEventListener(IA_STORE_EVENT, sync as EventListener);
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -55,15 +79,34 @@ export default function ChatIA() {
 
   const canSend = useMemo(() => input.trim().length > 0 && !sending, [input, sending]);
 
+  const persistThreadMessages = (nextMessages: ChatMessage[]) => {
+    if (!activeThread) return;
+    const store = loadIAStore();
+    const candidateTitle =
+      activeThread.title === "Nuevo chat" && nextMessages.length > 1
+        ? threadTitleFromText(nextMessages.find((m) => m.role === "user")?.content || "")
+        : activeThread.title;
+    const nextThread: IAChatThread = {
+      ...activeThread,
+      title: candidateTitle,
+      messages: nextMessages,
+      updatedAt: new Date().toISOString(),
+    };
+    const next = updateThread(store, nextThread);
+    saveIAStore(next);
+    setActiveThread(nextThread);
+  };
+
   const onSend = async () => {
     const text = input.trim();
-    if (!text || sending || subLoading || !isActive) return;
+    if (!text || sending || subLoading || !isActive || !canUseChat || !activeThread) return;
 
     setInput("");
     setSending(true);
 
     const nextMessages: ChatMessage[] = [...messages, { role: "user", content: text }];
     setMessages(nextMessages);
+    persistThreadMessages(nextMessages);
 
     try {
       const res = await fetch("/api/ia/chat", {
@@ -81,43 +124,67 @@ export default function ChatIA() {
         setCareerName(data.careerName);
       }
 
-      setMessages((prev) => [...prev, { role: "assistant", content: data.message }]);
+      const finalMessages = [...nextMessages, { role: "assistant" as const, content: data.message }];
+      setMessages(finalMessages);
+      persistThreadMessages(finalMessages);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Error al enviar el mensaje");
-      setMessages((prev) => [
-        ...prev,
+      const fallbackMessages = [
+        ...nextMessages,
         {
-          role: "assistant",
+          role: "assistant" as const,
           content: "Se me complicó responder. Intenta de nuevo o reformula la pregunta.",
         },
-      ]);
+      ];
+      setMessages(fallbackMessages);
+      persistThreadMessages(fallbackMessages);
     } finally {
       setSending(false);
     }
   };
 
+  const createNewChat = () => {
+    const store = loadIAStore();
+    const next = createThread(store, store.activeProjectId);
+    saveIAStore(next);
+  };
+
+  const renameChat = () => {
+    if (!activeThread) return;
+    const value = window.prompt("Nuevo nombre del chat", activeThread.title);
+    if (!value?.trim()) return;
+    const store = loadIAStore();
+    const nextThread = { ...activeThread, title: value.trim(), updatedAt: new Date().toISOString() };
+    const next = updateThread(store, nextThread);
+    saveIAStore(next);
+    setActiveThread(nextThread);
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-t from-mygreen to-mygreen-light">
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-6">
-          <div className="flex items-start justify-between gap-4 flex-col md:flex-row">
+    <div className="min-h-screen">
+      <div className="w-full px-2 md:px-4 py-4 md:py-6">
+        <div className="mb-4">
+          <div className="flex items-start justify-between gap-3 flex-col lg:flex-row">
             <div>
-              <h1 className="text-3xl font-special text-white mb-2 flex items-center gap-2">
-                <MessageCircle className="w-6 h-6 text-[#40C9A9]" />
+              <h1 className="text-2xl md:text-3xl font-special text-white mb-2 flex items-center gap-2">
+                <Sparkles className="w-6 h-6 text-[#40C9A9]" />
                 Chat IA
               </h1>
               <p className="text-white/70">
-                Tutor especializado según tu carrera para estudiar con ejemplos y práctica.
+                Espacio de conversación moderno con chats por proyecto y contexto académico.
               </p>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Badge className="bg-[#354B3A] text-white border border-white/10">
+                {activeThread?.title || "Cargando chat..."}
+              </Badge>
               {careerName ? (
-                <Badge className="bg-white/10 text-white border border-white/10">
+                <Badge className="bg-[#354B3A] text-white border border-white/10">
                   Carrera: {careerName}
                 </Badge>
               ) : (
-                <Badge className="bg-white/10 text-white/80 border border-white/10">
+                <Badge className="bg-[#354B3A] text-white/80 border border-white/10">
                   Carrera: no configurada
                 </Badge>
               )}
@@ -126,36 +193,36 @@ export default function ChatIA() {
                 type="button"
                 variant="outline"
                 className="border-white/20 text-white hover:bg-white/10"
-                onClick={() => {
-                  setMessages([
-                    {
-                      role: "assistant",
-                      content:
-                        "Nuevo chat. Dime tu materia, tema y objetivo (explicar, resolver, practicar) y empezamos.",
-                    },
-                  ]);
-                }}
+                onClick={renameChat}
               >
-                <Trash2 className="w-4 h-4 mr-2" />
-                Limpiar
+                <Edit3 className="w-4 h-4 mr-2" />
+                Renombrar
+              </Button>
+              <Button
+                type="button"
+                className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                onClick={createNewChat}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Nuevo chat
               </Button>
             </div>
           </div>
         </div>
 
-        <Card className="bg-[#354B3A] border-white/10">
+        <Card className="bg-[#354B3A] border-white/10 shadow-2xl shadow-black/20">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
               <Bot className="w-5 h-5 text-[#40C9A9]" />
               Conversación
             </CardTitle>
             <CardDescription className="text-white/70">
-              Tip: incluye tu semestre y el nombre de la materia para respuestas más precisas.
+              Tip: incluye semestre, materia y objetivo para respuestas más precisas.
             </CardDescription>
           </CardHeader>
 
           <CardContent className="space-y-4">
-            <div className="h-[55vh] overflow-y-auto rounded-lg bg-[#1C2D20] border border-white/10 p-4 space-y-3">
+            <div className="h-[60vh] overflow-y-auto rounded-xl bg-[#1C2D20] border border-white/10 p-4 space-y-3">
               {messages.map((m, idx) => {
                 const isUser = m.role === "user";
                 return (
@@ -166,8 +233,8 @@ export default function ChatIA() {
                     <div
                       className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed border ${
                         isUser
-                          ? "bg-[#40C9A9]/20 text-white border-[#40C9A9]/30"
-                          : "bg-white/10 text-white/90 border-white/10"
+                          ? "bg-[#40C9A9]/25 text-white border-[#40C9A9]/40"
+                          : "bg-[#354B3A] text-white/90 border-white/10"
                       }`}
                     >
                       <div className="whitespace-pre-wrap">{m.content}</div>
@@ -192,7 +259,7 @@ export default function ChatIA() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Escribe tu pregunta… (Enter para enviar, Shift+Enter para salto de línea)"
-                className="bg-[#1C2D20] border-white/10 text-white placeholder:text-white/50 min-h-[90px]"
+                className="bg-[#1C2D20] border-white/10 text-white placeholder:text-white/50 min-h-[90px] rounded-xl"
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();

@@ -15,7 +15,7 @@ import { authClient } from "@/lib/auth-client";
 import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, KeyRound } from "lucide-react";
 
 export const LoginForm = () => {
   const [isMounted, setIsMounted] = useState(false);
@@ -23,6 +23,14 @@ export const LoginForm = () => {
   
   useEffect(() => {
     setIsMounted(true);
+    if (typeof window !== "undefined") {
+      const preferred = window.localStorage.getItem("caletas-2fa-preferred");
+      if (preferred === "EMAIL_OTP") {
+        setTwoFactorMethod("email");
+      } else {
+        setTwoFactorMethod("app");
+      }
+    }
   }, []);
   
   const router = useRouter();
@@ -112,6 +120,19 @@ export const LoginForm = () => {
       })();
     });
   };
+
+  useEffect(() => {
+    if (!showTwoFactor || twoFactorMethod !== "email" || otpSent) return;
+    (async () => {
+      const { error: sendError } = await authClient.twoFactor.sendOtp({});
+      if (sendError) {
+        setError(sendError.message || "No se pudo enviar el código por correo");
+        return;
+      }
+      setOtpSent(true);
+      setSucces("Te enviamos un código a tu correo");
+    })();
+  }, [showTwoFactor, twoFactorMethod, otpSent]);
 
   if (!isMounted) {
     return null;
@@ -310,6 +331,31 @@ export const LoginForm = () => {
             >
               {showTwoFactor ? "Confirmar código" : "Iniciar sesión"}
             </Button>
+            {!showTwoFactor ? (
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isPending}
+                className="w-full mt-2 bg-white/10 border-white/20 text-white hover:bg-white/20"
+                onClick={async () => {
+                  setError("");
+                  setSucces("");
+                  const { error: passkeyError } = await authClient.signIn.passkey({
+                    fetchOptions: {
+                      onSuccess() {
+                        router.push(callbackUrl || DEFAULT_LOGIN_REDIRECT);
+                      },
+                    },
+                  });
+                  if (passkeyError) {
+                    setError(passkeyError.message || "No se pudo iniciar con passkey");
+                  }
+                }}
+              >
+                <KeyRound className="h-4 w-4 mr-2" />
+                Iniciar con Passkey
+              </Button>
+            ) : null}
             <div className="text-center">
               <a 
                 href="/reset" 

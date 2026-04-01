@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect, useRef } from "react";
 // import { useAuth } from "@/lib/auth";
@@ -10,6 +9,7 @@ export function Header() {
   // const { user, signOut } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const toggleButtonRef = useRef<HTMLButtonElement>(null);
 
   // Bloquear scroll de fondo cuando el menú está abierto
   useEffect(() => {
@@ -27,6 +27,9 @@ export function Header() {
   useEffect(() => {
     if (!isMenuOpen) return;
     const handleClick = (e: MouseEvent) => {
+      if (toggleButtonRef.current && toggleButtonRef.current.contains(e.target as Node)) {
+        return;
+      }
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setIsMenuOpen(false);
       }
@@ -37,12 +40,12 @@ export function Header() {
 
   return (
     <header className="relative w-full shadow z-50">
-      <nav className="flex flex-row w-full max-w-[1400px] mx-auto justify-between items-center px-4 sm:px-8 lg:px-12 font-semibold text-[16px] sm:text-[18px] py-3 sm:py-4 relative">
-        <div className="hover:opacity-80 transition-opacity cursor-pointer">
+      <nav className="flex w-full max-w-[1400px] mx-auto items-center gap-2 px-3 sm:px-6 lg:px-12 font-semibold text-[15px] sm:text-[18px] py-3 sm:py-4 relative">
+        <div className="hover:opacity-80 transition-opacity cursor-pointer shrink-0">
           <Logo />
         </div>
         {/* Menú de escritorio */}
-        <div className="hidden md:flex md:flex-row md:gap-4 lg:gap-6 items-center">
+        <div className="hidden lg:flex flex-1 justify-center lg:flex-row lg:gap-6 items-center min-w-0">
           <a href="/caracteristicas" className="hover:text-[#40C9A9] transition-colors cursor-pointer text-white text-base px-2 py-1 rounded-md hover:bg-white/10">
             Características
           </a>
@@ -58,7 +61,8 @@ export function Header() {
         </div>
         {/* Botón de menú móvil */}
         <button
-          className="md:hidden flex flex-col space-y-1 p-2 focus:outline-none z-[110]"
+          ref={toggleButtonRef}
+          className="lg:hidden ml-auto flex flex-col space-y-1 p-2 focus:outline-none z-[110] shrink-0"
           onClick={() => setIsMenuOpen((v) => !v)}
           aria-label="Abrir menú"
         >
@@ -69,11 +73,11 @@ export function Header() {
         {/* Botón Agrega tu uni para escritorio */}
         <a
           href="/agregar-universidad"
-          className="font-special hidden md:block ml-2"
+          className="font-special hidden lg:block ml-2 shrink-0"
         >
           <Button
             size="sm"
-            className="text-sm sm:text-base font-special text-white rounded-xl px-4 py-2 shadow"
+            className="text-sm sm:text-base font-special text-white rounded-xl px-3 lg:px-4 py-2 shadow whitespace-nowrap"
           >
             Agrega tu uni
           </Button>
@@ -81,11 +85,11 @@ export function Header() {
       </nav>
       {/* Menú móvil tipo dropdown */}
       {isMenuOpen && (
-        <div className="md:hidden fixed inset-0 z-[100] flex flex-col items-stretch bg-black/40" style={{backdropFilter: 'blur(2px)'}}>
-          <div ref={menuRef} className="w-full bg-gradient-to-t from-mygreen to-mygreen-light border-b border-white/10 shadow-lg animate-fadeInDown">
+        <div className="lg:hidden fixed inset-0 z-[100] flex flex-col items-stretch bg-black/40" style={{backdropFilter: 'blur(2px)'}}>
+          <div ref={menuRef} className="w-full max-h-[85vh] overflow-y-auto bg-gradient-to-t from-mygreen to-mygreen-light border-b border-white/10 shadow-lg animate-fadeInDown">
             <nav className="flex flex-col gap-1 py-2 px-4">
               <a
-                href="#caracteristicas"
+                href="/caracteristicas"
                 className="text-white font-special text-base py-2 px-2 rounded-md hover:bg-white/10 transition-colors text-left"
                 onClick={() => setIsMenuOpen(false)}
               >
@@ -119,13 +123,13 @@ export function Header() {
               >
                 Agregar Universidad
               </a>
-              <a href="/login" className="mt-2 mb-1 block">
+              <a href="/auth/login" className="mt-2 mb-1 block">
                 <Button
                   size="sm"
                   className="w-full text-sm font-special text-white rounded-xl px-4 py-2 shadow"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  Agrega tu uni
+                  Iniciar Sesión
                 </Button>
               </a>
             </nav>

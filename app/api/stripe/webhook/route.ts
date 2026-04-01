@@ -120,7 +120,7 @@ export async function POST(req: NextRequest) {
       }
 
       case "invoice.payment_succeeded": {
-        // Renovaciones: mantener periodo actualizado
+        // Renovaciones: mantener periodo actualizado + crear registro histórico de pago
         const invoice = event.data.object as StripeType.Invoice;
         const subscriptionId = typeof invoice.subscription === "string" ? invoice.subscription : null;
         if (!subscriptionId) break;
@@ -144,6 +144,57 @@ export async function POST(req: NextRequest) {
             stripeCurrentPeriodEnd: currentPeriodEnd || undefined,
           },
         });
+
+        const localSub = await db.userSubscription.findUnique({
+          where: { id: existing.id },
+          select: { userId: true, subscriptionTypeId: true },
+        });
+
+        if (localSub?.userId) {
+          const stripeInvoiceId = invoice.id;
+          const stripePaymentIntentId =
+            typeof invoice.payment_intent === "string" ? invoice.payment_intent : null;
+          const operationCode =
+            stripePaymentIntentId || invoice.number || invoice.id;
+
+          await db.paymentRecord.upsert({
+            where: { stripeInvoiceId },
+            create: {
+              userId: localSub.userId,
+              subscriptionTypeId: localSub.subscriptionTypeId || null,
+              source: "CARD",
+              status: "APPROVED",
+              amountUsdCents: invoice.amount_paid || invoice.amount_due || 0,
+              operationCode,
+              stripeInvoiceId,
+              stripePaymentIntentId,
+              periodStart: invoice.period_start
+                ? new Date(invoice.period_start * 1000)
+                : null,
+              periodEnd: invoice.period_end
+                ? new Date(invoice.period_end * 1000)
+                : currentPeriodEnd,
+              paidAt: invoice.status_transitions?.paid_at
+                ? new Date(invoice.status_transitions.paid_at * 1000)
+                : new Date(),
+            },
+            update: {
+              status: "APPROVED",
+              amountUsdCents: invoice.amount_paid || invoice.amount_due || 0,
+              operationCode,
+              stripePaymentIntentId,
+              periodStart: invoice.period_start
+                ? new Date(invoice.period_start * 1000)
+                : null,
+              periodEnd: invoice.period_end
+                ? new Date(invoice.period_end * 1000)
+                : currentPeriodEnd,
+              paidAt: invoice.status_transitions?.paid_at
+                ? new Date(invoice.status_transitions.paid_at * 1000)
+                : new Date(),
+            },
+          });
+        }
 
         break;
       }

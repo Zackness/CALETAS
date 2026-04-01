@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { getCorsHeaders } from "@/lib/cors";
 import { EstadoMateria } from "@prisma/client";
+
+function withCors(res: NextResponse, req: NextRequest) {
+  Object.entries(getCorsHeaders(req)).forEach(([k, v]) => res.headers.set(k, v));
+  return res;
+}
 
 // Función para obtener todos los prerrequisitos en cascada de una materia
 async function obtenerPrerrequisitosEnCascada(materiaId: string): Promise<string[]> {
@@ -54,10 +60,7 @@ export async function GET(request: NextRequest) {
     });
 
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "No autorizado" },
-        { status: 401 }
-      );
+      return withCors(NextResponse.json({ error: "No autorizado" }, { status: 401 }), request);
     }
 
     // Obtener todas las materias del estudiante
@@ -109,17 +112,10 @@ export async function GET(request: NextRequest) {
       materia => !materiasCursadas.has(materia.id)
     );
 
-    return NextResponse.json({
-      materiasEstudiante,
-      materiasDisponibles,
-    });
-
+    return withCors(NextResponse.json({ materiasEstudiante, materiasDisponibles }), request);
   } catch (error) {
     console.error("Error fetching academic history:", error);
-    return NextResponse.json(
-      { error: "Error interno del servidor" },
-      { status: 500 }
-    );
+    return withCors(NextResponse.json({ error: "Error interno del servidor" }, { status: 500 }), request);
   }
 }
 

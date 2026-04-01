@@ -181,11 +181,13 @@ export function HeaderSearch() {
         className="w-full pl-8 md:pl-10 pr-2 md:pr-4 py-2 rounded-lg bg-white/10 text-white placeholder:text-white/60 border border-white/10 focus:outline-none focus:border-[#40C9A9] text-sm md:text-base"
         aria-autocomplete="list"
         aria-expanded={showDropdown}
+        aria-controls="header-search-listbox"
         role="combobox"
       />
 
       {showDropdown && (
         <div
+          id="header-search-listbox"
           className="absolute top-full left-0 right-0 mt-1 rounded-lg border border-white/10 bg-[#203324] shadow-xl z-50 max-h-[min(400px,70vh)] overflow-y-auto"
           role="listbox"
         >

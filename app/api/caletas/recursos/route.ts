@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { getCorsHeaders } from "@/lib/cors";
+
+function withCors(res: NextResponse, req: NextRequest) {
+  Object.entries(getCorsHeaders(req)).forEach(([k, v]) => res.headers.set(k, v));
+  return res;
+}
 
 const ANON_AUTHOR = {
   id: "anon",
@@ -28,10 +34,7 @@ export async function GET(request: NextRequest) {
     });
 
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "No autorizado" },
-        { status: 401 }
-      );
+      return withCors(NextResponse.json({ error: "No autorizado" }, { status: 401 }), request);
     }
 
     const { searchParams } = new URL(request.url);
@@ -91,16 +94,10 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    return NextResponse.json({
-      recursos: recursosConFavorito,
-    });
-
+    return withCors(NextResponse.json({ recursos: recursosConFavorito }), request);
   } catch (error) {
     console.error("Error fetching recursos:", error);
-    return NextResponse.json(
-      { error: "Error interno del servidor" },
-      { status: 500 }
-    );
+    return withCors(NextResponse.json({ error: "Error interno del servidor" }, { status: 500 }), request);
   }
 }
 
@@ -112,10 +109,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "No autorizado" },
-        { status: 401 }
-      );
+      return withCors(NextResponse.json({ error: "No autorizado" }, { status: 401 }), request);
     }
 
     const body = await request.json();
@@ -133,10 +127,7 @@ export async function POST(request: NextRequest) {
     } = body;
 
     if (!titulo || !descripcion || !tipo || !contenido || !materiaId) {
-      return NextResponse.json(
-        { error: "Todos los campos son requeridos" },
-        { status: 400 }
-      );
+      return withCors(NextResponse.json({ error: "Todos los campos son requeridos" }, { status: 400 }), request);
     }
 
     // Validar que la materia pertenece a la carrera del usuario
@@ -154,10 +145,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user?.carrera?.materias.length) {
-      return NextResponse.json(
-        { error: "Materia no encontrada en tu carrera" },
-        { status: 404 }
-      );
+      return withCors(NextResponse.json({ error: "Materia no encontrada en tu carrera" }, { status: 404 }), request);
     }
 
     // Crear el recurso
@@ -194,16 +182,12 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({
+    return withCors(NextResponse.json({
       message: "Recurso creado exitosamente",
       recurso: maskAutorIfAnon(recurso as any, session.user.id),
-    });
-
+    }), request);
   } catch (error) {
     console.error("Error creating recurso:", error);
-    return NextResponse.json(
-      { error: "Error interno del servidor" },
-      { status: 500 }
-    );
+    return withCors(NextResponse.json({ error: "Error interno del servidor" }, { status: 500 }), request);
   }
 } 

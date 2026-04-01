@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { getCorsHeaders } from "@/lib/cors";
 import OpenAI from "openai";
 import { getActiveSubscriptionForUser } from "@/lib/subscription";
 import { logAiUsage } from "@/lib/ai-usage";
+
+function withCors(res: NextResponse, req: NextRequest) {
+  Object.entries(getCorsHeaders(req)).forEach(([k, v]) => res.headers.set(k, v));
+  return res;
+}
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -16,22 +22,16 @@ export async function POST(request: NextRequest) {
     });
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+      return withCors(NextResponse.json({ error: "No autorizado" }, { status: 401 }), request);
     }
-
     const sub = await getActiveSubscriptionForUser(session.user.id);
     if (!sub) {
-      return NextResponse.json(
-        { error: "Necesitas una suscripción activa para usar IA" },
-        { status: 402 },
-      );
+      return withCors(NextResponse.json({ error: "Necesitas una suscripción activa para usar IA" }, { status: 402 }), request);
     }
-
     const body = await request.json();
     const { recursoId } = body;
-
     if (!recursoId) {
-      return NextResponse.json({ error: "ID de recurso requerido" }, { status: 400 });
+      return withCors(NextResponse.json({ error: "ID de recurso requerido" }, { status: 400 }), request);
     }
 
     // Obtener el recurso
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!recurso) {
-      return NextResponse.json({ error: "Recurso no encontrado" }, { status: 404 });
+      return withCors(NextResponse.json({ error: "Recurso no encontrado" }, { status: 404 }), request);
     }
     
     const autorNombre =
@@ -154,19 +154,12 @@ Estructura JSON esperada:
       recursoId: recursoId
     }));
 
-    return NextResponse.json({ 
+    return withCors(NextResponse.json({
       fichas: fichasConIds,
-      recurso: {
-        titulo: recurso.titulo,
-        materia: recurso.materia.nombre
-      }
-    });
-
+      recurso: { titulo: recurso.titulo, materia: recurso.materia.nombre },
+    }), request);
   } catch (error) {
     console.error("Error generating fichas:", error);
-    return NextResponse.json(
-      { error: "Error interno del servidor" },
-      { status: 500 }
-    );
+    return withCors(NextResponse.json({ error: "Error interno del servidor" }, { status: 500 }), request);
   }
 } 

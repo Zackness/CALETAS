@@ -1,16 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { headers } from "next/headers";
+import { getCorsHeaders } from "@/lib/cors";
 
-export async function GET() {
+function withCors(res: NextResponse, req: NextRequest) {
+  Object.entries(getCorsHeaders(req)).forEach(([k, v]) => res.headers.set(k, v));
+  return res;
+}
+
+export async function GET(request: NextRequest) {
   try {
     const session = await auth.api.getSession({
-      headers: await headers(),
+      headers: request.headers,
     });
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+      return withCors(NextResponse.json({ error: "No autorizado" }, { status: 401 }), request);
     }
 
     const metas = await db.metaAcademica.findMany({
@@ -24,13 +29,10 @@ export async function GET() {
       ],
     });
 
-    return NextResponse.json({ metas });
+    return withCors(NextResponse.json({ metas }), request);
   } catch (error) {
     console.error("Error fetching metas:", error);
-    return NextResponse.json(
-      { error: "Error interno del servidor" },
-      { status: 500 }
-    );
+    return withCors(NextResponse.json({ error: "Error interno del servidor" }, { status: 500 }), request);
   }
 }
 
@@ -41,7 +43,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+      return withCors(NextResponse.json({ error: "No autorizado" }, { status: 401 }), request);
     }
 
     const body = await request.json();
@@ -57,39 +59,19 @@ export async function POST(request: NextRequest) {
 
     // Validaciones
     if (!titulo || !tipo || valorObjetivo === undefined || valorActual === undefined) {
-      return NextResponse.json(
-        { error: "Faltan campos requeridos" },
-        { status: 400 }
-      );
+      return withCors(NextResponse.json({ error: "Faltan campos requeridos" }, { status: 400 }), request);
     }
-
     if (valorObjetivo <= 0) {
-      return NextResponse.json(
-        { error: "El valor objetivo debe ser mayor a 0" },
-        { status: 400 }
-      );
+      return withCors(NextResponse.json({ error: "El valor objetivo debe ser mayor a 0" }, { status: 400 }), request);
     }
-
     if (valorActual < 0) {
-      return NextResponse.json(
-        { error: "El valor actual no puede ser negativo" },
-        { status: 400 }
-      );
+      return withCors(NextResponse.json({ error: "El valor actual no puede ser negativo" }, { status: 400 }), request);
     }
-
-    // Solo validar que el valor actual no sea mayor al objetivo para ciertos tipos
     if (tipo === "PROMEDIO_GENERAL" && valorActual > valorObjetivo) {
-      return NextResponse.json(
-        { error: "El promedio actual no puede ser mayor al objetivo" },
-        { status: 400 }
-      );
+      return withCors(NextResponse.json({ error: "El promedio actual no puede ser mayor al objetivo" }, { status: 400 }), request);
     }
-
     if (tipo === "SEMESTRE_ESPECIFICO" && valorActual > valorObjetivo) {
-      return NextResponse.json(
-        { error: "El semestre actual no puede ser mayor al objetivo" },
-        { status: 400 }
-      );
+      return withCors(NextResponse.json({ error: "El semestre actual no puede ser mayor al objetivo" }, { status: 400 }), request);
     }
 
     // Crear la meta
@@ -106,21 +88,12 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ meta }, { status: 201 });
+    return withCors(NextResponse.json({ meta }, { status: 201 }), request);
   } catch (error) {
     console.error("Error creating meta:", error);
-    
-    // Si es un error de validación de Prisma, devolver un mensaje más específico
     if (error instanceof Error && error.message.includes('Invalid value')) {
-      return NextResponse.json(
-        { error: "Datos inválidos para crear la meta" },
-        { status: 400 }
-      );
+      return withCors(NextResponse.json({ error: "Datos inválidos para crear la meta" }, { status: 400 }), request);
     }
-    
-    return NextResponse.json(
-      { error: "Error interno del servidor" },
-      { status: 500 }
-    );
+    return withCors(NextResponse.json({ error: "Error interno del servidor" }, { status: 500 }), request);
   }
 } 

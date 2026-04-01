@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     const subfolder = searchParams.get("subfolder") || "";
 
     // Listar archivos de Bunny.net
-    const folderToList = ["caletas", subfolder].filter(Boolean).join("/");
+    const folderToList = ["caleta", subfolder].filter(Boolean).join("/");
     const files = await listBunnyFiles(folderToList);
 
     return NextResponse.json({

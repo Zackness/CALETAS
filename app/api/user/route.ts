@@ -31,6 +31,8 @@ export async function GET(req: Request) {
         ciudadDeResidencia: true,
         telefono: true,
         isTwoFactorEnabled: true,
+        twoFactorPreferredMethod: true,
+        twoFactorEmailFallbackEnabled: true,
         isEmailVerified: true,
         carrera: {
           select: {

@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
-
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { getActiveSubscriptionForUser } from "@/lib/subscription";
+import { getCorsHeaders } from "@/lib/cors";
+import { canUseIAChat, getActiveSubscriptionForUser } from "@/lib/subscription";
 import { logAiUsage } from "@/lib/ai-usage";
+
+function withCors(res: NextResponse, req: NextRequest) {
+  Object.entries(getCorsHeaders(req)).forEach(([k, v]) => res.headers.set(k, v));
+  return res;
+}
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -91,22 +96,24 @@ const buildSystemPrompt = (careerName: string) => {
 export async function POST(request: NextRequest) {
   try {
     if (!process.env.OPENAI_API_KEY) {
-      return NextResponse.json({ error: "OPENAI_API_KEY no está configurada" }, { status: 500 });
+      return withCors(NextResponse.json({ error: "OPENAI_API_KEY no está configurada" }, { status: 500 }), request);
     }
 
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
+    const session = await auth.api.getSession({ headers: request.headers });
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+      return withCors(NextResponse.json({ error: "No autorizado" }, { status: 401 }), request);
     }
-
     const sub = await getActiveSubscriptionForUser(session.user.id);
     if (!sub) {
-      return NextResponse.json(
-        { error: "Necesitas una suscripción activa para usar IA" },
-        { status: 402 },
+      return withCors(NextResponse.json({ error: "Necesitas una suscripción activa para usar IA" }, { status: 402 }), request);
+    }
+    if (!canUseIAChat(sub)) {
+      return withCors(
+        NextResponse.json(
+          { error: "Tu plan actual no incluye Chat IA. Puedes usar las otras herramientas IA." },
+          { status: 403 },
+        ),
+        request,
       );
     }
 
@@ -124,7 +131,7 @@ export async function POST(request: NextRequest) {
       .slice(-20);
 
     if (!messages.length || messages[messages.length - 1]?.role !== "user") {
-      return NextResponse.json({ error: "Envía al menos un mensaje de usuario" }, { status: 400 });
+      return withCors(NextResponse.json({ error: "Envía al menos un mensaje de usuario" }, { status: 400 }), request);
     }
 
     const user = await db.user.findUnique({
@@ -151,18 +158,13 @@ export async function POST(request: NextRequest) {
 
     const answer = resp.choices[0]?.message?.content?.trim();
     if (!answer) {
-      return NextResponse.json({ error: "No se pudo generar respuesta" }, { status: 500 });
+      return withCors(NextResponse.json({ error: "No se pudo generar respuesta" }, { status: 500 }), request);
     }
-
     logAiUsage({ userId: session.user.id, endpoint: "ia/chat", usage: resp.usage ?? null });
-
-    return NextResponse.json({
-      message: answer,
-      careerName: careerName || null,
-    });
+    return withCors(NextResponse.json({ message: answer, careerName: careerName || null }), request);
   } catch (error) {
     console.error("Error in /api/ia/chat:", error);
-    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
+    return withCors(NextResponse.json({ error: "Error interno del servidor" }, { status: 500 }), request);
   }
 }
 

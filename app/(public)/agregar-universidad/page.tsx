@@ -230,7 +230,7 @@ export default function AgregarUniversidadPage() {
     <div className="min-h-screen bg-gradient-to-t from-mygreen to-mygreen-light">
       <Header />
       
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-10 sm:py-12">
         <div className="max-w-4xl mx-auto">
           {/* Hero Section */}
           <div className="text-center mb-12">
@@ -239,11 +239,11 @@ export default function AgregarUniversidadPage() {
               Integración Automática
             </div>
             
-            <h1 className="text-4xl md:text-5xl font-special text-white mb-6">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-special text-white mb-4 sm:mb-6">
               Agrega tu Universidad
             </h1>
             
-            <p className="text-xl text-white/80 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-base sm:text-lg md:text-xl text-white/80 max-w-3xl mx-auto leading-relaxed">
               ¿Tu universidad no está en Caletas? ¡Agrégala automáticamente! 
               Con al menos 10 estudiantes interesados y el pensum de la carrera, 
               tu universidad se integrará inmediatamente a la plataforma.

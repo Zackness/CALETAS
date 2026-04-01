@@ -284,3 +284,28 @@ export const sendBetterAuthVerificationEmail = async (
         html: baseTemplate(content),
     });
 };
+
+export const sendManualPaymentRejectedEmail = async (
+    email: string,
+    userName: string,
+    planName: string,
+    reason: string,
+) => {
+    const content = `
+        <h2>Actualización de tu pago móvil</h2>
+        <p>Hola ${userName || "estudiante"},</p>
+        <p>Tu comprobante de pago para el plan <strong>${planName}</strong> fue rechazado durante la verificación administrativa.</p>
+        <div class="highlight">
+            <p>Motivo del rechazo: ${reason}</p>
+        </div>
+        <p>Puedes volver a enviar un nuevo comprobante desde tu panel de suscripción.</p>
+        <p>Si necesitas ayuda, contacta al soporte de Caletas.</p>
+    `;
+
+    await resend.emails.send({
+        from: "Caletas <bienvenido@caleta.top>",
+        to: email,
+        subject: "Pago móvil rechazado - Caletas",
+        html: baseTemplate(content),
+    });
+};

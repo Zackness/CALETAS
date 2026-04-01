@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { getCorsHeaders } from "@/lib/cors";
+import { deleteFromBunny } from "@/lib/bunny";
+
+function withCors(res: NextResponse, req: NextRequest) {
+  Object.entries(getCorsHeaders(req)).forEach(([k, v]) => res.headers.set(k, v));
+  return res;
+}
 
 const ANON_AUTHOR = {
   id: "anon",
@@ -19,14 +26,9 @@ export async function GET(
     });
 
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "No autorizado" },
-        { status: 401 }
-      );
+      return withCors(NextResponse.json({ error: "No autorizado" }, { status: 401 }), request);
     }
-
     const { id } = await params;
-
     const recurso = await db.recurso.findUnique({
       where: { id },
       include: {
@@ -48,25 +50,16 @@ export async function GET(
     });
 
     if (!recurso) {
-      return NextResponse.json(
-        { error: "Recurso no encontrado" },
-        { status: 404 }
-      );
+      return withCors(NextResponse.json({ error: "Recurso no encontrado" }, { status: 404 }), request);
     }
-
     const masked =
       recurso.esAnonimo && recurso.autorId !== session.user.id
         ? { ...recurso, autor: ANON_AUTHOR }
         : recurso;
-
-    return NextResponse.json(masked);
-
+    return withCors(NextResponse.json(masked), request);
   } catch (error) {
     console.error("Error fetching recurso:", error);
-    return NextResponse.json(
-      { error: "Error interno del servidor" },
-      { status: 500 }
-    );
+    return withCors(NextResponse.json({ error: "Error interno del servidor" }, { status: 500 }), request);
   }
 }
 
@@ -81,14 +74,9 @@ export async function DELETE(
     });
 
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "No autorizado" },
-        { status: 401 }
-      );
+      return withCors(NextResponse.json({ error: "No autorizado" }, { status: 401 }), request);
     }
-
     const { id } = await params;
-
     // Verificar que el recurso existe y pertenece al usuario
     const recurso = await db.recurso.findUnique({
       where: { id },
@@ -100,17 +88,24 @@ export async function DELETE(
     });
 
     if (!recurso) {
-      return NextResponse.json(
-        { error: "Recurso no encontrado" },
-        { status: 404 }
-      );
+      return withCors(NextResponse.json({ error: "Recurso no encontrado" }, { status: 404 }), request);
+    }
+    if (recurso.autorId !== session.user.id) {
+      return withCors(NextResponse.json({ error: "No tienes permisos para eliminar este recurso" }, { status: 403 }), request);
     }
 
-    if (recurso.autorId !== session.user.id) {
-      return NextResponse.json(
-        { error: "No tienes permisos para eliminar este recurso" },
-        { status: 403 }
-      );
+    // Si tiene archivo en Bunny, intentamos eliminarlo también.
+    if (recurso.archivoUrl) {
+      const deletedFromBunny = await deleteFromBunny(recurso.archivoUrl);
+      if (!deletedFromBunny) {
+        return withCors(
+          NextResponse.json(
+            { error: "No se pudo eliminar el archivo en Bunny.net" },
+            { status: 500 },
+          ),
+          request,
+        );
+      }
     }
 
     // Eliminar el recurso y todas sus relaciones
@@ -137,17 +132,10 @@ export async function DELETE(
       }),
     ]);
 
-    return NextResponse.json(
-      { message: "Recurso eliminado exitosamente" },
-      { status: 200 }
-    );
-
+    return withCors(NextResponse.json({ message: "Recurso eliminado exitosamente" }, { status: 200 }), request);
   } catch (error) {
     console.error("Error deleting recurso:", error);
-    return NextResponse.json(
-      { error: "Error interno del servidor" },
-      { status: 500 }
-    );
+    return withCors(NextResponse.json({ error: "Error interno del servidor" }, { status: 500 }), request);
   }
 }
 

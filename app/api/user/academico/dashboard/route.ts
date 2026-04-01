@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { getCorsHeaders } from "@/lib/cors";
 import { EstadoMateria } from "@prisma/client";
+
+function withCors(res: NextResponse, req: NextRequest) {
+  Object.entries(getCorsHeaders(req)).forEach(([k, v]) => res.headers.set(k, v));
+  return res;
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,10 +16,7 @@ export async function GET(request: NextRequest) {
     });
 
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "No autorizado" },
-        { status: 401 }
-      );
+      return withCors(NextResponse.json({ error: "No autorizado" }, { status: 401 }), request);
     }
 
     // Obtener todas las materias del estudiante con información de la materia
@@ -97,16 +100,9 @@ export async function GET(request: NextRequest) {
       progresoCarrera,
     };
 
-    return NextResponse.json({
-      materiasEstudiante,
-      estadisticas,
-    });
-
+    return withCors(NextResponse.json({ materiasEstudiante, estadisticas }), request);
   } catch (error) {
     console.error("Error fetching academic dashboard:", error);
-    return NextResponse.json(
-      { error: "Error interno del servidor" },
-      { status: 500 }
-    );
+    return withCors(NextResponse.json({ error: "Error interno del servidor" }, { status: 500 }), request);
   }
 } 

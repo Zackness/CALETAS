@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { getCorsHeaders } from "@/lib/cors";
 import OpenAI from "openai";
 import { getActiveSubscriptionForUser } from "@/lib/subscription";
 import { logAiUsage } from "@/lib/ai-usage";
@@ -9,29 +10,25 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+function withCors(res: NextResponse, req: NextRequest) {
+  Object.entries(getCorsHeaders(req)).forEach(([k, v]) => res.headers.set(k, v));
+  return res;
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
+    const session = await auth.api.getSession({ headers: request.headers });
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+      return withCors(NextResponse.json({ error: "No autorizado" }, { status: 401 }), request);
     }
-
     const sub = await getActiveSubscriptionForUser(session.user.id);
     if (!sub) {
-      return NextResponse.json(
-        { error: "Necesitas una suscripción activa para usar IA" },
-        { status: 402 },
-      );
+      return withCors(NextResponse.json({ error: "Necesitas una suscripción activa para usar IA" }, { status: 402 }), request);
     }
-
     const body = await request.json();
     const { recursoId } = body;
-
     if (!recursoId) {
-      return NextResponse.json({ error: "ID de recurso requerido" }, { status: 400 });
+      return withCors(NextResponse.json({ error: "ID de recurso requerido" }, { status: 400 }), request);
     }
 
     // Obtener el recurso
@@ -53,7 +50,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!recurso) {
-      return NextResponse.json({ error: "Recurso no encontrado" }, { status: 404 });
+      return withCors(NextResponse.json({ error: "Recurso no encontrado" }, { status: 404 }), request);
     }
 
     const autorNombre =
@@ -114,7 +111,7 @@ Las preguntas deben ser variadas y cubrir diferentes aspectos del contenido, des
     const respuestaIA = response.choices[0]?.message?.content;
     
     if (!respuestaIA) {
-      return NextResponse.json({ error: "Error al generar el cuestionario" }, { status: 500 });
+      return withCors(NextResponse.json({ error: "Error al generar el cuestionario" }, { status: 500 }), request);
     }
 
     logAiUsage({ userId: session.user.id, endpoint: "ia/cuestionario", usage: response.usage ?? null });
@@ -141,12 +138,10 @@ Las preguntas deben ser variadas y cubrir diferentes aspectos del contenido, des
     } catch (error) {
       console.error("Error parsing AI response:", error);
       console.error("Respuesta original:", respuestaIA);
-      return NextResponse.json({ error: "Error al procesar la respuesta de la IA" }, { status: 500 });
+      return withCors(NextResponse.json({ error: "Error al procesar la respuesta de la IA" }, { status: 500 }), request);
     }
-
-    // Validar estructura de la respuesta
     if (!cuestionarioGenerado.preguntas || !Array.isArray(cuestionarioGenerado.preguntas)) {
-      return NextResponse.json({ error: "Formato de respuesta inválido" }, { status: 500 });
+      return withCors(NextResponse.json({ error: "Formato de respuesta inválido" }, { status: 500 }), request);
     }
 
     // Agregar IDs y recursoId a las preguntas
@@ -156,19 +151,12 @@ Las preguntas deben ser variadas y cubrir diferentes aspectos del contenido, des
       recursoId: recursoId
     }));
 
-    return NextResponse.json({ 
+    return withCors(NextResponse.json({
       preguntas: preguntasConIds,
-      recurso: {
-        titulo: recurso.titulo,
-        materia: recurso.materia.nombre
-      }
-    });
-
+      recurso: { titulo: recurso.titulo, materia: recurso.materia.nombre },
+    }), request);
   } catch (error) {
     console.error("Error generating cuestionario:", error);
-    return NextResponse.json(
-      { error: "Error interno del servidor" },
-      { status: 500 }
-    );
+    return withCors(NextResponse.json({ error: "Error interno del servidor" }, { status: 500 }), request);
   }
 } 

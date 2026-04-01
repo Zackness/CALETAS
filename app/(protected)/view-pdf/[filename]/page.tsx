@@ -45,13 +45,17 @@ export default function ViewPDFPage() {
         // Decodificar el nombre del archivo (por si tiene caracteres especiales)
         const decodedFilename = decodeURIComponent(filename);
         
-        // Construir la URL del archivo (sin subcarpeta)
-        const fileUrl = `https://startupven.com/caletas/home/nrektwbx/public_html/caletas/${decodedFilename}`;
-        
+        // Resolver URL real del archivo desde BD (Bunny o storage activo)
+        const res = await fetch(`/api/caletas/file-by-name?filename=${encodeURIComponent(decodedFilename)}`);
+        const data = await res.json();
+        if (!res.ok || !data?.file?.url) {
+          throw new Error(data?.error || "No se pudo resolver la URL del archivo");
+        }
+
         setFile({
           name: decodedFilename,
-          url: fileUrl,
-          type: 'application/pdf'
+          url: data.file.url,
+          type: "application/pdf",
         });
 
       } catch (err) {
@@ -65,7 +69,7 @@ export default function ViewPDFPage() {
     }
   }, [params.filename]);
 
-  if (isLoading || status === "loading") {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-t from-mygreen to-mygreen-light flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>

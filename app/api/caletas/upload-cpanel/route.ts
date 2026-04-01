@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
       // Respetamos subfolder: si viene, prefijamos el nombre del archivo dentro del storage.
       const archivoUrl = await uploadToBunny(file, {
         subfolder,
-        prefix: "caletas",
+        prefix: "caleta",
       });
 
       console.log("✅ Archivo subido exitosamente a Bunny.net:", archivoUrl);

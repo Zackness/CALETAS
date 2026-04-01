@@ -35,8 +35,17 @@ type ExtendedUser = {
     email?: string;
     role?: UserRole;
     isTwoFactorEnabled?: boolean;
+    twoFactorPreferredMethod?: "TOTP" | "PASSKEY" | "EMAIL_OTP";
+    twoFactorEmailFallbackEnabled?: boolean;
     telefono?: string | null;
     ciudadDeResidencia?: string | null;
+};
+
+type PasskeyItem = {
+  id: string;
+  name?: string | null;
+  createdAt?: string | null;
+  deviceType?: string;
 };
 
 type ProfileResponse = {
@@ -79,10 +88,18 @@ export default function Ajustes() {
     "idle",
   );
   const [twoFaDialogOpen, setTwoFaDialogOpen] = useState(false);
+  const [twoFaPanelOpen, setTwoFaPanelOpen] = useState(false);
   const [twoFaDialogMode, setTwoFaDialogMode] = useState<"enable" | "disable">(
     "enable",
   );
   const [showTwoFaPassword, setShowTwoFaPassword] = useState(false);
+  const [preferredTwoFaMethod, setPreferredTwoFaMethod] = useState<
+    "TOTP" | "PASSKEY" | "EMAIL_OTP"
+  >("TOTP");
+  const [emailFallbackEnabled, setEmailFallbackEnabled] = useState(true);
+  const [saving2FaPrefs, setSaving2FaPrefs] = useState(false);
+  const [passkeys, setPasskeys] = useState<PasskeyItem[]>([]);
+  const [passkeyBusy, setPasskeyBusy] = useState(false);
 
   const form = useForm<z.infer<typeof SettingsSchema>>({
       resolver: zodResolver(SettingsSchema),
@@ -171,7 +188,55 @@ export default function Ajustes() {
       isTwoFactorEnabled: undefined,
     });
     setHasChanges(false);
+    setPreferredTwoFaMethod(user.twoFactorPreferredMethod || "TOTP");
+    setEmailFallbackEnabled(user.twoFactorEmailFallbackEnabled ?? true);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(
+        "caletas-2fa-preferred",
+        user.twoFactorPreferredMethod || "TOTP",
+      );
+    }
   }, [user, form]);
+
+  const loadPasskeys = async () => {
+    try {
+      const res: any = await authClient.passkey.listUserPasskeys();
+      if (res?.error) return;
+      setPasskeys(Array.isArray(res?.data) ? res.data : []);
+    } catch {
+      // silencioso
+    }
+  };
+
+  useEffect(() => {
+    if (!profile?.user?.isTwoFactorEnabled) return;
+    void loadPasskeys();
+  }, [profile?.user?.isTwoFactorEnabled]);
+
+  const saveTwoFactorPreferences = async () => {
+    setSaving2FaPrefs(true);
+    try {
+      const res = await fetch("/api/user/2fa/preferences", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          preferredMethod: preferredTwoFaMethod,
+          emailFallbackEnabled,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "No se pudo guardar");
+      toast.success("Preferencias de 2FA actualizadas");
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("caletas-2fa-preferred", preferredTwoFaMethod);
+      }
+      await refreshProfile();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Error guardando 2FA");
+    } finally {
+      setSaving2FaPrefs(false);
+    }
+  };
 
   // Detectar cambios en el formulario
   useEffect(() => {
@@ -302,17 +367,6 @@ export default function Ajustes() {
                       </FormItem>
                     )}
                   />
-                  <div className="rounded-lg p-4 bg-white/5 border border-white/10 flex items-center justify-between">
-                    <div>
-                      <div className="text-white/80 text-sm font-medium">Estado 2FA</div>
-                      <div className="text-white/60 text-xs">
-                        {twoFactorEnabled ? "Activado" : "Desactivado"}
-                      </div>
-                    </div>
-                    <div className={`text-sm font-semibold ${twoFactorEnabled ? "text-green-400" : "text-white/60"}`}>
-                      {twoFactorEnabled ? "Activo" : "Inactivo"}
-                    </div>
-                  </div>
                 </div>
 
                 {profileLoading ? (
@@ -498,50 +552,228 @@ export default function Ajustes() {
                       Autenticación en dos pasos (2FA)
                     </div>
                     <div className="text-white/60 text-sm">
-                      Puedes usar una app (Google Authenticator/Authy) o un código por correo al iniciar sesión.
+                      Estado: {twoFactorEnabled ? "Activado" : "Desactivado"}. Gestiona métodos, passkeys y recuperación desde un panel rápido.
                     </div>
                   </div>
-
-                  <div className="flex items-center gap-3">
-                    <span
-                      className={`text-sm font-medium ${
-                        twoFactorEnabled ? "text-green-400" : "text-white/60"
-                      }`}
-                    >
-                      {twoFactorEnabled ? "Activado" : "Desactivado"}
-                    </span>
-
-                    <Button
-                      type="button"
-                      disabled={twoFaBusy || !hasCredentialAccount}
-                      className={
-                        twoFactorEnabled
-                          ? "bg-red-500/80 hover:bg-red-500 text-white font-special"
-                          : "bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white font-special"
-                      }
-                      onClick={() => {
-                        setError(undefined);
-                        setSucces(undefined);
-                        setTwoFaPassword("");
-                        setTwoFaCode("");
-                        setTwoFaTotpUri(null);
-                        setTwoFaBackupCodes(null);
-                        setTwoFaStep("idle");
-                        setTwoFaDialogMode(twoFactorEnabled ? "disable" : "enable");
-                        setTwoFaDialogOpen(true);
-                      }}
-                    >
-                      {twoFactorEnabled ? "Desactivar 2FA" : "Activar 2FA"}
-                    </Button>
-                  </div>
+                  <Button
+                    type="button"
+                    className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white font-special"
+                    onClick={() => setTwoFaPanelOpen(true)}
+                  >
+                    Abrir panel 2FA
+                  </Button>
                 </div>
-
-                {!hasCredentialAccount ? (
-                  <div className="mt-3 text-white/60 text-sm">
-                    Para activar 2FA en esta cuenta necesitas tener contraseña (email + password).
-                  </div>
-                ) : null}
               </div>
+
+              <Dialog open={twoFaPanelOpen} onOpenChange={setTwoFaPanelOpen}>
+                <DialogContent className="bg-[#203324] border-white/10 text-white max-w-3xl max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle className="text-white flex items-center gap-2">
+                      <Shield className="w-5 h-5 text-[#40C9A9]" />
+                      Panel 2FA
+                    </DialogTitle>
+                    <DialogDescription className="text-white/70">
+                      Activación, método preferido, passkeys y backup codes en un solo lugar.
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  <div className="space-y-4">
+                    <div className="rounded-lg p-4 bg-white/5 border border-white/10">
+                      <div className="flex items-start justify-between gap-4 flex-col md:flex-row">
+                        <div className="space-y-1">
+                          <div className="text-white/80 font-semibold">Estado 2FA</div>
+                          <div className="text-white/60 text-sm">
+                            {twoFactorEnabled ? "Actualmente activado" : "Actualmente desactivado"}
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          disabled={twoFaBusy || !hasCredentialAccount}
+                          className={
+                            twoFactorEnabled
+                              ? "bg-red-500/80 hover:bg-red-500 text-white font-special"
+                              : "bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white font-special"
+                          }
+                          onClick={() => {
+                            setError(undefined);
+                            setSucces(undefined);
+                            setTwoFaPassword("");
+                            setTwoFaCode("");
+                            setTwoFaTotpUri(null);
+                            setTwoFaBackupCodes(null);
+                            setTwoFaStep("idle");
+                            setTwoFaDialogMode(twoFactorEnabled ? "disable" : "enable");
+                            setTwoFaDialogOpen(true);
+                          }}
+                        >
+                          {twoFactorEnabled ? "Desactivar 2FA" : "Activar 2FA"}
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="rounded-lg p-4 bg-white/5 border border-white/10 space-y-4">
+                      <div className="flex items-center justify-between flex-wrap gap-3">
+                        <div>
+                          <div className="text-white/80 font-semibold">Método preferido de 2FA</div>
+                          <div className="text-white/60 text-sm">
+                            Elige tu factor principal y fallback por correo.
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                          disabled={saving2FaPrefs}
+                          onClick={() => void saveTwoFactorPreferences()}
+                        >
+                          Guardar preferencia
+                        </Button>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                        {[
+                          { value: "TOTP", label: "App Authenticator (TOTP)" },
+                          { value: "PASSKEY", label: "Passkey (WebAuthn)" },
+                          { value: "EMAIL_OTP", label: "Correo (OTP)" },
+                        ].map((opt) => (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            onClick={() =>
+                              setPreferredTwoFaMethod(opt.value as "TOTP" | "PASSKEY" | "EMAIL_OTP")
+                            }
+                            className={`text-left rounded-lg border px-3 py-2 text-sm transition-colors ${
+                              preferredTwoFaMethod === opt.value
+                                ? "bg-[#40C9A9]/20 border-[#40C9A9]/50 text-white"
+                                : "bg-white/10 border-white/10 text-white/80 hover:bg-white/20"
+                            }`}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+
+                      <label className="flex items-center gap-2 text-white/80 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={emailFallbackEnabled}
+                          onChange={(e) => setEmailFallbackEnabled(e.target.checked)}
+                          className="h-4 w-4 rounded border-white/20 bg-transparent"
+                        />
+                        Permitir fallback por correo si falla el método principal
+                      </label>
+                    </div>
+
+                    <div className="rounded-lg p-4 bg-white/5 border border-white/10 space-y-3">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <div className="text-white/80 font-semibold">Passkeys registradas</div>
+                        <Button
+                          type="button"
+                          className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                          disabled={passkeyBusy}
+                          onClick={async () => {
+                            setPasskeyBusy(true);
+                            try {
+                              const name = window.prompt("Nombre de la passkey", "Mi dispositivo");
+                              const res: any = await authClient.passkey.addPasskey({
+                                name: name?.trim() || "Mi dispositivo",
+                              });
+                              if (res?.error) throw new Error(res.error.message || "No se pudo registrar passkey");
+                              toast.success("Passkey agregada");
+                              await loadPasskeys();
+                            } catch (e) {
+                              toast.error(e instanceof Error ? e.message : "Error registrando passkey");
+                            } finally {
+                              setPasskeyBusy(false);
+                            }
+                          }}
+                        >
+                          Agregar passkey
+                        </Button>
+                      </div>
+
+                      {passkeys.length === 0 ? (
+                        <p className="text-white/60 text-sm">No tienes passkeys registradas.</p>
+                      ) : (
+                        <div className="space-y-2">
+                          {passkeys.map((pk) => (
+                            <div
+                              key={pk.id}
+                              className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-3 py-2"
+                            >
+                              <div>
+                                <div className="text-white text-sm">{pk.name || "Passkey sin nombre"}</div>
+                                <div className="text-white/60 text-xs">
+                                  {pk.deviceType || "dispositivo"} · {pk.createdAt ? new Date(pk.createdAt).toLocaleDateString() : "fecha desconocida"}
+                                </div>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                className="border-red-500/30 text-red-300 hover:bg-red-500/10"
+                                onClick={async () => {
+                                  try {
+                                    setPasskeyBusy(true);
+                                    const res: any = await authClient.passkey.deletePasskey({ id: pk.id });
+                                    if (res?.error) throw new Error(res.error.message || "No se pudo eliminar");
+                                    toast.success("Passkey eliminada");
+                                    await loadPasskeys();
+                                  } catch (e) {
+                                    toast.error(e instanceof Error ? e.message : "Error eliminando passkey");
+                                  } finally {
+                                    setPasskeyBusy(false);
+                                  }
+                                }}
+                              >
+                                Eliminar
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="rounded-lg p-4 bg-white/5 border border-white/10 space-y-2">
+                      <div className="text-white/80 font-semibold">Recuperación (backup codes)</div>
+                      <p className="text-white/60 text-sm">
+                        Regenera códigos de respaldo para recuperar tu cuenta si pierdes acceso al segundo factor.
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                        disabled={!twoFactorEnabled || twoFaBusy || !hasCredentialAccount}
+                        onClick={async () => {
+                          const password = window.prompt("Confirma tu contraseña para generar nuevos backup codes");
+                          if (!password) return;
+                          setTwoFaBusy(true);
+                          try {
+                            const res: any = await authClient.twoFactor.generateBackupCodes({ password });
+                            if (res?.error) throw new Error(res.error.message || "No se pudieron generar");
+                            const codes = Array.isArray(res?.data?.backupCodes) ? res.data.backupCodes : [];
+                            setTwoFaBackupCodes(codes);
+                            toast.success("Nuevos backup codes generados");
+                          } catch (e) {
+                            toast.error(e instanceof Error ? e.message : "Error generando backup codes");
+                          } finally {
+                            setTwoFaBusy(false);
+                          }
+                        }}
+                      >
+                        Regenerar backup codes
+                      </Button>
+                      {twoFaBackupCodes?.length ? (
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 pt-1">
+                          {twoFaBackupCodes.map((c) => (
+                            <div key={c} className="font-mono text-xs text-white bg-white/10 border border-white/10 rounded-md px-2 py-1">
+                              {c}
+                            </div>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
 
               <Dialog
                 open={twoFaDialogOpen}
@@ -604,12 +836,18 @@ export default function Ajustes() {
                         </div>
                       ) : (
                         <div className="space-y-4">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="bg-[#1C2D20] border border-white/10 rounded-lg p-4">
+                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div className="bg-[#1C2D20] border border-white/10 rounded-lg p-4 min-w-0">
                               <div className="text-white font-semibold mb-2">Escanea el QR</div>
                               {twoFaTotpUri ? (
-                                <div className="bg-[#E8F3ED] p-3 rounded-lg w-fit border border-white/10">
-                                  <QRCode value={twoFaTotpUri} bgColor="#E8F3ED" fgColor="#0B1B10" />
+                                <div className="bg-[#E8F3ED] p-3 rounded-lg border border-white/10 w-full flex items-center justify-center overflow-hidden">
+                                  <QRCode
+                                    value={twoFaTotpUri}
+                                    bgColor="#E8F3ED"
+                                    fgColor="#0B1B10"
+                                    size={220}
+                                    style={{ width: "100%", maxWidth: 220, height: "auto" }}
+                                  />
                                 </div>
                               ) : (
                                 <div className="text-white/70 text-sm">
@@ -621,7 +859,7 @@ export default function Ajustes() {
                               </div>
                             </div>
 
-                            <div className="bg-[#1C2D20] border border-white/10 rounded-lg p-4 space-y-3">
+                            <div className="bg-[#1C2D20] border border-white/10 rounded-lg p-4 space-y-3 min-w-0">
                               <div className="text-white font-semibold">Confirmar código</div>
                               <Input
                                 className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg"
@@ -633,7 +871,7 @@ export default function Ajustes() {
                               <Button
                                 type="button"
                                 disabled={twoFaBusy || !twoFaCode}
-                                className="w-full bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white font-special"
+                                className="w-full bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
                                 onClick={async () => {
                                   setError(undefined);
                                   setSucces(undefined);
@@ -735,7 +973,7 @@ export default function Ajustes() {
                     <Button
                       type="button"
                       variant="outline"
-                      className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                      className="bg-[#354B3A] border-white/30 text-white hover:bg-[#3f5a45]"
                       disabled={twoFaBusy}
                       onClick={() => setTwoFaDialogOpen(false)}
                     >
@@ -747,7 +985,7 @@ export default function Ajustes() {
                         <Button
                           type="button"
                           disabled={twoFaBusy || !twoFaPassword || !hasCredentialAccount}
-                          className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white font-special"
+                          className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
                           onClick={async () => {
                             setError(undefined);
                             setSucces(undefined);
@@ -780,7 +1018,7 @@ export default function Ajustes() {
                       <Button
                         type="button"
                         disabled={twoFaBusy || !twoFaPassword || !hasCredentialAccount}
-                        className="bg-red-500/80 hover:bg-red-500 text-white font-special"
+                        className="bg-red-500/90 hover:bg-red-500 text-white"
                         onClick={async () => {
                           setError(undefined);
                           setSucces(undefined);

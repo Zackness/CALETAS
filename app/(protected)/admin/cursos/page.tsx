@@ -51,6 +51,12 @@ export default function AdminCursosPage() {
     tema: "",
     orden: 0,
   });
+  const [mediaDialogOpen, setMediaDialogOpen] = useState(false);
+  const [mediaLoading, setMediaLoading] = useState(false);
+  const [mediaFiles, setMediaFiles] = useState<
+    { name: string; url: string; type: string; size: number; lastModified: string }[]
+  >([]);
+  const [mediaSubfolder, setMediaSubfolder] = useState("media");
 
   const loadCursos = async () => {
     setLoading(true);
@@ -69,6 +75,20 @@ export default function AdminCursosPage() {
   useEffect(() => {
     loadCursos();
   }, []);
+
+  const loadMediaFiles = async () => {
+    setMediaLoading(true);
+    try {
+      const res = await fetch(`/api/admin/media?subfolder=${encodeURIComponent(mediaSubfolder)}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "No se pudo cargar la biblioteca");
+      setMediaFiles(Array.isArray(data.files) ? data.files : []);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Error cargando biblioteca");
+    } finally {
+      setMediaLoading(false);
+    }
+  };
 
   const openCreate = () => {
     setEditing(null);
@@ -163,6 +183,9 @@ export default function AdminCursosPage() {
             </h1>
             <p className="text-white/70 mt-1">
               Gestiona los cursos y tutoriales que ven los estudiantes. Solo admin puede crear o editar.
+            </p>
+            <p className="text-xs text-white/60 mt-1">
+              Para imágenes usa la Biblioteca de medios en <span className="text-[#40C9A9]">Admin &gt; Biblioteca de medios</span> (Bunny `caletas/`).
             </p>
           </div>
           <Button
@@ -283,12 +306,25 @@ export default function AdminCursosPage() {
               </div>
               <div className="grid gap-2">
                 <Label className="text-white/80">URL de imagen (opcional)</Label>
-                <Input
-                  value={form.imagenUrl}
-                  onChange={(e) => setForm((f) => ({ ...f, imagenUrl: e.target.value }))}
-                  className="bg-[#1C2D20] border-white/10 text-white"
-                  placeholder="https://..."
-                />
+                <div className="flex gap-2">
+                  <Input
+                    value={form.imagenUrl}
+                    onChange={(e) => setForm((f) => ({ ...f, imagenUrl: e.target.value }))}
+                    className="bg-[#1C2D20] border-white/10 text-white"
+                    placeholder="https://..."
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="border-white/20 text-white hover:bg-white/10"
+                    onClick={() => {
+                      setMediaDialogOpen(true);
+                      void loadMediaFiles();
+                    }}
+                  >
+                    Biblioteca
+                  </Button>
+                </div>
               </div>
               <div className="grid gap-2">
                 <Label className="text-white/80">Orden (número para ordenar en la lista)</Label>
@@ -325,6 +361,54 @@ export default function AdminCursosPage() {
                 {saving ? "Guardando..." : editing ? "Actualizar" : "Crear"}
               </Button>
             </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={mediaDialogOpen} onOpenChange={setMediaDialogOpen}>
+          <DialogContent className="bg-[#354B3A] border-white/10 text-white max-w-3xl max-h-[85vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Seleccionar imagen desde biblioteca</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              <div className="flex gap-2">
+                <Input
+                  value={mediaSubfolder}
+                  onChange={(e) => setMediaSubfolder(e.target.value)}
+                  className="bg-[#1C2D20] border-white/10 text-white"
+                  placeholder="Subcarpeta (ej: cursos)"
+                />
+                <Button
+                  type="button"
+                  className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                  onClick={() => void loadMediaFiles()}
+                >
+                  Cargar
+                </Button>
+              </div>
+              {mediaLoading ? (
+                <p className="text-white/70">Cargando archivos...</p>
+              ) : mediaFiles.length === 0 ? (
+                <p className="text-white/70">No hay archivos en esa carpeta.</p>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {mediaFiles.map((file) => (
+                    <button
+                      key={file.url}
+                      type="button"
+                      className="text-left rounded-lg border border-white/10 bg-[#1C2D20] p-3 hover:bg-[#203324]"
+                      onClick={() => {
+                        setForm((f) => ({ ...f, imagenUrl: file.url }));
+                        setMediaDialogOpen(false);
+                        toast.success("Imagen seleccionada");
+                      }}
+                    >
+                      <p className="text-white text-sm truncate">{file.name}</p>
+                      <p className="text-white/60 text-xs truncate">{file.url}</p>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </DialogContent>
         </Dialog>
       </div>

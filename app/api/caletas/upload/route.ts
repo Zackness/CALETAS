@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
     console.log("📤 Subiendo archivo a Bunny.net...");
     
     try {
-      const archivoUrl = await uploadToBunny(file, { prefix: "caletas" });
+      const archivoUrl = await uploadToBunny(file, { prefix: "caleta" });
       console.log("✅ Archivo subido exitosamente:", archivoUrl);
 
       // PASO 3: CREAR RECURSO EN LA BASE DE DATOS

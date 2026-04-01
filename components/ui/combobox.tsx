@@ -112,7 +112,7 @@ export const Combobox = ({
                       <CommandItem
                         className="text-white hover:bg-white/10 cursor-pointer"
                         key={option.value}
-                        value={option.value}
+                        value={`${option.label} ${option.semestre ?? ""}`}
                         onSelect={(currentValue) => {
                           onChange(option.value === value ? "" : option.value)
                           setOpen(false)
@@ -138,7 +138,7 @@ export const Combobox = ({
                       value === option.value ? "opacity-100" : ""
                     )}
                     key={option.value}
-                    value={option.value}
+                    value={option.label}
                     onSelect={(currentValue) => {
                       onChange(option.value === value ? "" : option.value)
                       setOpen(false)

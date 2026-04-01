@@ -93,11 +93,11 @@ export function DashboardHeader({ session }: AppHeaderProps) {
   };
 
   return (
-    <header className="border-b border-white/10 w-full h-16 py-4 bg-[#203324]">
-      <div className="flex h-full items-center justify-between px-2 md:px-4 gap-2 md:gap-4">
+    <header className="border-b border-white/10 w-full bg-[#203324] py-2 md:h-16 md:py-4">
+      <div className="flex flex-wrap items-center md:h-full md:flex-nowrap md:items-center md:justify-between px-2 md:px-4 gap-2 md:gap-4">
         {/* Izquierda: Botón de menú móvil */}
         <button
-          className="md:hidden flex flex-col space-y-1 p-2 focus:outline-none z-[110]"
+          className="order-1 md:hidden flex flex-col space-y-1 p-2 focus:outline-none z-[110]"
           onClick={() => setIsMenuOpen((v) => !v)}
           aria-label="Abrir menú"
         >
@@ -107,15 +107,17 @@ export function DashboardHeader({ session }: AppHeaderProps) {
         </button>
         
         {/* Centro: Buscador con sugerencias tipo YouTube */}
-        <HeaderSearch />
+        <div className="order-3 w-full md:order-2 md:w-auto md:flex-1">
+          <HeaderSearch />
+        </div>
         {/* Derecha: Favoritos, subir, notificaciones, avatar */}
-        <div className="flex items-center gap-1 md:gap-2">
-          <Link href="/caletas/favoritos">
+        <div className="order-2 ml-auto md:order-3 md:ml-0 flex items-center gap-1 md:gap-2">
+          <Link href="/caletas/favoritos" className="hidden sm:block">
             <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 h-8 w-8 md:h-10 md:w-10 cursor-pointer">
               <Heart className="h-4 w-4 md:h-5 md:w-5" />
             </Button>
           </Link>
-          <Link href="/caletas/crear">
+          <Link href="/caletas/crear" className="hidden sm:block">
             <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 h-8 w-8 md:h-10 md:w-10 cursor-pointer">
               <Upload className="h-4 w-4 md:h-5 md:w-5" />
             </Button>
@@ -129,7 +131,7 @@ export function DashboardHeader({ session }: AppHeaderProps) {
                 )}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-80 bg-[#203324] border-white/10 text-white">
+            <DropdownMenuContent align="end" className="w-80 max-w-[calc(100vw-1rem)] bg-[#203324] border-white/10 text-white">
               <div className="p-2 font-bold text-[#40C9A9]">Notificaciones</div>
               {loading ? (
                 <div className="p-4 text-center text-white/70">Cargando...</div>
@@ -165,7 +167,7 @@ export function DashboardHeader({ session }: AppHeaderProps) {
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 bg-[#203324] border-white/10 text-white">
+            <DropdownMenuContent align="end" className="w-56 max-w-[calc(100vw-1rem)] bg-[#203324] border-white/10 text-white">
               <DropdownMenuItem asChild className="gap-2 hover:bg-white/10 cursor-pointer">
                 <Link href="/suscripcion">
                   <CreditCard className="h-4 w-4 text-[#40C9A9]" />
@@ -182,7 +184,7 @@ export function DashboardHeader({ session }: AppHeaderProps) {
 
               {isAdmin ? (
                 <DropdownMenuItem asChild className="gap-2 hover:bg-white/10 cursor-pointer">
-                  <Link href="/admin">
+                  <Link href="/admin/estadisticas">
                     <ShieldCheck className="h-4 w-4 text-[#40C9A9]" />
                     <span>Panel admin</span>
                   </Link>

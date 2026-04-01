@@ -130,12 +130,12 @@ export default function TestimoniosPage() {
       <Header />
       
       {/* Header */}
-      <div className="container mx-auto px-4 py-16">
-        <div className="text-center mb-16">
-          <h1 className="text-5xl font-special text-white mb-6">
+      <div className="container mx-auto px-4 py-10 sm:py-14 md:py-16">
+        <div className="text-center mb-10 sm:mb-14 md:mb-16">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-special text-white mb-4 sm:mb-6">
             Testimonios de Estudiantes
           </h1>
-          <p className="text-xl text-white/80 max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-white/80 max-w-3xl mx-auto">
             Descubre cómo Caletas está transformando la experiencia académica de estudiantes universitarios en Venezuela.
           </p>
         </div>

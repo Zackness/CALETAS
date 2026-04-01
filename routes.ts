@@ -8,7 +8,7 @@ export const publicRoutes = [
     "/",
     "/nosotros",
     "/blog/.*",      // Patrones dinámicos
-    "/api/webhook",
+    "/api/stripe/webhook",
     "/api/stripe-url",
     "/new-verification",
     "/terminos-y-condiciones",

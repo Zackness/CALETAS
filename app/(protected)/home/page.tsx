@@ -309,19 +309,19 @@ export default async function HomePage() {
       <div className="container mx-auto px-4 py-8">
       {/* Header del Dashboard */}
         <div className="mb-8">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-3xl font-special text-white mb-2">
+              <h1 className="text-2xl sm:text-3xl font-special text-white mb-2">
           ¡Bienvenido de vuelta, {session.user.name?.split(' ')[0] || 'Estudiante'}!
         </h1>
-              <p className="text-white/70">
+              <p className="text-sm sm:text-base text-white/70">
                 {user?.carrera ? 
                   `${user.carrera.universidad.siglas} - ${user.carrera.nombre}` : 
                   "Tu dashboard académico personal"
                 }
         </p>
       </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 self-start sm:self-auto">
               <Badge className="bg-[#40C9A9]/10 text-[#40C9A9] border-[#40C9A9]/20">
                 <Bell className="w-3 h-3 mr-1" />
                 {notificaciones.length} nuevas
@@ -407,17 +407,17 @@ export default async function HomePage() {
 
         {/* Tabs principales */}
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 bg-[#354B3A] border-white/10">
-            <TabsTrigger value="overview" className="text-white data-[state=active]:bg-[#40C9A9] data-[state=active]:text-white">
+          <TabsList className="w-full overflow-x-auto bg-[#354B3A] border-white/10 p-1 flex gap-1">
+            <TabsTrigger value="overview" className="min-w-[140px] text-white data-[state=active]:bg-[#40C9A9] data-[state=active]:text-white">
               Resumen General
             </TabsTrigger>
-            <TabsTrigger value="academic" className="text-white data-[state=active]:bg-[#40C9A9] data-[state=active]:text-white">
+            <TabsTrigger value="academic" className="min-w-[110px] text-white data-[state=active]:bg-[#40C9A9] data-[state=active]:text-white">
               Académico
             </TabsTrigger>
-            <TabsTrigger value="caletas" className="text-white data-[state=active]:bg-[#40C9A9] data-[state=active]:text-white">
+            <TabsTrigger value="caletas" className="min-w-[100px] text-white data-[state=active]:bg-[#40C9A9] data-[state=active]:text-white">
               Caletas
             </TabsTrigger>
-            <TabsTrigger value="goals" className="text-white data-[state=active]:bg-[#40C9A9] data-[state=active]:text-white">
+            <TabsTrigger value="goals" className="min-w-[90px] text-white data-[state=active]:bg-[#40C9A9] data-[state=active]:text-white">
               Metas
             </TabsTrigger>
           </TabsList>
@@ -439,12 +439,12 @@ export default async function HomePage() {
                 <CardContent>
                   <div className="space-y-3">
                     {materiasProximas.map((materia) => (
-                      <div key={materia.id} className="flex items-center justify-between p-3 bg-[#1C2D20] rounded-lg">
-                        <div className="flex items-center gap-3">
+                      <div key={materia.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-[#1C2D20] rounded-lg">
+                        <div className="flex items-start sm:items-center gap-3 min-w-0">
                           {getEstadoIcon(materia.estado)}
-                          <div>
-                            <p className="text-white font-medium">{materia.materia.codigo}</p>
-                            <p className="text-white/70 text-sm">{materia.materia.nombre}</p>
+                          <div className="min-w-0">
+                            <p className="text-white font-medium truncate">{materia.materia.codigo}</p>
+                            <p className="text-white/70 text-sm truncate">{materia.materia.nombre}</p>
                           </div>
                         </div>
                         <Badge className={getEstadoColor(materia.estado)}>
@@ -594,16 +594,16 @@ export default async function HomePage() {
                 <CardContent>
                   <div className="space-y-3">
                     {materiasProximas.map((materia) => (
-                      <div key={materia.id} className="flex items-center justify-between p-3 bg-[#1C2D20] rounded-lg">
-                        <div className="flex items-center gap-3">
+                      <div key={materia.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-[#1C2D20] rounded-lg">
+                        <div className="flex items-start sm:items-center gap-3 min-w-0">
                           {getEstadoIcon(materia.estado)}
-                          <div>
-                            <p className="text-white font-medium">{materia.materia.codigo}</p>
-                            <p className="text-white/70 text-sm">{materia.materia.nombre}</p>
+                          <div className="min-w-0">
+                            <p className="text-white font-medium truncate">{materia.materia.codigo}</p>
+                            <p className="text-white/70 text-sm truncate">{materia.materia.nombre}</p>
                             <p className="text-white/50 text-xs">Semestre {materia.materia.semestre}</p>
                           </div>
                         </div>
-                        <div className="text-right">
+                        <div className="text-left sm:text-right">
                           <Badge className={getEstadoColor(materia.estado)}>
                             {materia.estado}
                           </Badge>
@@ -614,7 +614,7 @@ export default async function HomePage() {
                       </div>
                     ))}
                   </div>
-                  <div className="flex gap-2 mt-4">
+                  <div className="flex flex-col sm:flex-row gap-2 mt-4">
                     <Button asChild className="flex-1 bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white">
                       <Link href="/academico">
                         Panel Académico
@@ -683,15 +683,15 @@ export default async function HomePage() {
                 <CardContent>
                   <div className="space-y-3">
                     {recursosUsuario.map((recurso) => (
-                      <div key={recurso.id} className="flex items-center justify-between p-3 bg-[#1C2D20] rounded-lg">
-                        <div className="flex items-center gap-3">
+                      <div key={recurso.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-[#1C2D20] rounded-lg">
+                        <div className="flex items-start sm:items-center gap-3 min-w-0">
                           {getTipoIcon(recurso.tipo)}
-                          <div>
-                            <p className="text-white font-medium">{recurso.titulo}</p>
+                          <div className="min-w-0">
+                            <p className="text-white font-medium truncate">{recurso.titulo}</p>
                             <p className="text-white/70 text-sm">{recurso.materia.codigo}</p>
                           </div>
                         </div>
-                        <div className="text-right">
+                        <div className="text-left sm:text-right">
                           <div className="flex items-center gap-1 text-yellow-400">
                             <Star className="w-3 h-3" />
                             <span className="text-white text-sm">{recurso.calificacion.toFixed(1)}</span>
@@ -707,7 +707,7 @@ export default async function HomePage() {
                 </div>
                     )}
                   </div>
-                  <div className="flex gap-2 mt-4">
+                  <div className="flex flex-col sm:flex-row gap-2 mt-4">
                     <Button asChild className="flex-1 bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white">
                       <Link href="/caletas/crear">
                         <Plus className="w-4 h-4 mr-2" />
@@ -737,15 +737,15 @@ export default async function HomePage() {
                 <CardContent>
                   <div className="space-y-3">
                     {recursosPopularesMasked.map((recurso) => (
-                      <div key={recurso.id} className="flex items-center justify-between p-3 bg-[#1C2D20] rounded-lg">
-                        <div className="flex items-center gap-3">
+                      <div key={recurso.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-[#1C2D20] rounded-lg">
+                        <div className="flex items-start sm:items-center gap-3 min-w-0">
                           {getTipoIcon(recurso.tipo)}
-                          <div>
-                            <p className="text-white font-medium">{recurso.titulo}</p>
+                          <div className="min-w-0">
+                            <p className="text-white font-medium truncate">{recurso.titulo}</p>
                             <p className="text-white/70 text-sm">por {recurso.autor.name}</p>
                           </div>
                         </div>
-                        <div className="text-right">
+                        <div className="text-left sm:text-right">
                           <div className="flex items-center gap-1 text-yellow-400">
                             <Star className="w-3 h-3" />
                             <span className="text-white text-sm">{recurso.calificacion.toFixed(1)}</span>
@@ -896,28 +896,28 @@ export default async function HomePage() {
         {/* Acciones Rápidas */}
         <div className="mt-8">
           <h2 className="text-xl font-special text-white mb-4">Acciones Rápidas</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button asChild className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white h-16">
-              <Link href="/academico">
-                <GraduationCap className="w-5 h-5 mr-2" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <Button asChild className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white h-auto min-h-16 px-3 py-3">
+              <Link href="/academico" className="w-full flex items-center justify-center text-center gap-2 whitespace-normal">
+                <GraduationCap className="w-5 h-5 shrink-0" />
                 Panel Académico
               </Link>
             </Button>
-            <Button asChild className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white h-16">
-              <Link href="/caletas">
-                <BookOpen className="w-5 h-5 mr-2" />
+            <Button asChild className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white h-auto min-h-16 px-3 py-3">
+              <Link href="/caletas" className="w-full flex items-center justify-center text-center gap-2 whitespace-normal">
+                <BookOpen className="w-5 h-5 shrink-0" />
                 Explorar Caletas
               </Link>
             </Button>
-            <Button asChild className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white h-16">
-              <Link href="/caletas/crear">
-                <Plus className="w-5 h-5 mr-2" />
+            <Button asChild className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white h-auto min-h-16 px-3 py-3">
+              <Link href="/caletas/crear" className="w-full flex items-center justify-center text-center gap-2 whitespace-normal">
+                <Plus className="w-5 h-5 shrink-0" />
                 Compartir Recurso
               </Link>
             </Button>
-            <Button asChild className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white h-16">
-              <Link href="/academico/historial">
-                <History className="w-5 h-5 mr-2" />
+            <Button asChild className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white h-auto min-h-16 px-3 py-3">
+              <Link href="/academico/historial" className="w-full flex items-center justify-center text-center gap-2 whitespace-normal">
+                <History className="w-5 h-5 shrink-0" />
                 Gestionar Historial
               </Link>
             </Button>

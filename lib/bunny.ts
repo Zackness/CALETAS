@@ -114,7 +114,7 @@ export const uploadToBunny = async (
   // Generar nombre único para el archivo
   const timestamp = Date.now();
   const extension = file.name.split(".").pop() || "bin";
-  const prefix = normalizePath(options.prefix || "caletas");
+  const prefix = normalizePath(options.prefix || "caleta");
   const subfolder = options.subfolder ? normalizePath(options.subfolder) : "";
   const folder = [prefix, subfolder].filter(Boolean).join("/");
   const fileName = `${folder}/${timestamp}-${Math.random().toString(36).substring(2)}.${extension}`;

@@ -57,19 +57,39 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Plan no encontrado" }, { status: 404 });
     }
 
-    const payment = await db.manualPayment.create({
-      data: {
-        userId: session.user.id,
-        subscriptionTypeId: body.subscriptionTypeId,
-        amountBs: Math.max(1, Math.floor(body.amountBs)),
-        reference: body.reference.trim(),
-        proofUrl: body.proofUrl?.trim() || null,
-      },
-      include: {
-        subscriptionType: {
-          select: { id: true, name: true, period: true, price: true },
+    const payment = await db.$transaction(async (tx) => {
+      const created = await tx.manualPayment.create({
+        data: {
+          userId: session.user.id,
+          subscriptionTypeId: body.subscriptionTypeId,
+          amountBs: Math.max(1, Math.floor(body.amountBs)),
+          reference: body.reference.trim(),
+          proofUrl: body.proofUrl?.trim() || null,
         },
-      },
+        include: {
+          subscriptionType: {
+            select: { id: true, name: true, period: true, price: true },
+          },
+        },
+      });
+
+      const txAny = tx as any;
+      if (txAny.paymentRecord) {
+        await txAny.paymentRecord.create({
+          data: {
+            userId: session.user.id,
+            subscriptionTypeId: body.subscriptionTypeId,
+            source: "MOBILE_BS",
+            status: "PENDING",
+            amountBs: created.amountBs,
+            amountUsdCents: created.subscriptionType?.price ?? null,
+            reference: created.reference,
+            manualPaymentId: created.id,
+          },
+        });
+      }
+
+      return created;
     });
 
     return NextResponse.json({ payment }, { status: 201 });

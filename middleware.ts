@@ -65,11 +65,9 @@ export function middleware(request: NextRequest) {
     return nextUrl.pathname.startsWith("/api") ? withCors(request, res) : res;
   }
 
-  // Si ya está logueado, no permitir entrar a /login o /register, etc.
-  if (isAuthRoute && isLoggedIn) {
-    const res = NextResponse.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
-    return nextUrl.pathname.startsWith("/api") ? withCors(request, res) : res;
-  }
+  // Importante: NO redirigir automáticamente desde rutas de auth cuando hay cookie.
+  // Puede existir una cookie stale/inválida y generar bucles /home <-> /login (307).
+  // Dejamos que la página/layout valide la sesión real en servidor.
 
   // Si NO está logueado y la ruta no es pública, mandar a /login con callback
   if (!isLoggedIn && !isPublic && !isAuthRoute) {

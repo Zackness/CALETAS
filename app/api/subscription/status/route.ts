@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { auth } from "@/lib/auth";
 import { getCorsHeaders } from "@/lib/cors";
-import { getActiveSubscriptionForUser } from "@/lib/subscription";
+import { canUseIAChat, getActiveSubscriptionForUser } from "@/lib/subscription";
 
 function withCors(res: NextResponse, req: Request) {
   const cors = getCorsHeaders(req);
@@ -24,9 +24,11 @@ export async function GET(request: NextRequest) {
     }
 
     const sub = await getActiveSubscriptionForUser(session.user.id);
+    const canUseChat = canUseIAChat(sub);
 
     return withCors(NextResponse.json({
       isActive: !!sub,
+      canUseChat,
       subscription: sub
         ? {
             subscriptionType: sub.subscriptionType

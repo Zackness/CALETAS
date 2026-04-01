@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect, useRef } from "react";
 import { Logo } from "@/components/marca/Logo";
@@ -35,7 +34,7 @@ export function Header() {
 
   return (
     <header className="relative w-full shadow z-50">
-      <nav className="flex flex-row w-full max-w-[1400px] mx-auto justify-between items-center px-4 sm:px-8 lg:px-12 font-semibold text-[16px] sm:text-[18px] py-3 sm:py-4 relative">
+      <nav className="flex flex-row w-full max-w-[1400px] mx-auto justify-between items-center px-3 sm:px-6 lg:px-12 font-semibold text-[15px] sm:text-[18px] py-3 sm:py-4 relative">
         <Logo />
         {/* Menú de escritorio */}
         <div className="hidden md:flex md:flex-row md:gap-4 lg:gap-6 items-center">
@@ -78,7 +77,7 @@ export function Header() {
       {/* Menú móvil tipo dropdown */}
       {isMenuOpen && (
         <div className="md:hidden fixed inset-0 z-[100] flex flex-col items-stretch bg-black/40" style={{backdropFilter: 'blur(2px)'}}>
-          <div ref={menuRef} className="w-full bg-gradient-to-t from-mygreen to-mygreen-light border-b border-white/10 shadow-lg animate-fadeInDown">
+          <div ref={menuRef} className="w-full max-h-[85vh] overflow-y-auto bg-gradient-to-t from-mygreen to-mygreen-light border-b border-white/10 shadow-lg animate-fadeInDown">
             <nav className="flex flex-col gap-1 py-2 px-4">
               <a
                 href="/caracteristicas"
@@ -108,7 +107,7 @@ export function Header() {
               >
                 Blog
               </a>
-              <a href="/login" className="mt-2 mb-1 block">
+              <a href="/auth/login" className="mt-2 mb-1 block">
                 <Button
                   size="sm"
                   className="w-full text-sm font-special text-white rounded-xl px-4 py-2 shadow"

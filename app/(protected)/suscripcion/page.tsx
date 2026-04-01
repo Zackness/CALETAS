@@ -123,10 +123,10 @@ export default function SuscripcionPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || "No se pudo iniciar el pago");
-      if (!data?.url) throw new Error("Stripe no devolvió URL");
+      if (!data?.url) throw new Error("Tarjeta no devolvió URL");
       window.location.href = data.url;
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Error iniciando Stripe");
+      toast.error(e instanceof Error ? e.message : "Error iniciando pago con tarjeta");
     } finally {
       setCreating(null);
     }
@@ -137,7 +137,7 @@ export default function SuscripcionPage() {
       const res = await fetch("/api/stripe/portal", { method: "POST" });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "No se pudo abrir el portal");
-      if (!data?.url) throw new Error("Stripe no devolvió URL");
+      if (!data?.url) throw new Error("Tarjeta no devolvió URL");
       window.location.href = data.url;
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Error abriendo portal");
@@ -204,7 +204,7 @@ export default function SuscripcionPage() {
                 onClick={() => void openStripePortal()}
               >
                 <CreditCard className="w-4 h-4 mr-2" />
-                Administrar suscripción (Stripe)
+                Administrar suscripción (Tarjeta)
               </Button>
             </CardContent>
           ) : null}
@@ -218,7 +218,7 @@ export default function SuscripcionPage() {
               Historial y estadísticas
             </CardTitle>
             <CardDescription className="text-white/70">
-              Pagos realizados en la aplicación (Stripe y Bs)
+              Pagos realizados en la aplicación (Tarjeta y Bs)
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -228,7 +228,7 @@ export default function SuscripcionPage() {
               <>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                   <div className="rounded-lg bg-[#1C2D20] border border-white/10 p-3">
-                    <div className="text-white/60 text-xs">Pagos Stripe</div>
+                    <div className="text-white/60 text-xs">Pagos con tarjeta</div>
                     <div className="text-white font-semibold text-lg">{usdPaidCount}</div>
                     <div className="text-white/50 text-xs">
                       Total: ${(usdTotal / 100).toFixed(2)}
@@ -258,7 +258,7 @@ export default function SuscripcionPage() {
                   <div className="rounded-lg bg-[#1C2D20] border border-white/10 p-3">
                     <div className="text-white/60 text-xs">Recibos</div>
                     <div className="text-white/80 text-sm">
-                      Stripe: {stripeInvoices.length} · Bs: {bsPayments.length}
+                      Tarjeta: {stripeInvoices.length} · Bs: {bsPayments.length}
                     </div>
                   </div>
                 </div>
@@ -267,10 +267,10 @@ export default function SuscripcionPage() {
                   <div className="rounded-lg bg-[#1C2D20] border border-white/10 p-4">
                     <div className="text-white font-semibold mb-2 flex items-center gap-2">
                       <ReceiptText className="w-4 h-4 text-[#40C9A9]" />
-                      Stripe (facturas)
+                      Tarjeta (facturas)
                     </div>
                     {stripeInvoices.length === 0 ? (
-                      <div className="text-white/60 text-sm">Sin pagos registrados en Stripe.</div>
+                      <div className="text-white/60 text-sm">Sin pagos registrados con tarjeta.</div>
                     ) : (
                       <div className="space-y-2">
                         {stripeInvoices.slice(0, 8).map((inv) => (
@@ -348,6 +348,11 @@ export default function SuscripcionPage() {
           </CardContent>
         </Card>
 
+        <div className="mb-4 rounded-lg border border-amber-400/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+          El pago en Bs (pago móvil) es el método más lento de verificación y puede tardar hasta 24 horas.
+          Si necesitas validación más rápida, comunícate con soporte al 0414-5005456.
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {loading ? (
             <Card className="bg-[#354B3A] border-white/10">
@@ -387,18 +392,19 @@ export default function SuscripcionPage() {
                         onClick={() => void startStripe(t.id)}
                       >
                         <CreditCard className="w-4 h-4 mr-2" />
-                        Pagar con Stripe (tarjeta)
+                        Pagar con tarjeta
                       </Button>
 
                       <Button
                         type="button"
                         variant="outline"
                         className="bg-white/10 border-white/20 text-white hover:bg-white/20 justify-between"
-                        onClick={() => toast.info("PayPal estará disponible próximamente")}
+                        disabled={creating === t.id}
+                        onClick={() => void startStripe(t.id)}
                       >
                         <span>PayPal</span>
                         <Badge className="bg-white/10 text-white/80 border border-white/10">
-                          Próximamente
+                          En checkout
                         </Badge>
                       </Button>
 
@@ -426,6 +432,7 @@ export default function SuscripcionPage() {
                         <Banknote className="w-4 h-4 mr-2" />
                         Pagar en Bs (pago móvil)
                       </Button>
+
                     </div>
                   </CardContent>
                 </Card>

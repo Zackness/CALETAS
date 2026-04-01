@@ -113,7 +113,7 @@ export default function HistorialPage() {
 
     fetchHistorial();
     fetchPensum();
-  }, [session, status]);
+  }, [session, isPending, router]);
 
   const fetchHistorial = async () => {
     try {
@@ -329,7 +329,7 @@ export default function HistorialPage() {
         </div>
 
         {/* Controles */}
-        <div className="flex flex-col md:flex-row gap-4 mb-6">
+        <div className="flex flex-col lg:flex-row gap-4 mb-6">
           <div className="flex-1">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50 w-4 h-4" />
@@ -343,7 +343,7 @@ export default function HistorialPage() {
           </div>
           
           <Select value={filterEstado} onValueChange={setFilterEstado}>
-            <SelectTrigger className="w-full md:w-48 bg-[#354B3A] border-white/10 text-white">
+            <SelectTrigger className="w-full lg:w-48 bg-[#354B3A] border-white/10 text-white">
               <SelectValue placeholder="Filtrar por estado" />
             </SelectTrigger>
             <SelectContent className="bg-[#354B3A] border-white/10">
@@ -356,14 +356,14 @@ export default function HistorialPage() {
           </Select>
 
           {/* Selector de vista */}
-          <div className="flex gap-2">
+          <div className="grid grid-cols-2 gap-2 w-full lg:w-auto">
             <Button
               variant={viewMode === "list" ? "default" : "outline"}
               onClick={() => setViewMode("list")}
-              className={viewMode === "list" 
+              className={`w-full ${viewMode === "list" 
                 ? "bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white" 
                 : "bg-[#354B3A] border-white/10 text-white hover:bg-white/10"
-              }
+              }`}
             >
               <List className="w-4 h-4 mr-2" />
               Lista
@@ -371,10 +371,10 @@ export default function HistorialPage() {
             <Button
               variant={viewMode === "flowchart" ? "default" : "outline"}
               onClick={() => setViewMode("flowchart")}
-              className={viewMode === "flowchart" 
+              className={`w-full ${viewMode === "flowchart" 
                 ? "bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white" 
                 : "bg-[#354B3A] border-white/10 text-white hover:bg-white/10"
-              }
+              }`}
             >
               <GitBranch className="w-4 h-4 mr-2" />
               Pensum
@@ -385,7 +385,7 @@ export default function HistorialPage() {
             <DialogTrigger asChild>
               <Button 
                 onClick={openAddDialog}
-                className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                className="w-full lg:w-auto bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Agregar Materia
@@ -551,10 +551,10 @@ export default function HistorialPage() {
               {filteredMaterias.map((materia) => (
                 <div
                   key={materia.id}
-                  className="flex items-center justify-between p-4 bg-[#1C2D20] rounded-lg border border-white/5"
+                  className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4 bg-[#1C2D20] rounded-lg border border-white/5"
                 >
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
                       <div className="flex items-center gap-2">
                         {getEstadoIcon(materia.estado)}
                         <span className="font-medium text-white">
@@ -573,7 +573,7 @@ export default function HistorialPage() {
                     <h4 className="text-white font-medium mb-2">
                       {materia.materia.nombre}
                     </h4>
-                    <div className="flex items-center gap-4 text-sm text-white/60">
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-white/60">
                       <span>Semestre: {materia.materia.semestre}</span>
                       <span>Créditos: {materia.materia.creditos}</span>
                       {materia.semestreCursado && (
@@ -590,7 +590,7 @@ export default function HistorialPage() {
                     )}
                   </div>
                   
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 self-end lg:self-auto">
                     <Button
                       variant="outline"
                       size="sm"
@@ -679,6 +679,7 @@ export default function HistorialPage() {
                       openEditDialog(materiaEnHistorial);
                     } else {
                       // Si no está en el historial, abrir diálogo para agregarla
+                      setEditingMateria(null);
                       setFormData({
                         materiaId: materia.id,
                         estado: "",
