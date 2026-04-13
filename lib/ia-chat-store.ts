@@ -8,7 +8,19 @@ export type IAChatMessage = {
 export type IAProject = {
   id: string;
   name: string;
+  icon: string;
+  color: string;
   createdAt: string;
+};
+
+export type IAProjectFile = {
+  id: string;
+  projectId: string;
+  name: string;
+  mimeType: string;
+  size: number;
+  uploadedAt: string;
+  textContent: string;
 };
 
 export type IAChatThread = {
@@ -21,6 +33,7 @@ export type IAChatThread = {
 
 export type IAChatStore = {
   projects: IAProject[];
+  projectFiles: IAProjectFile[];
   threads: IAChatThread[];
   activeProjectId: string | null;
   activeThreadId: string | null;
@@ -57,6 +70,7 @@ const defaultStore = (): IAChatStore => {
   const firstThread = newDefaultThread(null);
   return {
     projects: [],
+    projectFiles: [],
     threads: [firstThread],
     activeProjectId: null,
     activeThreadId: firstThread.id,
@@ -68,9 +82,20 @@ export function loadIAStore(): IAChatStore {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return defaultStore();
-    const parsed = JSON.parse(raw) as IAChatStore;
-    if (!parsed?.threads?.length) return defaultStore();
-    return parsed;
+    const parsed = JSON.parse(raw) as Partial<IAChatStore>;
+    const projects = (parsed.projects || []).map((p) => ({
+      ...p,
+      icon: (p as IAProject).icon || "📁",
+      color: (p as IAProject).color || "#40C9A9",
+    })) as IAProject[];
+    const projectFiles = Array.isArray(parsed.projectFiles) ? parsed.projectFiles : [];
+    const threads = Array.isArray(parsed.threads) ? parsed.threads : [];
+    const activeProjectId =
+      parsed.activeProjectId === undefined ? null : (parsed.activeProjectId as string | null);
+    const activeThreadId =
+      parsed.activeThreadId === undefined ? null : (parsed.activeThreadId as string | null);
+    if (!threads.length) return defaultStore();
+    return { projects, projectFiles, threads, activeProjectId, activeThreadId };
   } catch {
     return defaultStore();
   }
@@ -82,8 +107,17 @@ export function saveIAStore(store: IAChatStore) {
   window.dispatchEvent(new CustomEvent(IA_STORE_EVENT));
 }
 
-export function createProject(store: IAChatStore, name: string): IAChatStore {
-  const project: IAProject = { id: newId("proj"), name, createdAt: nowIso() };
+export function createProject(
+  store: IAChatStore,
+  payload: { name: string; icon: string; color: string },
+): IAChatStore {
+  const project: IAProject = {
+    id: newId("proj"),
+    name: payload.name,
+    icon: payload.icon,
+    color: payload.color,
+    createdAt: nowIso(),
+  };
   return {
     ...store,
     projects: [project, ...store.projects],
@@ -106,8 +140,42 @@ export function updateThread(store: IAChatStore, thread: IAChatThread): IAChatSt
   return { ...store, threads };
 }
 
+export function deleteThread(store: IAChatStore, threadId: string): IAChatStore {
+  const remaining = store.threads.filter((t) => t.id !== threadId);
+  if (!remaining.length) {
+    const fallback = newDefaultThread(store.activeProjectId ?? null);
+    return {
+      ...store,
+      threads: [fallback],
+      activeThreadId: fallback.id,
+    };
+  }
+  const nextActiveId =
+    store.activeThreadId === threadId ? remaining[0].id : store.activeThreadId;
+  return {
+    ...store,
+    threads: remaining,
+    activeThreadId: nextActiveId,
+  };
+}
+
 export function threadTitleFromText(text: string) {
   const clean = text.replace(/\s+/g, " ").trim();
   return clean.slice(0, 40) || "Nuevo chat";
+}
+
+export function addProjectFile(
+  store: IAChatStore,
+  payload: Omit<IAProjectFile, "id" | "uploadedAt">,
+): IAChatStore {
+  const next: IAProjectFile = {
+    ...payload,
+    id: newId("pfile"),
+    uploadedAt: nowIso(),
+  };
+  return {
+    ...store,
+    projectFiles: [next, ...(store.projectFiles || [])],
+  };
 }
 

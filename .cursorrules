@@ -12,6 +12,8 @@
   - `bg-[#40C9A9]` - Color de acento (botones principales)
 - Las tarjetas deben usar `bg-[#354B3A]` con `border-white/10`
 - Los elementos interactivos deben usar `bg-white/10` con `hover:bg-white/20`
+- **NUNCA usar botones con fondo blanco o estilo blanco predominante** (`bg-white`, `text-white` sobre fondo claro, etc.)
+- Los botones secundarios/outline deben usar fondo oscuro del proyecto (`bg-[#1C2D20]` o `bg-[#203324]`) con acento `text-[#40C9A9]` y borde `border-[#40C9A9]/40`
 
 ### Tipografía
 - Usar `font-special` para títulos principales

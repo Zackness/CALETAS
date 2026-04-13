@@ -9,14 +9,22 @@ type SubscriptionStatus =
 type UseSubscriptionRequiredOptions = {
   requireChat?: boolean;
   noChatMessage?: string;
+  requireBiblioteca?: boolean;
+  noBibliotecaMessage?: string;
 };
 
 export function useSubscriptionRequired(options: UseSubscriptionRequiredOptions = {}) {
-  const { requireChat = false, noChatMessage = "Tu plan actual no incluye Chat IA" } = options;
+  const {
+    requireChat = false,
+    noChatMessage = "Tu plan actual no incluye Chat IA",
+    requireBiblioteca = false,
+    noBibliotecaMessage = "La biblioteca requiere un plan de $3/mes o superior",
+  } = options;
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [isActive, setIsActive] = useState<boolean>(false);
   const [canUseChat, setCanUseChat] = useState<boolean>(false);
+  const [canUseBiblioteca, setCanUseBiblioteca] = useState<boolean>(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -32,12 +40,17 @@ export function useSubscriptionRequired(options: UseSubscriptionRequiredOptions 
           }
           return;
         }
-        const data = (await res.json()) as SubscriptionStatus;
+        const data = (await res.json()) as SubscriptionStatus & {
+          canUseBiblioteca?: boolean;
+          hasFullCaletasPlan?: boolean;
+        };
         if (cancelled) return;
         const active = !!data.isActive;
         const chatEnabled = active ? data.canUseChat !== false : false;
+        const bibliotecaOk = active ? !!data.canUseBiblioteca : false;
         setIsActive(active);
         setCanUseChat(chatEnabled);
+        setCanUseBiblioteca(bibliotecaOk);
         setLoading(false);
 
         if (!active) {
@@ -48,6 +61,12 @@ export function useSubscriptionRequired(options: UseSubscriptionRequiredOptions 
 
         if (requireChat && !chatEnabled) {
           toast.error(noChatMessage);
+          router.replace("/suscripcion");
+          return;
+        }
+
+        if (requireBiblioteca && !bibliotecaOk) {
+          toast.error(noBibliotecaMessage);
           router.replace("/suscripcion");
         }
       } catch {
@@ -61,8 +80,8 @@ export function useSubscriptionRequired(options: UseSubscriptionRequiredOptions 
     return () => {
       cancelled = true;
     };
-  }, [router, requireChat, noChatMessage]);
+  }, [router, requireChat, noChatMessage, requireBiblioteca, noBibliotecaMessage]);
 
-  return { loading, isActive, canUseChat };
+  return { loading, isActive, canUseChat, canUseBiblioteca };
 }
 

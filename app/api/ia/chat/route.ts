@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = (await request.json()) as { messages?: ChatMessage[] };
+    const body = (await request.json()) as { messages?: ChatMessage[]; projectContext?: string };
     const incoming = Array.isArray(body.messages) ? body.messages : [];
 
     const messages = incoming
@@ -129,6 +129,8 @@ export async function POST(request: NextRequest) {
       )
       .map((m) => ({ role: m.role, content: m.content.slice(0, 6000) }))
       .slice(-20);
+    const projectContext =
+      typeof body.projectContext === "string" ? body.projectContext.slice(0, 20000) : "";
 
     if (!messages.length || messages[messages.length - 1]?.role !== "user") {
       return withCors(NextResponse.json({ error: "Envía al menos un mensaje de usuario" }, { status: 400 }), request);
@@ -145,11 +147,14 @@ export async function POST(request: NextRequest) {
 
     const careerName = normalizeCareer(user?.carrera?.nombre);
     const system = buildSystemPrompt(careerName);
+    const systemWithContext = projectContext
+      ? `${system}\n\nContexto adicional del proyecto (archivos subidos por el estudiante):\n${projectContext}\n\nUsa este contexto cuando sea relevante y cita el nombre del archivo si te basas en él.`
+      : system;
 
     const resp = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
-        { role: "system", content: system },
+        { role: "system", content: systemWithContext },
         ...messages.map((m) => ({ role: m.role, content: m.content })),
       ],
       temperature: 0.4,

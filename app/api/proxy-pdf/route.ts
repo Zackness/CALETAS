@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
 
+/** PDFs grandes: más tiempo y sin tope artificial de tamaño en axios (node). */
+export const maxDuration = 120;
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -18,10 +21,12 @@ export async function GET(request: NextRequest) {
     // Hacer la petición al PDF
     const response = await axios.get(url, {
       responseType: 'arraybuffer',
-      timeout: 30000, // 30 segundos
+      timeout: 120_000,
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity,
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-      }
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      },
     });
 
     // Obtener el tipo de contenido
@@ -46,7 +51,7 @@ export async function GET(request: NextRequest) {
         'Access-Control-Allow-Methods': 'GET, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type',
         'X-Content-Type-Options': 'nosniff',
-        'X-Frame-Options': 'ALLOWALL',
+        'Content-Security-Policy': "frame-ancestors 'self'",
         'Content-Disposition': 'inline',
         'Cross-Origin-Embedder-Policy': 'unsafe-none',
         'Cross-Origin-Opener-Policy': 'unsafe-none'
@@ -55,13 +60,18 @@ export async function GET(request: NextRequest) {
 
     return pdfResponse;
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('❌ PDF proxy error:', error);
-    
-    return NextResponse.json({
-      error: 'Failed to fetch PDF',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 });
+    const message = axios.isAxiosError(error)
+      ? error.message + (error.response ? ` (HTTP ${error.response.status})` : '')
+      : error instanceof Error
+        ? error.message
+        : 'Unknown error';
+
+    return NextResponse.json(
+      { error: 'Failed to fetch PDF', details: message },
+      { status: 500 },
+    );
   }
 }
 

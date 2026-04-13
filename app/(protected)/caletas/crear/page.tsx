@@ -11,19 +11,7 @@ import { Combobox } from "@/components/ui/combobox";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { Upload, FileText, BookOpen, GraduationCap, Shield, AlertTriangle, CheckCircle, Search, ArrowRight } from "lucide-react";
-
-interface Universidad {
-  id: string;
-  nombre: string;
-  carreras: Carrera[];
-}
-
-interface Carrera {
-  id: string;
-  nombre: string;
-  materias: Materia[];
-}
+import { Upload, FileText, BookOpen, GraduationCap, Shield, AlertTriangle, CheckCircle, Search } from "lucide-react";
 
 interface Materia {
   id: string;
@@ -40,12 +28,8 @@ interface ArchivoAnalizado {
 }
 
 export default function SubirCaletaPage() {
-  const [universidades, setUniversidades] = useState<Universidad[]>([]);
-  const [carreras, setCarreras] = useState<Carrera[]>([]);
   const [materias, setMaterias] = useState<Materia[]>([]);
   const [materiasOptions, setMateriasOptions] = useState<Array<{value: string, label: string, semestre?: string}>>([]);
-  const [selectedUniversidad, setSelectedUniversidad] = useState<string>("");
-  const [selectedCarrera, setSelectedCarrera] = useState<string>("");
   const [selectedMateria, setSelectedMateria] = useState<string>("");
   const [titulo, setTitulo] = useState("");
   const [descripcion, setDescripcion] = useState("");
@@ -64,7 +48,9 @@ export default function SubirCaletaPage() {
   const [archivoSubida, setArchivoSubida] = useState<File | null>(null);
   const [isSubiendo, setIsSubiendo] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
-  
+  const [userUniversidadId, setUserUniversidadId] = useState<string | null>(null);
+  const [userUniversidadNombre, setUserUniversidadNombre] = useState("");
+
   const { toast } = useToast();
   const router = useRouter();
 
@@ -86,20 +72,42 @@ export default function SubirCaletaPage() {
     return hash1 === hash2;
   };
 
-  // Cargar universidades al montar el componente
   useEffect(() => {
-    const cargarUniversidades = async () => {
+    const cargarPerfil = async () => {
       try {
-        const response = await fetch("/api/universidades");
-        if (response.ok) {
-          const data = await response.json();
-          setUniversidades(data);
+        const userRes = await fetch("/api/user");
+        if (userRes.ok) {
+          const data = await userRes.json();
+          const uid = data.user?.universidadId ?? null;
+          setUserUniversidadId(uid);
+          setUserUniversidadNombre(data.user?.universidad?.nombre || "");
+          if (uid) {
+            const mRes = await fetch("/api/user/academico/materias");
+            if (mRes.ok) {
+              const md = await mRes.json();
+              const list = Array.isArray(md.materias) ? md.materias : [];
+              setMaterias(list);
+              setMateriasOptions(
+                list.map((materia: Materia & { semestre?: string }) => ({
+                  label: `${materia.codigo} - ${materia.nombre}`,
+                  value: materia.id,
+                  semestre: materia.semestre || "Sin semestre",
+                })),
+              );
+            } else {
+              toast({
+                title: "Perfil académico incompleto",
+                description: "Necesitas carrera asignada para subir caletas de tu universidad.",
+                variant: "destructive",
+              });
+            }
+          }
         }
       } catch (error) {
-        console.error("Error cargando universidades:", error);
+        console.error("Error cargando perfil:", error);
         toast({
           title: "Error",
-          description: "No se pudieron cargar las universidades",
+          description: "No se pudo cargar tu perfil",
           variant: "destructive",
         });
       } finally {
@@ -107,47 +115,8 @@ export default function SubirCaletaPage() {
       }
     };
 
-    cargarUniversidades();
+    void cargarPerfil();
   }, [toast]);
-
-  // Cargar carreras cuando se selecciona una universidad
-  useEffect(() => {
-    if (selectedUniversidad) {
-      const universidad = universidades.find(u => u.id === selectedUniversidad);
-      if (universidad) {
-        setCarreras(universidad.carreras);
-        setSelectedCarrera("");
-        setSelectedMateria("");
-        setMaterias([]);
-      }
-    } else {
-      setCarreras([]);
-      setMaterias([]);
-    }
-  }, [selectedUniversidad, universidades]);
-
-  // Cargar materias cuando se selecciona una carrera
-  useEffect(() => {
-    if (selectedCarrera) {
-      const carrera = carreras.find(c => c.id === selectedCarrera);
-      if (carrera) {
-        setMaterias(carrera.materias);
-        
-        // Convertir materias a formato para Combobox
-        const options = carrera.materias.map((materia: any) => ({
-          label: `${materia.codigo} - ${materia.nombre}`,
-          value: materia.id,
-          semestre: (materia as any).semestre || "Sin semestre",
-        }));
-        setMateriasOptions(options);
-        
-        setSelectedMateria("");
-      }
-    } else {
-      setMaterias([]);
-      setMateriasOptions([]);
-    }
-  }, [selectedCarrera, carreras]);
 
   // Función para manejar la selección de archivo para análisis
   const handleFileChangeAnalisis = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -286,10 +255,19 @@ export default function SubirCaletaPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!archivoSubida || !selectedMateria || !titulo || !descripcion) {
+    if (!archivoSubida || !titulo || !descripcion) {
       toast({
         title: "Campos requeridos",
-        description: "Por favor completa todos los campos obligatorios",
+        description: "Completa título, descripción y archivo",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (userUniversidadId && !selectedMateria) {
+      toast({
+        title: "Materia requerida",
+        description: "Debes elegir la materia de tu carrera (obligatorio con universidad).",
         variant: "destructive",
       });
       return;
@@ -325,7 +303,9 @@ export default function SubirCaletaPage() {
       formData.append("titulo", titulo);
       formData.append("descripcion", descripcion);
       formData.append("tipo", tipo);
-      formData.append("materiaId", selectedMateria);
+      if (selectedMateria) {
+        formData.append("materiaId", selectedMateria);
+      }
       formData.append("tags", tags);
       formData.append("esAnonimo", esAnonimo.toString());
       formData.append("file", archivoSubida);
@@ -561,54 +541,42 @@ export default function SubirCaletaPage() {
                   </div>
                 </div>
 
-                {/* Selección de universidad, carrera y materia */}
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="universidad" className="text-white/80">Universidad</Label>
-                    <Select value={selectedUniversidad} onValueChange={setSelectedUniversidad}>
-                      <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1">
-                        <SelectValue placeholder="Selecciona una universidad" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-[#203324] text-white">
-                        {universidades.map((universidad) => (
-                          <SelectItem key={universidad.id} value={universidad.id} className="hover:bg-[#40C9A9]/10">
-                            <div className="flex items-center gap-2">
-                              <GraduationCap className="h-4 w-4 text-[#40C9A9]" />
-                              {universidad.nombre}
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                {userUniversidadId ? (
+                  <div className="space-y-4 rounded-lg border border-[#40C9A9]/30 bg-[#1C2D20] p-4">
+                    <div className="flex gap-3 items-start">
+                      <GraduationCap
+                        className="h-5 w-5 text-[#40C9A9] shrink-0 mt-0.5"
+                        aria-hidden
+                      />
+                      <p className="text-sm text-white/85 min-w-0 flex-1 leading-relaxed">
+                        Tu caleta se publica asociada a{" "}
+                        <span className="text-[#40C9A9] font-medium break-words">
+                          {userUniversidadNombre || "tu universidad"}
+                        </span>
+                        . Debes elegir la materia de tu carrera.
+                      </p>
+                    </div>
+                    <div>
+                      <Label htmlFor="materia" className="text-white/80">Materia *</Label>
+                      <Combobox
+                        options={materiasOptions}
+                        value={selectedMateria}
+                        onChange={setSelectedMateria}
+                        placeholder="Buscar materia de tu carrera..."
+                        variant="academic"
+                        disabled={materiasOptions.length === 0}
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <Label htmlFor="carrera" className="text-white/80">Carrera</Label>
-                    <Select value={selectedCarrera} onValueChange={setSelectedCarrera} disabled={!selectedUniversidad}>
-                      <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1 disabled:opacity-50">
-                        <SelectValue placeholder="Selecciona una carrera" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-[#203324] text-white">
-                        {carreras.map((carrera) => (
-                          <SelectItem key={carrera.id} value={carrera.id} className="hover:bg-[#40C9A9]/10">
-                            <BookOpen className="h-4 w-4 text-[#40C9A9] mr-1" />
-                            {carrera.nombre}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                ) : (
+                  <div className="rounded-lg border border-white/10 bg-[#1C2D20] p-4 text-sm text-white/80">
+                    <p>
+                      Esta caleta es <span className="text-[#40C9A9] font-medium">genérica</span>: visible para todos los
+                      usuarios y no queda ligada a una universidad. Si en tu perfil registras una universidad, al subir
+                      caletas deberás elegir siempre materia de tu carrera.
+                    </p>
                   </div>
-                  <div>
-                    <Label htmlFor="materia" className="text-white/80">Materia *</Label>
-                    <Combobox
-                      options={materiasOptions}
-                      value={selectedMateria}
-                      onChange={setSelectedMateria}
-                      placeholder="Buscar materia..."
-                      variant="academic"
-                      disabled={!selectedCarrera}
-                    />
-                  </div>
-                </div>
+                )}
 
                 {/* Botón subir */}
                 <Button

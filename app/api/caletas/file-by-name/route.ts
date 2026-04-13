@@ -15,10 +15,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "filename es requerido" }, { status: 400 });
     }
 
-    const recurso = await db.recurso.findFirst({
-      where: {
-        archivoUrl: { contains: filename },
-      },
+    // Preferir coincidencia exacta del nombre al final de la URL (evita contains ambiguo).
+    let recurso = await db.recurso.findFirst({
+      where: { archivoUrl: { endsWith: filename } },
       orderBy: { createdAt: "desc" },
       select: {
         id: true,
@@ -26,6 +25,17 @@ export async function GET(request: NextRequest) {
         archivoUrl: true,
       },
     });
+    if (!recurso) {
+      recurso = await db.recurso.findFirst({
+        where: { archivoUrl: { contains: filename } },
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          titulo: true,
+          archivoUrl: true,
+        },
+      });
+    }
 
     if (!recurso?.archivoUrl) {
       return NextResponse.json({ error: "Archivo no encontrado" }, { status: 404 });

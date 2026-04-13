@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getCorsHeaders } from "@/lib/cors";
+import { canAccessFullCaletasPlan, getActiveSubscriptionForUser } from "@/lib/subscription";
 
 function withCors(res: NextResponse, req: NextRequest) {
   Object.entries(getCorsHeaders(req)).forEach(([k, v]) => res.headers.set(k, v));
@@ -38,14 +39,34 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const misRecursos = searchParams.get('misRecursos') === 'true';
+    const misRecursos = searchParams.get("misRecursos") === "true";
 
-    // Construir filtros según el tipo de consulta
-    // Todos los recursos son visibles para todos los estudiantes.
-    // `misRecursos=true` se mantiene para filtrar por autor.
-    const whereClause: any = misRecursos ? { autorId: session.user.id } : {};
+    const user = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: { universidadId: true },
+    });
+    const subscription = await getActiveSubscriptionForUser(session.user.id);
+    const hasFullCaletasPlan = canAccessFullCaletasPlan(subscription);
 
-    // Obtener recursos según los filtros
+    let whereClause: object;
+    if (misRecursos) {
+      whereClause = { autorId: session.user.id };
+    } else if (hasFullCaletasPlan) {
+      whereClause = {};
+    } else if (!user?.universidadId) {
+      whereClause = {
+        OR: [{ universidadId: null }, { autorId: session.user.id }],
+      };
+    } else {
+      whereClause = {
+        OR: [
+          { universidadId: null },
+          { universidadId: user.universidadId },
+          { autorId: session.user.id },
+        ],
+      };
+    }
+
     const recursos = await db.recurso.findMany({
       where: whereClause,
       include: {
@@ -55,6 +76,11 @@ export async function GET(request: NextRequest) {
             codigo: true,
             nombre: true,
             semestre: true,
+            carrera: {
+              select: {
+                universidadId: true,
+              },
+            },
           },
         },
         autor: {
@@ -66,11 +92,11 @@ export async function GET(request: NextRequest) {
         },
         calificaciones: {
           where: {
-            usuarioId: session.user.id
+            usuarioId: session.user.id,
           },
           select: {
-            calificacion: true
-          }
+            calificacion: true,
+          },
         },
         favoritos: {
           where: {
@@ -81,9 +107,7 @@ export async function GET(request: NextRequest) {
           },
         },
       },
-      orderBy: [
-        { createdAt: 'desc' }
-      ],
+      orderBy: [{ createdAt: "desc" }],
     });
 
     const recursosConFavorito = recursos.map(({ favoritos, ...r }) => {
@@ -94,14 +118,22 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    return withCors(NextResponse.json({ recursos: recursosConFavorito }), request);
+    return withCors(
+      NextResponse.json({
+        recursos: recursosConFavorito,
+        restrictions: {
+          fullCaletasPlanLocked: !misRecursos && !hasFullCaletasPlan,
+        },
+      }),
+      request,
+    );
   } catch (error) {
     console.error("Error fetching recursos:", error);
     return withCors(NextResponse.json({ error: "Error interno del servidor" }, { status: 500 }), request);
   }
 }
 
-// POST - Crear nuevo recurso
+// POST - Crear nuevo recurso (JSON; subidas con archivo usan /api/caletas/upload-cpanel)
 export async function POST(request: NextRequest) {
   try {
     const session = await auth.api.getSession({
@@ -113,42 +145,55 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { 
-      titulo, 
-      descripcion, 
-      tipo, 
-      contenido, 
-      archivoUrl, 
+    const {
+      titulo,
+      descripcion,
+      tipo,
+      contenido,
+      archivoUrl,
       archivoSizeBytes,
-      materiaId, 
-      esPublico, 
+      materiaId,
+      esPublico,
       esAnonimo,
-      tags 
+      tags,
     } = body;
 
-    if (!titulo || !descripcion || !tipo || !contenido || !materiaId) {
-      return withCors(NextResponse.json({ error: "Todos los campos son requeridos" }, { status: 400 }), request);
+    if (!titulo || !descripcion || !tipo || !contenido) {
+      return withCors(NextResponse.json({ error: "Faltan campos obligatorios" }, { status: 400 }), request);
     }
 
-    // Validar que la materia pertenece a la carrera del usuario
     const user = await db.user.findUnique({
       where: { id: session.user.id },
-      include: {
-        carrera: {
-          include: {
-            materias: {
-              where: { id: materiaId }
-            }
-          }
-        }
-      }
+      select: { universidadId: true, carreraId: true },
     });
 
-    if (!user?.carrera?.materias.length) {
-      return withCors(NextResponse.json({ error: "Materia no encontrada en tu carrera" }, { status: 404 }), request);
+    let finalMateriaId: string | null = typeof materiaId === "string" && materiaId.trim() ? materiaId.trim() : null;
+    let finalUniversidadId: string | null = null;
+
+    if (user?.universidadId) {
+      if (!finalMateriaId || !user.carreraId) {
+        return withCors(
+          NextResponse.json({ error: "Debes tener carrera y seleccionar una materia de tu pensum" }, { status: 400 }),
+          request,
+        );
+      }
+      const ok = await db.materia.findFirst({
+        where: {
+          id: finalMateriaId,
+          carreraId: user.carreraId,
+          carrera: { universidadId: user.universidadId },
+        },
+        select: { id: true },
+      });
+      if (!ok) {
+        return withCors(NextResponse.json({ error: "Materia no válida para tu universidad y carrera" }, { status: 404 }), request);
+      }
+      finalUniversidadId = user.universidadId;
+    } else {
+      finalMateriaId = null;
+      finalUniversidadId = null;
     }
 
-    // Crear el recurso
     const recurso = await db.recurso.create({
       data: {
         titulo,
@@ -157,9 +202,10 @@ export async function POST(request: NextRequest) {
         contenido,
         archivoUrl,
         archivoSizeBytes: typeof archivoSizeBytes === "number" ? archivoSizeBytes : undefined,
-        materiaId,
+        materiaId: finalMateriaId,
+        universidadId: finalUniversidadId,
         autorId: session.user.id,
-        esPublico: true,
+        esPublico: esPublico !== false,
         esAnonimo: !!esAnonimo,
         tags: tags || "",
       },
@@ -182,12 +228,15 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return withCors(NextResponse.json({
-      message: "Recurso creado exitosamente",
-      recurso: maskAutorIfAnon(recurso as any, session.user.id),
-    }), request);
+    return withCors(
+      NextResponse.json({
+        message: "Recurso creado exitosamente",
+        recurso: maskAutorIfAnon(recurso as any, session.user.id),
+      }),
+      request,
+    );
   } catch (error) {
     console.error("Error creating recurso:", error);
     return withCors(NextResponse.json({ error: "Error interno del servidor" }, { status: 500 }), request);
   }
-} 
+}

@@ -34,8 +34,17 @@ export async function GET(req: Request) {
         twoFactorPreferredMethod: true,
         twoFactorEmailFallbackEnabled: true,
         isEmailVerified: true,
+        universidadId: true,
+        carreraId: true,
         carrera: {
           select: {
+            id: true,
+            nombre: true,
+          },
+        },
+        universidad: {
+          select: {
+            id: true,
             nombre: true,
           },
         },

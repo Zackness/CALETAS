@@ -5,7 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Bot, Edit3, Plus, Send, Sparkles } from "lucide-react";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Bot, Edit3, Plus, Send, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useSubscriptionRequired } from "@/hooks/use-subscription-required";
 import {
@@ -15,6 +18,7 @@ import {
   IA_STORE_EVENT,
   loadIAStore,
   saveIAStore,
+  deleteThread,
   threadTitleFromText,
   updateThread,
 } from "@/lib/ia-chat-store";
@@ -38,6 +42,10 @@ export default function ChatIA() {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [careerName, setCareerName] = useState<string | null>(null);
+  const [activeProjectName, setActiveProjectName] = useState<string | null>(null);
+  const [renameDialogOpen, setRenameDialogOpen] = useState(false);
+  const [renameValue, setRenameValue] = useState("");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
@@ -57,6 +65,8 @@ export default function ChatIA() {
       if (!thread) return;
       setActiveThread(thread);
       setMessages(thread.messages);
+      const project = thread.projectId ? store.projects.find((p) => p.id === thread.projectId) : null;
+      setActiveProjectName(project?.name || null);
     };
 
     sync();
@@ -112,7 +122,22 @@ export default function ChatIA() {
       const res = await fetch("/api/ia/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: nextMessages }),
+        body: JSON.stringify({
+          messages: nextMessages,
+          projectContext: (() => {
+            const store = loadIAStore();
+            const projectId = activeThread.projectId;
+            if (!projectId) return "";
+            const files = store.projectFiles.filter((f) => f.projectId === projectId);
+            if (!files.length) return "";
+            return files
+              .map(
+                (f, i) =>
+                  `[Archivo ${i + 1}: ${f.name}]\n${f.textContent.slice(0, 4000)}`,
+              )
+              .join("\n\n");
+          })(),
+        }),
       });
 
       const data = await res.json();
@@ -151,17 +176,108 @@ export default function ChatIA() {
 
   const renameChat = () => {
     if (!activeThread) return;
-    const value = window.prompt("Nuevo nombre del chat", activeThread.title);
-    if (!value?.trim()) return;
+    setRenameValue(activeThread.title);
+    setRenameDialogOpen(true);
+  };
+
+  const confirmRenameChat = () => {
+    if (!activeThread) return;
+    const value = renameValue.trim();
+    if (!value) return;
     const store = loadIAStore();
-    const nextThread = { ...activeThread, title: value.trim(), updatedAt: new Date().toISOString() };
+    const nextThread = { ...activeThread, title: value, updatedAt: new Date().toISOString() };
     const next = updateThread(store, nextThread);
     saveIAStore(next);
     setActiveThread(nextThread);
+    setRenameDialogOpen(false);
+  };
+
+  const requestDeleteChat = () => {
+    if (!activeThread) return;
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteChat = () => {
+    if (!activeThread) return;
+    const store = loadIAStore();
+    const next = deleteThread(store, activeThread.id);
+    saveIAStore(next);
+    setDeleteDialogOpen(false);
+    toast.success("Chat eliminado");
   };
 
   return (
     <div className="min-h-screen">
+      <Dialog open={renameDialogOpen} onOpenChange={setRenameDialogOpen}>
+        <DialogContent className="bg-[#203324] border-white/10 text-white">
+          <DialogHeader>
+            <DialogTitle>Renombrar chat</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label className="text-white/80" htmlFor="rename-chat-input">
+              Nuevo nombre
+            </Label>
+            <Input
+              id="rename-chat-input"
+              value={renameValue}
+              onChange={(e) => setRenameValue(e.target.value)}
+              className="bg-[#1C2D20] border-white/20 text-white"
+              placeholder="Ej: Ejercicios de Control I"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  confirmRenameChat();
+                }
+              }}
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              className="border-white/20 text-white hover:bg-white/10"
+              onClick={() => setRenameDialogOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+              onClick={confirmRenameChat}
+            >
+              Guardar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="bg-[#203324] border-white/10 text-white">
+          <DialogHeader>
+            <DialogTitle>Eliminar chat</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-white/80">
+            Esta acción eliminará este chat de forma permanente del proyecto.
+          </p>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              className="border-white/20 text-white hover:bg-white/10"
+              onClick={() => setDeleteDialogOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              className="bg-red-500/90 hover:bg-red-500 text-white"
+              onClick={confirmDeleteChat}
+            >
+              Eliminar chat
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <div className="w-full px-2 md:px-4 py-4 md:py-6">
         <div className="mb-4">
           <div className="flex items-start justify-between gap-3 flex-col lg:flex-row">
@@ -188,11 +304,16 @@ export default function ChatIA() {
                   Carrera: no configurada
                 </Badge>
               )}
+              {activeProjectName ? (
+                <Badge className="bg-[#354B3A] text-white border border-white/10">
+                  Proyecto: {activeProjectName}
+                </Badge>
+              ) : null}
 
               <Button
                 type="button"
                 variant="outline"
-                className="border-white/20 text-white hover:bg-white/10"
+                className="border-[#40C9A9]/60 bg-[#203324] text-white hover:bg-[#354B3A]"
                 onClick={renameChat}
               >
                 <Edit3 className="w-4 h-4 mr-2" />
@@ -205,6 +326,15 @@ export default function ChatIA() {
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Nuevo chat
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="border-red-400/40 bg-[#203324] text-white hover:bg-red-500/20"
+                onClick={requestDeleteChat}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Eliminar chat
               </Button>
             </div>
           </div>

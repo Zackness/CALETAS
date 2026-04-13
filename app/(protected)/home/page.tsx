@@ -688,7 +688,11 @@ export default async function HomePage() {
                           {getTipoIcon(recurso.tipo)}
                           <div className="min-w-0">
                             <p className="text-white font-medium truncate">{recurso.titulo}</p>
-                            <p className="text-white/70 text-sm">{recurso.materia.codigo}</p>
+                            <p className="text-white/70 text-sm">
+                              {recurso.materia
+                                ? `${recurso.materia.codigo} · ${recurso.materia.nombre}`
+                                : "Caleta genérica"}
+                            </p>
                           </div>
                         </div>
                         <div className="text-left sm:text-right">

@@ -3,6 +3,8 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getCorsHeaders } from "@/lib/cors";
 import { deleteFromBunny } from "@/lib/bunny";
+import { canViewerAccessRecurso } from "@/lib/caletas-visibility";
+import { getActiveSubscriptionForUser } from "@/lib/subscription";
 
 function withCors(res: NextResponse, req: NextRequest) {
   Object.entries(getCorsHeaders(req)).forEach(([k, v]) => res.headers.set(k, v));
@@ -37,6 +39,7 @@ export async function GET(
             id: true,
             nombre: true,
             codigo: true,
+            carrera: { select: { universidadId: true } },
           },
         },
         autor: {
@@ -51,6 +54,25 @@ export async function GET(
 
     if (!recurso) {
       return withCors(NextResponse.json({ error: "Recurso no encontrado" }, { status: 404 }), request);
+    }
+
+    const viewer = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: { universidadId: true },
+    });
+    const sub = await getActiveSubscriptionForUser(session.user.id);
+    const allowed = canViewerAccessRecurso(
+      session.user.id,
+      viewer?.universidadId,
+      sub,
+      {
+        autorId: recurso.autorId,
+        universidadId: recurso.universidadId,
+        materia: recurso.materia,
+      },
+    );
+    if (!allowed) {
+      return withCors(NextResponse.json({ error: "No tienes acceso a este recurso" }, { status: 403 }), request);
     }
     const masked =
       recurso.esAnonimo && recurso.autorId !== session.user.id
@@ -194,24 +216,44 @@ export async function PUT(
       );
     }
 
-    // Validar campos requeridos
-    if (!titulo || !descripcion || !tipo || !materiaId) {
+    if (!titulo || !descripcion || !tipo) {
       return NextResponse.json(
         { error: "Faltan campos requeridos" },
         { status: 400 }
       );
     }
 
-    // Verificar que la materia existe
-    const materia = await db.materia.findUnique({
-      where: { id: materiaId },
+    const user = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: { universidadId: true, carreraId: true },
     });
 
-    if (!materia) {
-      return NextResponse.json(
-        { error: "Materia no encontrada" },
-        { status: 400 }
-      );
+    let finalMateriaId: string | null =
+      typeof materiaId === "string" && materiaId.trim() ? materiaId.trim() : null;
+    let finalUniversidadId: string | null = null;
+
+    if (user?.universidadId) {
+      if (!finalMateriaId || !user.carreraId) {
+        return NextResponse.json(
+          { error: "Debes seleccionar una materia de tu carrera" },
+          { status: 400 },
+        );
+      }
+      const ok = await db.materia.findFirst({
+        where: {
+          id: finalMateriaId,
+          carreraId: user.carreraId,
+          carrera: { universidadId: user.universidadId },
+        },
+        select: { id: true },
+      });
+      if (!ok) {
+        return NextResponse.json({ error: "Materia no válida para tu carrera" }, { status: 400 });
+      }
+      finalUniversidadId = user.universidadId;
+    } else {
+      finalMateriaId = null;
+      finalUniversidadId = null;
     }
 
     // Actualizar el recurso
@@ -224,7 +266,8 @@ export async function PUT(
         contenido: contenido || descripcion,
         archivoUrl,
         archivoSizeBytes: typeof archivoSizeBytes === "number" ? archivoSizeBytes : archivoSizeBytes === null ? null : undefined,
-        materiaId,
+        materiaId: finalMateriaId,
+        universidadId: finalUniversidadId,
         esPublico: true,
         esAnonimo: typeof esAnonimo === "boolean" ? esAnonimo : undefined,
         tags: tags || null,

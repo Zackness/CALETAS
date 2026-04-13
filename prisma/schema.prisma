@@ -253,6 +253,7 @@ model Universidad {
   carreras  Carrera[]
   users     User[]
   pensumVersions PensumVersion[]
+  recursos  Recurso[]
 }
 
 model Carrera {
@@ -422,8 +423,10 @@ model Recurso {
   contenido        String   // Contenido del recurso (texto, enlaces, etc.)
   archivoUrl       String?  // URL del archivo si se sube uno
   archivoSizeBytes Int?     // Tamaño en bytes del archivo subido (para estadísticas admin)
-  materiaId        String
-  materia     Materia  @relation(fields: [materiaId], references: [id], onDelete: Cascade)
+  materiaId        String?
+  materia     Materia?  @relation(fields: [materiaId], references: [id], onDelete: Cascade)
+  universidadId    String?
+  universidad      Universidad? @relation(fields: [universidadId], references: [id], onDelete: SetNull)
   autorId     String
   autor       User     @relation(fields: [autorId], references: [id], onDelete: Cascade)
   calificacion Float   @default(0) // Promedio de calificaciones
@@ -444,10 +447,27 @@ model Recurso {
   favoritos      Favorito[]
 
   @@index([materiaId])
+  @@index([universidadId])
   @@index([autorId])
   @@index([tipo])
   @@index([esPublico])
   @@index([esAnonimo])
+}
+
+// Contenidos de consulta en app (sin descarga); acceso planes $3+ y $7+
+model BibliotecaObra {
+  id          String   @id @default(cuid())
+  titulo      String
+  slug        String   @unique
+  descripcion String?  @db.Text
+  cuerpo      String   @db.LongText
+  orden       Int      @default(0)
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isPublished])
+  @@index([orden])
 }
 
 model CalificacionRecurso {

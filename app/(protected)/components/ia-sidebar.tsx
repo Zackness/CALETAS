@@ -21,10 +21,15 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   IA_STORE_EVENT,
+  addProjectFile,
   createProject,
   createThread,
   loadIAStore,
@@ -35,6 +40,11 @@ export function IASidebar() {
   const [open, setOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [chatStore, setChatStore] = useState(() => loadIAStore());
+  const [projectDialogOpen, setProjectDialogOpen] = useState(false);
+  const [projectName, setProjectName] = useState("");
+  const [projectIcon, setProjectIcon] = useState("📁");
+  const [projectColor, setProjectColor] = useState("#40C9A9");
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [courseCategories, setCourseCategories] = useState<string[]>([]);
   const pathname = usePathname();
   const router = useRouter();
@@ -92,11 +102,22 @@ export function IASidebar() {
     "flex items-center gap-3 text-white hover:bg-[#354B3A] rounded-lg px-3 py-2 transition-colors";
 
   const createNewProject = () => {
-    const name = window.prompt("Nombre del proyecto");
-    if (!name?.trim()) return;
-    const next = createProject(chatStore, name.trim());
+    setProjectName("");
+    setProjectIcon("📁");
+    setProjectColor("#40C9A9");
+    setProjectDialogOpen(true);
+  };
+
+  const saveNewProject = () => {
+    if (!projectName.trim()) return;
+    const next = createProject(chatStore, {
+      name: projectName.trim(),
+      icon: projectIcon,
+      color: projectColor,
+    });
     saveIAStore(next);
     setChatStore(next);
+    setProjectDialogOpen(false);
   };
 
   const createNewChat = () => {
@@ -109,6 +130,25 @@ export function IASidebar() {
 
   const selectProject = (projectId: string | null) => {
     const next = { ...chatStore, activeProjectId: projectId };
+    saveIAStore(next);
+    setChatStore(next);
+  };
+
+  const uploadProjectFile = async (file: File) => {
+    if (!chatStore.activeProjectId) return;
+    const supported = ["text/plain", "text/markdown", "application/json", "text/csv"];
+    if (!supported.includes(file.type)) {
+      alert("Por ahora solo se admiten TXT, MD, JSON y CSV para contexto automático.");
+      return;
+    }
+    const text = await file.text();
+    const next = addProjectFile(chatStore, {
+      projectId: chatStore.activeProjectId,
+      name: file.name,
+      mimeType: file.type,
+      size: file.size,
+      textContent: text.slice(0, 20000),
+    });
     saveIAStore(next);
     setChatStore(next);
   };
@@ -169,10 +209,50 @@ export function IASidebar() {
               chatStore.activeProjectId === project.id ? "bg-[#40C9A9]/25 text-white" : "text-white/80 hover:bg-white/10"
             }`}
           >
+            <span
+              className="inline-flex items-center justify-center w-5 h-5 rounded mr-2"
+              style={{ backgroundColor: project.color }}
+            >
+              {project.icon}
+            </span>
             {project.name}
           </button>
         ))}
       </div>
+
+      {chatStore.activeProjectId ? (
+        <div className="bg-[#354B3A] border border-white/10 rounded-xl p-3 space-y-2">
+          <h3 className="text-sm font-semibold text-white">Archivos del proyecto</h3>
+          <Button
+            type="button"
+            size="sm"
+            className="w-full bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <Upload className="h-4 w-4 mr-2" />
+            Subir archivo de contexto
+          </Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) void uploadProjectFile(file);
+              e.currentTarget.value = "";
+            }}
+          />
+          <div className="max-h-32 overflow-auto space-y-1">
+            {chatStore.projectFiles
+              .filter((f) => f.projectId === chatStore.activeProjectId)
+              .map((f) => (
+                <p key={f.id} className="text-xs text-white/75 truncate">
+                  {f.name}
+                </p>
+              ))}
+          </div>
+        </div>
+      ) : null}
 
       <div className="bg-[#354B3A] border border-white/10 rounded-xl p-3 space-y-2">
         <div className="flex items-center justify-between">
@@ -303,6 +383,10 @@ export function IASidebar() {
           <BookOpen className="h-5 w-5 text-[#40C9A9]" />
           <span>Pensums</span>
         </Link>
+        <Link href="/admin/biblioteca" className={baseLinkClass}>
+          <Library className="h-5 w-5 text-[#40C9A9]" />
+          <span>Biblioteca de libros</span>
+        </Link>
         <Link href="/admin/media" className={baseLinkClass}>
           <Upload className="h-5 w-5 text-[#40C9A9]" />
           <span>Biblioteca de medios</span>
@@ -333,6 +417,7 @@ export function IASidebar() {
         <h3 className="text-sm font-semibold text-white/70 mb-2 px-2">Navegación</h3>
         <Link href="/home" className={baseLinkClass}><Home className="h-5 w-5 text-[#40C9A9]" /><span>Dashboard</span></Link>
         <Link href="/caletas" className={baseLinkClass}><Search className="h-5 w-5 text-[#40C9A9]" /><span>Recursos Colaborativos</span></Link>
+        <Link href="/biblioteca" className={baseLinkClass}><Library className="h-5 w-5 text-[#40C9A9]" /><span>Biblioteca</span></Link>
         <Link href="/caletas/mis-recursos" className={baseLinkClass}><Upload className="h-5 w-5 text-[#40C9A9]" /><span>Mis Recursos</span></Link>
         <Link href="/cursos" className={baseLinkClass}><Library className="h-5 w-5 text-[#40C9A9]" /><span>Cursos</span></Link>
       </div>
@@ -363,6 +448,7 @@ export function IASidebar() {
           <Link href="/admin/usuarios" className={baseLinkClass}><Users className="h-5 w-5 text-[#40C9A9]" /><span>Usuarios</span></Link>
           <Link href="/admin/pagos" className={baseLinkClass}><ShieldCheck className="h-5 w-5 text-[#40C9A9]" /><span>Pagos</span></Link>
           <Link href="/admin/blog" className={baseLinkClass}><FileText className="h-5 w-5 text-[#40C9A9]" /><span>Blog</span></Link>
+          <Link href="/admin/biblioteca" className={baseLinkClass}><Library className="h-5 w-5 text-[#40C9A9]" /><span>Biblioteca libros</span></Link>
           <Link href="/admin/pensums" className={baseLinkClass}><BookOpen className="h-5 w-5 text-[#40C9A9]" /><span>Pensums</span></Link>
           <Link href="/admin/media" className={baseLinkClass}><Upload className="h-5 w-5 text-[#40C9A9]" /><span>Biblioteca de medios</span></Link>
           <Link href="/admin/cursos" className={baseLinkClass}><Library className="h-5 w-5 text-[#40C9A9]" /><span>Cursos</span></Link>
@@ -373,6 +459,59 @@ export function IASidebar() {
 
   return (
     <>
+      <Dialog open={projectDialogOpen} onOpenChange={setProjectDialogOpen}>
+        <DialogContent className="bg-[#203324] border-white/10 text-white">
+          <DialogHeader>
+            <DialogTitle>Nuevo proyecto IA</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label className="text-white/80">Nombre</Label>
+              <Input
+                value={projectName}
+                onChange={(e) => setProjectName(e.target.value)}
+                className="bg-[#1C2D20] border-white/20 text-white"
+                placeholder="Ej: Cálculo II"
+              />
+            </div>
+            <div>
+              <Label className="text-white/80">Icono</Label>
+              <div className="grid grid-cols-5 gap-2 mt-2">
+                {["📁", "📘", "🧠", "🧪", "⚙️", "📐", "🧮", "💻", "📝", "🎯"].map((icon) => (
+                  <button
+                    key={icon}
+                    type="button"
+                    onClick={() => setProjectIcon(icon)}
+                    className={`rounded-md border px-2 py-1 text-lg ${
+                      projectIcon === icon ? "border-[#40C9A9] bg-[#40C9A9]/20" : "border-white/20 bg-white/5"
+                    }`}
+                  >
+                    {icon}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <Label className="text-white/80">Color</Label>
+              <Input
+                type="color"
+                value={projectColor}
+                onChange={(e) => setProjectColor(e.target.value)}
+                className="bg-[#1C2D20] border-white/20 h-10"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" className="border-white/20 text-white hover:bg-white/10" onClick={() => setProjectDialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button type="button" className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white" onClick={saveNewProject}>
+              Crear proyecto
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <button
         className="fixed bottom-4 left-4 z-40 md:hidden bg-[#354B3A] text-white rounded-full p-3 shadow-lg hover:bg-[#203324] transition-colors"
         onClick={() => setOpen(true)}

@@ -51,26 +51,35 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verificar que la materia existe y pertenece al usuario
+    const user = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: { universidadId: true, carreraId: true },
+    });
+
+    if (!user?.universidadId || !user.carreraId) {
+      return NextResponse.json(
+        { error: "Solo usuarios con universidad y carrera pueden subir con materia vinculada. Usa la página de compartir recurso para caletas genéricas." },
+        { status: 400 },
+      );
+    }
+
     const materia = await db.materia.findFirst({
       where: {
         id: materiaId,
-        carrera: {
-          usuarios: {
-            some: {
-              id: session.user.id
-            }
-          }
-        }
-      }
+        carreraId: user.carreraId,
+        carrera: { universidadId: user.universidadId },
+      },
+      include: { carrera: { select: { universidadId: true } } },
     });
 
     if (!materia) {
       return NextResponse.json(
-        { error: "Materia no encontrada o no tienes acceso" },
+        { error: "Materia no encontrada o no pertenece a tu carrera" },
         { status: 400 }
       );
     }
+
+    const universidadIdObra = materia.carrera.universidadId;
 
     // PASO 1: MODERACIÓN DE CONTENIDO
     console.log("✅ Contenido ya verificado automáticamente");
@@ -94,6 +103,7 @@ export async function POST(request: NextRequest) {
           archivoUrl,
           archivoSizeBytes: file.size ?? undefined,
           materiaId,
+          universidadId: universidadIdObra,
           autorId: session.user.id,
           esPublico: true,
           esAnonimo,

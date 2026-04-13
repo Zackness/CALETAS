@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import OpenAI from "openai";
-import { getActiveSubscriptionForUser } from "@/lib/subscription";
 import { logAiUsage } from "@/lib/ai-usage";
 
 const openai = new OpenAI({
@@ -160,13 +159,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const sub = await getActiveSubscriptionForUser(session.user.id);
-    if (!sub) {
-      return NextResponse.json(
-        { error: "Necesitas una suscripción activa para usar IA" },
-        { status: 402 },
-      );
-    }
+    // Sin suscripción: este endpoint es moderación obligatoria al subir caletas (caletas/crear),
+    // no es un producto de IA para el usuario. El resto de rutas /api/ia/* siguen exigiendo plan.
 
     const formData = await request.formData();
     const file = formData.get("file") as File;

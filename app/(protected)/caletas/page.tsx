@@ -53,9 +53,12 @@ interface Recurso {
   materia: {
     id: string;
     codigo: string;
-      nombre: string;
+    nombre: string;
     semestre: string;
-  };
+    carrera?: {
+      universidadId?: string;
+    };
+  } | null;
   autor: {
         id: string;
     name: string;
@@ -81,6 +84,7 @@ export default function CaletasPage() {
   const [filterMateria, setFilterMateria] = useState<string>("todas");
   const [filterTipo, setFilterTipo] = useState<string>("todos");
   const [sortBy, setSortBy] = useState<string>("recientes");
+  const [fullCaletasPlanLocked, setFullCaletasPlanLocked] = useState(false);
 
   useEffect(() => {
     const materiaId = searchParams.get("materia");
@@ -102,9 +106,12 @@ export default function CaletasPage() {
     try {
       const response = await axios.get("/api/caletas/recursos");
       const recursos = response.data.recursos;
+      const restricted =
+        !!response.data?.restrictions?.fullCaletasPlanLocked ||
+        !!response.data?.restrictions?.crossUniversityLocked;
 
-      // `isFavorito` viene resuelto desde el backend (evitamos N+1 requests)
       setRecursos(recursos);
+      setFullCaletasPlanLocked(restricted);
     } catch (error) {
       console.error("Error fetching recursos:", error);
       toast.error("Error al cargar los recursos");
@@ -116,9 +123,13 @@ export default function CaletasPage() {
   const fetchMaterias = async () => {
     try {
       const response = await axios.get("/api/user/academico/materias");
-      setMaterias(response.data.materias);
-    } catch (error) {
-      console.error("Error fetching materias:", error);
+      if (response.status === 200 && Array.isArray(response.data?.materias)) {
+        setMaterias(response.data.materias);
+      } else {
+        setMaterias([]);
+      }
+    } catch {
+      setMaterias([]);
     }
   };
 
@@ -236,7 +247,10 @@ export default function CaletasPage() {
       const matchesSearch = recurso.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            recurso.descripcion.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            recurso.tags.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesMateria = filterMateria === "todas" || recurso.materia.id === filterMateria;
+      const matchesMateria =
+        filterMateria === "todas" ||
+        (filterMateria === "genericas" && !recurso.materia) ||
+        (!!recurso.materia && recurso.materia.id === filterMateria);
       const matchesTipo = filterTipo === "todos" || recurso.tipo === filterTipo;
       return matchesSearch && matchesMateria && matchesTipo;
     })
@@ -278,6 +292,11 @@ export default function CaletasPage() {
         <p className="text-white/70">
             Comparte y descubre recursos académicos con otros estudiantes
             </p>
+          {fullCaletasPlanLocked ? (
+            <div className="mt-3 rounded-lg border border-[#40C9A9]/40 bg-[#1C2D20] px-4 py-3 text-sm text-white/85">
+              Para ver caletas de otras universidades necesitas Caleta Pro (plan de $7). Los planes de $3 incluyen tu universidad y las caletas genéricas.
+            </div>
+          ) : null}
           </div>
 
         {/* Estadísticas */}
@@ -374,6 +393,9 @@ export default function CaletasPage() {
                   </SelectTrigger>
                   <SelectContent className="bg-[#354B3A] border-white/10">
               <SelectItem value="todas" className="text-white">Todas las materias</SelectItem>
+              <SelectItem value="genericas" className="text-white">
+                Solo genéricas (sin universidad)
+              </SelectItem>
               {materias.map((materia) => (
                 <SelectItem key={materia.id} value={materia.id} className="text-white">
                   {materia.codigo} - {materia.nombre}
@@ -444,7 +466,9 @@ export default function CaletasPage() {
                     <div className="flex items-center gap-4 text-sm text-white/60">
                       <span className="flex items-center gap-1">
                         <BookOpen className="w-4 h-4" />
-                        {recurso.materia.codigo} - {recurso.materia.nombre}
+                        {recurso.materia
+                          ? `${recurso.materia.codigo} - ${recurso.materia.nombre}`
+                          : "Caleta genérica"}
                       </span>
                       <span className="flex items-center gap-1">
                         <Clock className="w-4 h-4" />

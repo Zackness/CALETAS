@@ -61,12 +61,16 @@ export async function POST(request: NextRequest) {
         ? "Anónimo"
         : recurso.autor?.name || "N/A";
 
+    const materiaContexto = recurso.materia
+      ? `Materia: ${recurso.materia.nombre} (${recurso.materia.codigo})`
+      : "Materia: caleta genérica (sin materia asociada)";
+
     // Preparar el contenido para la IA
     const contenidoParaIA = `
 Título del recurso: ${recurso.titulo}
 Descripción: ${recurso.descripcion}
 Contenido: ${recurso.contenido}
-Materia: ${recurso.materia.nombre} (${recurso.materia.codigo})
+${materiaContexto}
 Tipo de recurso: ${recurso.tipo}
 Tags: ${recurso.tags || 'N/A'}
 Autor: ${autorNombre}
@@ -156,7 +160,10 @@ Estructura JSON esperada:
 
     return withCors(NextResponse.json({
       fichas: fichasConIds,
-      recurso: { titulo: recurso.titulo, materia: recurso.materia.nombre },
+      recurso: {
+        titulo: recurso.titulo,
+        materia: recurso.materia?.nombre ?? "Genérica",
+      },
     }), request);
   } catch (error) {
     console.error("Error generating fichas:", error);

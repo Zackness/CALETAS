@@ -39,9 +39,15 @@ interface PensumFlowchartProps {
   materias: Materia[];
   materiasEstudiante: MateriaEstudiante[];
   onMateriaClick?: (materia: Materia) => void;
+  customOrderBySemester?: Record<string, string[]>;
 }
 
-export const PensumFlowchart = ({ materias, materiasEstudiante, onMateriaClick }: PensumFlowchartProps) => {
+export const PensumFlowchart = ({
+  materias,
+  materiasEstudiante,
+  onMateriaClick,
+  customOrderBySemester,
+}: PensumFlowchartProps) => {
   const [zoom, setZoom] = useState(1);
   const [panX, setPanX] = useState(0);
   const [panY, setPanY] = useState(0);
@@ -71,7 +77,7 @@ export const PensumFlowchart = ({ materias, materiasEstudiante, onMateriaClick }
     return numA - numB;
   });
 
-  const ORDEN_PENSUM_POR_SEMESTRE: Record<string, string[]> = {
+  const ORDEN_PENSUM_POR_SEMESTRE_DEFAULT: Record<string, string[]> = {
     // Orden oficial compartido por el usuario (azul/verde)
     S1: ["AAU1111", "ABB1515", "APP1611", "ABI1212", "ABI1413", "ABI1313", "IQU1713"],
     S2: ["ABB2425", "ABB2214", "ABI2122", "ABI2513", "ABI2612", "ABI2323"],
@@ -86,7 +92,10 @@ export const PensumFlowchart = ({ materias, materiasEstudiante, onMateriaClick }
   };
 
   const ordenarPorConfiguracion = (semestre: string, materiasSemestre: Materia[]) => {
-    const orden = ORDEN_PENSUM_POR_SEMESTRE[semestre];
+    const source = customOrderBySemester && Object.keys(customOrderBySemester).length > 0
+      ? customOrderBySemester
+      : ORDEN_PENSUM_POR_SEMESTRE_DEFAULT;
+    const orden = source[semestre];
     if (!orden) return null;
 
     const prioridad = new Map(orden.map((codigo, index) => [codigo, index]));
