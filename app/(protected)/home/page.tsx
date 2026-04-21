@@ -951,6 +951,16 @@ export default async function HomePage() {
     </div>
     );
   } catch (error) {
+    // Next.js redirections throw an internal error (NEXT_REDIRECT). We must rethrow it.
+    if (
+      error &&
+      typeof error === "object" &&
+      "digest" in error &&
+      typeof (error as any).digest === "string" &&
+      ((error as any).digest as string).startsWith("NEXT_REDIRECT")
+    ) {
+      throw error;
+    }
     console.error("[home] Error cargando dashboard:", error);
     return (
       <div className="min-h-screen bg-gradient-to-t from-mygreen to-mygreen-light">

@@ -14,6 +14,8 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const file = formData.get("file") as File;
     const universidadId = formData.get("universidadId") as string;
+    const documentTypeRaw = formData.get("documentType");
+    const documentType = documentTypeRaw === "planilla" ? "planilla" : "carnet";
 
     if (!file) {
       return NextResponse.json(
@@ -83,26 +85,28 @@ export async function POST(request: NextRequest) {
           content: [
             {
               type: "text",
-              text: `Analiza este carnet universitario venezolano y responde ÚNICAMENTE con un JSON válido. Solo necesitas extraer información básica del carnet.
+              text: `Analiza este documento de estudiante (puede ser CARNET universitario o PLANILLA DE INSCRIPCIÓN) y responde ÚNICAMENTE con un JSON válido.
 
 IMPORTANTE: Debes responder SOLO con el JSON, sin texto adicional antes o después.
 
 {
   "nombre": "Nombre completo del estudiante",
   "expediente": "Número de expediente o matrícula",
-  "universidad": "Nombre de la universidad que aparece en el carnet",
-  "siglas": "Siglas de la universidad que aparecen en el carnet"
+  "universidad": "Nombre de la universidad que aparece en el documento",
+  "siglas": "Siglas de la universidad que aparecen en el documento"
 }
 
 INSTRUCCIONES SIMPLES:
-1. Busca el nombre completo del estudiante en el carnet
+1. Busca el nombre completo del estudiante en el documento
 2. Identifica el número de expediente o matrícula (puede aparecer como "EXP:", "Expediente", "Matrícula", "Carnet No.", etc.)
-3. Identifica el nombre completo de la universidad que aparece en el carnet
-4. Identifica las siglas de la universidad que aparecen en el carnet
+3. Identifica el nombre completo de la universidad que aparece en el documento
+4. Identifica las siglas de la universidad que aparecen en el documento
 5. Si no encuentras alguna información, usa "No disponible" para ese campo
 6. RESPONDE SOLO CON EL JSON, SIN TEXTO ADICIONAL
 
-NO necesitas extraer carrera ni semestre del carnet. Solo extrae la información que está visible.`
+NO necesitas extraer carrera ni semestre. Solo extrae la información que está visible.
+
+Tipo esperado (para tu referencia): ${documentType === "planilla" ? "PLANILLA DE INSCRIPCIÓN" : "CARNET UNIVERSITARIO"}.`
             },
             {
               type: "image_url",
@@ -178,21 +182,28 @@ NO necesitas extraer carrera ni semestre del carnet. Solo extrae la información
       }
     }
     
-    // Validar que el carnet pertenece a la universidad correcta (solo por siglas)
-    console.log("Validando siglas:");
-    console.log("- Siglas del carnet:", parsedData.siglas);
-    console.log("- Siglas de la universidad seleccionada:", universidad.siglas);
-    
-    const siglasCoinciden = parsedData.siglas && 
-      parsedData.siglas.toLowerCase() === universidad.siglas.toLowerCase();
-    
-    console.log("- ¿Coinciden las siglas?:", siglasCoinciden);
-    
-    if (!siglasCoinciden) {
+    // Validar que el documento pertenece a la universidad seleccionada (siglas o nombre)
+    const normalize = (s: unknown) =>
+      String(typeof s === "string" ? s : "")
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/\p{Diacritic}/gu, "");
+
+    const siglasDoc = normalize(parsedData.siglas);
+    const siglasSel = normalize(universidad.siglas);
+    const uniDoc = normalize(parsedData.universidad);
+    const uniSel = normalize(universidad.nombre);
+
+    const siglasCoinciden = !!siglasDoc && !!siglasSel && siglasDoc === siglasSel;
+    const nombreCoincide =
+      !!uniDoc && !!uniSel && (uniDoc.includes(uniSel) || uniSel.includes(uniDoc) || uniDoc.includes(siglasSel));
+
+    if (!siglasCoinciden && !nombreCoincide) {
       return NextResponse.json(
         { 
-          error: "El carnet no pertenece a la universidad seleccionada",
-          details: `El carnet muestra las siglas "${parsedData.siglas}" pero seleccionaste "${universidad.siglas}"`,
+          error: "El documento no pertenece a la universidad seleccionada",
+          details: `El documento muestra "${parsedData.siglas || parsedData.universidad}" pero seleccionaste "${universidad.siglas} - ${universidad.nombre}"`,
           carnetData: parsedData
         },
         { status: 400 }
@@ -209,6 +220,7 @@ NO necesitas extraer carrera ni semestre del carnet. Solo extrae la información
     parsedData.universidadId = universidad.id;
     parsedData.universidadValidada = universidad.nombre;
     parsedData.esValido = true; // Si llegamos aquí, el carnet es válido
+    parsedData.documentType = documentType;
 
     return NextResponse.json(parsedData);
 

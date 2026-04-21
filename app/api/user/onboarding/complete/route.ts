@@ -225,8 +225,8 @@ export async function POST(request: NextRequest) {
     // Actualizar campos universitarios
     if (universidad || carrera || semestreActual || carnetInfo?.nombre || carnetInfo?.expediente || userType) {
       const updateData: any = {};
-      if (universidad) updateData.universidadId = universidad;
-      if (carrera) updateData.carreraId = carrera;
+      if (universidad) updateData.universidad = { connect: { id: universidad } };
+      if (carrera) updateData.carrera = { connect: { id: carrera } };
       if (semestreActual) {
         updateData.semestreActual = semestreActual;
         updateData.semestreActualManual = true;
@@ -254,7 +254,7 @@ export async function POST(request: NextRequest) {
         email: updatedUser.email,
         name: updatedUser.name,
         expediente: updatedUser.expediente,
-        universidadId: updatedUser.universidadId,
+        universidadId: (updatedUser as any).universidadId ?? universidad ?? null,
         semestreActual: updatedUser.semestreActual,
         onboardingStatus: updatedUser.onboardingStatus,
         userType: userType,

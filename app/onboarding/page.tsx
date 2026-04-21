@@ -33,6 +33,7 @@ export default function OnboardingPage() {
   const { onboardingStatus, isLoading: isLoadingStatus } = useOnboarding();
   const [carnetFile, setCarnetFile] = useState<File | null>(null);
   const [carnetData, setCarnetData] = useState<any>(null);
+  const [docTipo, setDocTipo] = useState<"carnet" | "planilla">("carnet");
   const [semestreActual, setSemestreActual] = useState<string>("");
   const [carreraSeleccionada, setCarreraSeleccionada] = useState<string>("");
   const [carreras, setCarreras] = useState<{ id: string; nombre: string; codigo: string; descripcion: string; duracion: number; creditos: number }[]>([]);
@@ -313,6 +314,7 @@ export default function OnboardingPage() {
       const formData = new FormData();
       formData.append("file", file);
       formData.append("universidadId", universidad);
+      formData.append("documentType", docTipo);
 
       const response = await axios.post("/api/user/onboarding/analyze-carnet", formData, {
         headers: {
@@ -324,8 +326,11 @@ export default function OnboardingPage() {
       setCarnetData(data);
         
       toast({
-        title: "Carnet analizado",
-        description: "Se ha procesado tu carnet universitario correctamente.",
+        title: docTipo === "planilla" ? "Planilla analizada" : "Carnet analizado",
+        description:
+          docTipo === "planilla"
+            ? "Se ha procesado tu planilla de inscripción correctamente."
+            : "Se ha procesado tu carnet universitario correctamente.",
       });
     } catch (error: any) {
       console.error("Error analyzing carnet:", error);
@@ -345,7 +350,10 @@ export default function OnboardingPage() {
         setError("Error al analizar el carnet universitario. Por favor, intenta de nuevo.");
         toast({
           title: "Error",
-          description: "Hubo un error al procesar el carnet universitario. Por favor, intenta nuevamente.",
+          description:
+            docTipo === "planilla"
+              ? "Hubo un error al procesar la planilla de inscripción. Por favor, intenta nuevamente."
+              : "Hubo un error al procesar el carnet universitario. Por favor, intenta nuevamente.",
           variant: "destructive",
         });
       }
@@ -436,8 +444,42 @@ export default function OnboardingPage() {
           <div className="space-y-4 p-4 border-2 border-mygreen/30 rounded-lg bg-mygreen/10">
                       <div className="space-y-2 mt-2">
             <Label htmlFor="carnet" className="text-white font-medium">
-              Sube una foto de tu carnet universitario <span className="text-red-400">*</span>
+              Sube una foto de tu carnet o tu planilla de inscripción <span className="text-red-400">*</span>
             </Label>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                className={`rounded-lg px-3 py-2 text-sm border transition-colors ${
+                  docTipo === "carnet"
+                    ? "border-[#40C9A9]/50 bg-[#40C9A9]/15 text-white"
+                    : "border-white/10 bg-white/5 text-white/80 hover:bg-white/10 hover:text-white"
+                }`}
+                onClick={() => {
+                  setDocTipo("carnet");
+                  setCarnetFile(null);
+                  setCarnetData(null);
+                }}
+                disabled={isLoading}
+              >
+                Carnet
+              </button>
+              <button
+                type="button"
+                className={`rounded-lg px-3 py-2 text-sm border transition-colors ${
+                  docTipo === "planilla"
+                    ? "border-[#40C9A9]/50 bg-[#40C9A9]/15 text-white"
+                    : "border-white/10 bg-white/5 text-white/80 hover:bg-white/10 hover:text-white"
+                }`}
+                onClick={() => {
+                  setDocTipo("planilla");
+                  setCarnetFile(null);
+                  setCarnetData(null);
+                }}
+                disabled={isLoading}
+              >
+                Planilla
+              </button>
+            </div>
             <Input
               id="carnet"
               type="file"
@@ -447,13 +489,15 @@ export default function OnboardingPage() {
               className="border-2 border-mygreen/30 bg-white/10 text-white"
             />
             <p className="text-xs text-white/60 mt-1">
-              💡 El carnet debe pertenecer a la universidad seleccionada: <strong>{universidades.find(u => u.id === universidad)?.nombre}</strong>
+              💡 El documento debe pertenecer a la universidad seleccionada: <strong>{universidades.find(u => u.id === universidad)?.nombre}</strong>
             </p>
               {carnetData && (
                 <div className="space-y-2 p-3 bg-green-500/10 rounded-lg border border-green-500/20 mt-2">
                   <div className="flex items-center gap-2 mb-2">
                     <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                    <p className="text-green-400 text-sm font-medium">✅ Carnet validado correctamente</p>
+                    <p className="text-green-400 text-sm font-medium">
+                      ✅ {docTipo === "planilla" ? "Planilla" : "Carnet"} validado correctamente
+                    </p>
                   </div>
                   <div className="grid grid-cols-1 gap-1 text-xs">
                     <p className="text-white/80"><strong>Nombre:</strong> {carnetData.nombre}</p>
