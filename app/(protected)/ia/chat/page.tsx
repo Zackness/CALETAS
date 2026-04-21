@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Bot, Edit3, Plus, Send, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useSubscriptionRequired } from "@/hooks/use-subscription-required";
+import { IATrialBanner } from "@/components/ia-trial-banner";
 import {
   createThread,
   IAChatMessage,
@@ -34,8 +35,7 @@ type ProfileResponse = {
 
 export default function ChatIA() {
   const { loading: subLoading, isActive, canUseChat } = useSubscriptionRequired({
-    requireChat: true,
-    noChatMessage: "Este plan no incluye Chat IA. Puedes usar las otras herramientas IA.",
+    allowTrial: true,
   });
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [activeThread, setActiveThread] = useState<IAChatThread | null>(null);
@@ -109,7 +109,8 @@ export default function ChatIA() {
 
   const onSend = async () => {
     const text = input.trim();
-    if (!text || sending || subLoading || !isActive || !canUseChat || !activeThread) return;
+    const chatAllowed = isActive ? canUseChat : true;
+    if (!text || sending || subLoading || !chatAllowed || !activeThread) return;
 
     setInput("");
     setSending(true);
@@ -142,6 +143,9 @@ export default function ChatIA() {
 
       const data = await res.json();
       if (!res.ok) {
+        if (res.status === 402 && data?.code === "FREE_LIMIT_REACHED") {
+          throw new Error(data?.error || "Límite gratis alcanzado. Suscríbete para continuar.");
+        }
         throw new Error(data?.error || "No se pudo responder");
       }
 
@@ -208,6 +212,12 @@ export default function ChatIA() {
 
   return (
     <div className="min-h-screen">
+      {!subLoading && !isActive ? (
+        <div className="container mx-auto px-4 pt-6">
+          <IATrialBanner toolLabel="Chat IA" endpoint="ia/chat" />
+        </div>
+      ) : null}
+
       <Dialog open={renameDialogOpen} onOpenChange={setRenameDialogOpen}>
         <DialogContent className="bg-[#203324] border-white/10 text-white">
           <DialogHeader>

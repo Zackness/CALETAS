@@ -3,6 +3,7 @@
 import * as z from "zod";
 import { db } from "@/lib/db";
 import { SettingsSchema } from "@/schemas";
+import { ESTADO_RESIDENCIA_SIN_ESPECIFICAR } from "@/lib/venezuela-estados";
 import { getUserByEmail, getUserById } from "@/data/user";
 import { currentUser, auth } from "@/lib/auth";
 import { headers } from "next/headers";
@@ -18,8 +19,8 @@ export const settings = async (
         newPassword?: string;
         isTwoFactorEnabled?: boolean;
         telefono?: string;
-        EstadoDeResidencia?: any;
         ciudadDeResidencia?: string;
+        estadoDeResidencia?: string | null;
     };
     console.log("Iniciando actualización de configuración con valores:", values);
     
@@ -95,7 +96,17 @@ export const settings = async (
                 email: typedValues.email || undefined,
                 password: typedValues.password || undefined,
                 telefono: typedValues.telefono || undefined,
-                ciudadDeResidencia: typedValues.ciudadDeResidencia || undefined,
+                ciudadDeResidencia:
+                    typedValues.ciudadDeResidencia === undefined
+                        ? undefined
+                        : typedValues.ciudadDeResidencia?.trim() || null,
+                estadoDeResidencia:
+                    typedValues.estadoDeResidencia === undefined
+                        ? undefined
+                        : typedValues.estadoDeResidencia === ESTADO_RESIDENCIA_SIN_ESPECIFICAR ||
+                            !String(typedValues.estadoDeResidencia).trim()
+                          ? null
+                          : String(typedValues.estadoDeResidencia).trim(),
             }
         });
 

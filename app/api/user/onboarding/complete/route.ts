@@ -103,6 +103,7 @@ export async function POST(request: NextRequest) {
         // Información básica
         telefono: telefono || null,
         ciudadDeResidencia: ciudad || null,
+        estadoDeResidencia: estado?.trim() || null,
         
         // Estado del onboarding
         onboardingStatus: OnboardingStatus.FINALIZADO,
@@ -226,7 +227,10 @@ export async function POST(request: NextRequest) {
       const updateData: any = {};
       if (universidad) updateData.universidadId = universidad;
       if (carrera) updateData.carreraId = carrera;
-      if (semestreActual) updateData.semestreActual = semestreActual;
+      if (semestreActual) {
+        updateData.semestreActual = semestreActual;
+        updateData.semestreActualManual = true;
+      }
       if (carnetInfo?.nombre) updateData.name = carnetInfo.nombre;
       if (carnetInfo?.expediente) updateData.expediente = carnetInfo.expediente;
       if (userType) updateData.userType = userType;

@@ -11,6 +11,7 @@ type UseSubscriptionRequiredOptions = {
   noChatMessage?: string;
   requireBiblioteca?: boolean;
   noBibliotecaMessage?: string;
+  allowTrial?: boolean;
 };
 
 export function useSubscriptionRequired(options: UseSubscriptionRequiredOptions = {}) {
@@ -19,6 +20,7 @@ export function useSubscriptionRequired(options: UseSubscriptionRequiredOptions 
     noChatMessage = "Tu plan actual no incluye Chat IA",
     requireBiblioteca = false,
     noBibliotecaMessage = "La biblioteca requiere un plan de $3/mes o superior",
+    allowTrial = false,
   } = options;
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -54,8 +56,10 @@ export function useSubscriptionRequired(options: UseSubscriptionRequiredOptions 
         setLoading(false);
 
         if (!active) {
-          toast.error("Necesitas una suscripción para usar IA");
-          router.replace("/suscripcion");
+          if (!allowTrial) {
+            toast.error("Necesitas una suscripción para usar IA");
+            router.replace("/suscripcion");
+          }
           return;
         }
 
@@ -80,7 +84,7 @@ export function useSubscriptionRequired(options: UseSubscriptionRequiredOptions 
     return () => {
       cancelled = true;
     };
-  }, [router, requireChat, noChatMessage, requireBiblioteca, noBibliotecaMessage]);
+  }, [router, requireChat, noChatMessage, requireBiblioteca, noBibliotecaMessage, allowTrial]);
 
   return { loading, isActive, canUseChat, canUseBiblioteca };
 }

@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getSessionCookie } from "better-auth/cookies";
 
-import { isAllowedOrigin } from "@/lib/cors";
+import { getCorsHeaders } from "@/lib/cors";
 import {
   DEFAULT_LOGIN_REDIRECT,
   apiAuthPrefix,
@@ -20,19 +20,14 @@ const isPublicRoute = (pathname: string) => {
 };
 
 const withCors = (request: NextRequest, response: NextResponse) => {
-  const origin = request.headers.get("origin") || "";
-  if (isAllowedOrigin(origin)) {
-    response.headers.set("Access-Control-Allow-Origin", origin);
+  const cors = getCorsHeaders(request);
+  Object.entries(cors).forEach(([k, v]) => response.headers.set(k, v));
+  // Cachea preflight para mejorar rendimiento en Expo/dev.
+  response.headers.set("Access-Control-Max-Age", "86400");
+  const origin = request.headers.get("origin");
+  if (origin) {
+    response.headers.set("Vary", "Origin");
   }
-  response.headers.set(
-    "Access-Control-Allow-Methods",
-    "GET, POST, PUT, DELETE, OPTIONS",
-  );
-  response.headers.set(
-    "Access-Control-Allow-Headers",
-    "Content-Type, Authorization, Accept",
-  );
-  response.headers.set("Access-Control-Allow-Credentials", "true");
   return response;
 };
 

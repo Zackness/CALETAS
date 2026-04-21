@@ -81,13 +81,12 @@ export const Combobox = ({
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className={cn(
-        "w-[var(--radix-popover-trigger-width)] p-0 m-0 border-none",
-        isAcademicVariant ? "bg-[#203324] border-white/20" : "text-foreground"
-      )}>
+      <PopoverContent className="m-0 w-[var(--radix-popover-trigger-width)] border-none bg-[#203324] p-0 shadow-xl">
         <Command className={cn(
-          "w-full p-0 m-0 border-none rounded-xl",
-          isAcademicVariant ? "bg-[#203324]" : "text-black"
+          "w-full rounded-xl border-none p-0 m-0",
+          isAcademicVariant
+            ? "bg-[#203324] text-white"
+            : "border border-white/10 bg-[#203324] text-white"
         )}>
           <CommandInput 
             className={cn(
@@ -134,7 +133,7 @@ export const Combobox = ({
                 {options.map((option) => (
                   <CommandItem
                     className={cn(
-                      "cursor-pointer text-foreground",
+                      "cursor-pointer text-white hover:bg-white/10 data-[selected=true]:bg-white/15 data-[selected=true]:text-white",
                       value === option.value ? "opacity-100" : ""
                     )}
                     key={option.value}
@@ -146,7 +145,7 @@ export const Combobox = ({
                   >
                     <Check
                       className={cn(
-                        "mr-2 h-4 w-4 text-foreground",
+                        "mr-2 h-4 w-4 text-[#40C9A9]",
                         value === option.value ? "opacity-100" : "opacity-0"
                       )}
                     />

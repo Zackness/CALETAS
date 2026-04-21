@@ -35,16 +35,16 @@ export function EmailVerificationBanner({ email }: EmailVerificationBannerProps)
   return (
     <div
       role="alert"
-      className="flex flex-wrap items-center justify-center gap-3 px-4 py-3 bg-amber-500/20 border-b border-amber-500/30 text-white"
+      className="flex flex-wrap items-center justify-center gap-3 px-3 py-3 sm:px-4 bg-amber-500/20 border-b border-amber-500/30 text-white"
     >
-      <Mail className="h-5 w-5 text-amber-400 flex-shrink-0" />
-      <p className="text-sm font-medium text-center">
+      <Mail className="h-5 w-5 shrink-0 text-amber-400" />
+      <p className="max-w-prose text-center text-sm font-medium text-pretty sm:text-left">
         Por seguridad, verifica tu correo electrónico para usar todas las funciones de Caletas.
       </p>
       <Button
         type="button"
         size="sm"
-        className="bg-amber-500 hover:bg-amber-600 text-white border-0"
+        className="w-full shrink-0 border-0 bg-amber-500 text-white hover:bg-amber-600 sm:w-auto"
         disabled={sending}
         onClick={() => void handleResend()}
       >

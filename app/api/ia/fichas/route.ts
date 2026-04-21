@@ -3,8 +3,9 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getCorsHeaders } from "@/lib/cors";
 import OpenAI from "openai";
-import { getActiveSubscriptionForUser } from "@/lib/subscription";
+import { canAccessFullCaletasPlan, getActiveSubscriptionForUser } from "@/lib/subscription";
 import { logAiUsage } from "@/lib/ai-usage";
+import { assertAiTrialAllowed } from "@/lib/ai-trial";
 
 function withCors(res: NextResponse, req: NextRequest) {
   Object.entries(getCorsHeaders(req)).forEach(([k, v]) => res.headers.set(k, v));
@@ -25,8 +26,23 @@ export async function POST(request: NextRequest) {
       return withCors(NextResponse.json({ error: "No autorizado" }, { status: 401 }), request);
     }
     const sub = await getActiveSubscriptionForUser(session.user.id);
-    if (!sub) {
-      return withCors(NextResponse.json({ error: "Necesitas una suscripción activa para usar IA" }, { status: 402 }), request);
+    const hasSubscription = !!sub;
+    if (!hasSubscription) {
+      const gate = await assertAiTrialAllowed({ userId: session.user.id, endpoint: "ia/fichas" });
+      if (!gate.ok) {
+        return withCors(
+          NextResponse.json(
+            {
+              error: gate.error,
+              code: "FREE_LIMIT_REACHED",
+              endpoint: "ia/fichas",
+              limit: gate.info.limit,
+            },
+            { status: 402 },
+          ),
+          request,
+        );
+      }
     }
     const body = await request.json();
     const { recursoId } = body;
@@ -34,9 +50,31 @@ export async function POST(request: NextRequest) {
       return withCors(NextResponse.json({ error: "ID de recurso requerido" }, { status: 400 }), request);
     }
 
-    // Obtener el recurso
-    const recurso = await db.recurso.findUnique({
-      where: { id: recursoId },
+    const viewer = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: { universidadId: true },
+    });
+    const hasFullCaletasPlan = canAccessFullCaletasPlan(sub);
+
+    let visibilityWhere: any;
+    if (hasFullCaletasPlan) {
+      visibilityWhere = {};
+    } else if (!viewer?.universidadId) {
+      visibilityWhere = {
+        OR: [{ universidadId: null }, { autorId: session.user.id }],
+      };
+    } else {
+      visibilityWhere = {
+        OR: [{ universidadId: null }, { universidadId: viewer.universidadId }, { autorId: session.user.id }],
+      };
+    }
+
+    // Obtener el recurso SOLO si el usuario puede verlo
+    const recurso = await db.recurso.findFirst({
+      where: {
+        id: recursoId,
+        ...(visibilityWhere || {}),
+      },
       include: {
         materia: {
           select: {
@@ -53,7 +91,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!recurso) {
-      return withCors(NextResponse.json({ error: "Recurso no encontrado" }, { status: 404 }), request);
+      return withCors(NextResponse.json({ error: "Recurso no encontrado o sin acceso" }, { status: 404 }), request);
     }
     
     const autorNombre =

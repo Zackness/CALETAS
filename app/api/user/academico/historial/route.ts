@@ -3,6 +3,10 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getCorsHeaders } from "@/lib/cors";
 import { EstadoMateria } from "@prisma/client";
+import {
+  computeSemestreSugeridoMeta,
+  syncSemestreActualIfAutomatic,
+} from "@/lib/semestre-estudiante";
 
 function withCors(res: NextResponse, req: NextRequest) {
   Object.entries(getCorsHeaders(req)).forEach(([k, v]) => res.headers.set(k, v));
@@ -112,7 +116,30 @@ export async function GET(request: NextRequest) {
       materia => !materiasCursadas.has(materia.id)
     );
 
-    return withCors(NextResponse.json({ materiasEstudiante, materiasDisponibles }), request);
+    const pensumLite = materiasCarrera.map((m) => ({
+      semestre: m.semestre,
+      creditos: m.creditos,
+    }));
+    const meta = computeSemestreSugeridoMeta(materiasEstudiante, pensumLite);
+    await syncSemestreActualIfAutomatic(session.user.id);
+    const userSem = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: { semestreActual: true, semestreActualManual: true },
+    });
+
+    return withCors(
+      NextResponse.json({
+        materiasEstudiante,
+        materiasDisponibles,
+        semestre: {
+          actual: userSem?.semestreActual ?? null,
+          manual: userSem?.semestreActualManual ?? false,
+          sugerido: meta.clave,
+          detalle: meta.detalle,
+        },
+      }),
+      request,
+    );
   } catch (error) {
     console.error("Error fetching academic history:", error);
     return withCors(NextResponse.json({ error: "Error interno del servidor" }, { status: 500 }), request);
@@ -361,6 +388,8 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    await syncSemestreActualIfAutomatic(session.user.id);
+
     return NextResponse.json({
       message: "Materia agregada al historial exitosamente",
       materiaEstudiante,
@@ -465,6 +494,8 @@ export async function PUT(request: NextRequest) {
       },
     });
 
+    await syncSemestreActualIfAutomatic(session.user.id);
+
     return NextResponse.json({
       message: "Historial actualizado exitosamente",
       materiaEstudiante,
@@ -524,6 +555,8 @@ export async function DELETE(request: NextRequest) {
         id: materiaEstudianteId,
       },
     });
+
+    await syncSemestreActualIfAutomatic(session.user.id);
 
     return NextResponse.json({
       message: "Materia eliminada del historial exitosamente",

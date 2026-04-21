@@ -51,11 +51,11 @@ export async function GET(request: NextRequest) {
       db.manualPayment.count(),
       db.manualPayment.count({ where: { status: "PENDING" } }),
       db.$queryRaw<{ mes: string; total: number }[]>`
-        SELECT DATE_FORMAT(createdAt, '%Y-%m') as mes, COUNT(*) as total
-        FROM User
-        WHERE createdAt >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
-        GROUP BY mes
-        ORDER BY mes ASC
+        SELECT to_char("createdAt", 'YYYY-MM') AS mes, COUNT(*)::int AS total
+        FROM "User"
+        WHERE "createdAt" >= (CURRENT_DATE - INTERVAL '12 months')
+        GROUP BY 1
+        ORDER BY 1 ASC
       `,
       db.recurso.groupBy({
         by: ["tipo"],
@@ -63,11 +63,11 @@ export async function GET(request: NextRequest) {
         orderBy: { _count: { id: "desc" } },
       }),
       db.$queryRaw<{ mes: string; total: number }[]>`
-        SELECT DATE_FORMAT(createdAt, '%Y-%m') as mes, COUNT(*) as total
-        FROM Recurso
-        WHERE createdAt >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
-        GROUP BY mes
-        ORDER BY mes ASC
+        SELECT to_char("createdAt", 'YYYY-MM') AS mes, COUNT(*)::int AS total
+        FROM "Recurso"
+        WHERE "createdAt" >= (CURRENT_DATE - INTERVAL '12 months')
+        GROUP BY 1
+        ORDER BY 1 ASC
       `,
       db.manualPayment.groupBy({
         by: ["status"],
@@ -76,11 +76,13 @@ export async function GET(request: NextRequest) {
       db.aiUsageLog.count(),
       db.aiUsageLog.aggregate({ _sum: { totalTokens: true } }),
       db.$queryRaw<{ mes: string; total: number; tokens: number }[]>`
-        SELECT DATE_FORMAT(createdAt, '%Y-%m') as mes, COUNT(*) as total, COALESCE(SUM(totalTokens), 0) as tokens
-        FROM AiUsageLog
-        WHERE createdAt >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
-        GROUP BY mes
-        ORDER BY mes ASC
+        SELECT to_char("createdAt", 'YYYY-MM') AS mes,
+               COUNT(*)::int AS total,
+               COALESCE(SUM("totalTokens"), 0)::bigint AS tokens
+        FROM "AiUsageLog"
+        WHERE "createdAt" >= (CURRENT_DATE - INTERVAL '12 months')
+        GROUP BY 1
+        ORDER BY 1 ASC
       `,
       db.recurso.aggregate({ _sum: { archivoSizeBytes: true }, where: { archivoSizeBytes: { not: null } } }),
       db.recurso.count({ where: { archivoUrl: { not: null } } }),

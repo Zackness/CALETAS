@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getCorsHeaders } from "@/lib/cors";
 import { getUserByEmail, getUserById } from "@/data/user";
+import { ESTADO_RESIDENCIA_SIN_ESPECIFICAR } from "@/lib/venezuela-estados";
 import bcrypt from "bcrypt";
 
 type SettingsBody = {
@@ -11,6 +12,7 @@ type SettingsBody = {
   newPassword?: string;
   telefono?: string;
   ciudadDeResidencia?: string;
+  estadoDeResidencia?: string | null;
 };
 
 function withCors(res: NextResponse, req: NextRequest) {
@@ -106,7 +108,17 @@ export async function POST(request: NextRequest) {
         email: typedValues.email || undefined,
         password: (typedValues as { password?: string }).password || undefined,
         telefono: typedValues.telefono ?? undefined,
-        ciudadDeResidencia: typedValues.ciudadDeResidencia ?? undefined,
+        ciudadDeResidencia:
+          typedValues.ciudadDeResidencia === undefined
+            ? undefined
+            : typedValues.ciudadDeResidencia?.trim() || null,
+        estadoDeResidencia:
+          typedValues.estadoDeResidencia === undefined
+            ? undefined
+            : typedValues.estadoDeResidencia === ESTADO_RESIDENCIA_SIN_ESPECIFICAR ||
+                !String(typedValues.estadoDeResidencia).trim()
+              ? null
+              : String(typedValues.estadoDeResidencia).trim(),
       },
     });
 

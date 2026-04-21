@@ -169,16 +169,19 @@ export function HeaderSearch() {
   const showDropdown = open && (query.trim().length >= 2 && (loading || hasAny));
 
   return (
-    <div ref={containerRef} className="relative flex-1 max-w-lg mx-auto flex justify-center">
+    <div
+      ref={containerRef}
+      className="relative mx-auto flex w-full min-w-0 max-w-none justify-center md:max-w-lg md:flex-1"
+    >
       <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-white/60 h-4 w-4 md:h-5 md:w-5 pointer-events-none z-10" />
       <input
         type="text"
-        placeholder="Buscar caletas, materias, universidades..."
+        placeholder="Caletas, materias, universidades…"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         onFocus={() => query.trim().length >= 2 && setOpen(true)}
         onKeyDown={handleKeyDown}
-        className="w-full pl-8 md:pl-10 pr-2 md:pr-4 py-2 rounded-lg bg-white/10 text-white placeholder:text-white/60 border border-white/10 focus:outline-none focus:border-[#40C9A9] text-sm md:text-base"
+        className="w-full min-w-0 max-w-full pl-8 pr-2 py-2 text-sm placeholder:text-white/55 border border-white/10 bg-white/10 text-white focus:border-[#40C9A9] focus:outline-none md:pl-10 md:pr-4 md:text-base"
         aria-autocomplete="list"
         aria-expanded={showDropdown}
         aria-controls="header-search-listbox"

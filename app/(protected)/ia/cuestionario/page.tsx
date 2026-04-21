@@ -9,6 +9,7 @@ import { HelpCircle, BookOpen, Save, RotateCcw, CheckCircle, XCircle, Brain } fr
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import { useSubscriptionRequired } from "@/hooks/use-subscription-required";
+import { IATrialBanner } from "@/components/ia-trial-banner";
 
 interface Recurso {
   id: string;
@@ -46,7 +47,7 @@ interface Cuestionario {
 }
 
 export default function CuestionarioPage() {
-  const { loading: subLoading, isActive } = useSubscriptionRequired();
+  const { loading: subLoading, isActive } = useSubscriptionRequired({ allowTrial: true });
   const { data: session } = authClient.useSession();
   const [recursos, setRecursos] = useState<Recurso[]>([]);
   const [recursoSeleccionado, setRecursoSeleccionado] = useState<string>("");
@@ -76,10 +77,7 @@ export default function CuestionarioPage() {
   };
 
   const generarCuestionario = async () => {
-    if (subLoading || !isActive) {
-      toast.error("Necesitas una suscripción para usar IA");
-      return;
-    }
+    if (subLoading) return;
     if (!recursoSeleccionado) {
       toast.error("Por favor selecciona un recurso");
       return;
@@ -98,6 +96,9 @@ export default function CuestionarioPage() {
 
       if (!response.ok) {
         const error = await response.json();
+        if (response.status === 402 && error?.code === "FREE_LIMIT_REACHED") {
+          throw new Error(error?.error || "Límite gratis alcanzado. Suscríbete para continuar.");
+        }
         throw new Error(error.error || "Error al generar el cuestionario");
       }
 
@@ -200,6 +201,12 @@ export default function CuestionarioPage() {
             Genera cuestionarios personalizados basados en tus recursos y caletas favoritas
           </p>
         </div>
+
+        {!subLoading && !isActive ? (
+          <div className="mb-6 max-w-2xl mx-auto">
+            <IATrialBanner toolLabel="Cuestionario" endpoint="ia/cuestionario" />
+          </div>
+        ) : null}
 
         {!cuestionario ? (
           /* Selección de Recurso */

@@ -25,6 +25,24 @@ async function requireAdmin(headers: Headers) {
   return { ok: true as const };
 }
 
+export async function GET(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> },
+) {
+  try {
+    const admin = await requireAdmin(request.headers);
+    if (!admin.ok) return NextResponse.json({ error: "No autorizado" }, { status: admin.status });
+
+    const { id } = await context.params;
+    const obra = await db.bibliotecaObra.findUnique({ where: { id } });
+    if (!obra) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
+    return NextResponse.json({ obra });
+  } catch (e) {
+    console.error("admin biblioteca GET by id:", e);
+    return NextResponse.json({ error: "Error interno" }, { status: 500 });
+  }
+}
+
 export async function PATCH(
   request: NextRequest,
   context: { params: Promise<{ id: string }> },

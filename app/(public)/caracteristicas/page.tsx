@@ -591,7 +591,7 @@ export default function CaracteristicasPage() {
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/70">
                     <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
-                    <span>Base de datos MySQL optimizada</span>
+                    <span>Base de datos PostgreSQL (Neon)</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/70">
                     <CheckCircle className="h-4 w-4 text-[#40C9A9]" />

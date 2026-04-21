@@ -16,7 +16,30 @@ import { toast } from "react-hot-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { Settings, User, Shield, Phone, MapPin, Eye, EyeOff, CreditCard } from "lucide-react";
+import {
+  User,
+  Shield,
+  Phone,
+  MapPin,
+  Eye,
+  EyeOff,
+  CreditCard,
+  Calendar,
+  Building2,
+  GraduationCap,
+} from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  ESTADO_RESIDENCIA_SIN_ESPECIFICAR,
+  VENEZUELA_ESTADOS,
+} from "@/lib/venezuela-estados";
+import { SEMESTRES_ORDENADOS } from "@/lib/semestres-orden";
 import QRCode from "react-qr-code";
 import { authClient } from "@/lib/auth-client";
 import {
@@ -39,6 +62,11 @@ type ExtendedUser = {
     twoFactorEmailFallbackEnabled?: boolean;
     telefono?: string | null;
     ciudadDeResidencia?: string | null;
+    estadoDeResidencia?: string | null;
+    universidadId?: string | null;
+    carreraId?: string | null;
+    universidad?: { id: string; nombre: string; siglas: string } | null;
+    carrera?: { id: string; nombre: string; codigo: string } | null;
 };
 
 type PasskeyItem = {
@@ -101,16 +129,27 @@ export default function Ajustes() {
   const [passkeys, setPasskeys] = useState<PasskeyItem[]>([]);
   const [passkeyBusy, setPasskeyBusy] = useState(false);
 
+  const [semestreInfo, setSemestreInfo] = useState<{
+    actual: string | null;
+    manual: boolean;
+    sugerido: string;
+    detalle: { creditosAprobados: number; porCreditosPensum: number; maxEnCurso: number };
+  } | null>(null);
+  const [semestreLoading, setSemestreLoading] = useState(true);
+  const [manualSemestre, setManualSemestre] = useState<string>("S1");
+  const [semestreSaving, setSemestreSaving] = useState(false);
+
   const form = useForm<z.infer<typeof SettingsSchema>>({
       resolver: zodResolver(SettingsSchema),
       defaultValues: {
-          name: undefined,
-          apellido: undefined,
-          telefono: undefined,
-          ciudadDeResidencia: undefined,
-          email: undefined,
-          password: undefined,
-          newPassword: undefined,
+          name: "",
+          apellido: "",
+          telefono: "",
+          ciudadDeResidencia: "",
+          estadoDeResidencia: ESTADO_RESIDENCIA_SIN_ESPECIFICAR,
+          email: "",
+          password: "",
+          newPassword: "",
           isTwoFactorEnabled: undefined,
       }
   });
@@ -156,6 +195,35 @@ export default function Ajustes() {
     let cancelled = false;
     (async () => {
       try {
+        setSemestreLoading(true);
+        const res = await fetch("/api/user/academico/semestre");
+        if (!res.ok) return;
+        const data = (await res.json()) as {
+          actual: string | null;
+          manual: boolean;
+          sugerido: string;
+          detalle: { creditosAprobados: number; porCreditosPensum: number; maxEnCurso: number };
+        };
+        if (cancelled) return;
+        setSemestreInfo(data);
+        const pick =
+          data.actual && /^S(10|[1-9])$/i.test(data.actual) ? data.actual.toUpperCase() : data.sugerido;
+        setManualSemestre(pick);
+      } catch {
+        if (!cancelled) setSemestreInfo(null);
+      } finally {
+        if (!cancelled) setSemestreLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
         setSubLoading(true);
         const res = await fetch("/api/subscription/status");
         if (!res.ok) {
@@ -182,9 +250,13 @@ export default function Ajustes() {
       apellido: user.apellido ?? "",
       telefono: user.telefono ?? "",
       ciudadDeResidencia: user.ciudadDeResidencia ?? "",
+      estadoDeResidencia:
+        user.estadoDeResidencia && user.estadoDeResidencia.trim()
+          ? user.estadoDeResidencia
+          : ESTADO_RESIDENCIA_SIN_ESPECIFICAR,
       email: user.email ?? "",
-      password: undefined,
-      newPassword: undefined,
+      password: "",
+      newPassword: "",
       isTwoFactorEnabled: undefined,
     });
     setHasChanges(false);
@@ -212,6 +284,55 @@ export default function Ajustes() {
     if (!profile?.user?.isTwoFactorEnabled) return;
     void loadPasskeys();
   }, [profile?.user?.isTwoFactorEnabled]);
+
+  const guardarSemestreAutomatico = async () => {
+    setSemestreSaving(true);
+    try {
+      const res = await fetch("/api/user/academico/semestre", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ modo: "AUTO" }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "No se pudo actualizar");
+      setSemestreInfo({
+        actual: data.actual,
+        manual: data.manual,
+        sugerido: data.sugerido,
+        detalle: data.detalle,
+      });
+      setManualSemestre(data.actual ?? data.sugerido);
+      toast.success("Semestre automático activado");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Error al guardar semestre");
+    } finally {
+      setSemestreSaving(false);
+    }
+  };
+
+  const guardarSemestreManual = async () => {
+    setSemestreSaving(true);
+    try {
+      const res = await fetch("/api/user/academico/semestre", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ modo: "MANUAL", semestre: manualSemestre }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "No se pudo guardar");
+      setSemestreInfo({
+        actual: data.actual,
+        manual: data.manual,
+        sugerido: data.sugerido,
+        detalle: data.detalle,
+      });
+      toast.success("Semestre guardado manualmente");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Error al guardar semestre");
+    } finally {
+      setSemestreSaving(false);
+    }
+  };
 
   const saveTwoFactorPreferences = async () => {
     setSaving2FaPrefs(true);
@@ -375,7 +496,68 @@ export default function Ajustes() {
               </CardContent>
             </Card>
 
-
+            {/* Universidad y carrera (solo lectura) */}
+            <Card className="bg-[#354B3A] border-white/10">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-white">
+                  <Building2 className="w-5 h-5 text-[#40C9A9]" />
+                  Universidad y carrera
+                </CardTitle>
+                <CardDescription className="text-white/70">
+                  Institución y programa que seleccionaste en tu perfil (solo lectura).
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {profileLoading ? (
+                  <p className="text-white/60 text-sm">Cargando…</p>
+                ) : (
+                  <>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-white/80 text-sm">
+                        <Building2 className="w-4 h-4 text-[#40C9A9] shrink-0" />
+                        <span>Universidad</span>
+                      </div>
+                      <div className="rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-white">
+                        {user?.universidad?.nombre ? (
+                          <>
+                            {user.universidad.nombre}
+                            {user.universidad.siglas ? (
+                              <span className="text-white/60 text-sm ml-2">({user.universidad.siglas})</span>
+                            ) : null}
+                          </>
+                        ) : (
+                          <span className="text-white/50">No has seleccionado una universidad.</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-white/80 text-sm">
+                        <GraduationCap className="w-4 h-4 text-[#40C9A9] shrink-0" />
+                        <span>Carrera</span>
+                      </div>
+                      <div className="rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-white">
+                        {user?.carrera?.nombre ? (
+                          <>
+                            {user.carrera.nombre}
+                            {user.carrera.codigo ? (
+                              <span className="text-white/60 text-sm ml-2">· {user.carrera.codigo}</span>
+                            ) : null}
+                          </>
+                        ) : (
+                          <span className="text-white/50">No has seleccionado una carrera.</span>
+                        )}
+                      </div>
+                    </div>
+                    {!user?.universidad && !user?.carrera && !profileLoading ? (
+                      <p className="text-white/50 text-xs">
+                        Si eres estudiante universitario, completa el onboarding o revisa tu expediente para
+                        vincular universidad y carrera.
+                      </p>
+                    ) : null}
+                  </>
+                )}
+              </CardContent>
+            </Card>
 
             {/* Información de Contacto */}
             <Card className="bg-[#354B3A] border-white/10">
@@ -406,6 +588,52 @@ export default function Ajustes() {
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="estadoDeResidencia"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-white/80 flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-[#40C9A9]" />
+                    Estado de residencia
+                  </FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={
+                      field.value ?? ESTADO_RESIDENCIA_SIN_ESPECIFICAR
+                    }
+                    disabled={isPending || isSubmitting}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="bg-white/10 border-white/20 text-white focus:ring-[#40C9A9]">
+                        <SelectValue placeholder="Selecciona tu estado" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent className="bg-[#203324] border-white/10 text-white">
+                      <SelectItem
+                        value={ESTADO_RESIDENCIA_SIN_ESPECIFICAR}
+                        className="focus:bg-white/10 focus:text-white"
+                      >
+                        Sin especificar
+                      </SelectItem>
+                      {VENEZUELA_ESTADOS.map((estado) => (
+                        <SelectItem
+                          key={estado}
+                          value={estado}
+                          className="focus:bg-white/10 focus:text-white"
+                        >
+                          {estado}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormDescription className="text-white/50">
+                    Entidad federal (igual que en el onboarding). Puedes cambiarlo cuando quieras.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField 
               control={form.control}
               name="ciudadDeResidencia"
@@ -416,13 +644,103 @@ export default function Ajustes() {
                     <Input
                           className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg"
                       {...field}
+                      value={field.value ?? ""}
+                      placeholder="Ej: Barquisimeto, Valencia…"
                       disabled={isPending || isSubmitting}
                     />
                   </FormControl>
+                  <FormDescription className="text-white/50">
+                    Ciudad donde vives (se guardó también al completar el onboarding).
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
+              </CardContent>
+            </Card>
+
+            {/* Semestre académico */}
+            <Card className="bg-[#354B3A] border-white/10">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-white">
+                  <Calendar className="w-5 h-5 text-[#40C9A9]" />
+                  Semestre académico
+                </CardTitle>
+                <CardDescription className="text-white/70">
+                  El semestre sugerido prioriza tus <strong className="text-white/90">unidades de crédito aprobadas</strong>{" "}
+                  frente al pensum de tu carrera; si cursas materias de un semestre mayor, el resultado sube en
+                  consecuencia. Puedes fijarlo a mano si lo necesitas.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {semestreLoading ? (
+                  <p className="text-white/60 text-sm">Cargando semestre…</p>
+                ) : semestreInfo ? (
+                  <>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-white/80 text-sm">Semestre mostrado:</span>
+                      <Badge className="bg-[#40C9A9]/20 text-[#40C9A9] border-[#40C9A9]/40 text-base">
+                        {semestreInfo.actual ?? semestreInfo.sugerido}
+                      </Badge>
+                      {semestreInfo.manual ? (
+                        <Badge className="bg-white/10 text-white/80 border-white/10">Manual</Badge>
+                      ) : (
+                        <Badge className="bg-white/10 text-white/80 border-white/10">Automático</Badge>
+                      )}
+                    </div>
+                    <p className="text-white/60 text-xs">
+                      <span className="text-[#40C9A9] font-medium">{semestreInfo.sugerido}</span>:{" "}
+                      {semestreInfo.detalle.creditosAprobados} UC aprobadas → semestre por pensum S
+                      {semestreInfo.detalle.porCreditosPensum}
+                      {semestreInfo.detalle.maxEnCurso > 0
+                        ? `; materias en curso hasta S${semestreInfo.detalle.maxEnCurso}`
+                        : ""}
+                      .
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-3 sm:items-end">
+                      <div className="flex-1 space-y-2">
+                        <span className="text-white/80 text-sm block">Fijar manualmente</span>
+                        <Select
+                          value={manualSemestre}
+                          onValueChange={setManualSemestre}
+                          disabled={semestreSaving}
+                        >
+                          <SelectTrigger className="bg-white/10 border-white/20 text-white">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-[#203324] border-white/10 text-white">
+                            {SEMESTRES_ORDENADOS.map((s) => (
+                              <SelectItem key={s} value={s} className="focus:bg-white/10 focus:text-white">
+                                {s}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="bg-[#1C2D20] border-[#40C9A9]/40 text-[#40C9A9] hover:bg-white/10"
+                          disabled={semestreSaving}
+                          onClick={() => void guardarSemestreManual()}
+                        >
+                          Guardar semestre manual
+                        </Button>
+                        <Button
+                          type="button"
+                          className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                          disabled={semestreSaving}
+                          onClick={() => void guardarSemestreAutomatico()}
+                        >
+                          Usar cálculo automático
+                        </Button>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-white/60 text-sm">No se pudo cargar el semestre.</p>
+                )}
               </CardContent>
             </Card>
 

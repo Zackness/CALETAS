@@ -13,6 +13,7 @@ import axios from "axios";
 import { useOnboarding } from "../(protected)/home/hooks/use-onboarding";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MultiSelect } from "@/components/multi-select";
+import { VENEZUELA_ESTADOS } from "@/lib/venezuela-estados";
 
 type Step = 'company-selection' | 'carnet-semestre' | 'direccion' | 'materias-actuales';
 
@@ -561,9 +562,9 @@ export default function OnboardingPage() {
                   <SelectValue placeholder="Selecciona tu estado" />
                 </SelectTrigger>
                 <SelectContent>
-                  {["Amazonas", "Apure", "Aragua", "Barinas", "Carabobo", "Cojedes", "Delta Amacuro", "Distrito Capital", "Lara", "La Guaira", "Miranda", "Monagas", "Nueva Esparta", "Portuguesa", "Sucre", "Trujillo", "Yaracuy", "Zulia"].map((estado) => (
-                    <SelectItem key={estado} value={estado}>
-                      {estado.replace(/_/g, " ")}
+                  {VENEZUELA_ESTADOS.map((estadoOpt) => (
+                    <SelectItem key={estadoOpt} value={estadoOpt}>
+                      {estadoOpt.replace(/_/g, " ")}
                     </SelectItem>
                   ))}
                 </SelectContent>

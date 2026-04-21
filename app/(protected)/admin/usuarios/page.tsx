@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Edit, PlusCircle, Search as SearchIcon, ShieldCheck, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
+import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,10 +22,42 @@ type AdminUser = {
   isEmailVerified: boolean;
   isTwoFactorEnabled: boolean;
   telefono?: string | null;
+  universidadId?: string | null;
+  carreraId?: string | null;
+  semestreActual?: string | null;
+  subscriptionStartedAt?: string | null;
+  subscriptionName?: string | null;
 };
 
 const ROLES = ["CLIENT", "ADMIN"] as const;
 type Role = (typeof ROLES)[number];
+
+type UniversidadOption = {
+  id: string;
+  nombre: string;
+  carreras: Array<{ id: string; nombre: string; codigo: string }>;
+};
+
+type MateriaOption = {
+  id: string;
+  codigo: string;
+  nombre: string;
+  semestre: string;
+  carreraId: string;
+};
+
+type MateriaEstado =
+  | "NO_CURSADA"
+  | "EN_CURSO"
+  | "APROBADA"
+  | "APLAZADA"
+  | "RETIRADA";
+
+type MateriaEdit = {
+  materiaId: string;
+  estado: MateriaEstado;
+  nota: string; // input
+};
 
 export default function AdminUsuariosPage() {
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -40,7 +73,43 @@ export default function AdminUsuariosPage() {
     role: "CLIENT" as Role,
     password: "",
     telefono: "",
+    universidadId: "none",
+    carreraId: "none",
+    semestreActual: "",
   });
+  const [pensumUniversidades, setPensumUniversidades] = useState<UniversidadOption[]>([]);
+  const [materiasOptions, setMateriasOptions] = useState<MateriaOption[]>([]);
+  const [materiasEdit, setMateriasEdit] = useState<MateriaEdit[]>([]);
+  const [loadingAcademico, setLoadingAcademico] = useState(false);
+
+  const carrerasOptions = useMemo(() => {
+    const uni = pensumUniversidades.find((u) => u.id === userForm.universidadId);
+    return uni?.carreras ?? [];
+  }, [pensumUniversidades, userForm.universidadId]);
+
+  const loadPensumBase = async () => {
+    try {
+      const res = await fetch("/api/admin/pensums");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "Error cargando instituciones");
+      setPensumUniversidades(Array.isArray(data?.universidades) ? data.universidades : []);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Error cargando universidades");
+      setPensumUniversidades([]);
+    }
+  };
+
+  const loadMateriasForCarrera = async (carreraId: string) => {
+    try {
+      const res = await fetch(`/api/admin/pensums?carreraId=${encodeURIComponent(carreraId)}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "Error cargando materias");
+      setMateriasOptions(Array.isArray(data?.materias) ? data.materias : []);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Error cargando materias");
+      setMateriasOptions([]);
+    }
+  };
 
   const loadUsers = async (opts?: { search?: string; role?: string }) => {
     setUsersLoading(true);
@@ -61,7 +130,17 @@ export default function AdminUsuariosPage() {
 
   useEffect(() => {
     void loadUsers();
+    void loadPensumBase();
   }, []);
+
+  useEffect(() => {
+    if (userForm.carreraId && userForm.carreraId !== "none") {
+      void loadMateriasForCarrera(userForm.carreraId);
+    } else {
+      setMateriasOptions([]);
+      setMateriasEdit([]);
+    }
+  }, [userForm.carreraId]);
 
   const handleSaveUser = async () => {
     if (!userForm.name || !userForm.email) return toast.error("Nombre y correo son obligatorios");
@@ -76,10 +155,28 @@ export default function AdminUsuariosPage() {
         telefono: userForm.telefono || null,
       };
       if (userForm.password) body.password = userForm.password;
+      if (editingUser) {
+        body.universidadId = userForm.universidadId === "none" ? null : userForm.universidadId;
+        body.carreraId = userForm.carreraId === "none" ? null : userForm.carreraId;
+        body.semestreActual = userForm.semestreActual?.trim() ? userForm.semestreActual.trim() : null;
+      }
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify(
+          editingUser
+            ? {
+                ...body,
+                // Solo actualizamos materias desde el admin al editar
+                materias: materiasEdit.map((m) => ({
+                  materiaId: m.materiaId,
+                  estado: m.estado,
+                  nota: m.nota ? Number(m.nota) : null,
+                })),
+                replaceMaterias: true,
+              }
+            : body,
+        ),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Error guardando usuario");
@@ -130,7 +227,17 @@ export default function AdminUsuariosPage() {
               className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
               onClick={() => {
                 setEditingUser(null);
-                setUserForm({ name: "", email: "", role: "CLIENT", password: "", telefono: "" });
+                setUserForm({
+                  name: "",
+                  email: "",
+                  role: "CLIENT",
+                  password: "",
+                  telefono: "",
+                  universidadId: "none",
+                  carreraId: "none",
+                  semestreActual: "",
+                });
+                setMateriasEdit([]);
                 setUserDialogOpen(true);
               }}
             >
@@ -183,14 +290,15 @@ export default function AdminUsuariosPage() {
                     <th className="px-3 py-2 text-left">Correo</th>
                     <th className="px-3 py-2 text-left">Rol</th>
                     <th className="px-3 py-2 text-left">Estado</th>
+                    <th className="px-3 py-2 text-left">Suscripción</th>
                     <th className="px-3 py-2 text-right">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {usersLoading ? (
-                    <tr><td colSpan={5} className="px-3 py-4 text-center text-white/70">Cargando usuarios...</td></tr>
+                    <tr><td colSpan={6} className="px-3 py-4 text-center text-white/70">Cargando usuarios...</td></tr>
                   ) : users.length === 0 ? (
-                    <tr><td colSpan={5} className="px-3 py-4 text-center text-white/70">No se encontraron usuarios.</td></tr>
+                    <tr><td colSpan={6} className="px-3 py-4 text-center text-white/70">No se encontraron usuarios.</td></tr>
                   ) : (
                     users.map((u) => (
                       <tr key={u.id} className="border-t border-white/5 bg-[#203324]">
@@ -200,25 +308,31 @@ export default function AdminUsuariosPage() {
                         <td className="px-3 py-2 text-xs text-white/70">
                           {u.isEmailVerified ? "Email verificado" : "Email no verificado"} - 2FA: {u.isTwoFactorEnabled ? "activo" : "desactivado"}
                         </td>
+                        <td className="px-3 py-2 text-xs text-white/70">
+                          {u.subscriptionStartedAt ? (
+                            <div className="space-y-0.5">
+                              <div className="text-white/85">
+                                {new Date(u.subscriptionStartedAt).toLocaleDateString()}
+                              </div>
+                              {u.subscriptionName ? (
+                                <div className="text-white/50">{u.subscriptionName}</div>
+                              ) : null}
+                            </div>
+                          ) : (
+                            <span className="text-white/40">—</span>
+                          )}
+                        </td>
                         <td className="px-3 py-2">
                           <div className="flex justify-end gap-2">
                             <Button
                               variant="outline"
                               size="icon"
                               className="h-9 w-9 border-white/20 bg-transparent text-white hover:bg-white/10"
-                              onClick={() => {
-                                setEditingUser(u);
-                                setUserForm({
-                                  name: u.name || "",
-                                  email: u.email,
-                                  role: (u.role as Role) || "CLIENT",
-                                  password: "",
-                                  telefono: u.telefono || "",
-                                });
-                                setUserDialogOpen(true);
-                              }}
+                              asChild
                             >
-                              <Edit className="h-4 w-4" />
+                              <Link href={`/admin/usuarios/${u.id}`} aria-label="Editar usuario">
+                                <Edit className="h-4 w-4" />
+                              </Link>
                             </Button>
                             <Button
                               variant="outline"
@@ -243,7 +357,7 @@ export default function AdminUsuariosPage() {
       <Dialog open={userDialogOpen} onOpenChange={setUserDialogOpen}>
         <DialogContent className="bg-[#203324] text-white border-white/10">
           <DialogHeader>
-            <DialogTitle>{editingUser ? "Editar usuario" : "Nuevo usuario"}</DialogTitle>
+            <DialogTitle>Nuevo usuario</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div><Label className="text-white/80">Nombre</Label><Input className="bg-[#1C2D20] border-white/20 text-white" value={userForm.name} onChange={(e) => setUserForm((f) => ({ ...f, name: e.target.value }))} /></div>
@@ -258,7 +372,7 @@ export default function AdminUsuariosPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div><Label className="text-white/80">{editingUser ? "Nueva contraseña (opcional)" : "Contraseña"}</Label><Input type="password" className="bg-[#1C2D20] border-white/20 text-white" value={userForm.password} onChange={(e) => setUserForm((f) => ({ ...f, password: e.target.value }))} /></div>
+            <div><Label className="text-white/80">Contraseña</Label><Input type="password" className="bg-[#1C2D20] border-white/20 text-white" value={userForm.password} onChange={(e) => setUserForm((f) => ({ ...f, password: e.target.value }))} /></div>
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" className="border-white/20 text-white bg-transparent hover:bg-white/10" onClick={() => setUserDialogOpen(false)}>Cancelar</Button>

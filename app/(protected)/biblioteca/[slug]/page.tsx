@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import ReactMarkdown from "react-markdown";
 import { ArrowLeft, Library } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { MarkdownMath } from "@/components/markdown-math";
 import { useSubscriptionRequired } from "@/hooks/use-subscription-required";
 
 type Obra = {
@@ -89,8 +89,8 @@ export default function BibliotecaObraPage() {
             </CardTitle>
             {obra.descripcion ? <p className="text-white/70 text-sm">{obra.descripcion}</p> : null}
           </CardHeader>
-          <CardContent className="prose prose-invert prose-sm max-w-none text-white/90 prose-headings:text-white prose-a:text-[#40C9A9] prose-strong:text-white border-t border-white/10 pt-6">
-            <ReactMarkdown>{obra.cuerpo}</ReactMarkdown>
+          <CardContent className="border-t border-white/10 pt-6">
+            <MarkdownMath>{obra.cuerpo}</MarkdownMath>
           </CardContent>
         </Card>
 

@@ -1,11 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -20,21 +19,21 @@ import {
   Star,
   Eye,
   Download,
-  MessageCircle,
-  Filter,
   TrendingUp,
   Clock,
   Award,
   Users,
   FileText,
   Video,
-  Link,
+  Link as LinkIcon,
   Lightbulb
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import axios from "axios";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 interface Recurso {
   id: string;
@@ -47,6 +46,7 @@ interface Recurso {
   numCalificaciones: number;
   numVistas: number;
   numDescargas: number;
+  numFavoritos?: number;
   tags: string;
   createdAt: string;
   isFavorito?: boolean;
@@ -72,6 +72,21 @@ interface Materia {
   nombre: string;
   semestre: string;
 }
+
+/** Valores del select "Filtrar por tipo" (alineados con la API). */
+const TIPO_FILTRO_OPCIONES: { value: string; label: string }[] = [
+  { value: "todos", label: "Todos" },
+  { value: "ANOTACION", label: "Anotación" },
+  { value: "RESUMEN", label: "Resumen" },
+  { value: "GUIA_ESTUDIO", label: "Guía" },
+  { value: "EJERCICIOS", label: "Ejercicios" },
+  { value: "PRESENTACION", label: "Presentación" },
+  { value: "VIDEO", label: "Video" },
+  { value: "AUDIO", label: "Audio" },
+  { value: "DOCUMENTO", label: "Documento" },
+  { value: "ENLACE", label: "Enlace" },
+  { value: "TIP", label: "Tip" },
+];
 
 export default function CaletasPage() {
   const router = useRouter();
@@ -151,12 +166,37 @@ export default function CaletasPage() {
       // Actualizar estado local
       setRecursos(prev => prev.map(r => 
         r.id === recursoId 
-          ? { ...r, isFavorito: !r.isFavorito }
+          ? { 
+              ...r, 
+              isFavorito: !r.isFavorito,
+              numFavoritos: Math.max(
+                0,
+                (r.numFavoritos ?? 0) + (r.isFavorito ? -1 : 1),
+              ),
+            }
           : r
       ));
     } catch (error) {
       console.error("Error toggling favorito:", error);
       toast.error("Error al actualizar favoritos");
+    }
+  };
+
+  const registrarVista = async (recursoId: string) => {
+    // Optimistic: sube 1 y luego sincroniza con el servidor si responde
+    setRecursos((prev) =>
+      prev.map((r) => (r.id === recursoId ? { ...r, numVistas: r.numVistas + 1 } : r)),
+    );
+    try {
+      const { data } = await axios.post(`/api/caletas/recursos/${recursoId}/view`);
+      if (typeof data?.numVistas === "number") {
+        setRecursos((prev) =>
+          prev.map((r) => (r.id === recursoId ? { ...r, numVistas: data.numVistas } : r)),
+        );
+      }
+    } catch (error) {
+      console.error("Error registrando vista:", error);
+      // Rollback suave: no molestamos al usuario; el contador se corregirá al recargar.
     }
   };
 
@@ -179,7 +219,7 @@ export default function CaletasPage() {
       case "DOCUMENTO":
         return <FileText className="w-4 h-4" />;
       case "ENLACE":
-        return <Link className="w-4 h-4" />;
+        return <LinkIcon className="w-4 h-4" />;
       case "TIP":
         return <Lightbulb className="w-4 h-4" />;
       default:
@@ -187,30 +227,33 @@ export default function CaletasPage() {
     }
   };
 
-  const getTipoColor = (tipo: string) => {
+  /** Categoría (tipo) en tarjetas: variaciones dentro de la paleta oscura + acento mint. */
+  const getTipoBadgeClass = (tipo: string) => {
+    const base =
+      "shrink-0 rounded-full border px-2.5 py-1 text-xs font-medium bg-[#1C2D20]";
     switch (tipo) {
       case "ANOTACION":
-        return "bg-blue-500/10 text-blue-300 border-blue-500/20";
+        return cn(base, "border-[#40C9A9]/50 text-[#40C9A9]");
       case "RESUMEN":
-        return "bg-green-500/10 text-green-300 border-green-500/20";
+        return cn(base, "border-[#40C9A9]/35 text-emerald-200/95");
       case "GUIA_ESTUDIO":
-        return "bg-purple-500/10 text-purple-300 border-purple-500/20";
+        return cn(base, "border-white/20 text-[#40C9A9]/90");
       case "EJERCICIOS":
-        return "bg-orange-500/10 text-orange-300 border-orange-500/20";
+        return cn(base, "border-[#40C9A9]/30 text-white/90");
       case "PRESENTACION":
-        return "bg-red-500/10 text-red-300 border-red-500/20";
+        return cn(base, "border-emerald-400/35 text-emerald-100/90");
       case "VIDEO":
-        return "bg-pink-500/10 text-pink-300 border-pink-500/20";
+        return cn(base, "border-[#40C9A9]/45 text-[#40C9A9]");
       case "AUDIO":
-        return "bg-indigo-500/10 text-indigo-300 border-indigo-500/20";
+        return cn(base, "border-white/15 text-white/85");
       case "DOCUMENTO":
-        return "bg-gray-500/10 text-gray-300 border-gray-500/20";
+        return cn(base, "border-white/20 text-white/80");
       case "ENLACE":
-        return "bg-cyan-500/10 text-cyan-300 border-cyan-500/20";
+        return cn(base, "border-[#40C9A9]/40 text-[#40C9A9]/95");
       case "TIP":
-        return "bg-yellow-500/10 text-yellow-300 border-yellow-500/20";
+        return cn(base, "border-amber-400/25 text-amber-100/90");
       default:
-        return "bg-gray-500/10 text-gray-300 border-gray-500/20";
+        return cn(base, "border-white/15 text-white/75");
     }
   };
 
@@ -300,7 +343,7 @@ export default function CaletasPage() {
           </div>
 
         {/* Estadísticas */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-4">
           <Card className="bg-[#354B3A] border-white/10">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-white/70">
@@ -344,11 +387,13 @@ export default function CaletasPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-white">
-                {recursos.length > 0 
-                  ? (recursos.reduce((sum, r) => sum + r.calificacion, 0) / recursos.length).toFixed(1)
-                  : "0.0"
-                }
-        </div>
+                {recursos.length > 0
+                  ? (
+                      recursos.reduce((sum, r) => sum + r.calificacion, 0) /
+                      recursos.length
+                    ).toFixed(1)
+                  : "0.0"}
+              </div>
               <p className="text-xs text-white/70 mt-1">
                 Calificación promedio
               </p>
@@ -359,10 +404,10 @@ export default function CaletasPage() {
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-white/70">
                 Total Descargas
-            </CardTitle>
+              </CardTitle>
               <Download className="h-4 w-4 text-[#40C9A9]" />
-          </CardHeader>
-          <CardContent>
+            </CardHeader>
+            <CardContent>
               <div className="text-2xl font-bold text-white">
                 {recursos.reduce((sum, r) => sum + r.numDescargas, 0)}
               </div>
@@ -374,175 +419,236 @@ export default function CaletasPage() {
         </div>
 
         {/* Controles de búsqueda y filtros */}
-        <div className="flex flex-col md:flex-row gap-4 mb-6">
-          <div className="flex-1">
-                <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50 w-4 h-4" />
-                  <Input
-                placeholder="Buscar recursos por título, descripción o tags..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-[#354B3A] border-white/10 text-white placeholder:text-white/50"
-                  />
-                </div>
-              </div>
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:flex-wrap">
+          <div className="relative min-w-0 flex-1 md:min-w-[200px]">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50" />
+            <Input
+              placeholder="Buscar recursos por título, descripción o tags..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="border-white/10 bg-[#354B3A] pl-10 text-white placeholder:text-white/50"
+            />
+          </div>
 
           <Select value={filterMateria} onValueChange={setFilterMateria}>
-            <SelectTrigger className="w-full md:w-48 bg-[#354B3A] border-white/10 text-white">
+            <SelectTrigger className="w-full border-white/10 bg-[#354B3A] text-white md:w-48">
               <SelectValue placeholder="Filtrar por materia" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#354B3A] border-white/10">
-              <SelectItem value="todas" className="text-white">Todas las materias</SelectItem>
-              <SelectItem value="genericas" className="text-white">
+            </SelectTrigger>
+            <SelectContent className="border-white/10 bg-[#203324] text-white">
+              <SelectItem value="todas" className="focus:bg-white/10">
+                Todas las materias
+              </SelectItem>
+              <SelectItem value="genericas" className="focus:bg-white/10">
                 Solo genéricas (sin universidad)
               </SelectItem>
               {materias.map((materia) => (
-                <SelectItem key={materia.id} value={materia.id} className="text-white">
-                  {materia.codigo} - {materia.nombre}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <SelectItem
+                  key={materia.id}
+                  value={materia.id}
+                  className="focus:bg-white/10"
+                >
+                  {materia.codigo} — {materia.nombre}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
           <Select value={filterTipo} onValueChange={setFilterTipo}>
-            <SelectTrigger className="w-full md:w-48 bg-[#354B3A] border-white/10 text-white">
+            <SelectTrigger className="w-full border-white/10 bg-[#354B3A] text-white md:w-48">
               <SelectValue placeholder="Filtrar por tipo" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#354B3A] border-white/10">
-              <SelectItem value="todos" className="text-white">Todos los tipos</SelectItem>
-              <SelectItem value="ANOTACION" className="text-white">Anotaciones</SelectItem>
-              <SelectItem value="RESUMEN" className="text-white">Resúmenes</SelectItem>
-              <SelectItem value="GUIA_ESTUDIO" className="text-white">Guías de Estudio</SelectItem>
-              <SelectItem value="EJERCICIOS" className="text-white">Ejercicios</SelectItem>
-              <SelectItem value="PRESENTACION" className="text-white">Presentaciones</SelectItem>
-              <SelectItem value="VIDEO" className="text-white">Videos</SelectItem>
-              <SelectItem value="AUDIO" className="text-white">Audios</SelectItem>
-              <SelectItem value="DOCUMENTO" className="text-white">Documentos</SelectItem>
-              <SelectItem value="ENLACE" className="text-white">Enlaces</SelectItem>
-              <SelectItem value="TIP" className="text-white">Tips</SelectItem>
-                  </SelectContent>
-                </Select>
+            </SelectTrigger>
+            <SelectContent className="max-h-72 border-white/10 bg-[#203324] text-white">
+              {TIPO_FILTRO_OPCIONES.map((opt) => (
+                <SelectItem
+                  key={opt.value}
+                  value={opt.value}
+                  className="focus:bg-white/10"
+                >
+                  {opt.value === "todos" ? "Todos los tipos" : opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
           <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-full md:w-48 bg-[#354B3A] border-white/10 text-white">
+            <SelectTrigger className="w-full border-white/10 bg-[#354B3A] text-white md:w-48">
               <SelectValue placeholder="Ordenar por" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#354B3A] border-white/10">
-              <SelectItem value="recientes" className="text-white">Más recientes</SelectItem>
-              <SelectItem value="populares" className="text-white">Más populares</SelectItem>
-              <SelectItem value="mejor-calificados" className="text-white">Mejor calificados</SelectItem>
-              <SelectItem value="mas-descargados" className="text-white">Más descargados</SelectItem>
-                  </SelectContent>
-                </Select>
+            </SelectTrigger>
+            <SelectContent className="border-white/10 bg-[#203324] text-white">
+              <SelectItem value="recientes" className="focus:bg-white/10">
+                Más recientes
+              </SelectItem>
+              <SelectItem value="populares" className="focus:bg-white/10">
+                Más populares
+              </SelectItem>
+              <SelectItem value="mejor-calificados" className="focus:bg-white/10">
+                Mejor calificados
+              </SelectItem>
+              <SelectItem value="mas-descargados" className="focus:bg-white/10">
+                Más descargados
+              </SelectItem>
+            </SelectContent>
+          </Select>
 
           <Button
-            onClick={() => window.location.href = "/caletas/crear"}
-            className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+            asChild
+            className="w-full shrink-0 bg-[#40C9A9] text-white hover:bg-[#40C9A9]/80 md:ml-auto md:w-auto"
           >
-            <Plus className="w-4 h-4 mr-2" />
-            Compartir Recurso
+            <Link
+              href="/caletas/crear"
+              className="inline-flex items-center justify-center gap-2"
+            >
+              <Plus className="h-4 w-4 shrink-0" />
+              Compartir recurso
+            </Link>
           </Button>
-      </div>
+        </div>
 
         {/* Lista de recursos */}
         <div className="space-y-4">
           {filteredRecursos.map((recurso) => (
-            <Card key={recurso.id} className="bg-[#354B3A] border-white/10 hover:bg-[#1C2D20] transition-colors">
-              <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
+            <Card
+              key={recurso.id}
+              className="border-white/10 bg-[#354B3A] transition-colors hover:border-[#40C9A9]/25"
+            >
+              <CardHeader className="space-y-3 pb-2">
+                <h3 className="font-special text-lg leading-snug text-white sm:text-xl">
+                  {recurso.titulo}
+                </h3>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                  <span
+                    className={cn(
+                      "inline-flex items-center gap-1.5",
+                      getTipoBadgeClass(recurso.tipo),
+                    )}
+                  >
+                    <span className="shrink-0 text-[#40C9A9]">
                       {getTipoIcon(recurso.tipo)}
-                      <h3 className="text-lg font-semibold text-white">
-                        {recurso.titulo}
-                      </h3>
-                      <Badge className={getTipoColor(recurso.tipo)}>
-                        {getTipoNombre(recurso.tipo)}
-                      </Badge>
-                </div>
-                    <p className="text-white/70 mb-3">
-                      {recurso.descripcion}
-                    </p>
-                    <div className="flex items-center gap-4 text-sm text-white/60">
-                      <span className="flex items-center gap-1">
-                        <BookOpen className="w-4 h-4" />
-                        {recurso.materia
-                          ? `${recurso.materia.codigo} - ${recurso.materia.nombre}`
-                          : "Caleta genérica"}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-4 h-4" />
-                        {new Date(recurso.createdAt).toLocaleDateString()}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Users className="w-4 h-4" />
-                        {recurso.autor.name}
-                      </span>
-                </div>
-              </div>
-                  <div className="flex items-center gap-4 text-sm text-white/60">
-                    <span className="flex items-center gap-1">
-                      <Star className="w-4 h-4 text-yellow-400" />
-                      {recurso.calificacion.toFixed(1)} ({recurso.numCalificaciones})
                     </span>
-                    <span className="flex items-center gap-1">
-                      <Eye className="w-4 h-4" />
-                      {recurso.numVistas}
+                    {getTipoNombre(recurso.tipo)}
+                  </span>
+                  <Badge
+                    variant="outline"
+                    className="rounded-full border-white/15 bg-[#203324] px-2.5 py-1 text-xs font-normal text-white/80"
+                  >
+                    <BookOpen className="mr-1 inline h-3.5 w-3.5 text-[#40C9A9]" />
+                    {recurso.materia
+                      ? `${recurso.materia.codigo} · ${recurso.materia.nombre}`
+                      : "Caleta genérica"}
+                  </Badge>
+                  <span
+                    className={cn(
+                      "inline-flex items-center gap-1.5 text-sm",
+                      recurso.isFavorito ? "text-white/85" : "text-white/55",
+                    )}
+                    title={
+                      recurso.isFavorito
+                        ? "Este recurso está en tus favoritos"
+                        : "Aún no está en tus favoritos"
+                    }
+                  >
+                    <Star
+                      className={cn(
+                        "h-4 w-4 shrink-0",
+                        recurso.isFavorito
+                          ? "fill-[#40C9A9] text-[#40C9A9]"
+                          : "text-white/45",
+                      )}
+                    />
+                    <span className="font-medium text-white/85">
+                      {recurso.numFavoritos ?? 0}
                     </span>
-
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 text-sm text-white/65">
+                    <Eye className="h-4 w-4 shrink-0 text-[#40C9A9]" />
+                    {recurso.numVistas}
+                  </span>
                 </div>
+                <div className="flex flex-wrap content-start gap-1.5">
+                  {(() => {
+                    const tags = (recurso.tags ?? "")
+                      .split(",")
+                      .map((t) => t.trim())
+                      .filter(Boolean);
+                    if (tags.length === 0) {
+                      return (
+                        <span className="text-xs text-white/40">
+                          Sin etiquetas
+                        </span>
+                      );
+                    }
+                    return tags.map((tag, index) => (
+                      <span
+                        key={`${recurso.id}-tag-${index}`}
+                        className="inline-flex max-w-full items-center rounded-full border border-white/10 bg-[#1C2D20] px-2.5 py-0.5 text-xs leading-5 text-white/80"
+                      >
+                        <span className="truncate">{tag}</span>
+                      </span>
+                    ));
+                  })()}
+                </div>
+                <p className="text-sm leading-relaxed text-white/70">
+                  {recurso.descripcion}
+                </p>
+                <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-white/55">
+                  <span className="inline-flex items-center gap-1.5">
+                    <Clock className="h-3.5 w-3.5 shrink-0 text-[#40C9A9]/80" />
+                    {new Date(recurso.createdAt).toLocaleDateString()}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <Users className="h-3.5 w-3.5 shrink-0 text-[#40C9A9]/80" />
+                    {recurso.autor.name}
+                  </span>
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    {recurso.tags && (
-                      <div className="flex gap-1">
-                        {recurso.tags.split(',').map((tag, index) => (
-                          <Badge key={index} className="bg-white/10 text-white/70 border-white/20">
-                            {tag.trim()}
-                          </Badge>
-                        ))}
-                </div>
-                    )}
-                </div>
-                <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    if (recurso.archivoUrl) {
-                      // Extraer el nombre del archivo de la URL
-                      const urlParts = recurso.archivoUrl.split('/');
-                      const filename = urlParts[urlParts.length - 1];
-                      // Redirigir a la página de visualización de PDF
-                      window.location.href = `/view-pdf/${encodeURIComponent(filename)}`;
-                    } else {
-                      // Si no hay archivo, ir a la página de detalles
-                      window.location.href = `/caletas/${recurso.id}`;
-                    }
-                  }}
-                  className="border-[#40C9A9] text-[#40C9A9] hover:bg-[#40C9A9] hover:text-white"
-                >
-                  Ver Caleta
-                </Button>
+              <CardContent className="border-t border-white/10 pt-4">
+                <div className="flex w-full flex-wrap items-center justify-stretch gap-2 sm:justify-end">
                     <Button
-                      size="sm"
-                      variant={recurso.isFavorito ? "default" : "outline"}
-                      onClick={() => toggleFavorito(recurso.id)}
-                      className={
-                        recurso.isFavorito 
-                          ? "bg-yellow-500 hover:bg-yellow-600 text-white border-yellow-500" 
-                          : "border-[#40C9A9] text-[#40C9A9] hover:bg-[#40C9A9] hover:text-white"
-                      }
+                      type="button"
+                      variant="outline"
+                      className="h-9 min-h-9 w-full border-[#40C9A9]/40 bg-[#1C2D20] text-sm font-medium text-[#40C9A9] shadow-none hover:bg-white/10 hover:text-[#40C9A9] sm:w-auto"
+                      onClick={() => {
+                        void registrarVista(recurso.id);
+                        if (recurso.archivoUrl) {
+                          const urlParts = recurso.archivoUrl.split("/");
+                          const filename = urlParts[urlParts.length - 1];
+                          window.location.href = `/view-pdf/${encodeURIComponent(filename)}`;
+                        } else {
+                          window.location.href = `/caletas/${recurso.id}`;
+                        }
+                      }}
                     >
-                      <Star className={`w-4 h-4 mr-2 ${recurso.isFavorito ? 'fill-current' : ''}`} />
-                      {recurso.isFavorito ? 'Favorito' : 'Favorito'}
+                      Ver caleta
                     </Button>
-                  </div>
-              </div>
-            </CardContent>
-          </Card>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => toggleFavorito(recurso.id)}
+                      className={cn(
+                        "h-9 min-h-9 w-full text-sm font-medium shadow-none sm:w-auto",
+                        recurso.isFavorito
+                          ? "border-[#40C9A9]/50 bg-[#40C9A9]/20 text-white hover:bg-[#40C9A9]/30 hover:text-white"
+                          : "border-[#40C9A9]/40 bg-[#1C2D20] text-[#40C9A9] hover:bg-white/10 hover:text-[#40C9A9]",
+                      )}
+                    >
+                      <Star
+                        className={cn(
+                          "mr-1.5 h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4",
+                          recurso.isFavorito && "fill-[#40C9A9] text-[#40C9A9]",
+                        )}
+                      />
+                      <span className="sm:hidden">
+                        {recurso.isFavorito ? "Guardado" : "Favorito"}
+                      </span>
+                      <span className="hidden sm:inline">
+                        {recurso.isFavorito
+                          ? "En favoritos"
+                          : "Añadir a favoritos"}
+                      </span>
+                    </Button>
+                </div>
+              </CardContent>
+            </Card>
         ))}
           
           {filteredRecursos.length === 0 && (

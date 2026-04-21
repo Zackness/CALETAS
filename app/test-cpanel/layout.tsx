@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import '@fontsource-variable/montserrat';
 import "../globals.css";
-import { DashboardHeader } from "../(protected)/components/app-header";
-import { IASidebar } from "../(protected)/components/ia-sidebar";
+import { ProtectedAppShell } from "../(protected)/components/protected-app-shell";
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
@@ -28,15 +27,13 @@ export default async function ProtectedLayout({
   return (
     <html lang="es">
       <body>
-        <div className="flex min-h-screen bg-gradient-to-t from-mygreen to-mygreen-light">
-          <IASidebar />
-          <div className="flex-1 flex flex-col">
-            <DashboardHeader session={session} />
-            <main className="flex-1 w-full max-w-7xl mx-auto px-4 md:px-8 py-6">
-              {children}
-            </main>
-          </div>
-        </div>
+        <ProtectedAppShell
+          session={session}
+          showVerificationBanner={false}
+          userEmail=""
+        >
+          {children}
+        </ProtectedAppShell>
       </body>
     </html>
   );

@@ -138,29 +138,29 @@ export function AppSidebar() {
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 side="top"
-                className="w-[--radix-popper-anchor-width] rounded-xl bg-fm-blue-3 text-foreground"
+                className="w-[var(--radix-popper-anchor-width)] rounded-xl"
               >
-                <DropdownMenuItem>
+                <DropdownMenuItem asChild className="cursor-pointer">
                   <Link href="/" className="underline-offset-4 hover:underline">
                     <span>Informacion</span>
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem asChild className="cursor-pointer">
                   <Link href="/" className="underline-offset-4 hover:underline">
                     <span>Privacidad</span>
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem asChild className="cursor-pointer">
                   <Link href="/" className="underline-offset-4 hover:underline">
                     <span>Terminos</span>
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem asChild className="cursor-pointer">
                   <Link href="/" className="underline-offset-4 hover:underline">
                     <span>Contactar</span>
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem asChild className="cursor-pointer">
                   <Link href="/" className="underline-offset-4 hover:underline">
                     <span>Derechos de autor</span>
                   </Link>

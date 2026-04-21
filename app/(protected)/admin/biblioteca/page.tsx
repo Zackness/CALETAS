@@ -1,16 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { BookMarked, Pencil, PlusCircle, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 
 type Obra = {
   id: string;
@@ -23,19 +20,9 @@ type Obra = {
 };
 
 export default function AdminBibliotecaPage() {
+  const router = useRouter();
   const [obras, setObras] = useState<Obra[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [editing, setEditing] = useState<Obra | null>(null);
-  const [form, setForm] = useState({
-    titulo: "",
-    slug: "",
-    descripcion: "",
-    cuerpo: "",
-    orden: 0,
-    isPublished: false,
-  });
 
   const load = async () => {
     setLoading(true);
@@ -55,55 +42,24 @@ export default function AdminBibliotecaPage() {
     void load();
   }, []);
 
-  const openCreate = () => {
-    setEditing(null);
-    setForm({
-      titulo: "",
-      slug: "",
-      descripcion: "",
-      cuerpo: "",
-      orden: 0,
-      isPublished: false,
-    });
-    setDialogOpen(true);
-  };
-
-  const openEdit = (o: Obra) => {
-    setEditing(o);
-    setForm({
-      titulo: o.titulo,
-      slug: o.slug,
-      descripcion: o.descripcion || "",
-      cuerpo: o.cuerpo,
-      orden: o.orden,
-      isPublished: o.isPublished,
-    });
-    setDialogOpen(true);
-  };
-
-  const save = async () => {
-    if (!form.titulo.trim() || !form.cuerpo.trim()) {
-      toast.error("Título y cuerpo son obligatorios");
-      return;
-    }
-    setSaving(true);
+  const createDraftAndOpen = async () => {
     try {
-      const url = editing ? `/api/admin/biblioteca/${editing.id}` : "/api/admin/biblioteca";
-      const method = editing ? "PATCH" : "POST";
-      const res = await fetch(url, {
-        method,
+      const res = await fetch("/api/admin/biblioteca", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          titulo: "Nuevo libro",
+          cuerpo: "## Nuevo libro\n\nEscribe aquí. Puedes usar fórmulas: $E=mc^2$ y bloques:\n\n$$\\int_0^1 x^2\\,dx$$\n",
+          isPublished: false,
+          orden: 0,
+        }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || "Error guardando");
-      toast.success(editing ? "Actualizado" : "Creado");
-      setDialogOpen(false);
-      await load();
+      if (!res.ok) throw new Error(data?.error || "No se pudo crear el borrador");
+      toast.success("Borrador creado");
+      router.push(`/editor/admin/biblioteca/${data.obra.id}`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Error");
-    } finally {
-      setSaving(false);
     }
   };
 
@@ -133,7 +89,7 @@ export default function AdminBibliotecaPage() {
             </h1>
             <p className="text-white/70 text-sm">Obras en Markdown. Los usuarios leen en la app; no hay descarga.</p>
           </div>
-          <Button className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white" onClick={openCreate}>
+          <Button className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white" onClick={() => void createDraftAndOpen()}>
             <PlusCircle className="w-4 h-4 mr-2" />
             Nueva obra
           </Button>
@@ -180,7 +136,7 @@ export default function AdminBibliotecaPage() {
                               size="icon"
                               variant="outline"
                               className="h-7 w-7 border-[#40C9A9]/40 bg-[#1C2D20] text-[#40C9A9] hover:bg-[#203324]"
-                              onClick={() => openEdit(o)}
+                              onClick={() => router.push(`/editor/admin/biblioteca/${o.id}`)}
                             >
                               <Pencil className="w-3.5 h-3.5" />
                             </Button>
@@ -203,82 +159,6 @@ export default function AdminBibliotecaPage() {
           </CardContent>
         </Card>
       </div>
-
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="bg-[#354B3A] border-white/10 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{editing ? "Editar obra" : "Nueva obra"}</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-3 py-2">
-            <div className="grid gap-1">
-              <Label className="text-white/80">Título</Label>
-              <Input
-                className="bg-[#1C2D20] border-white/10 text-white"
-                value={form.titulo}
-                onChange={(e) => setForm((f) => ({ ...f, titulo: e.target.value }))}
-              />
-            </div>
-            <div className="grid gap-1">
-              <Label className="text-white/80">Slug (opcional)</Label>
-              <Input
-                className="bg-[#1C2D20] border-white/10 text-white"
-                value={form.slug}
-                onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
-                placeholder="auto desde título"
-              />
-            </div>
-            <div className="grid gap-1">
-              <Label className="text-white/80">Descripción corta</Label>
-              <Input
-                className="bg-[#1C2D20] border-white/10 text-white"
-                value={form.descripcion}
-                onChange={(e) => setForm((f) => ({ ...f, descripcion: e.target.value }))}
-              />
-            </div>
-            <div className="grid gap-1">
-              <Label className="text-white/80">Orden</Label>
-              <Input
-                type="number"
-                className="bg-[#1C2D20] border-white/10 text-white"
-                value={form.orden}
-                onChange={(e) => setForm((f) => ({ ...f, orden: Number(e.target.value) || 0 }))}
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="pub"
-                checked={form.isPublished}
-                onChange={(e) => setForm((f) => ({ ...f, isPublished: e.target.checked }))}
-              />
-              <Label htmlFor="pub" className="text-white/80 cursor-pointer">
-                Publicada
-              </Label>
-            </div>
-            <div className="grid gap-1">
-              <Label className="text-white/80">Cuerpo (Markdown)</Label>
-              <Textarea
-                className="bg-[#1C2D20] border-white/10 text-white min-h-[200px] font-mono text-sm"
-                value={form.cuerpo}
-                onChange={(e) => setForm((f) => ({ ...f, cuerpo: e.target.value }))}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              className="border-[#40C9A9]/40 bg-[#1C2D20] text-[#40C9A9] hover:bg-[#203324]"
-              onClick={() => setDialogOpen(false)}
-            >
-              Cancelar
-            </Button>
-            <Button className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white" onClick={() => void save()} disabled={saving}>
-              {saving ? "Guardando…" : "Guardar"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

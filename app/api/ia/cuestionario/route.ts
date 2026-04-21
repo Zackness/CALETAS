@@ -5,6 +5,7 @@ import { getCorsHeaders } from "@/lib/cors";
 import OpenAI from "openai";
 import { getActiveSubscriptionForUser } from "@/lib/subscription";
 import { logAiUsage } from "@/lib/ai-usage";
+import { assertAiTrialAllowed } from "@/lib/ai-trial";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -22,8 +23,23 @@ export async function POST(request: NextRequest) {
       return withCors(NextResponse.json({ error: "No autorizado" }, { status: 401 }), request);
     }
     const sub = await getActiveSubscriptionForUser(session.user.id);
-    if (!sub) {
-      return withCors(NextResponse.json({ error: "Necesitas una suscripción activa para usar IA" }, { status: 402 }), request);
+    const hasSubscription = !!sub;
+    if (!hasSubscription) {
+      const gate = await assertAiTrialAllowed({ userId: session.user.id, endpoint: "ia/cuestionario" });
+      if (!gate.ok) {
+        return withCors(
+          NextResponse.json(
+            {
+              error: gate.error,
+              code: "FREE_LIMIT_REACHED",
+              endpoint: "ia/cuestionario",
+              limit: gate.info.limit,
+            },
+            { status: 402 },
+          ),
+          request,
+        );
+      }
     }
     const body = await request.json();
     const { recursoId } = body;

@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { getCorsHeaders } from "@/lib/cors";
 import { canUseIAChat, getActiveSubscriptionForUser } from "@/lib/subscription";
 import { logAiUsage } from "@/lib/ai-usage";
+import { assertAiTrialAllowed } from "@/lib/ai-trial";
 
 function withCors(res: NextResponse, req: NextRequest) {
   Object.entries(getCorsHeaders(req)).forEach(([k, v]) => res.headers.set(k, v));
@@ -104,10 +105,26 @@ export async function POST(request: NextRequest) {
       return withCors(NextResponse.json({ error: "No autorizado" }, { status: 401 }), request);
     }
     const sub = await getActiveSubscriptionForUser(session.user.id);
-    if (!sub) {
-      return withCors(NextResponse.json({ error: "Necesitas una suscripción activa para usar IA" }, { status: 402 }), request);
-    }
-    if (!canUseIAChat(sub)) {
+    const hasSubscription = !!sub;
+    const isFreeTrial = !hasSubscription;
+
+    if (isFreeTrial) {
+      const gate = await assertAiTrialAllowed({ userId: session.user.id, endpoint: "ia/chat" });
+      if (!gate.ok) {
+        return withCors(
+          NextResponse.json(
+            {
+              error: gate.error,
+              code: "FREE_LIMIT_REACHED",
+              endpoint: "ia/chat",
+              limit: gate.info.limit,
+            },
+            { status: 402 },
+          ),
+          request,
+        );
+      }
+    } else if (!canUseIAChat(sub)) {
       return withCors(
         NextResponse.json(
           { error: "Tu plan actual no incluye Chat IA. Puedes usar las otras herramientas IA." },
@@ -158,7 +175,7 @@ export async function POST(request: NextRequest) {
         ...messages.map((m) => ({ role: m.role, content: m.content })),
       ],
       temperature: 0.4,
-      max_tokens: 1200,
+      max_tokens: isFreeTrial ? 450 : 1200,
     });
 
     const answer = resp.choices[0]?.message?.content?.trim();

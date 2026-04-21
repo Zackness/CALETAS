@@ -35,6 +35,17 @@ export async function PATCH(
       telefono?: string | null;
       isEmailVerified?: boolean;
       isTwoFactorEnabled?: boolean;
+      universidadId?: string | null;
+      carreraId?: string | null;
+      semestreActual?: string | null;
+      materias?: Array<{
+        materiaId: string;
+        estado?: string;
+        nota?: number | null;
+        semestreCursado?: string | null;
+        observaciones?: string | null;
+      }>;
+      replaceMaterias?: boolean;
     };
 
     const data: any = {};
@@ -53,25 +64,132 @@ export async function PATCH(
       data.password = await bcrypt.hash(body.password, 10);
     }
 
-    const user = await db.user.update({
-      where: { id },
-      data,
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        createdAt: true,
-        updatedAt: true,
-        isEmailVerified: true,
-        isTwoFactorEnabled: true,
-        telefono: true,
-      },
+    if (body.universidadId !== undefined) data.universidadId = body.universidadId;
+    if (body.carreraId !== undefined) data.carreraId = body.carreraId;
+    if (body.semestreActual !== undefined) data.semestreActual = body.semestreActual;
+
+    const materiasUpdates = Array.isArray(body.materias) ? body.materias : [];
+    const replaceMaterias = body.replaceMaterias === true;
+
+    const user = await db.$transaction(async (tx) => {
+      const updatedUser = await tx.user.update({
+        where: { id },
+        data,
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          createdAt: true,
+          updatedAt: true,
+          isEmailVerified: true,
+          isTwoFactorEnabled: true,
+          telefono: true,
+          universidadId: true,
+          carreraId: true,
+          semestreActual: true,
+        },
+      });
+
+      if (materiasUpdates.length > 0 || replaceMaterias) {
+        if (replaceMaterias) {
+          await tx.materiaEstudiante.deleteMany({
+            where: { userId: id },
+          });
+        }
+
+        for (const m of materiasUpdates) {
+          if (!m?.materiaId) continue;
+          await tx.materiaEstudiante.upsert({
+            where: {
+              userId_materiaId: { userId: id, materiaId: m.materiaId },
+            },
+            create: {
+              userId: id,
+              materiaId: m.materiaId,
+              estado: (m.estado as any) ?? "EN_CURSO",
+              nota: m.nota ?? null,
+              semestreCursado: m.semestreCursado ?? null,
+              observaciones: m.observaciones ?? null,
+            },
+            update: {
+              estado: (m.estado as any) ?? undefined,
+              nota: m.nota ?? null,
+              semestreCursado: m.semestreCursado ?? null,
+              observaciones: m.observaciones ?? null,
+            },
+          });
+        }
+      }
+
+      return updatedUser;
     });
 
     return NextResponse.json({ user });
   } catch (error) {
     console.error("Error updating user:", error);
+    return NextResponse.json({ error: "Error interno" }, { status: 500 });
+  }
+}
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const admin = await requireAdmin(request.headers);
+    if (!admin.ok) {
+      return NextResponse.json({ error: "No autorizado" }, { status: admin.status });
+    }
+
+    const { id } = await params;
+    const user = await db.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        telefono: true,
+        universidadId: true,
+        carreraId: true,
+        semestreActual: true,
+        UserSubscription: {
+          take: 1,
+          orderBy: { createdAt: "desc" },
+          select: {
+            createdAt: true,
+            subscriptionType: { select: { name: true } },
+          },
+        },
+        universidad: { select: { id: true, nombre: true, siglas: true } },
+        carrera: { select: { id: true, nombre: true, codigo: true, universidadId: true } },
+        materiasEstudiante: {
+          select: {
+            id: true,
+            materiaId: true,
+            estado: true,
+            nota: true,
+            semestreCursado: true,
+            observaciones: true,
+            materia: { select: { id: true, codigo: true, nombre: true, semestre: true, carreraId: true } },
+          },
+          orderBy: [{ updatedAt: "desc" }],
+        },
+      },
+    });
+
+    if (!user) return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
+    const last = (user as any).UserSubscription?.[0];
+    const normalized = {
+      ...(user as any),
+      subscriptionStartedAt: last?.createdAt ?? null,
+      subscriptionName: last?.subscriptionType?.name ?? null,
+      UserSubscription: undefined,
+    };
+    return NextResponse.json({ user: normalized });
+  } catch (error) {
+    console.error("Error fetching user details:", error);
     return NextResponse.json({ error: "Error interno" }, { status: 500 });
   }
 }

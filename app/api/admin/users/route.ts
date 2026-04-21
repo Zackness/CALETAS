@@ -56,6 +56,16 @@ export async function GET(request: NextRequest) {
           isEmailVerified: true,
           isTwoFactorEnabled: true,
           telefono: true,
+          UserSubscription: {
+            take: 1,
+            orderBy: { createdAt: "desc" },
+            select: {
+              createdAt: true,
+              subscriptionType: {
+                select: { name: true },
+              },
+            },
+          },
         },
         orderBy: { createdAt: "desc" },
         skip,
@@ -64,7 +74,22 @@ export async function GET(request: NextRequest) {
       db.user.count({ where }),
     ]);
 
-    return NextResponse.json({ users, total, page: pageNumber, pageSize: take });
+    const usersWithSub = users.map((u: any) => {
+      const last = u.UserSubscription?.[0];
+      return {
+        ...u,
+        subscriptionStartedAt: last?.createdAt ?? null,
+        subscriptionName: last?.subscriptionType?.name ?? null,
+        UserSubscription: undefined,
+      };
+    });
+
+    return NextResponse.json({
+      users: usersWithSub,
+      total,
+      page: pageNumber,
+      pageSize: take,
+    });
   } catch (error) {
     console.error("Error listing users:", error);
     return NextResponse.json({ error: "Error interno" }, { status: 500 });

@@ -48,7 +48,7 @@ export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL || process.env.NEXT_PUBLIC_APP_URL,
   trustedOrigins,
   database: prismaAdapter(db, {
-    provider: "mysql",
+    provider: "postgresql",
   }),
   user: {
     modelName: "User",
@@ -60,6 +60,10 @@ export const auth = betterAuth({
   },
   session: {
     modelName: "AuthSession",
+    cookieCache: {
+      enabled: true,
+      maxAge: 60 * 60 * 24 * 7, // 7 días
+    },
   },
   account: {
     modelName: "AuthAccount",
@@ -102,40 +106,47 @@ export const auth = betterAuth({
       const email = (ctx.body as any)?.email as string | undefined;
       if (!email) return;
 
-      const user = await db.user.findUnique({
-        where: { email },
-        select: {
-          id: true,
-          password: true,
-          emailVerified: true,
-          isEmailVerified: true,
-        },
-      });
-      if (!user?.id || !user.password) return;
-
-      // Sync de verificación: si antes se verificó con timestamp, reflejarlo en booleano.
-      if (user.emailVerified && !user.isEmailVerified) {
-        await db.user.update({
-          where: { id: user.id },
-          data: { isEmailVerified: true },
+      try {
+        const user = await db.user.findUnique({
+          where: { email },
+          select: {
+            id: true,
+            password: true,
+            emailVerified: true,
+            isEmailVerified: true,
+          },
         });
+        if (!user?.id || !user.password) return;
+
+        // Sync de verificación: si antes se verificó con timestamp, reflejarlo en booleano.
+        if (user.emailVerified && !user.isEmailVerified) {
+          await db.user.update({
+            where: { id: user.id },
+            data: { isEmailVerified: true },
+          });
+        }
+
+        const existingCredential = await db.authAccount.findFirst({
+          where: { userId: user.id, providerId: "credential" },
+          select: { id: true },
+        });
+        if (existingCredential) return;
+
+        await db.authAccount.create({
+          data: {
+            id: crypto.randomUUID(),
+            providerId: "credential",
+            accountId: user.id,
+            userId: user.id,
+            password: user.password, // bcrypt hash legacy
+          },
+        });
+      } catch (error) {
+        // No bloqueamos el login si falla este paso de compatibilidad.
+        // Better Auth podrá manejar el flujo normal y el usuario verá un error real si aplica.
+        console.error("[auth-hook] pre sign-in email compat failed:", error);
+        return;
       }
-
-      const existingCredential = await db.authAccount.findFirst({
-        where: { userId: user.id, providerId: "credential" },
-        select: { id: true },
-      });
-      if (existingCredential) return;
-
-      await db.authAccount.create({
-        data: {
-          id: crypto.randomUUID(),
-          providerId: "credential",
-          accountId: user.id,
-          userId: user.id,
-          password: user.password, // bcrypt hash legacy
-        },
-      });
     }),
   },
   plugins: [
@@ -160,9 +171,16 @@ export const auth = betterAuth({
 });
 
 export const getSession = async () => {
-  return await auth.api.getSession({
-    headers: await headers(),
-  });
+  try {
+    return await auth.api.getSession({
+      headers: await headers(),
+    });
+  } catch (error) {
+    // Si la DB no está accesible (por ejemplo Neon caído), no debemos tumbar SSR con 500.
+    // En esos casos tratamos como "sin sesión" y dejamos que el layout redirija a /login.
+    console.error("[auth] getSession failed:", error);
+    return null;
+  }
 };
 
 export const currentUser = async () => {

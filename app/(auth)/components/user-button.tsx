@@ -6,8 +6,6 @@ import { FaUser } from "react-icons/fa";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { authClient } from "@/lib/auth-client";
 import { ExitIcon } from "@radix-ui/react-icons";
-import { Button } from "@/components/ui/button";
-
 const onClick = () => {
     authClient.signOut({
         fetchOptions: {
@@ -31,13 +29,14 @@ export const UserButton = () => {
                     </AvatarFallback>
                 </Avatar>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-40 border-none bg-fm-blue-1 rounded-xl p-4 shadow-fm-blue-2 shadow-lg" align="end">
-                <Button onClick={onClick} className="w-full" type="submit" size="default" variant="outline">
-                    <DropdownMenuItem>
-                        <ExitIcon className="h-4 w-4 mr-2"/>
-                        salir
-                    </DropdownMenuItem>    
-                </Button>
+            <DropdownMenuContent align="end" className="min-w-[10rem] rounded-xl">
+                <DropdownMenuItem
+                    onClick={onClick}
+                    className="cursor-pointer gap-2 text-white focus:text-white"
+                >
+                    <ExitIcon className="h-4 w-4 text-[#40C9A9]" />
+                    Salir
+                </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
     );

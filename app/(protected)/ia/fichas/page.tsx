@@ -8,6 +8,7 @@ import { BookOpen, Brain, FileText, Save, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import { useSubscriptionRequired } from "@/hooks/use-subscription-required";
+import { IATrialBanner } from "@/components/ia-trial-banner";
 
 interface Recurso {
   id: string;
@@ -37,7 +38,7 @@ interface Ficha {
 }
 
 export default function FichasIA() {
-  const { loading: subLoading, isActive } = useSubscriptionRequired();
+  const { loading: subLoading, isActive } = useSubscriptionRequired({ allowTrial: true });
   const { data: session } = authClient.useSession();
   const [recursos, setRecursos] = useState<Recurso[]>([]);
   const [recursoSeleccionado, setRecursoSeleccionado] = useState<string>("");
@@ -64,10 +65,7 @@ export default function FichasIA() {
   };
 
   const generarFichas = async () => {
-    if (subLoading || !isActive) {
-      toast.error("Necesitas una suscripción para usar IA");
-      return;
-    }
+    if (subLoading) return;
     if (!recursoSeleccionado) {
       toast.error("Por favor selecciona un recurso");
       return;
@@ -86,6 +84,9 @@ export default function FichasIA() {
 
       if (!response.ok) {
         const error = await response.json();
+        if (response.status === 402 && error?.code === "FREE_LIMIT_REACHED") {
+          throw new Error(error?.error || "Límite gratis alcanzado. Suscríbete para continuar.");
+        }
         throw new Error(error.error || "Error al generar las fichas");
       }
 
@@ -144,6 +145,12 @@ export default function FichasIA() {
             Genera fichas de estudio personalizadas basadas en tus recursos y caletas favoritas
           </p>
         </div>
+
+        {!subLoading && !isActive ? (
+          <div className="mb-6 max-w-2xl mx-auto">
+            <IATrialBanner toolLabel="Fichas" endpoint="ia/fichas" />
+          </div>
+        ) : null}
 
         {!fichas ? (
           /* Selección de Recurso */

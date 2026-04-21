@@ -1,29 +1,25 @@
 "use client";
 
-import { Bell, LogOut, Heart, Upload, BarChart3, Menu, X, FileText, BookOpen, GraduationCap, Calendar, User, ShieldCheck, CreditCard } from "lucide-react";
+import { Bell, LogOut, Heart, Upload, BarChart3, User, ShieldCheck, CreditCard } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { authClient } from "@/lib/auth-client";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { HeaderSearch } from "./header-search";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 interface AppHeaderProps {
   session: any;
 }
 
 export function DashboardHeader({ session }: AppHeaderProps) {
-  const [mounted, setMounted] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const [isAdmin, setIsAdmin] = useState(() => session?.user?.role === "ADMIN");
 
   useEffect(() => {
-    setMounted(true);
-    // Obtener notificaciones reales
     fetch("/api/notifications")
       .then((res) => res.json())
       .then((data) => {
@@ -33,7 +29,13 @@ export function DashboardHeader({ session }: AppHeaderProps) {
   }, []);
 
   useEffect(() => {
-    // Cargar rol (para mostrar panel admin)
+    // Preferir rol desde sesión para no depender de /api/user.
+    if (session?.user?.role) {
+      setIsAdmin(session.user.role === "ADMIN");
+      return;
+    }
+
+    // Fallback: cargar rol
     fetch("/api/user")
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
@@ -42,31 +44,7 @@ export function DashboardHeader({ session }: AppHeaderProps) {
       .catch(() => {
         // ignore
       });
-  }, []);
-
-  // Bloquear scroll de fondo cuando el menú está abierto
-  useEffect(() => {
-    if (isMenuOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isMenuOpen]);
-
-  // Cerrar menú al hacer clic fuera
-  useEffect(() => {
-    if (!isMenuOpen) return;
-    const handleClick = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setIsMenuOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, [isMenuOpen]);
+  }, [session?.user?.role]);
 
   const handleSignOut = async () => {
     await authClient.signOut({
@@ -93,21 +71,15 @@ export function DashboardHeader({ session }: AppHeaderProps) {
   };
 
   return (
-    <header className="border-b border-white/10 w-full bg-[#203324] py-2 md:h-16 md:py-4">
-      <div className="flex flex-wrap items-center md:h-full md:flex-nowrap md:items-center md:justify-between px-2 md:px-4 gap-2 md:gap-4">
-        {/* Izquierda: Botón de menú móvil */}
-        <button
-          className="order-1 md:hidden flex flex-col space-y-1 p-2 focus:outline-none z-[110]"
-          onClick={() => setIsMenuOpen((v) => !v)}
-          aria-label="Abrir menú"
-        >
-          <span className={`block w-6 h-0.5 bg-white transition-all duration-300 ${isMenuOpen ? 'rotate-45 translate-y-1.5' : ''}`}></span>
-          <span className={`block w-6 h-0.5 bg-white transition-all duration-300 ${isMenuOpen ? 'opacity-0' : ''}`}></span>
-          <span className={`block w-6 h-0.5 bg-white transition-all duration-300 ${isMenuOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></span>
-        </button>
+    <header className="sticky top-0 z-20 w-full shrink-0 border-b border-white/10 bg-[#203324] py-2 md:h-16 md:py-4">
+      <div className="flex min-w-0 flex-wrap items-center gap-2 px-2 md:h-full md:flex-nowrap md:justify-between md:gap-4 md:px-4">
+        <SidebarTrigger
+          className="order-1 shrink-0 text-white hover:bg-white/10"
+          aria-label="Mostrar u ocultar menú lateral"
+        />
         
         {/* Centro: Buscador con sugerencias tipo YouTube */}
-        <div className="order-3 w-full md:order-2 md:w-auto md:flex-1">
+        <div className="order-3 w-full min-w-0 md:order-2 md:w-auto md:flex-1 md:min-w-0">
           <HeaderSearch />
         </div>
         {/* Derecha: Favoritos, subir, notificaciones, avatar */}
@@ -131,7 +103,7 @@ export function DashboardHeader({ session }: AppHeaderProps) {
                 )}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-80 max-w-[calc(100vw-1rem)] bg-[#203324] border-white/10 text-white">
+            <DropdownMenuContent align="end" sideOffset={8} className="w-80 max-w-[calc(100vw-1rem)]">
               <div className="p-2 font-bold text-[#40C9A9]">Notificaciones</div>
               {loading ? (
                 <div className="p-4 text-center text-white/70">Cargando...</div>
@@ -139,7 +111,7 @@ export function DashboardHeader({ session }: AppHeaderProps) {
                 <div className="p-4 text-center text-white/70">Sin notificaciones</div>
               ) : (
                 notifications.map((n) => (
-                  <DropdownMenuItem key={n.id} className="flex justify-between items-center gap-2 hover:bg-white/10">
+                  <DropdownMenuItem key={n.id} className="flex items-center justify-between gap-2">
                     <span className="truncate">{n.message}</span>
                     <Button
                       variant="ghost"
@@ -167,15 +139,15 @@ export function DashboardHeader({ session }: AppHeaderProps) {
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 max-w-[calc(100vw-1rem)] bg-[#203324] border-white/10 text-white">
-              <DropdownMenuItem asChild className="gap-2 hover:bg-white/10 cursor-pointer">
+            <DropdownMenuContent align="end" sideOffset={8} className="w-56 min-w-[12rem] max-w-[calc(100vw-1rem)]">
+              <DropdownMenuItem asChild className="cursor-pointer gap-2">
                 <Link href="/suscripcion">
                   <CreditCard className="h-4 w-4 text-[#40C9A9]" />
                   <span>Suscripción</span>
                 </Link>
               </DropdownMenuItem>
 
-              <DropdownMenuItem asChild className="gap-2 hover:bg-white/10 cursor-pointer">
+              <DropdownMenuItem asChild className="cursor-pointer gap-2">
                 <Link href="/caletas/estadisticas">
                   <BarChart3 className="h-4 w-4 text-[#40C9A9]" />
                   <span>Estadísticas de mis caletas</span>
@@ -183,7 +155,7 @@ export function DashboardHeader({ session }: AppHeaderProps) {
               </DropdownMenuItem>
 
               {isAdmin ? (
-                <DropdownMenuItem asChild className="gap-2 hover:bg-white/10 cursor-pointer">
+                <DropdownMenuItem asChild className="cursor-pointer gap-2">
                   <Link href="/admin/estadisticas">
                     <ShieldCheck className="h-4 w-4 text-[#40C9A9]" />
                     <span>Panel admin</span>
@@ -191,13 +163,16 @@ export function DashboardHeader({ session }: AppHeaderProps) {
                 </DropdownMenuItem>
               ) : null}
 
-              <DropdownMenuItem asChild className="gap-2 hover:bg-white/10 cursor-pointer">
+              <DropdownMenuItem asChild className="cursor-pointer gap-2">
                 <Link href="/ajustes">
                   <User className="h-4 w-4 text-[#40C9A9]" />
                   <span>Ajustes</span>
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem className="gap-2 text-red-400 hover:bg-red-500/10 cursor-pointer" onClick={handleSignOut}>
+              <DropdownMenuItem
+                className="cursor-pointer gap-2 text-red-300 focus:bg-red-500/20 focus:text-red-200 data-[highlighted]:bg-red-500/20 data-[highlighted]:text-red-200"
+                onClick={handleSignOut}
+              >
                 <LogOut className="h-4 w-4" />
                 <span>Salir</span>
               </DropdownMenuItem>
@@ -205,129 +180,6 @@ export function DashboardHeader({ session }: AppHeaderProps) {
           </DropdownMenu>
         </div>
       </div>
-      
-      {/* Menú móvil tipo dropdown */}
-      {isMenuOpen && (
-        <div className="md:hidden fixed inset-0 z-[100] flex flex-col items-stretch bg-black/40" style={{backdropFilter: 'blur(2px)'}}>
-          <div ref={menuRef} className="w-full bg-gradient-to-t from-mygreen to-mygreen-light border-b border-white/10 shadow-lg animate-fadeInDown">
-            <nav className="flex flex-col gap-1 py-2 px-4">
-              {/* Sección: Caletas */}
-              <div className="text-[#40C9A9] font-semibold text-sm px-2 py-1 mt-2">Caletas</div>
-              <Link
-                href="/caletas"
-                className="text-white font-special text-base py-2 px-2 rounded-md hover:bg-white/10 transition-colors text-left flex items-center gap-3"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <FileText className="h-4 w-4" />
-                Explorar Caletas
-              </Link>
-              <Link
-                href="/caletas/crear"
-                className="text-white font-special text-base py-2 px-2 rounded-md hover:bg-white/10 transition-colors text-left flex items-center gap-3"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <Upload className="h-4 w-4" />
-                Subir Caleta
-              </Link>
-              <Link
-                href="/caletas/favoritos"
-                className="text-white font-special text-base py-2 px-2 rounded-md hover:bg-white/10 transition-colors text-left flex items-center gap-3"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <Heart className="h-4 w-4" />
-                Mis Favoritos
-              </Link>
-              <Link
-                href="/caletas/mis-recursos"
-                className="text-white font-special text-base py-2 px-2 rounded-md hover:bg-white/10 transition-colors text-left flex items-center gap-3"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <BookOpen className="h-4 w-4" />
-                Mis Recursos
-              </Link>
-              
-              {/* Sección: Académico */}
-              <div className="text-[#40C9A9] font-semibold text-sm px-2 py-1 mt-4">Académico</div>
-              <Link
-                href="/academico"
-                className="text-white font-special text-base py-2 px-2 rounded-md hover:bg-white/10 transition-colors text-left flex items-center gap-3"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <GraduationCap className="h-4 w-4" />
-                Panel de Control
-              </Link>
-              <Link
-                href="/academico/historial"
-                className="text-white font-special text-base py-2 px-2 rounded-md hover:bg-white/10 transition-colors text-left flex items-center gap-3"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <Calendar className="h-4 w-4" />
-                Historial Académico
-              </Link>
-              <Link
-                href="/academico/metas"
-                className="text-white font-special text-base py-2 px-2 rounded-md hover:bg-white/10 transition-colors text-left flex items-center gap-3"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <BarChart3 className="h-4 w-4" />
-                Metas Académicas
-              </Link>
-              
-              {/* Sección: IA */}
-              <div className="text-[#40C9A9] font-semibold text-sm px-2 py-1 mt-4">Herramientas IA</div>
-              <Link
-                href="/ia/fichas"
-                className="text-white font-special text-base py-2 px-2 rounded-md hover:bg-white/10 transition-colors text-left flex items-center gap-3"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <FileText className="h-4 w-4" />
-                Fichas de Estudio
-              </Link>
-              <Link
-                href="/ia/cuestionario"
-                className="text-white font-special text-base py-2 px-2 rounded-md hover:bg-white/10 transition-colors text-left flex items-center gap-3"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <BookOpen className="h-4 w-4" />
-                Cuestionarios
-              </Link>
-              <Link
-                href="/ia/resumir"
-                className="text-white font-special text-base py-2 px-2 rounded-md hover:bg-white/10 transition-colors text-left flex items-center gap-3"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <FileText className="h-4 w-4" />
-                Resúmenes
-              </Link>
-              
-              {/* Sección: Configuración */}
-              <div className="text-[#40C9A9] font-semibold text-sm px-2 py-1 mt-4">Configuración</div>
-              <Link
-                href="/ajustes"
-                className="text-white font-special text-base py-2 px-2 rounded-md hover:bg-white/10 transition-colors text-left flex items-center gap-3"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <User className="h-4 w-4" />
-                Ajustes
-              </Link>
-              
-              {/* Botón de cerrar sesión */}
-              <div className="mt-4 pt-2 border-t border-white/10">
-                <button
-                  className="w-full text-left text-red-400 font-special text-base py-2 px-2 rounded-md hover:bg-red-500/10 transition-colors flex items-center gap-3"
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    handleSignOut();
-                  }}
-                >
-                  <LogOut className="h-4 w-4" />
-                  Cerrar Sesión
-                </button>
-              </div>
-            </nav>
-          </div>
-        </div>
-      )}
     </header>
   );
 } 

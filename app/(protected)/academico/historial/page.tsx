@@ -89,6 +89,12 @@ export default function HistorialPage() {
   const [filterEstado, setFilterEstado] = useState<string>("todos");
   const [viewMode, setViewMode] = useState<"list" | "flowchart">("list");
   const [pensumMaterias, setPensumMaterias] = useState<Materia[]>([]);
+  const [semestreInfo, setSemestreInfo] = useState<{
+    actual: string | null;
+    manual: boolean;
+    sugerido: string;
+    detalle: { creditosAprobados: number; porCreditosPensum: number; maxEnCurso: number };
+  } | null>(null);
 
   // Estados para el diálogo de agregar/editar
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -120,6 +126,11 @@ export default function HistorialPage() {
       const response = await axios.get("/api/user/academico/historial");
       setMateriasEstudiante(response.data.materiasEstudiante);
       setMateriasDisponibles(response.data.materiasDisponibles);
+      if (response.data.semestre) {
+        setSemestreInfo(response.data.semestre);
+      } else {
+        setSemestreInfo(null);
+      }
       
       // Convertir materias a formato para Combobox
       const options = response.data.materiasDisponibles.map((materia: any) => ({
@@ -327,6 +338,45 @@ export default function HistorialPage() {
             Administra tu historial completo de materias cursadas
           </p>
         </div>
+
+        {semestreInfo ? (
+          <Card className="mb-6 bg-[#354B3A] border-white/10">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-white text-lg flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-[#40C9A9]" />
+                Semestre académico
+              </CardTitle>
+              <CardDescription className="text-white/60">
+                {semestreInfo.manual
+                  ? "Definido manualmente en ajustes u onboarding. El valor sugerido sigue basado en tus UC aprobadas y pensum."
+                  : "Actualizado automáticamente según tus unidades de crédito aprobadas frente al pensum, ajustado si cursas materias de un semestre superior."}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-sm">
+              <div className="space-y-1">
+                <div className="text-white">
+                  <span className="text-white/70">Tu semestre: </span>
+                  <Badge className="bg-[#40C9A9]/20 text-[#40C9A9] border-[#40C9A9]/40 text-base font-semibold">
+                    {semestreInfo.actual ?? semestreInfo.sugerido}
+                  </Badge>
+                  {semestreInfo.manual ? (
+                    <Badge className="ml-2 bg-white/10 text-white/80 border-white/10">Manual</Badge>
+                  ) : (
+                    <Badge className="ml-2 bg-white/10 text-white/80 border-white/10">Automático</Badge>
+                  )}
+                </div>
+                <div className="text-white/60 text-xs">
+                  UC aprobadas: {semestreInfo.detalle.creditosAprobados} · semestre por pensum S
+                  {semestreInfo.detalle.porCreditosPensum}
+                  {semestreInfo.detalle.maxEnCurso > 0
+                    ? ` · en curso hasta S${semestreInfo.detalle.maxEnCurso}`
+                    : ""}{" "}
+                  → <span className="text-[#40C9A9] font-medium">{semestreInfo.sugerido}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ) : null}
 
         {/* Controles */}
         <div className="flex flex-col lg:flex-row gap-4 mb-6">

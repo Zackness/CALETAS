@@ -33,6 +33,9 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# respaldos de base de datos (contienen datos sensibles)
+/backups/
+
 #cursor rules
 .cursorrules
 

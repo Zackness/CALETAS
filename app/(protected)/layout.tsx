@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import '@fontsource-variable/montserrat';
 import "../globals.css";
-import { DashboardHeader } from "./components/app-header";
-import { IASidebar } from "./components/ia-sidebar";
-import { EmailVerificationBanner } from "./components/email-verification-banner";
+import { ProtectedAppShell } from "./components/protected-app-shell";
 import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
@@ -14,6 +12,12 @@ export const metadata: Metadata = {
   icons: {
     icon: '/favicon.svg',
   },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover" as const,
 };
 
 export default async function ProtectedLayout({
@@ -27,29 +31,29 @@ export default async function ProtectedLayout({
     return redirect("/login");
   }
 
-  const user = await db.user.findUnique({
-    where: { id: session.user.id },
-    select: { isEmailVerified: true },
-  });
-
-  const showVerificationBanner = !user?.isEmailVerified;
+  let showVerificationBanner = false;
+  try {
+    const user = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: { isEmailVerified: true },
+    });
+    showVerificationBanner = !user?.isEmailVerified;
+  } catch (error) {
+    console.error("[protected-layout] user lookup failed:", error);
+    showVerificationBanner = false;
+  }
   const userEmail = session.user.email ?? "";
 
   return (
     <html lang="es">
       <body>
-        <div className="flex min-h-screen bg-gradient-to-t from-mygreen to-mygreen-light">
-          <IASidebar />
-          <div className="flex-1 flex flex-col">
-            <DashboardHeader session={session} />
-            {showVerificationBanner && userEmail ? (
-              <EmailVerificationBanner email={userEmail} />
-            ) : null}
-            <main className="flex-1 w-full max-w-7xl mx-auto px-4 md:px-8 py-6">
-              {children}
-            </main>
-          </div>
-        </div>
+        <ProtectedAppShell
+          session={session}
+          showVerificationBanner={showVerificationBanner}
+          userEmail={userEmail}
+        >
+          {children}
+        </ProtectedAppShell>
       </body>
     </html>
   );

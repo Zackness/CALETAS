@@ -233,7 +233,7 @@ export default function AdminPagosPage() {
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="bg-[#203324] border-white/10 text-white">
+                            <DropdownMenuContent align="end" className="min-w-[11rem]">
                               {row.proofUrl ? (
                                 <DropdownMenuItem asChild className="cursor-pointer hover:bg-white/10">
                                   <a href={row.proofUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2">

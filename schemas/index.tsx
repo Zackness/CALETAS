@@ -1,5 +1,6 @@
 import { UserRole } from "@prisma/client";
 import * as z from "zod";
+import { VENEZUELA_ESTADOS } from "@/lib/venezuela-estados";
 
 export const SettingsSchema = z.object ({
     // Campos de solo lectura (mostrados pero no editables)
@@ -18,24 +19,50 @@ export const SettingsSchema = z.object ({
         })
         .optional(),
     ),
-    email: z.optional(z.string().email({
-        message: "Por favor, ingresa un correo electrónico válido"
-    })),
-    password: z.optional(z.string().min(6, {
-        message: "La contraseña debe tener al menos 6 caracteres"
-    })),
-    newPassword: z.optional(z.string().min(6, {
-        message: "La nueva contraseña debe tener al menos 6 caracteres"
-    })),
+    email: z.preprocess(
+      (v) => (typeof v === "string" && v.trim() === "" ? undefined : v),
+      z
+        .string()
+        .email({
+          message: "Por favor, ingresa un correo electrónico válido",
+        })
+        .optional(),
+    ),
+    password: z.preprocess(
+      (v) => (typeof v === "string" && v.trim() === "" ? undefined : v),
+      z
+        .string()
+        .min(6, {
+          message: "La contraseña debe tener al menos 6 caracteres",
+        })
+        .optional(),
+    ),
+    newPassword: z.preprocess(
+      (v) => (typeof v === "string" && v.trim() === "" ? undefined : v),
+      z
+        .string()
+        .min(6, {
+          message: "La nueva contraseña debe tener al menos 6 caracteres",
+        })
+        .optional(),
+    ),
     isTwoFactorEnabled: z.optional(z.boolean()),
     
     // Nuevos campos para residencia
-    EstadoDeResidencia: z.optional(z.string()),
+    estadoDeResidencia: z.optional(z.string().max(64)),
     ciudadDeResidencia: z.optional(z.string()),
     
     // Campo para subir nueva CI
     ciPhoto: z.optional(z.string()),
 })
+    .refine((data) => {
+        const s = data.estadoDeResidencia?.trim();
+        if (!s || s === "__none__") return true;
+        return (VENEZUELA_ESTADOS as readonly string[]).includes(s);
+    }, {
+        message: "Selecciona un estado de residencia válido",
+        path: ["estadoDeResidencia"],
+    })
     .refine((data) => {
         if (data.password && !data.newPassword) {
             return false;

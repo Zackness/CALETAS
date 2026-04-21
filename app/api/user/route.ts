@@ -29,6 +29,7 @@ export async function GET(req: Request) {
         image: true,
         apellido: true,
         ciudadDeResidencia: true,
+        estadoDeResidencia: true,
         telefono: true,
         isTwoFactorEnabled: true,
         twoFactorPreferredMethod: true,
@@ -40,12 +41,14 @@ export async function GET(req: Request) {
           select: {
             id: true,
             nombre: true,
+            codigo: true,
           },
         },
         universidad: {
           select: {
             id: true,
             nombre: true,
+            siglas: true,
           },
         },
         createdAt: true,

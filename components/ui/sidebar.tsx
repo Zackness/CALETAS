@@ -73,9 +73,6 @@ const SidebarProvider = React.forwardRef<
     },
     ref
   ) => {
-    // Llama SIEMPRE a los hooks primero
-    const [mounted, setMounted] = React.useState(false);
-    React.useEffect(() => setMounted(true), []);
     const isMobile = useIsMobile();
     const [openMobile, setOpenMobile] = React.useState(false);
     const [_open, _setOpen] = React.useState(defaultOpen);
@@ -88,12 +85,22 @@ const SidebarProvider = React.forwardRef<
         } else {
           _setOpen(openState)
         }
-        // Eliminado: document.cookie aquí para evitar hydration error
       },
       [setOpenProp, open]
     )
 
-    // Nuevo useEffect para manipular la cookie solo en el cliente
+    // Restaurar estado del menú desde cookie (solo controlado internamente)
+    React.useEffect(() => {
+      if (openProp !== undefined) return;
+      if (typeof document === "undefined") return;
+      const match = document.cookie.match(
+        new RegExp(`(?:^|; )${SIDEBAR_COOKIE_NAME}=([^;]*)`)
+      );
+      const raw = match?.[1];
+      if (raw === "true") _setOpen(true);
+      else if (raw === "false") _setOpen(false);
+    }, [openProp]);
+
     React.useEffect(() => {
       if (typeof document !== "undefined") {
         document.cookie = `${SIDEBAR_COOKIE_NAME}=${open}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
@@ -139,9 +146,6 @@ const SidebarProvider = React.forwardRef<
       }),
       [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
     )
-
-    // Ahora sí, puedes condicionar el render
-    if (!mounted) return null;
 
     return (
       <SidebarContext.Provider value={contextValue}>
@@ -194,7 +198,7 @@ const Sidebar = React.forwardRef<
       return (
         <div
           className={cn(
-            "flex h-full w-[--sidebar-width] flex-col bg-gradient-to-t from-mygreen to-mygreen-light text-white overflow-x-hidden",
+            "flex h-svh min-h-[100dvh] w-[var(--sidebar-width)] shrink-0 flex-col self-stretch bg-gradient-to-t from-mygreen to-mygreen-light text-white overflow-x-hidden",
             className
           )}
           ref={ref}
@@ -211,7 +215,7 @@ const Sidebar = React.forwardRef<
           <SheetContent
             data-sidebar="sidebar"
             data-mobile="true"
-            className="w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
+            className="w-[var(--sidebar-width)] border-white/10 bg-[#203324] p-0 text-white shadow-none [&>button]:hidden"
             style={
               {
                 "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
@@ -223,7 +227,7 @@ const Sidebar = React.forwardRef<
               <SheetTitle>Sidebar</SheetTitle>
               <SheetDescription>Displays the mobile sidebar.</SheetDescription>
             </SheetHeader>
-            <div className="flex h-full w-full flex-col">{children}</div>
+            <div className="flex min-h-[100dvh] w-full flex-1 flex-col">{children}</div>
           </SheetContent>
         </Sheet>
       )
@@ -241,31 +245,31 @@ const Sidebar = React.forwardRef<
         {/* This is what handles the sidebar gap on desktop */}
         <div
           className={cn(
-            "relative w-[--sidebar-width] bg-transparent transition-[width] duration-200 ease-linear",
+            "relative w-[var(--sidebar-width)] bg-transparent transition-[width] duration-200 ease-linear",
             "group-data-[collapsible=offcanvas]:w-0",
             "group-data-[side=right]:rotate-180",
             variant === "floating" || variant === "inset"
               ? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))]"
-              : "group-data-[collapsible=icon]:w-[--sidebar-width-icon]"
+              : "group-data-[collapsible=icon]:w-[var(--sidebar-width-icon)]"
           )}
         />
         <div
           className={cn(
-            "fixed inset-y-0 z-10 hidden h-svh w-[--sidebar-width] transition-[left,right,width] duration-200 ease-linear md:flex",
+            "fixed inset-y-0 z-20 hidden h-svh w-[var(--sidebar-width)] transition-[left,right,width] duration-200 ease-linear md:flex",
             side === "left"
               ? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"
               : "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
             // Adjust the padding for floating and inset variants.
             variant === "floating" || variant === "inset"
               ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4)_+2px)]"
-              : "group-data-[collapsible=icon]:w-[--sidebar-width-icon] group-data-[side=left]:border-r group-data-[side=right]:border-l",
+              : "group-data-[collapsible=icon]:w-[var(--sidebar-width-icon)] group-data-[side=left]:border-r group-data-[side=right]:border-l",
             className
           )}
           {...props}
         >
           <div
             data-sidebar="sidebar"
-            className="flex h-full w-full flex-col bg-gradient-to-t from-mygreen to-mygreen-light text-white overflow-x-hidden group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow"
+            className="flex h-full min-h-0 w-full flex-col bg-gradient-to-t from-mygreen to-mygreen-light text-white overflow-x-hidden group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow"
           >
             {children}
           </div>
@@ -310,14 +314,15 @@ const SidebarRail = React.forwardRef<
 
   return (
     <button
+      type="button"
       ref={ref}
       data-sidebar="rail"
-      aria-label="Toggle Sidebar"
-      tabIndex={-1}
+      aria-label="Contraer o expandir menú lateral"
+      tabIndex={0}
       onClick={toggleSidebar}
-      title="Toggle Sidebar"
+      title="Contraer o expandir menú"
       className={cn(
-        "absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 transition-all ease-linear after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] hover:after:bg-sidebar-border group-data-[side=left]:-right-4 group-data-[side=right]:left-0 sm:flex",
+        "absolute inset-y-0 z-50 hidden w-6 -translate-x-1/2 transition-all ease-linear after:pointer-events-none after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] hover:after:bg-sidebar-border group-data-[side=left]:-right-3 group-data-[side=right]:left-0 sm:flex",
         "[[data-side=left]_&]:cursor-w-resize [[data-side=right]_&]:cursor-e-resize",
         "[[data-side=left][data-state=collapsed]_&]:cursor-e-resize [[data-side=right][data-state=collapsed]_&]:cursor-w-resize",
         "group-data-[collapsible=offcanvas]:translate-x-0 group-data-[collapsible=offcanvas]:after:left-full group-data-[collapsible=offcanvas]:hover:bg-sidebar",

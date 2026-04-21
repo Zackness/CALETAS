@@ -50,33 +50,34 @@ export default async function HomePage() {
     return null;
   }
 
-  // Verificar el estado de onboarding
-  const user = await db.user.findUnique({
-    where: {
-      id: session.user.id
-    },
-    select: {
-      onboardingStatus: true,
-      carrera: {
-        select: {
-          nombre: true,
-          universidad: {
-            select: {
-              nombre: true,
-              siglas: true
+  try {
+    // Verificar el estado de onboarding
+    const user = await db.user.findUnique({
+      where: {
+        id: session.user.id
+      },
+      select: {
+        onboardingStatus: true,
+        carrera: {
+          select: {
+            nombre: true,
+            universidad: {
+              select: {
+                nombre: true,
+                siglas: true
+              }
             }
           }
         }
       }
-    }
-  });
+    });
 
-  if (user?.onboardingStatus === OnboardingStatus.PENDIENTE) {
-    return redirect("/onboarding");
-  }
-  
-  // Obtener datos académicos del usuario
-  const materiasEstudiante = await db.materiaEstudiante.findMany({
+    if (user?.onboardingStatus === OnboardingStatus.PENDIENTE) {
+      return redirect("/onboarding");
+    }
+    
+    // Obtener datos académicos del usuario
+    const materiasEstudiante = await db.materiaEstudiante.findMany({
       where: {
       userId: session.user.id,
     },
@@ -113,8 +114,23 @@ export default async function HomePage() {
     .reduce((sum, m) => sum + (m.nota || 0), 0) / 
     materiasEstudiante.filter(m => m.estado === "APROBADA" && m.nota).length || 0;
 
-  const progresoCarrera = user?.carrera ? 
-    (creditosAprobados / (creditosAprobados + creditosEnCurso + 50)) * 100 : 0; // Estimación
+  // Progreso real (consistente con /api/user/academico/dashboard):
+  // materias cursadas (APROBADA o EN_CURSO) / total materias de la carrera.
+  const userWithCarreraMaterias = await db.user.findUnique({
+    where: { id: session.user.id },
+    select: {
+      carrera: {
+        select: {
+          materias: { select: { id: true } },
+        },
+      },
+    },
+  });
+  const totalMateriasCarrera = userWithCarreraMaterias?.carrera?.materias?.length ?? 0;
+  const materiasCursadas = materiasEstudiante.filter(
+    (m) => m.estado === "APROBADA" || m.estado === "EN_CURSO",
+  ).length;
+  const progresoCarrera = totalMateriasCarrera > 0 ? (materiasCursadas / totalMateriasCarrera) * 100 : 0;
 
   // Obtener recursos de Caletas del usuario
   const recursosUsuario = await db.recurso.findMany({
@@ -135,8 +151,12 @@ export default async function HomePage() {
     take: 5
   });
 
-  // Obtener recursos más populares de Caletas
-  const recursosPopulares = await db.recurso.findMany({
+  const recursosCompartidosCount = await db.recurso.count({
+    where: { autorId: session.user.id },
+  });
+
+    // Obtener recursos más populares de Caletas
+    const recursosPopulares = await db.recurso.findMany({
     // Todos los recursos son visibles para todos los estudiantes
     select: {
       id: true,
@@ -304,7 +324,7 @@ export default async function HomePage() {
     }
   };
 
-  return (
+    return (
     <div className="min-h-screen bg-gradient-to-t from-mygreen to-mygreen-light">
       <div className="container mx-auto px-4 py-8">
       {/* Header del Dashboard */}
@@ -396,7 +416,7 @@ export default async function HomePage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-white">
-                {recursosUsuario.length}
+                {recursosCompartidosCount}
               </div>
               <p className="text-xs text-white/70 mt-1">
                 En Caletas
@@ -929,5 +949,33 @@ export default async function HomePage() {
                 </div>
       </div>
     </div>
-  );
+    );
+  } catch (error) {
+    console.error("[home] Error cargando dashboard:", error);
+    return (
+      <div className="min-h-screen bg-gradient-to-t from-mygreen to-mygreen-light">
+        <div className="container mx-auto px-4 py-10">
+          <Card className="bg-[#354B3A] border-white/10">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <AlertCircle className="h-5 w-5 text-[#40C9A9]" />
+                No pudimos cargar tu panel
+              </CardTitle>
+              <CardDescription className="text-white/70">
+                Hay un problema temporal conectando con la base de datos. Intenta recargar en unos segundos.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="text-sm text-white/70">
+                Si el problema persiste, revisa tu conexión o el estado del servidor de base de datos.
+              </div>
+              <Button asChild className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white">
+                <Link href="/home">Reintentar</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 }

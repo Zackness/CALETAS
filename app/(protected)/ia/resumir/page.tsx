@@ -7,9 +7,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { FileText, Upload, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { useSubscriptionRequired } from "@/hooks/use-subscription-required";
+import { IATrialBanner } from "@/components/ia-trial-banner";
 
 export default function ResumirPage() {
-  const { loading: subLoading, isActive } = useSubscriptionRequired();
+  const { loading: subLoading, isActive } = useSubscriptionRequired({ allowTrial: true });
   const [file, setFile] = useState<File | null>(null);
   const [text, setText] = useState("");
   const [result, setResult] = useState("");
@@ -25,11 +26,7 @@ export default function ResumirPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (subLoading || !isActive) {
-      toast.error("Necesitas una suscripción para usar IA");
-      return;
-    }
+    if (subLoading) return;
     
     if (!file && !text.trim()) {
       toast.error("Por favor, sube un archivo o ingresa texto");
@@ -54,6 +51,9 @@ export default function ResumirPage() {
 
       if (!response.ok) {
         const error = await response.json();
+        if (response.status === 402 && error?.code === "FREE_LIMIT_REACHED") {
+          throw new Error(error?.error || "Límite gratis alcanzado. Suscríbete para continuar.");
+        }
         throw new Error(error.error || "Error al procesar el contenido");
       }
 
@@ -80,6 +80,12 @@ export default function ResumirPage() {
             Sube un PDF o ingresa texto para obtener un resumen inteligente y explicaciones detalladas
           </p>
         </div>
+
+        {!subLoading && !isActive ? (
+          <div className="mb-6">
+            <IATrialBanner toolLabel="Resumir" endpoint="ia/resumir" />
+          </div>
+        ) : null}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Panel de Entrada */}

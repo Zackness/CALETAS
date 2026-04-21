@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { EstadoMateria } from "@prisma/client";
+import { syncSemestreActualIfAutomatic } from "@/lib/semestre-estudiante";
 
 export async function POST(request: NextRequest) {
   try {
@@ -80,6 +81,8 @@ export async function POST(request: NextRequest) {
         },
       },
     });
+
+    await syncSemestreActualIfAutomatic(session.user.id);
 
     return NextResponse.json({
       message: "Nota actualizada exitosamente",
