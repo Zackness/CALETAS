@@ -26,6 +26,7 @@ export async function POST(request: NextRequest) {
     const semestreActual = formData.get("semestreActual") as string;
     const materiasActuales = formData.get("materiasActuales") as string;
     const carnetData = formData.get("carnetData") as string;
+    const emailVerificationCode = formData.get("emailVerificationCode") as string;
 
     // Validaciones básicas
     if (!userType) {
@@ -109,6 +110,23 @@ export async function POST(request: NextRequest) {
         onboardingStatus: OnboardingStatus.FINALIZADO,
       },
     });
+
+    // Exigir verificación de email antes de finalizar onboarding.
+    // Si ya está verificado, seguimos; si no, el usuario debe ingresar el código en onboarding.
+    const current = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: { id: true, isEmailVerified: true },
+    });
+    if (!current?.isEmailVerified) {
+      return NextResponse.json(
+        {
+          error:
+            "Debes verificar tu correo para completar el onboarding. Revisa tu email e ingresa el código de 6 dígitos.",
+          code: "EMAIL_VERIFICATION_REQUIRED",
+        },
+        { status: 403 },
+      );
+    }
 
     // Validar y guardar materias actuales
     if (materiasActuales) {

@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { MultiSelect } from "@/components/multi-select";
 import { VENEZUELA_ESTADOS } from "@/lib/venezuela-estados";
 
-type Step = 'company-selection' | 'carnet-semestre' | 'direccion' | 'materias-actuales';
+type Step = 'company-selection' | 'email-verification' | 'carnet-semestre' | 'direccion' | 'materias-actuales';
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -34,6 +34,10 @@ export default function OnboardingPage() {
   const [carnetFile, setCarnetFile] = useState<File | null>(null);
   const [carnetData, setCarnetData] = useState<any>(null);
   const [docTipo, setDocTipo] = useState<"carnet" | "planilla">("carnet");
+  const [isEmailVerified, setIsEmailVerified] = useState<boolean>(false);
+  const [emailCode, setEmailCode] = useState("");
+  const [sendingCode, setSendingCode] = useState(false);
+  const [verifyingCode, setVerifyingCode] = useState(false);
   const [semestreActual, setSemestreActual] = useState<string>("");
   const [carreraSeleccionada, setCarreraSeleccionada] = useState<string>("");
   const [carreras, setCarreras] = useState<{ id: string; nombre: string; codigo: string; descripcion: string; duracion: number; creditos: number }[]>([]);
@@ -46,6 +50,19 @@ export default function OnboardingPage() {
       router.push("/home");
     }
   }, [onboardingStatus, router]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/user");
+        if (!res.ok) return;
+        const data = await res.json();
+        setIsEmailVerified(!!data?.user?.isEmailVerified);
+      } catch {
+        // silencioso
+      }
+    })();
+  }, []);
 
   // Cargar universidades al montar el componente
   useEffect(() => {
@@ -121,10 +138,24 @@ export default function OnboardingPage() {
   const handleNext = () => {
     if (currentStep === 'company-selection') {
       if (userType === 'independent') {
-        setCurrentStep('direccion');
+        if (!isEmailVerified) setCurrentStep("email-verification");
+        else setCurrentStep('direccion');
       } else if (userType === 'allied' && universidad) {
-        setCurrentStep('carnet-semestre');
+        if (!isEmailVerified) setCurrentStep("email-verification");
+        else setCurrentStep('carnet-semestre');
       }
+    } else if (currentStep === "email-verification") {
+      if (!isEmailVerified) {
+        setError("Debes verificar tu correo para continuar");
+        toast({
+          title: "Verificación requerida",
+          description: "Ingresa el código de 6 dígitos enviado a tu email.",
+          variant: "destructive",
+        });
+        return;
+      }
+      if (userType === "allied") setCurrentStep("carnet-semestre");
+      else setCurrentStep("direccion");
     } else if (currentStep === 'carnet-semestre') {
       // Validar que el carnet fue subido y analizado correctamente
       if (!carnetData) {
@@ -165,6 +196,8 @@ export default function OnboardingPage() {
       } else {
         setCurrentStep('carnet-semestre');
       }
+    } else if (currentStep === "email-verification") {
+      setCurrentStep("company-selection");
     } else if (currentStep === 'carnet-semestre') {
       setCurrentStep('company-selection');
     }
@@ -174,23 +207,85 @@ export default function OnboardingPage() {
     return currentStep !== 'company-selection';
   };
 
+  useEffect(() => {
+    if (currentStep !== "email-verification") return;
+    if (isEmailVerified) return;
+    // Best-effort: enviar código al entrar al paso (o si expiró)
+    void sendEmailCode();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStep]);
+
   const getStepNumber = (step: Step) => {
     switch (step) {
       case 'company-selection': return 1;
-      case 'carnet-semestre': return 2;
-      case 'direccion': return userType === 'independent' ? 2 : 3;
-      case 'materias-actuales': return userType === 'independent' ? 3 : 4;
+      case 'email-verification': return 2;
+      case 'carnet-semestre': return userType === 'independent' ? 3 : 3;
+      case 'direccion': return userType === 'independent' ? 3 : 4;
+      case 'materias-actuales': return userType === 'independent' ? 4 : 5;
     }
   };
 
   const getTotalSteps = () => {
-    return userType === 'independent' ? 3 : 4;
+    return userType === 'independent' ? 4 : 5;
   };
 
   const getStepProgress = () => {
     const currentStepNumber = getStepNumber(currentStep);
     const totalSteps = getTotalSteps();
     return (currentStepNumber / totalSteps) * 100;
+  };
+
+  const sendEmailCode = async () => {
+    setSendingCode(true);
+    try {
+      const res = await fetch("/api/user/email/verification-code/send", { method: "POST" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error || "No se pudo enviar el código");
+      toast({
+        title: "Código enviado",
+        description: "Revisa tu correo. El código expira en 10 minutos.",
+      });
+    } catch (e) {
+      toast({
+        title: "Error",
+        description: e instanceof Error ? e.message : "No se pudo enviar el código",
+        variant: "destructive",
+      });
+    } finally {
+      setSendingCode(false);
+    }
+  };
+
+  const verifyEmailCode = async () => {
+    const code = emailCode.trim();
+    if (!/^\d{6}$/.test(code)) {
+      toast({
+        title: "Código inválido",
+        description: "Ingresa un código de 6 dígitos.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setVerifyingCode(true);
+    try {
+      const res = await fetch("/api/user/email/verification-code/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error || "No se pudo verificar");
+      setIsEmailVerified(true);
+      toast({ title: "Correo verificado", description: "Ya puedes continuar con el onboarding." });
+    } catch (e) {
+      toast({
+        title: "No se pudo verificar",
+        description: e instanceof Error ? e.message : "Código incorrecto",
+        variant: "destructive",
+      });
+    } finally {
+      setVerifyingCode(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -257,6 +352,7 @@ export default function OnboardingPage() {
       formData.append("ciudad", ciudad);
       formData.append("semestreActual", semestreActual);
       formData.append("materiasActuales", JSON.stringify(materiasActuales));
+      formData.append("emailVerificationCode", emailCode.trim());
       
       if (carnetData) {
         formData.append("carnetData", JSON.stringify(carnetData));
@@ -437,6 +533,61 @@ export default function OnboardingPage() {
                 </Select>
               </div>
             )}
+          </div>
+        );
+      case "email-verification":
+        return (
+          <div className="space-y-4 p-4 border-2 border-mygreen/30 rounded-lg bg-mygreen/10">
+            <div className="space-y-1">
+              <h3 className="text-white font-semibold flex items-center gap-2">
+                <FileText className="h-5 w-5 text-[#40C9A9]" />
+                Verifica tu correo
+              </h3>
+              <p className="text-sm text-white/70">
+                Te enviamos un código de 6 dígitos. Tienes 10 minutos para ingresarlo.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-white font-medium" htmlFor="email-code">
+                Código de verificación
+              </Label>
+              <Input
+                id="email-code"
+                value={emailCode}
+                onChange={(e) => setEmailCode(e.target.value)}
+                placeholder="Ej: 123456"
+                disabled={verifyingCode || sendingCode}
+                className="border-2 border-mygreen/30 bg-white/10 text-white"
+              />
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button
+                  type="button"
+                  onClick={verifyEmailCode}
+                  disabled={verifyingCode || sendingCode}
+                  className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                >
+                  {verifyingCode ? "Verificando..." : "Verificar"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={sendEmailCode}
+                  disabled={verifyingCode || sendingCode}
+                  className="border-white/20 bg-white/5 text-white hover:bg-white/10"
+                >
+                  {sendingCode ? "Enviando..." : "Reenviar código"}
+                </Button>
+              </div>
+
+              {isEmailVerified ? (
+                <div className="text-sm text-green-400">✅ Correo verificado</div>
+              ) : (
+                <div className="text-xs text-white/60">
+                  Si no te llega, revisa spam o reenvía el código.
+                </div>
+              )}
+            </div>
           </div>
         );
       case 'carnet-semestre':

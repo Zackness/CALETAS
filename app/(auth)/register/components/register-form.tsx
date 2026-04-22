@@ -14,8 +14,10 @@ import { FormSucces } from "@/components/form-succes";
 import { authClient } from "@/lib/auth-client";
 import { Eye, EyeOff, Info } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export const RegisterForm = () => {
+  const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
@@ -56,23 +58,16 @@ export const RegisterForm = () => {
             return;
           }
 
-          const { error: verificationError } =
-            await authClient.sendVerificationEmail({
-              email: values.email,
-              callbackURL: "/new-verification?success=1",
-            });
-
-          if (verificationError) {
-            setSucces(
-              "Cuenta creada. Inicia sesión para recibir el correo de verificación.",
-            );
-            return;
+          // Enviar código para verificar dentro del onboarding (no bloquea login)
+          try {
+            await fetch("/api/user/email/verification-code/send", { method: "POST" });
+          } catch {
+            // silencioso: el onboarding puede reenviar
           }
 
           form.reset();
-          setSucces(
-            "Cuenta creada. Te enviamos un correo para verificar tu cuenta.",
-          );
+          setSucces("Cuenta creada. Te enviamos un código para verificar tu correo en el onboarding.");
+          router.push("/onboarding");
         } catch {
           setError("Algo ha salido mal!");
         }

@@ -285,6 +285,26 @@ export const sendBetterAuthVerificationEmail = async (
     });
 };
 
+export const sendEmailVerificationCodeEmail = async (email: string, code: string) => {
+  const content = `
+        <h2>Verifica tu correo</h2>
+        <p>¡Hola!</p>
+        <p>Tu cuenta fue creada correctamente. Para completar el onboarding, ingresa este código de verificación:</p>
+        <div class="code">${code}</div>
+        <div class="highlight">
+            <p>⚠️ Este código expirará en 10 minutos.</p>
+        </div>
+        <p>Si no fuiste tú, ignora este correo.</p>
+  `;
+
+  await resend.emails.send({
+    from: "Caletas <bienvenido@caleta.top>",
+    to: email,
+    subject: "Código de verificación - Caletas",
+    html: baseTemplate(content),
+  });
+};
+
 export const sendManualPaymentRejectedEmail = async (
     email: string,
     userName: string,

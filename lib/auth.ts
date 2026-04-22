@@ -73,8 +73,10 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
-    autoSignIn: false,
-    requireEmailVerification: true,
+    // Queremos iniciar sesión inmediatamente tras registrarse.
+    autoSignIn: true,
+    // La verificación de email se exigirá en el onboarding (no bloquea login).
+    requireEmailVerification: false,
     sendResetPassword: async ({ user, url }) => {
       void sendBetterAuthResetPasswordEmail(user.email, url);
     },
