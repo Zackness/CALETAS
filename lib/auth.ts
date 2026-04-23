@@ -16,9 +16,20 @@ import {
   sendTwoFactorTokenEmail,
 } from "@/lib/mail";
 
+function originFromUrl(url: string | undefined): string | undefined {
+  if (!url?.trim()) return undefined;
+  try {
+    return new URL(url.trim()).origin;
+  } catch {
+    return undefined;
+  }
+}
+
 const trustedOrigins = [
   process.env.BETTER_AUTH_URL,
+  originFromUrl(process.env.BETTER_AUTH_URL),
   process.env.NEXT_PUBLIC_APP_URL,
+  originFromUrl(process.env.NEXT_PUBLIC_APP_URL),
   "http://localhost:3000",
   "http://127.0.0.1:3000",
   // Expo / React Native
@@ -28,6 +39,9 @@ const trustedOrigins = [
   "exp://192.168.*.*:*/**",
   "caletas://",
 ].filter(Boolean) as string[];
+
+// Orígenes únicos (evita duplicados si URL y origin coinciden en concepto)
+const trustedOriginsUnique = [...new Set(trustedOrigins)];
 
 const socialProviders: Record<string, any> = {};
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
@@ -43,10 +57,16 @@ if (process.env.TWITCH_CLIENT_ID && process.env.TWITCH_CLIENT_SECRET) {
   };
 }
 
+const authSecret =
+  process.env.BETTER_AUTH_SECRET?.trim() ||
+  process.env.AUTH_SECRET?.trim() ||
+  undefined;
+
 export const auth = betterAuth({
   appName: "Caletas",
+  ...(authSecret ? { secret: authSecret } : {}),
   baseURL: process.env.BETTER_AUTH_URL || process.env.NEXT_PUBLIC_APP_URL,
-  trustedOrigins,
+  trustedOrigins: trustedOriginsUnique,
   database: prismaAdapter(db, {
     provider: "postgresql",
   }),
@@ -162,6 +182,8 @@ export const auth = betterAuth({
         },
       },
       otpOptions: {
+        /** Minutos de validez del código por correo (por defecto Better Auth usa 3). */
+        period: 10,
         async sendOTP({ user, otp }) {
           void sendTwoFactorTokenEmail(user.email, otp);
         },

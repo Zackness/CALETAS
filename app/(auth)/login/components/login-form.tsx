@@ -63,7 +63,7 @@ export const LoginForm = () => {
       (async () => {
         try {
           if (showTwoFactor) {
-            const code = values.code;
+            const code = (values.code ?? "").trim().replace(/\s+/g, "");
             if (!code) {
               setError("Ingresa el código de verificación");
               return;
@@ -77,7 +77,16 @@ export const LoginForm = () => {
                   : await authClient.twoFactor.verifyTotp({ code });
 
             if (verifyError) {
-              setError(verifyError.message || "Código inválido");
+              const msg = verifyError.message || "";
+              if (verifyError.status === 401 && twoFactorMethod === "email") {
+                setError(
+                  msg.toLowerCase().includes("invalid")
+                    ? "Código incorrecto. Si acabas de pedir otro por correo, usa solo el último código recibido o pulsa «Reenviar código»."
+                    : msg || "No se pudo verificar el código",
+                );
+              } else {
+                setError(msg || "Código inválido");
+              }
               return;
             }
 
@@ -106,7 +115,11 @@ export const LoginForm = () => {
           if (data && "twoFactorRedirect" in data && (data as any).twoFactorRedirect) {
             setShowTwoFactor(true);
             setSucces("Verifica tu identidad para continuar");
-            setTwoFactorMethod("app");
+            const preferred =
+              typeof window !== "undefined"
+                ? window.localStorage.getItem("caletas-2fa-preferred")
+                : null;
+            setTwoFactorMethod(preferred === "EMAIL_OTP" ? "email" : "app");
             setOtpSent(false);
             form.setValue("code", "");
             return;
@@ -157,6 +170,7 @@ export const LoginForm = () => {
                       type="button"
                       onClick={() => {
                         setTwoFactorMethod("app");
+                        setOtpSent(false);
                         setError("");
                         setSucces("");
                         form.setValue("code", "");
@@ -171,24 +185,13 @@ export const LoginForm = () => {
                     </button>
                     <button
                       type="button"
-                      onClick={async () => {
+                      onClick={() => {
                         setTwoFactorMethod("email");
+                        setOtpSent(false);
                         setError("");
                         setSucces("");
                         form.setValue("code", "");
-                        if (!otpSent) {
-                          const { error: sendError } =
-                            await authClient.twoFactor.sendOtp({});
-                          if (sendError) {
-                            setError(
-                              sendError.message ||
-                                "No se pudo enviar el código por correo",
-                            );
-                            return;
-                          }
-                          setOtpSent(true);
-                          setSucces("Te enviamos un código a tu correo");
-                        }
+                        // El envío del OTP lo hace solo el useEffect (evita doble sendOtp: dos códigos en BD y el del correo ya no sirve → 401).
                       }}
                       className={`flex-1 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors ${
                         twoFactorMethod === "email"
@@ -202,6 +205,7 @@ export const LoginForm = () => {
                       type="button"
                       onClick={() => {
                         setTwoFactorMethod("backup");
+                        setOtpSent(false);
                         setError("");
                         setSucces("");
                         form.setValue("code", "");

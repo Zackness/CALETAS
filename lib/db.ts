@@ -1,12 +1,14 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
-const globalForPrisma = global as unknown as { prisma: PrismaClient };
+/** Misma instancia entre recargas (dev) y entre invocaciones calientes (p. ej. serverless). */
+const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
 const TRANSIENT_PRISMA_CODES = new Set<string>([
   "P1017", // Server has closed the connection
   "P1001", // Can't reach database server
   "P1008", // Operations timed out
+  "P2024", // Timed out fetching a new connection from the connection pool
 ]);
 
 function sleep(ms: number) {
@@ -31,7 +33,7 @@ function isTransientPrismaError(error: unknown): boolean {
 }
 
 async function runWithTransientRetry<T>(operation: string, fn: () => Promise<T>): Promise<T> {
-  const maxAttempts = 4;
+  const maxAttempts = process.env.NODE_ENV === "production" ? 6 : 4;
   let lastError: unknown;
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
@@ -81,6 +83,8 @@ function createPrismaClient() {
   }) as unknown as PrismaClient;
 }
 
-export const db = globalForPrisma.prisma || createPrismaClient();
+export const db = globalForPrisma.prisma ?? createPrismaClient();
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = db;
+if (!globalForPrisma.prisma) {
+  globalForPrisma.prisma = db;
+}
