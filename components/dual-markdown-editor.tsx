@@ -85,8 +85,8 @@ export const DualMarkdownEditor = forwardRef<DualMarkdownEditorHandle, DualMarkd
       attributes: {
         class:
           [
-            "rounded-b-lg border-x border-b border-white/10 bg-[#1C2D20] px-4 py-3 text-white/90 text-[15px] leading-7",
-            "focus:outline-none focus:ring-2 focus:ring-[#40C9A9]/40 focus:border-[#40C9A9]/40",
+            "rounded-b-lg border-x border-b border-white/10 bg-[var(--mygreen-dark)] px-4 py-3 text-white/90 text-[15px] leading-7",
+            "focus:outline-none focus:ring-2 focus:ring-[color-mix(in_oklab,var(--accent-hex)_40%,transparent)] focus:border-[color-mix(in_oklab,var(--accent-hex)_40%,transparent)]",
             minHeightClassName,
             "whitespace-pre-wrap break-words",
           ].join(" "),
@@ -260,7 +260,7 @@ export const DualMarkdownEditor = forwardRef<DualMarkdownEditorHandle, DualMarkd
   );
 
   const toolbar = (
-    <div className="flex flex-wrap items-center justify-between gap-2 rounded-t-lg border border-white/10 border-b-0 bg-[#203324] px-3 py-2">
+    <div className="flex flex-wrap items-center justify-between gap-2 rounded-t-lg border border-white/10 border-b-0 bg-[var(--mygreen)] px-3 py-2">
       <div className="flex items-center gap-2">
         <Button
           type="button"
@@ -268,8 +268,8 @@ export const DualMarkdownEditor = forwardRef<DualMarkdownEditorHandle, DualMarkd
           variant="outline"
           className={
             mode === "codemirror"
-              ? "h-7 border-[#40C9A9]/50 bg-[#40C9A9]/15 text-[#40C9A9] hover:bg-[#40C9A9]/20"
-              : "h-7 border-white/10 bg-[#1C2D20] text-white/80 hover:bg-white/10"
+              ? "h-7 border-[color-mix(in_oklab,var(--accent-hex)_50%,transparent)] bg-[color-mix(in_oklab,var(--accent-hex)_15%,transparent)] text-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)]"
+              : "h-7 border-white/10 bg-[var(--mygreen-dark)] text-white/80 hover:bg-white/10"
           }
           onClick={() => setMode("codemirror")}
         >
@@ -281,8 +281,8 @@ export const DualMarkdownEditor = forwardRef<DualMarkdownEditorHandle, DualMarkd
           variant="outline"
           className={
             mode === "tiptap"
-              ? "h-7 border-[#40C9A9]/50 bg-[#40C9A9]/15 text-[#40C9A9] hover:bg-[#40C9A9]/20"
-              : "h-7 border-white/10 bg-[#1C2D20] text-white/80 hover:bg-white/10"
+              ? "h-7 border-[color-mix(in_oklab,var(--accent-hex)_50%,transparent)] bg-[color-mix(in_oklab,var(--accent-hex)_15%,transparent)] text-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)]"
+              : "h-7 border-white/10 bg-[var(--mygreen-dark)] text-white/80 hover:bg-white/10"
           }
           onClick={() => setMode("tiptap")}
         >
@@ -291,7 +291,7 @@ export const DualMarkdownEditor = forwardRef<DualMarkdownEditorHandle, DualMarkd
       </div>
       <div className="flex flex-wrap items-center gap-2">
         <select
-          className="h-7 rounded-md border border-white/10 bg-[#1C2D20] px-2 text-xs text-white/80"
+          className="h-7 rounded-md border border-white/10 bg-[var(--mygreen-dark)] px-2 text-xs text-white/80"
           defaultValue="normal"
           onChange={(e) => {
             const v = e.target.value;
@@ -311,7 +311,7 @@ export const DualMarkdownEditor = forwardRef<DualMarkdownEditorHandle, DualMarkd
           type="button"
           size="sm"
           variant="outline"
-          className="h-7 border-white/10 bg-[#1C2D20] text-white/90 hover:bg-white/10 px-2"
+          className="h-7 border-white/10 bg-[var(--mygreen-dark)] text-white/90 hover:bg-white/10 px-2"
           onClick={() => applyWrap("**", "**", "texto")}
         >
           <strong>B</strong>
@@ -320,7 +320,7 @@ export const DualMarkdownEditor = forwardRef<DualMarkdownEditorHandle, DualMarkd
           type="button"
           size="sm"
           variant="outline"
-          className="h-7 border-white/10 bg-[#1C2D20] text-white/90 hover:bg-white/10 px-2 italic"
+          className="h-7 border-white/10 bg-[var(--mygreen-dark)] text-white/90 hover:bg-white/10 px-2 italic"
           onClick={() => applyWrap("*", "*", "texto")}
         >
           I
@@ -329,7 +329,7 @@ export const DualMarkdownEditor = forwardRef<DualMarkdownEditorHandle, DualMarkd
           type="button"
           size="sm"
           variant="outline"
-          className="h-7 border-white/10 bg-[#1C2D20] text-white/90 hover:bg-white/10 px-2"
+          className="h-7 border-white/10 bg-[var(--mygreen-dark)] text-white/90 hover:bg-white/10 px-2"
           onClick={() => insertToken("\n- ")}
         >
           • List
@@ -338,7 +338,7 @@ export const DualMarkdownEditor = forwardRef<DualMarkdownEditorHandle, DualMarkd
           type="button"
           size="sm"
           variant="outline"
-          className="h-7 border-white/10 bg-[#1C2D20] text-white/90 hover:bg-white/10 px-2"
+          className="h-7 border-white/10 bg-[var(--mygreen-dark)] text-white/90 hover:bg-white/10 px-2"
           onClick={() => insertToken("\n$$\n\n$$\n")}
         >
           f(x)
@@ -347,7 +347,7 @@ export const DualMarkdownEditor = forwardRef<DualMarkdownEditorHandle, DualMarkd
           type="button"
           size="sm"
           variant="outline"
-          className="h-7 border-white/10 bg-[#1C2D20] text-white/80 hover:bg-white/10 px-2"
+          className="h-7 border-white/10 bg-[var(--mygreen-dark)] text-white/80 hover:bg-white/10 px-2"
           onClick={handleUndo}
         >
           ↶
@@ -356,7 +356,7 @@ export const DualMarkdownEditor = forwardRef<DualMarkdownEditorHandle, DualMarkd
           type="button"
           size="sm"
           variant="outline"
-          className="h-7 border-white/10 bg-[#1C2D20] text-white/80 hover:bg-white/10 px-2"
+          className="h-7 border-white/10 bg-[var(--mygreen-dark)] text-white/80 hover:bg-white/10 px-2"
           onClick={handleRedo}
         >
           ↷
@@ -374,7 +374,7 @@ export const DualMarkdownEditor = forwardRef<DualMarkdownEditorHandle, DualMarkd
           <EditorContent editor={editor} />
         </div>
       ) : (
-        <div className="rounded-b-lg border border-white/10 bg-[#1C2D20] overflow-hidden overleaf-cm-shell">
+        <div className="rounded-b-lg border border-white/10 bg-[var(--mygreen-dark)] overflow-hidden overleaf-cm-shell">
           <CodeMirror
             value={value}
             height={codeMirrorHeight}

@@ -219,7 +219,7 @@ export default function ChatIA() {
       ) : null}
 
       <Dialog open={renameDialogOpen} onOpenChange={setRenameDialogOpen}>
-        <DialogContent className="bg-[#203324] border-white/10 text-white">
+        <DialogContent className="bg-[var(--mygreen)] border-white/10 text-white">
           <DialogHeader>
             <DialogTitle>Renombrar chat</DialogTitle>
           </DialogHeader>
@@ -231,7 +231,7 @@ export default function ChatIA() {
               id="rename-chat-input"
               value={renameValue}
               onChange={(e) => setRenameValue(e.target.value)}
-              className="bg-[#1C2D20] border-white/20 text-white"
+              className="bg-[var(--mygreen-dark)] border-white/20 text-white"
               placeholder="Ej: Ejercicios de Control I"
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
@@ -252,7 +252,7 @@ export default function ChatIA() {
             </Button>
             <Button
               type="button"
-              className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+              className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
               onClick={confirmRenameChat}
             >
               Guardar
@@ -261,7 +261,7 @@ export default function ChatIA() {
         </DialogContent>
       </Dialog>
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent className="bg-[#203324] border-white/10 text-white">
+        <DialogContent className="bg-[var(--mygreen)] border-white/10 text-white">
           <DialogHeader>
             <DialogTitle>Eliminar chat</DialogTitle>
           </DialogHeader>
@@ -293,7 +293,7 @@ export default function ChatIA() {
           <div className="flex items-start justify-between gap-3 flex-col lg:flex-row">
             <div>
               <h1 className="text-2xl md:text-3xl font-special text-white mb-2 flex items-center gap-2">
-                <Sparkles className="w-6 h-6 text-[#40C9A9]" />
+                <Sparkles className="w-6 h-6 text-[var(--accent-hex)]" />
                 Chat IA
               </h1>
               <p className="text-white/70">
@@ -302,20 +302,20 @@ export default function ChatIA() {
             </div>
 
             <div className="flex items-center gap-2 flex-wrap">
-              <Badge className="bg-[#354B3A] text-white border border-white/10">
+              <Badge className="bg-[var(--mygreen-light)] text-white border border-white/10">
                 {activeThread?.title || "Cargando chat..."}
               </Badge>
               {careerName ? (
-                <Badge className="bg-[#354B3A] text-white border border-white/10">
+                <Badge className="bg-[var(--mygreen-light)] text-white border border-white/10">
                   Carrera: {careerName}
                 </Badge>
               ) : (
-                <Badge className="bg-[#354B3A] text-white/80 border border-white/10">
+                <Badge className="bg-[var(--mygreen-light)] text-white/80 border border-white/10">
                   Carrera: no configurada
                 </Badge>
               )}
               {activeProjectName ? (
-                <Badge className="bg-[#354B3A] text-white border border-white/10">
+                <Badge className="bg-[var(--mygreen-light)] text-white border border-white/10">
                   Proyecto: {activeProjectName}
                 </Badge>
               ) : null}
@@ -323,7 +323,7 @@ export default function ChatIA() {
               <Button
                 type="button"
                 variant="outline"
-                className="border-[#40C9A9]/60 bg-[#203324] text-white hover:bg-[#354B3A]"
+                className="border-[color-mix(in_oklab,var(--accent-hex)_60%,transparent)] bg-[var(--mygreen)] text-white hover:bg-[var(--mygreen-light)]"
                 onClick={renameChat}
               >
                 <Edit3 className="w-4 h-4 mr-2" />
@@ -331,7 +331,7 @@ export default function ChatIA() {
               </Button>
               <Button
                 type="button"
-                className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
                 onClick={createNewChat}
               >
                 <Plus className="w-4 h-4 mr-2" />
@@ -340,7 +340,7 @@ export default function ChatIA() {
               <Button
                 type="button"
                 variant="outline"
-                className="border-red-400/40 bg-[#203324] text-white hover:bg-red-500/20"
+                className="border-red-400/40 bg-[var(--mygreen)] text-white hover:bg-red-500/20"
                 onClick={requestDeleteChat}
               >
                 <Trash2 className="w-4 h-4 mr-2" />
@@ -350,10 +350,10 @@ export default function ChatIA() {
           </div>
         </div>
 
-        <Card className="bg-[#354B3A] border-white/10 shadow-2xl shadow-black/20">
+        <Card className="bg-[var(--mygreen-light)] border-white/10 shadow-2xl shadow-black/20">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
-              <Bot className="w-5 h-5 text-[#40C9A9]" />
+              <Bot className="w-5 h-5 text-[var(--accent-hex)]" />
               Conversación
             </CardTitle>
             <CardDescription className="text-white/70">
@@ -362,7 +362,7 @@ export default function ChatIA() {
           </CardHeader>
 
           <CardContent className="space-y-4">
-            <div className="h-[60vh] overflow-y-auto rounded-xl bg-[#1C2D20] border border-white/10 p-4 space-y-3">
+            <div className="h-[60vh] overflow-y-auto rounded-xl bg-[var(--mygreen-dark)] border border-white/10 p-4 space-y-3">
               {messages.map((m, idx) => {
                 const isUser = m.role === "user";
                 return (
@@ -373,8 +373,8 @@ export default function ChatIA() {
                     <div
                       className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed border ${
                         isUser
-                          ? "bg-[#40C9A9]/25 text-white border-[#40C9A9]/40"
-                          : "bg-[#354B3A] text-white/90 border-white/10"
+                          ? "bg-[color-mix(in_oklab,var(--accent-hex)_25%,transparent)] text-white border-[color-mix(in_oklab,var(--accent-hex)_40%,transparent)]"
+                          : "bg-[var(--mygreen-light)] text-white/90 border-white/10"
                       }`}
                     >
                       <div className="whitespace-pre-wrap">{m.content}</div>
@@ -399,7 +399,7 @@ export default function ChatIA() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Escribe tu pregunta… (Enter para enviar, Shift+Enter para salto de línea)"
-                className="bg-[#1C2D20] border-white/10 text-white placeholder:text-white/50 min-h-[90px] rounded-xl"
+                className="bg-[var(--mygreen-dark)] border-white/10 text-white placeholder:text-white/50 min-h-[90px] rounded-xl"
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
@@ -412,7 +412,7 @@ export default function ChatIA() {
               <div className="flex justify-end">
                 <Button
                   type="button"
-                  className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                  className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
                   disabled={!canSend}
                   onClick={() => void onSend()}
                 >

@@ -6,7 +6,7 @@ export function Hero() {
     <section className="flex flex-col lg:flex-row mx-4 sm:mx-6 lg:mx-8 pt-6 sm:pt-8 lg:pt-[40px] lg:pl-10">
         <div className="flex flex-col lg:w-[50%] w-full">
             <h1 className="text-[2rem] sm:text-[2.5rem] md:text-[3.5rem] lg:text-[4.3rem] font-special pb-4 sm:pb-6 lg:pb-[24px] leading-tight">
-                <span className="text-[#40C9A9]">COMPARTE</span> Y APRENDE CON TU COMUNIDAD
+                <span className="text-[var(--accent-hex)]">COMPARTE</span> Y APRENDE CON TU COMUNIDAD
             </h1>
             <p className="pb-6 sm:pb-8 lg:pb-[45px] font-semibold text-lg sm:text-xl md:text-2xl lg:text-3xl leading-relaxed sm:leading-relaxed md:leading-relaxed lg:leading-[50px]">
                 Accede a material universitario creado por estudiantes

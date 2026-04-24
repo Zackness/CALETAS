@@ -1,4 +1,5 @@
 import "@/app/globals.css";
+import { ThemeProvider } from "@/components/theme-provider";
 
 export default function RootLayout({
   children,
@@ -6,9 +7,9 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="es" suppressHydrationWarning>
       <body>
-          {children}
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   )

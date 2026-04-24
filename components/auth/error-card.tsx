@@ -7,7 +7,7 @@ import Link from "next/link";
 
 export const ErrorCard = () => {
     const searchParams = useSearchParams();
-    const error = searchParams.get("error");
+    const error = searchParams?.get("error");
 
     return (
         <Card className="w-[400px] shadow-md">

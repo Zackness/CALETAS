@@ -208,23 +208,23 @@ export default function AdminUsuariosPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-special text-white mb-2 flex items-center gap-2">
-            <ShieldCheck className="w-6 h-6 text-[#40C9A9]" />
+            <ShieldCheck className="w-6 h-6 text-[var(--accent-hex)]" />
             Panel Admin - Usuarios
           </h1>
         </div>
 
-        <Card className="bg-[#354B3A] border-white/10">
+        <Card className="bg-[var(--mygreen-light)] border-white/10">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-white flex items-center gap-2">
-                <Users className="w-5 h-5 text-[#40C9A9]" />
+                <Users className="w-5 h-5 text-[var(--accent-hex)]" />
                 Usuarios
               </CardTitle>
               <CardDescription className="text-white/70">Administra usuarios de la plataforma.</CardDescription>
             </div>
             <Button
               type="button"
-              className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+              className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
               onClick={() => {
                 setEditingUser(null);
                 setUserForm({
@@ -252,7 +252,7 @@ export default function AdminUsuariosPage() {
                 <div className="relative">
                   <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50" />
                   <Input
-                    className="pl-9 bg-[#1C2D20] border-white/20 text-white placeholder:text-white/60"
+                    className="pl-9 bg-[var(--mygreen-dark)] border-white/20 text-white placeholder:text-white/60"
                     placeholder="Nombre o correo..."
                     value={userSearch}
                     onChange={(e) => setUserSearch(e.target.value)}
@@ -262,10 +262,10 @@ export default function AdminUsuariosPage() {
               <div className="w-full md:w-48">
                 <Label className="text-white/80 mb-1 block">Rol</Label>
                 <Select value={userRoleFilter} onValueChange={(v) => setUserRoleFilter(v as Role | "ALL")}>
-                  <SelectTrigger className="bg-[#1C2D20] border-white/20 text-white">
+                  <SelectTrigger className="bg-[var(--mygreen-dark)] border-white/20 text-white">
                     <SelectValue placeholder="Todos" />
                   </SelectTrigger>
-                  <SelectContent className="bg-[#203324] text-white border-white/10">
+                  <SelectContent className="bg-[var(--mygreen)] text-white border-white/10">
                     <SelectItem value="ALL">Todos</SelectItem>
                     {ROLES.map((role) => (
                       <SelectItem key={role} value={role}>{role}</SelectItem>
@@ -275,7 +275,7 @@ export default function AdminUsuariosPage() {
               </div>
               <Button
                 type="button"
-                className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
                 onClick={() => void loadUsers({ search: userSearch, role: userRoleFilter })}
               >
                 Aplicar filtros
@@ -284,7 +284,7 @@ export default function AdminUsuariosPage() {
 
             <div className="rounded-lg border border-white/10 overflow-auto">
               <table className="w-full text-sm">
-                <thead className="bg-[#1C2D20] text-white/70">
+                <thead className="bg-[var(--mygreen-dark)] text-white/70">
                   <tr>
                     <th className="px-3 py-2 text-left">Nombre</th>
                     <th className="px-3 py-2 text-left">Correo</th>
@@ -301,10 +301,10 @@ export default function AdminUsuariosPage() {
                     <tr><td colSpan={6} className="px-3 py-4 text-center text-white/70">No se encontraron usuarios.</td></tr>
                   ) : (
                     users.map((u) => (
-                      <tr key={u.id} className="border-t border-white/5 bg-[#203324]">
+                      <tr key={u.id} className="border-t border-white/5 bg-[var(--mygreen)]">
                         <td className="px-3 py-2 text-white">{u.name || "-"}</td>
                         <td className="px-3 py-2 text-white/80">{u.email}</td>
-                        <td className="px-3 py-2"><Badge className="bg-[#40C9A9]/10 text-[#40C9A9] border-[#40C9A9]/20">{u.role}</Badge></td>
+                        <td className="px-3 py-2"><Badge className="bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] text-[var(--accent-hex)] border-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)]">{u.role}</Badge></td>
                         <td className="px-3 py-2 text-xs text-white/70">
                           {u.isEmailVerified ? "Email verificado" : "Email no verificado"} - 2FA: {u.isTwoFactorEnabled ? "activo" : "desactivado"}
                         </td>
@@ -355,28 +355,28 @@ export default function AdminUsuariosPage() {
       </div>
 
       <Dialog open={userDialogOpen} onOpenChange={setUserDialogOpen}>
-        <DialogContent className="bg-[#203324] text-white border-white/10">
+        <DialogContent className="bg-[var(--mygreen)] text-white border-white/10">
           <DialogHeader>
             <DialogTitle>Nuevo usuario</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <div><Label className="text-white/80">Nombre</Label><Input className="bg-[#1C2D20] border-white/20 text-white" value={userForm.name} onChange={(e) => setUserForm((f) => ({ ...f, name: e.target.value }))} /></div>
-            <div><Label className="text-white/80">Correo</Label><Input className="bg-[#1C2D20] border-white/20 text-white" value={userForm.email} onChange={(e) => setUserForm((f) => ({ ...f, email: e.target.value }))} /></div>
-            <div><Label className="text-white/80">Teléfono</Label><Input className="bg-[#1C2D20] border-white/20 text-white" value={userForm.telefono} onChange={(e) => setUserForm((f) => ({ ...f, telefono: e.target.value }))} /></div>
+            <div><Label className="text-white/80">Nombre</Label><Input className="bg-[var(--mygreen-dark)] border-white/20 text-white" value={userForm.name} onChange={(e) => setUserForm((f) => ({ ...f, name: e.target.value }))} /></div>
+            <div><Label className="text-white/80">Correo</Label><Input className="bg-[var(--mygreen-dark)] border-white/20 text-white" value={userForm.email} onChange={(e) => setUserForm((f) => ({ ...f, email: e.target.value }))} /></div>
+            <div><Label className="text-white/80">Teléfono</Label><Input className="bg-[var(--mygreen-dark)] border-white/20 text-white" value={userForm.telefono} onChange={(e) => setUserForm((f) => ({ ...f, telefono: e.target.value }))} /></div>
             <div>
               <Label className="text-white/80">Rol</Label>
               <Select value={userForm.role} onValueChange={(v) => setUserForm((f) => ({ ...f, role: v as Role }))}>
-                <SelectTrigger className="bg-[#1C2D20] border-white/20 text-white"><SelectValue /></SelectTrigger>
-                <SelectContent className="bg-[#203324] text-white border-white/10">
+                <SelectTrigger className="bg-[var(--mygreen-dark)] border-white/20 text-white"><SelectValue /></SelectTrigger>
+                <SelectContent className="bg-[var(--mygreen)] text-white border-white/10">
                   {ROLES.map((role) => <SelectItem key={role} value={role}>{role}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
-            <div><Label className="text-white/80">Contraseña</Label><Input type="password" className="bg-[#1C2D20] border-white/20 text-white" value={userForm.password} onChange={(e) => setUserForm((f) => ({ ...f, password: e.target.value }))} /></div>
+            <div><Label className="text-white/80">Contraseña</Label><Input type="password" className="bg-[var(--mygreen-dark)] border-white/20 text-white" value={userForm.password} onChange={(e) => setUserForm((f) => ({ ...f, password: e.target.value }))} /></div>
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" className="border-white/20 text-white bg-transparent hover:bg-white/10" onClick={() => setUserDialogOpen(false)}>Cancelar</Button>
-            <Button type="button" className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white" disabled={savingUser} onClick={() => void handleSaveUser()}>
+            <Button type="button" className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white" disabled={savingUser} onClick={() => void handleSaveUser()}>
               {savingUser ? "Guardando..." : "Guardar"}
             </Button>
           </DialogFooter>

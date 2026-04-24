@@ -39,6 +39,10 @@ import {
   BookMarked
 } from "lucide-react";
 import Link from "next/link";
+import { HomeHistoriasStrip } from "@/components/historias/home-historias-strip";
+import { HomeCaletaFeedColumns } from "@/components/home/home-caleta-feed-columns";
+import type { FeedCaleta } from "@/components/home/home-caleta-feed-card";
+import { CaletaTour } from "@/components/tutorial/caleta-tour";
 
 // Suprimir warning de hidratación para extensiones del navegador
 export const dynamic = 'force-dynamic';
@@ -181,6 +185,8 @@ export default async function HomePage() {
           name: true,
         },
       },
+      favoritos: { where: { usuarioId: session.user.id }, select: { id: true } },
+      _count: { select: { favoritos: true } },
     },
     orderBy: [
       { numVistas: 'desc' },
@@ -192,7 +198,54 @@ export default async function HomePage() {
   const recursosPopularesMasked = recursosPopulares.map((r) => ({
     ...r,
     autor: r.esAnonimo && r.autorId !== session.user.id ? { name: "Anónimo" } : r.autor,
+    isFavorito: Array.isArray((r as any).favoritos) && (r as any).favoritos.length > 0,
+    favoritosCount: (r as any)._count?.favoritos ?? 0,
   }));
+
+  // Feed: caletas recientes (tipo red social)
+  const recursosRecientes = await db.recurso.findMany({
+    select: {
+      id: true,
+      titulo: true,
+      descripcion: true,
+      tipo: true,
+      createdAt: true,
+      calificacion: true,
+      numVistas: true,
+      numDescargas: true,
+      esAnonimo: true,
+      autorId: true,
+      materia: { select: { codigo: true, nombre: true } },
+      autor: { select: { name: true } },
+      favoritos: { where: { usuarioId: session.user.id }, select: { id: true } },
+      _count: { select: { favoritos: true } },
+    },
+    orderBy: { createdAt: "desc" },
+    take: 6,
+  });
+
+  const recursosRecientesMasked = recursosRecientes.map((r) => ({
+    ...r,
+    autor: r.esAnonimo && r.autorId !== session.user.id ? { name: "Anónimo" } : r.autor,
+    isFavorito: r.favoritos.length > 0,
+    favoritosCount: r._count.favoritos,
+  }));
+
+  const toFeedCaletaClient = (r: (typeof recursosRecientesMasked)[number]): FeedCaleta => ({
+    id: r.id,
+    titulo: r.titulo,
+    tipo: r.tipo,
+    createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : String(r.createdAt),
+    numVistas: r.numVistas,
+    numDescargas: r.numDescargas,
+    autor: { name: r.autor.name ?? "Estudiante" },
+    materia: r.materia,
+    isFavorito: r.isFavorito,
+    favoritosCount: r.favoritosCount,
+  });
+
+  const feedNuevasClient = recursosRecientesMasked.map(toFeedCaletaClient);
+  const feedPopularesClient = recursosPopularesMasked.map(toFeedCaletaClient);
 
   // Obtener materias próximas a vencer (materias en curso)
   const materiasProximas = materiasEstudiante
@@ -326,6 +379,7 @@ export default async function HomePage() {
 
     return (
     <div className="min-h-screen bg-gradient-to-t from-mygreen to-mygreen-light">
+      <CaletaTour />
       <div className="container mx-auto px-4 py-8">
       {/* Header del Dashboard */}
         <div className="mb-8">
@@ -342,7 +396,7 @@ export default async function HomePage() {
         </p>
       </div>
                   <div className="flex items-center gap-2 self-start sm:self-auto">
-              <Badge className="bg-[#40C9A9]/10 text-[#40C9A9] border-[#40C9A9]/20">
+              <Badge className="bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] text-[var(--accent-hex)] border-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)]">
                 <Bell className="w-3 h-3 mr-1" />
                 {notificaciones.length} nuevas
               </Badge>
@@ -350,94 +404,27 @@ export default async function HomePage() {
           </div>
         </div>
 
-        {/* Estadísticas Principales */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-[#354B3A] border-white/10">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-white/70">
-                Progreso de Carrera
-              </CardTitle>
-              <Target className="h-4 w-4 text-[#40C9A9]" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">
-                {progresoCarrera.toFixed(1)}%
-              </div>
-              <Progress 
-                value={progresoCarrera} 
-                className="mt-2"
-              />
-              <p className="text-xs text-white/70 mt-1">
-                {creditosAprobados} créditos aprobados
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-[#354B3A] border-white/10">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-white/70">
-                Promedio General
-              </CardTitle>
-              <TrendingUp className="h-4 w-4 text-[#40C9A9]" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">
-                {promedioGeneral.toFixed(2)}
-              </div>
-              <p className="text-xs text-white/70 mt-1">
-                {materiasAprobadas} materias aprobadas
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-[#354B3A] border-white/10">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-white/70">
-                Materias en Curso
-              </CardTitle>
-              <Clock className="h-4 w-4 text-[#40C9A9]" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">
-                {materiasEnCurso}
-              </div>
-              <p className="text-xs text-white/70 mt-1">
-                {creditosEnCurso} créditos en curso
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-[#354B3A] border-white/10">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-white/70">
-                Recursos Compartidos
-              </CardTitle>
-              <Share2 className="h-4 w-4 text-[#40C9A9]" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">
-                {recursosCompartidosCount}
-              </div>
-              <p className="text-xs text-white/70 mt-1">
-                En Caletas
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+        <HomeHistoriasStrip />
 
         {/* Tabs principales */}
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="w-full overflow-x-auto bg-[#354B3A] border-white/10 p-1 flex gap-1">
-            <TabsTrigger value="overview" className="min-w-[140px] text-white data-[state=active]:bg-[#40C9A9] data-[state=active]:text-white">
-              Resumen General
-            </TabsTrigger>
-            <TabsTrigger value="academic" className="min-w-[110px] text-white data-[state=active]:bg-[#40C9A9] data-[state=active]:text-white">
-              Académico
-            </TabsTrigger>
-            <TabsTrigger value="caletas" className="min-w-[100px] text-white data-[state=active]:bg-[#40C9A9] data-[state=active]:text-white">
+        <Tabs defaultValue="caletas" className="space-y-6">
+          <TabsList className="flex w-full gap-0.5 overflow-x-auto border-white/10 bg-[var(--mygreen-light)] p-0.5">
+            <TabsTrigger
+              value="caletas"
+              className="h-8 min-w-[5.5rem] flex-1 rounded-md px-2 text-xs text-white data-[state=active]:bg-[var(--accent-hex)] data-[state=active]:text-white sm:text-sm"
+            >
               Caletas
             </TabsTrigger>
-            <TabsTrigger value="goals" className="min-w-[90px] text-white data-[state=active]:bg-[#40C9A9] data-[state=active]:text-white">
+            <TabsTrigger
+              value="overview"
+              className="h-8 min-w-[6.5rem] flex-1 rounded-md px-2 text-xs text-white data-[state=active]:bg-[var(--accent-hex)] data-[state=active]:text-white sm:text-sm"
+            >
+              Novedades
+            </TabsTrigger>
+            <TabsTrigger
+              value="goals"
+              className="h-8 min-w-[5rem] flex-1 rounded-md px-2 text-xs text-white data-[state=active]:bg-[var(--accent-hex)] data-[state=active]:text-white sm:text-sm"
+            >
               Metas
             </TabsTrigger>
           </TabsList>
@@ -446,10 +433,10 @@ export default async function HomePage() {
           <TabsContent value="overview" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Materias Próximas */}
-              <Card className="bg-[#354B3A] border-white/10">
+              <Card className="bg-[var(--mygreen-light)] border-white/10">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
-                    <Clock3 className="w-5 h-5 text-[#40C9A9]" />
+                    <Clock3 className="w-5 h-5 text-[var(--accent-hex)]" />
                     Materias en Curso
                   </CardTitle>
                   <CardDescription className="text-white/70">
@@ -459,7 +446,7 @@ export default async function HomePage() {
                 <CardContent>
                   <div className="space-y-3">
                     {materiasProximas.map((materia) => (
-                      <div key={materia.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-[#1C2D20] rounded-lg">
+                      <div key={materia.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-[var(--mygreen-dark)] rounded-lg">
                         <div className="flex items-start sm:items-center gap-3 min-w-0">
                           {getEstadoIcon(materia.estado)}
                           <div className="min-w-0">
@@ -479,20 +466,24 @@ export default async function HomePage() {
                       </div>
                     )}
                   </div>
-                  <Button asChild className="w-full mt-4 bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white">
-                    <Link href="/academico">
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="mt-4 h-8 min-h-0 w-full rounded-lg border-0 bg-[var(--accent-hex)] px-3 py-0 text-xs font-medium text-white hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)]"
+                  >
+                    <Link href="/academico" className="inline-flex items-center justify-center gap-1.5">
                       Ver Panel Académico
-                      <ArrowRight className="w-4 h-4 ml-2" />
+                      <ArrowRight className="h-3 w-3 shrink-0" />
                     </Link>
                   </Button>
                 </CardContent>
               </Card>
 
               {/* Notificaciones */}
-              <Card className="bg-[#354B3A] border-white/10">
+              <Card className="bg-[var(--mygreen-light)] border-white/10">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
-                    <Bell className="w-5 h-5 text-[#40C9A9]" />
+                    <Bell className="w-5 h-5 text-[var(--accent-hex)]" />
                     Notificaciones Recientes
                   </CardTitle>
                   <CardDescription className="text-white/70">
@@ -502,8 +493,8 @@ export default async function HomePage() {
                 <CardContent>
                   <div className="space-y-3">
                     {notificaciones.map((notificacion) => (
-                      <div key={notificacion.id} className="flex items-start gap-3 p-3 bg-[#1C2D20] rounded-lg">
-                        <div className="w-2 h-2 bg-[#40C9A9] rounded-full mt-2 flex-shrink-0"></div>
+                      <div key={notificacion.id} className="flex items-start gap-3 p-3 bg-[var(--mygreen-dark)] rounded-lg">
+                        <div className="w-2 h-2 bg-[var(--accent-hex)] rounded-full mt-2 flex-shrink-0"></div>
                         <div className="flex-1">
                           <p className="text-white font-medium text-sm">{notificacion.message}</p>
                           <p className="text-white/50 text-xs">
@@ -525,7 +516,7 @@ export default async function HomePage() {
 
             {/* Estadísticas Detalladas */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card className="bg-[#354B3A] border-white/10">
+              <Card className="bg-[var(--mygreen-light)] border-white/10">
                 <CardHeader>
                   <CardTitle className="text-white text-center">Distribución de Materias</CardTitle>
                 </CardHeader>
@@ -551,7 +542,7 @@ export default async function HomePage() {
                 </CardContent>
               </Card>
 
-              <Card className="bg-[#354B3A] border-white/10">
+              <Card className="bg-[var(--mygreen-light)] border-white/10">
                 <CardHeader>
                   <CardTitle className="text-white text-center">Progreso de Créditos</CardTitle>
                 </CardHeader>
@@ -573,7 +564,7 @@ export default async function HomePage() {
                 </CardContent>
               </Card>
 
-              <Card className="bg-[#354B3A] border-white/10">
+              <Card className="bg-[var(--mygreen-light)] border-white/10">
                 <CardHeader>
                   <CardTitle className="text-white text-center">Actividad Reciente</CardTitle>
                 </CardHeader>
@@ -597,207 +588,21 @@ export default async function HomePage() {
             </div>
           </TabsContent>
 
-          {/* Tab: Académico */}
-          <TabsContent value="academic" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Materias Actuales */}
-              <Card className="bg-[#354B3A] border-white/10">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <Clock className="w-5 h-5 text-[#40C9A9]" />
-                    Materias en Curso
-                  </CardTitle>
-                  <CardDescription className="text-white/70">
-                    Gestiona tu progreso actual
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {materiasProximas.map((materia) => (
-                      <div key={materia.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-[#1C2D20] rounded-lg">
-                        <div className="flex items-start sm:items-center gap-3 min-w-0">
-                          {getEstadoIcon(materia.estado)}
-                          <div className="min-w-0">
-                            <p className="text-white font-medium truncate">{materia.materia.codigo}</p>
-                            <p className="text-white/70 text-sm truncate">{materia.materia.nombre}</p>
-                            <p className="text-white/50 text-xs">Semestre {materia.materia.semestre}</p>
-                          </div>
-                        </div>
-                        <div className="text-left sm:text-right">
-                          <Badge className={getEstadoColor(materia.estado)}>
-                            {materia.estado}
-                          </Badge>
-                          {materia.nota && (
-                            <p className="text-white/70 text-sm mt-1">Nota: {materia.nota}</p>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex flex-col sm:flex-row gap-2 mt-4">
-                    <Button asChild className="flex-1 bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white">
-                      <Link href="/academico">
-                        Panel Académico
-                      </Link>
-                    </Button>
-                    <Button asChild variant="outline" className="border-[#40C9A9] text-[#40C9A9] hover:bg-[#40C9A9] hover:text-white">
-                      <Link href="/academico/historial">
-                        Historial
-                      </Link>
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Recomendaciones */}
-              <Card className="bg-[#354B3A] border-white/10">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <Lightbulb className="w-5 h-5 text-[#40C9A9]" />
-                    Recomendaciones
-                  </CardTitle>
-                  <CardDescription className="text-white/70">
-                    Sugerencias para tu próximo semestre
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="p-3 bg-[#1C2D20] rounded-lg">
-                      <p className="text-white font-medium">Materias Sugeridas</p>
-                      <p className="text-white/70 text-sm">Basado en tu progreso actual</p>
-                    </div>
-                    <div className="p-3 bg-[#1C2D20] rounded-lg">
-                      <p className="text-white font-medium">Mejora tu Promedio</p>
-                      <p className="text-white/70 text-sm">Enfócate en las materias en curso</p>
-                    </div>
-                    <div className="p-3 bg-[#1C2D20] rounded-lg">
-                      <p className="text-white font-medium">Próximas Evaluaciones</p>
-                      <p className="text-white/70 text-sm">Revisa tu calendario académico</p>
-                    </div>
-                  </div>
-                  <Button asChild className="w-full mt-4 bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white">
-                    <Link href="/academico/recomendaciones">
-                      Ver Recomendaciones Completas
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
+          {/* Nota: el tab académico se movió a /perfil para simplificar la home */}
 
           {/* Tab: Caletas */}
           <TabsContent value="caletas" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Mis Recursos */}
-              <Card className="bg-[#354B3A] border-white/10">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <BookOpen className="w-5 h-5 text-[#40C9A9]" />
-                    Mis Recursos Compartidos
-                  </CardTitle>
-                  <CardDescription className="text-white/70">
-                    Los recursos que has compartido en Caletas
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {recursosUsuario.map((recurso) => (
-                      <div key={recurso.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-[#1C2D20] rounded-lg">
-                        <div className="flex items-start sm:items-center gap-3 min-w-0">
-                          {getTipoIcon(recurso.tipo)}
-                          <div className="min-w-0">
-                            <p className="text-white font-medium truncate">{recurso.titulo}</p>
-                            <p className="text-white/70 text-sm">
-                              {recurso.materia
-                                ? `${recurso.materia.codigo} · ${recurso.materia.nombre}`
-                                : "Caleta genérica"}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="text-left sm:text-right">
-                          <div className="flex items-center gap-1 text-yellow-400">
-                            <Star className="w-3 h-3" />
-                            <span className="text-white text-sm">{recurso.calificacion.toFixed(1)}</span>
-                          </div>
-                          <p className="text-white/50 text-xs">{recurso.numVistas} vistas</p>
-                        </div>
-                </div>
-                    ))}
-                    {recursosUsuario.length === 0 && (
-                      <div className="text-center py-4 text-white/70">
-                        <Share2 className="w-8 h-8 mx-auto mb-2 text-white/30" />
-                        <p>No has compartido recursos aún</p>
-                </div>
-                    )}
-                  </div>
-                  <div className="flex flex-col sm:flex-row gap-2 mt-4">
-                    <Button asChild className="flex-1 bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white">
-                      <Link href="/caletas/crear">
-                        <Plus className="w-4 h-4 mr-2" />
-                        Compartir Recurso
-                      </Link>
-                    </Button>
-                    <Button asChild variant="outline" className="border-[#40C9A9] text-[#40C9A9] hover:bg-[#40C9A9] hover:text-white">
-                      <Link href="/caletas/mis-recursos">
-                        Ver Todos
-                      </Link>
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Recursos Populares */}
-              <Card className="bg-[#354B3A] border-white/10">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5 text-[#40C9A9]" />
-                    Recursos Populares
-                  </CardTitle>
-                  <CardDescription className="text-white/70">
-                    Los recursos más vistos en Caletas
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {recursosPopularesMasked.map((recurso) => (
-                      <div key={recurso.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-[#1C2D20] rounded-lg">
-                        <div className="flex items-start sm:items-center gap-3 min-w-0">
-                          {getTipoIcon(recurso.tipo)}
-                          <div className="min-w-0">
-                            <p className="text-white font-medium truncate">{recurso.titulo}</p>
-                            <p className="text-white/70 text-sm">por {recurso.autor.name}</p>
-                          </div>
-                        </div>
-                        <div className="text-left sm:text-right">
-                          <div className="flex items-center gap-1 text-yellow-400">
-                            <Star className="w-3 h-3" />
-                            <span className="text-white text-sm">{recurso.calificacion.toFixed(1)}</span>
-                          </div>
-                          <p className="text-white/50 text-xs">{recurso.numVistas} vistas</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <Button asChild className="w-full mt-4 bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white">
-                    <Link href="/caletas">
-                      Explorar Caletas
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
-      </div>
+            <HomeCaletaFeedColumns nuevas={feedNuevasClient} populares={feedPopularesClient} />
           </TabsContent>
 
           {/* Tab: Metas */}
           <TabsContent value="goals" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Metas Activas */}
-              <Card className="bg-[#354B3A] border-white/10">
+              <Card className="bg-[var(--mygreen-light)] border-white/10">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
-                    <Target className="w-5 h-5 text-[#40C9A9]" />
+                    <Target className="w-5 h-5 text-[var(--accent-hex)]" />
                     Mis Metas Académicas
                   </CardTitle>
                   <CardDescription className="text-white/70">
@@ -807,13 +612,13 @@ export default async function HomePage() {
                 <CardContent>
                   <div className="space-y-3">
                     {metasAcademicas.map((meta) => (
-                      <div key={meta.id} className="p-3 bg-[#1C2D20] rounded-lg">
+                      <div key={meta.id} className="p-3 bg-[var(--mygreen-dark)] rounded-lg">
                         <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                             {getTipoIcon(meta.tipo)}
                             <p className="text-white font-medium">{meta.titulo}</p>
                           </div>
-                          <Badge className="bg-[#40C9A9]/10 text-[#40C9A9] border-[#40C9A9]/20">
+                          <Badge className="bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] text-[var(--accent-hex)] border-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)]">
                             {getTipoNombre(meta.tipo)}
                           </Badge>
                         </div>
@@ -849,9 +654,13 @@ export default async function HomePage() {
                       </div>
                     )}
                   </div>
-                  <Button asChild className="w-full mt-4 bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white">
-                    <Link href="/academico/metas">
-                      <Plus className="w-4 h-4 mr-2" />
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="mt-4 h-8 min-h-0 w-full rounded-lg border-0 bg-[var(--accent-hex)] px-3 py-0 text-xs font-medium text-white hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)]"
+                  >
+                    <Link href="/academico/metas" className="inline-flex items-center justify-center gap-1.5">
+                      <Plus className="h-3 w-3 shrink-0" />
                       Crear Nueva Meta
                     </Link>
                   </Button>
@@ -859,10 +668,10 @@ export default async function HomePage() {
               </Card>
 
               {/* Logros */}
-              <Card className="bg-[#354B3A] border-white/10">
+              <Card className="bg-[var(--mygreen-light)] border-white/10">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
-                    <Trophy className="w-5 h-5 text-[#40C9A9]" />
+                    <Trophy className="w-5 h-5 text-[var(--accent-hex)]" />
                     Logros Recientes
                   </CardTitle>
                   <CardDescription className="text-white/70">
@@ -873,7 +682,7 @@ export default async function HomePage() {
                   <div className="space-y-3">
                     {metasCompletadas.length > 0 ? (
                       metasCompletadas.map((meta) => (
-                        <div key={meta.id} className="p-3 bg-[#1C2D20] rounded-lg">
+                        <div key={meta.id} className="p-3 bg-[var(--mygreen-dark)] rounded-lg">
                           <div className="flex items-center gap-2 mb-2">
                             <Trophy className="w-4 h-4 text-yellow-400" />
                             <p className="text-white font-medium">{meta.titulo}</p>
@@ -894,14 +703,14 @@ export default async function HomePage() {
                       ))
                     ) : (
                       <>
-                        <div className="p-3 bg-[#1C2D20] rounded-lg">
+                        <div className="p-3 bg-[var(--mygreen-dark)] rounded-lg">
                           <div className="flex items-center gap-2 mb-2">
-                            <Target className="w-4 h-4 text-[#40C9A9]" />
+                            <Target className="w-4 h-4 text-[var(--accent-hex)]" />
                             <p className="text-white font-medium">Primera Meta</p>
                           </div>
                           <p className="text-white/70 text-sm">¡Crea tu primera meta académica para comenzar!</p>
                         </div>
-                        <div className="p-3 bg-[#1C2D20] rounded-lg">
+                        <div className="p-3 bg-[var(--mygreen-dark)] rounded-lg">
                           <div className="flex items-center gap-2 mb-2">
                             <TrendingUp className="w-4 h-4 text-blue-400" />
                             <p className="text-white font-medium">Progreso Académico</p>
@@ -919,32 +728,63 @@ export default async function HomePage() {
 
         {/* Acciones Rápidas */}
         <div className="mt-8">
-          <h2 className="text-xl font-special text-white mb-4">Acciones Rápidas</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            <Button asChild className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white h-auto min-h-16 px-3 py-3">
-              <Link href="/academico" className="w-full flex items-center justify-center text-center gap-2 whitespace-normal">
-                <GraduationCap className="w-5 h-5 shrink-0" />
-                Panel Académico
-              </Link>
-            </Button>
-            <Button asChild className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white h-auto min-h-16 px-3 py-3">
-              <Link href="/caletas" className="w-full flex items-center justify-center text-center gap-2 whitespace-normal">
-                <BookOpen className="w-5 h-5 shrink-0" />
-                Explorar Caletas
-              </Link>
-            </Button>
-            <Button asChild className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white h-auto min-h-16 px-3 py-3">
-              <Link href="/caletas/crear" className="w-full flex items-center justify-center text-center gap-2 whitespace-normal">
-                <Plus className="w-5 h-5 shrink-0" />
-                Compartir Recurso
-              </Link>
-            </Button>
-            <Button asChild className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white h-auto min-h-16 px-3 py-3">
-              <Link href="/academico/historial" className="w-full flex items-center justify-center text-center gap-2 whitespace-normal">
-                <History className="w-5 h-5 shrink-0" />
-                Gestionar Historial
-              </Link>
-            </Button>
+          <h2 className="mb-1 font-special text-lg text-white sm:text-xl">¿Qué quieres hacer hoy?</h2>
+          <p className="mb-3 text-xs text-white/70 sm:text-sm">
+            Accede rápido a lo más usado. Todo está a 1 toque, como en una app social.
+          </p>
+
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-3">
+            <Link
+              href="/caletas"
+              data-tutorial="caletas-explorar"
+              className="group rounded-xl border border-white/10 bg-[var(--mygreen-light)] p-3 transition-colors hover:border-[color-mix(in_oklab,var(--accent-hex)_35%,transparent)] hover:bg-white/5"
+            >
+              <div className="flex items-start gap-2.5">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[color-mix(in_oklab,var(--accent-hex)_15%,transparent)] text-[var(--accent-hex)]">
+                  <BookOpen className="h-4 w-4" />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold text-white">Explorar Caletas</div>
+                  <div className="mt-0.5 text-xs leading-snug text-white/70">
+                    Busca por materia y tipo. Guarda tus favoritos y vuelve luego.
+                  </div>
+                </div>
+              </div>
+            </Link>
+
+            <Link
+              href="/academico/historial"
+              className="group rounded-xl border border-white/10 bg-[var(--mygreen-light)] p-3 transition-colors hover:border-[color-mix(in_oklab,var(--accent-hex)_35%,transparent)] hover:bg-white/5"
+            >
+              <div className="flex items-start gap-2.5">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[color-mix(in_oklab,var(--accent-hex)_15%,transparent)] text-[var(--accent-hex)]">
+                  <History className="h-4 w-4" />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold text-white">Actualizar mi historial</div>
+                  <div className="mt-0.5 text-xs leading-snug text-white/70">
+                    Agrega materias, notas y estados (en curso, aprobada, etc.).
+                  </div>
+                </div>
+              </div>
+            </Link>
+
+            <Link
+              href="/academico"
+              className="group rounded-xl border border-white/10 bg-[var(--mygreen-light)] p-3 transition-colors hover:border-[color-mix(in_oklab,var(--accent-hex)_35%,transparent)] hover:bg-white/5"
+            >
+              <div className="flex items-start gap-2.5">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[color-mix(in_oklab,var(--accent-hex)_15%,transparent)] text-[var(--accent-hex)]">
+                  <GraduationCap className="h-4 w-4" />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold text-white">Ver mi progreso</div>
+                  <div className="mt-0.5 text-xs leading-snug text-white/70">
+                    Panel académico con tu avance, créditos y materias actuales.
+                  </div>
+                </div>
+              </div>
+            </Link>
           </div>
                 </div>
       </div>
@@ -965,10 +805,10 @@ export default async function HomePage() {
     return (
       <div className="min-h-screen bg-gradient-to-t from-mygreen to-mygreen-light">
         <div className="container mx-auto px-4 py-10">
-          <Card className="bg-[#354B3A] border-white/10">
+          <Card className="bg-[var(--mygreen-light)] border-white/10">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
-                <AlertCircle className="h-5 w-5 text-[#40C9A9]" />
+                <AlertCircle className="h-5 w-5 text-[var(--accent-hex)]" />
                 No pudimos cargar tu panel
               </CardTitle>
               <CardDescription className="text-white/70">
@@ -979,7 +819,11 @@ export default async function HomePage() {
               <div className="text-sm text-white/70">
                 Si el problema persiste, revisa tu conexión o el estado del servidor de base de datos.
               </div>
-              <Button asChild className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white">
+              <Button
+                asChild
+                variant="outline"
+                className="h-8 min-h-0 rounded-lg border-0 bg-[var(--accent-hex)] px-4 py-0 text-xs font-medium text-white hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)]"
+              >
                 <Link href="/home">Reintentar</Link>
               </Button>
             </CardContent>

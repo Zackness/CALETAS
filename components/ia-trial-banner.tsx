@@ -43,7 +43,7 @@ export function IATrialBanner(props: { toolLabel: string; endpoint: AiTrialEndpo
   }, [endpoint, info]);
 
   return (
-    <div className="rounded-lg border border-white/10 bg-[#354B3A] p-4">
+    <div className="rounded-lg border border-white/10 bg-[var(--mygreen-light)] p-4">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
@@ -60,7 +60,7 @@ export function IATrialBanner(props: { toolLabel: string; endpoint: AiTrialEndpo
             )}
           </div>
         </div>
-        <Button asChild className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white md:w-auto">
+        <Button asChild className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white md:w-auto">
           <Link href="/suscripcion">Mejorar plan</Link>
         </Button>
       </div>

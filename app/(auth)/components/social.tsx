@@ -8,7 +8,7 @@ import { authClient } from "@/lib/auth-client";
 
 export const Social = () => {
     const searchParams = useSearchParams();
-    const callbackUrl = searchParams.get("callbackUrl");
+    const callbackUrl = searchParams?.get("callbackUrl");
 
     const onClick = (provider: "google" | "twitch") => {
         void authClient.signIn.social({

@@ -180,24 +180,24 @@ export default function AdminBlogPage() {
         <div className="mb-8 flex items-center justify-between gap-4 flex-wrap">
           <div>
             <h1 className="text-3xl font-special text-white mb-2 flex items-center gap-2">
-              <ShieldCheck className="w-6 h-6 text-[#40C9A9]" />
+              <ShieldCheck className="w-6 h-6 text-[var(--accent-hex)]" />
               Panel Admin - Blog
             </h1>
             <p className="text-white/70">Crea y gestiona artículos públicos del blog.</p>
             <p className="text-xs text-white/60 mt-1">
-              Sube portadas en <span className="text-[#40C9A9]">Admin &gt; Biblioteca de medios</span> para reutilizarlas.
+              Sube portadas en <span className="text-[var(--accent-hex)]">Admin &gt; Biblioteca de medios</span> para reutilizarlas.
             </p>
           </div>
-          <Button className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white" onClick={openCreate}>
+          <Button className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white" onClick={openCreate}>
             <PlusCircle className="w-4 h-4 mr-2" />
             Nuevo artículo
           </Button>
         </div>
 
-        <Card className="bg-[#354B3A] border-white/10">
+        <Card className="bg-[var(--mygreen-light)] border-white/10">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
-              <FileText className="w-5 h-5 text-[#40C9A9]" />
+              <FileText className="w-5 h-5 text-[var(--accent-hex)]" />
               Artículos
             </CardTitle>
             <CardDescription className="text-white/70">
@@ -212,7 +212,7 @@ export default function AdminBlogPage() {
             ) : (
               <div className="rounded-lg border border-white/10 overflow-auto">
                 <table className="w-full text-left text-sm">
-                  <thead className="bg-[#1C2D20] text-white/70">
+                  <thead className="bg-[var(--mygreen-dark)] text-white/70">
                     <tr>
                       <th className="px-3 py-2">Título</th>
                       <th className="px-3 py-2">Categoría</th>
@@ -224,14 +224,14 @@ export default function AdminBlogPage() {
                   </thead>
                   <tbody>
                     {posts.map((post) => (
-                      <tr key={post.id} className="bg-[#203324] border-t border-white/5">
+                      <tr key={post.id} className="bg-[var(--mygreen)] border-t border-white/5">
                         <td className="px-3 py-2">
                           <div className="text-white font-medium">{post.title}</div>
                           <div className="text-xs text-white/60">/{post.slug || "sin-slug"}</div>
                         </td>
                         <td className="px-3 py-2 text-white/80">{post.category?.name || "Sin categoría"}</td>
                         <td className="px-3 py-2">
-                          <Badge className={post.isPublished ? "bg-[#40C9A9]/20 text-[#40C9A9] border-[#40C9A9]/30" : "bg-white/10 text-white/80 border-white/20"}>
+                          <Badge className={post.isPublished ? "bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)] text-[var(--accent-hex)] border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)]" : "bg-white/10 text-white/80 border-white/20"}>
                             {post.isPublished ? "Publicado" : "Borrador"}
                           </Badge>
                         </td>
@@ -276,35 +276,35 @@ export default function AdminBlogPage() {
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="bg-[#354B3A] border-white/10 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-[var(--mygreen-light)] border-white/10 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editing ? "Editar artículo" : "Nuevo artículo"}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-3 py-2">
             <div className="grid gap-1">
               <Label className="text-white/80">Título *</Label>
-              <Input className="bg-[#1C2D20] border-white/10 text-white" value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} />
+              <Input className="bg-[var(--mygreen-dark)] border-white/10 text-white" value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} />
             </div>
             <div className="grid gap-1">
               <Label className="text-white/80">Slug (opcional)</Label>
-              <Input className="bg-[#1C2D20] border-white/10 text-white" value={form.slug} onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))} placeholder="se-genera-del-titulo-si-lo-dejas-vacio" />
+              <Input className="bg-[var(--mygreen-dark)] border-white/10 text-white" value={form.slug} onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))} placeholder="se-genera-del-titulo-si-lo-dejas-vacio" />
             </div>
             <div className="grid gap-1">
               <Label className="text-white/80">Categoría</Label>
-              <Input className="bg-[#1C2D20] border-white/10 text-white" value={form.categoryName} onChange={(e) => setForm((f) => ({ ...f, categoryName: e.target.value }))} placeholder="Ej: Productividad" />
+              <Input className="bg-[var(--mygreen-dark)] border-white/10 text-white" value={form.categoryName} onChange={(e) => setForm((f) => ({ ...f, categoryName: e.target.value }))} placeholder="Ej: Productividad" />
             </div>
             <div className="grid gap-1">
               <Label className="text-white/80">Descripción</Label>
-              <Input className="bg-[#1C2D20] border-white/10 text-white" value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} />
+              <Input className="bg-[var(--mygreen-dark)] border-white/10 text-white" value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} />
             </div>
             <div className="grid gap-1">
               <Label className="text-white/80">Meta título</Label>
-              <Input className="bg-[#1C2D20] border-white/10 text-white" value={form.titleMeta} onChange={(e) => setForm((f) => ({ ...f, titleMeta: e.target.value }))} />
+              <Input className="bg-[var(--mygreen-dark)] border-white/10 text-white" value={form.titleMeta} onChange={(e) => setForm((f) => ({ ...f, titleMeta: e.target.value }))} />
             </div>
             <div className="grid gap-1">
               <Label className="text-white/80">URL de portada</Label>
               <div className="flex gap-2">
-                <Input className="bg-[#1C2D20] border-white/10 text-white" value={form.imageUrl} onChange={(e) => setForm((f) => ({ ...f, imageUrl: e.target.value }))} placeholder="https://..." />
+                <Input className="bg-[var(--mygreen-dark)] border-white/10 text-white" value={form.imageUrl} onChange={(e) => setForm((f) => ({ ...f, imageUrl: e.target.value }))} placeholder="https://..." />
                 <Button
                   type="button"
                   variant="outline"
@@ -321,7 +321,7 @@ export default function AdminBlogPage() {
             <div className="grid gap-1">
               <Label className="text-white/80">Contenido</Label>
               <textarea
-                className="min-h-[200px] w-full rounded-lg bg-[#1C2D20] border border-white/10 text-white px-3 py-2 placeholder:text-white/50"
+                className="min-h-[200px] w-full rounded-lg bg-[var(--mygreen-dark)] border border-white/10 text-white px-3 py-2 placeholder:text-white/50"
                 value={form.content}
                 onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
                 placeholder="Escribe aquí el artículo..."
@@ -340,7 +340,7 @@ export default function AdminBlogPage() {
             <Button type="button" variant="outline" className="border-white/20 text-white hover:bg-white/10" onClick={() => setDialogOpen(false)}>
               Cancelar
             </Button>
-            <Button type="button" className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white" onClick={() => void save()} disabled={saving}>
+            <Button type="button" className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white" onClick={() => void save()} disabled={saving}>
               {saving ? "Guardando..." : editing ? "Actualizar" : "Crear"}
             </Button>
           </DialogFooter>
@@ -348,7 +348,7 @@ export default function AdminBlogPage() {
       </Dialog>
 
       <Dialog open={mediaDialogOpen} onOpenChange={setMediaDialogOpen}>
-        <DialogContent className="bg-[#354B3A] border-white/10 text-white max-w-3xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="bg-[var(--mygreen-light)] border-white/10 text-white max-w-3xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Seleccionar portada desde biblioteca</DialogTitle>
           </DialogHeader>
@@ -357,12 +357,12 @@ export default function AdminBlogPage() {
               <Input
                 value={mediaSubfolder}
                 onChange={(e) => setMediaSubfolder(e.target.value)}
-                className="bg-[#1C2D20] border-white/10 text-white"
+                className="bg-[var(--mygreen-dark)] border-white/10 text-white"
                 placeholder="Subcarpeta (ej: blog)"
               />
               <Button
                 type="button"
-                className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
                 onClick={() => void loadMediaFiles()}
               >
                 Cargar
@@ -378,7 +378,7 @@ export default function AdminBlogPage() {
                   <button
                     key={file.url}
                     type="button"
-                    className="text-left rounded-lg border border-white/10 bg-[#1C2D20] p-3 hover:bg-[#203324]"
+                    className="text-left rounded-lg border border-white/10 bg-[var(--mygreen-dark)] p-3 hover:bg-[var(--mygreen)]"
                     onClick={() => {
                       setForm((f) => ({ ...f, imageUrl: file.url }));
                       setMediaDialogOpen(false);

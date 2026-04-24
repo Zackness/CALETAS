@@ -97,10 +97,10 @@ export default function FileUploadTest() {
   };
 
   return (
-    <Card className="bg-[#354B3A] border-white/10">
+    <Card className="bg-[var(--mygreen-light)] border-white/10">
       <CardHeader>
         <CardTitle className="text-white flex items-center gap-2">
-          <Upload className="h-5 w-5 text-[#40C9A9]" />
+          <Upload className="h-5 w-5 text-[var(--accent-hex)]" />
           Subida Manual de Archivos
         </CardTitle>
         <CardDescription className="text-white/70">
@@ -115,10 +115,10 @@ export default function FileUploadTest() {
             type="file"
             accept=".pdf,.jpg,.jpeg,.png,.txt"
             onChange={handleFileChange}
-            className="bg-white/10 border-white/20 text-white file:text-white file:bg-[#40C9A9] file:border-0 file:rounded-lg file:px-4 file:py-2 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg"
+            className="bg-white/10 border-white/20 text-white file:text-white file:bg-[var(--accent-hex)] file:border-0 file:rounded-lg file:px-4 file:py-2 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg"
           />
           {file && (
-            <div className="text-[#40C9A9] text-sm">
+            <div className="text-[var(--accent-hex)] text-sm">
               Archivo seleccionado: {file.name} ({file.size} bytes)
             </div>
           )}
@@ -127,7 +127,7 @@ export default function FileUploadTest() {
         <Button
           onClick={handleUpload}
           disabled={isUploading || !file}
-          className="w-full bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white font-bold py-3 rounded-xl shadow-lg transition-colors"
+          className="w-full bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white font-bold py-3 rounded-xl shadow-lg transition-colors"
         >
           {isUploading ? (
             <>
@@ -160,7 +160,7 @@ export default function FileUploadTest() {
             </div>
             {uploadResult.url && (
               <div className="mt-2 text-sm text-white/70">
-                URL: <span className="text-[#40C9A9] break-all">{uploadResult.url}</span>
+                URL: <span className="text-[var(--accent-hex)] break-all">{uploadResult.url}</span>
               </div>
             )}
           </div>

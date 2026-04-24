@@ -15,8 +15,8 @@ export const NewVerificationForm = () => {
   const [succes, setSucces] = useState<string | undefined>();
 
   const searchParams = useSearchParams();
-  const errorParam = searchParams.get("error");
-  const successParam = searchParams.get("success");
+  const errorParam = searchParams?.get("error");
+  const successParam = searchParams?.get("success");
 
   useEffect(() => {
     setIsMounted(true);
@@ -71,7 +71,7 @@ export const NewVerificationForm = () => {
         <div className="w-full max-w-md space-y-4">
           {!succes && !error && (
             <div className="flex flex-col items-center gap-3 p-6 bg-white/5 rounded-xl border border-white/10">
-              <BeatLoader color="#354B3A" size={8} />
+              <BeatLoader color="var(--mygreen-light)" size={8} />
               <p className="text-sm text-white/70">Verificando tu correo...</p>
             </div>
           )}

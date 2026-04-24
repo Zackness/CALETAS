@@ -341,7 +341,7 @@ export default function SubirCaletaPage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#40C9A9] mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent-hex)] mx-auto mb-4"></div>
           <p className="text-white/80">Cargando universidades...</p>
         </div>
       </div>
@@ -352,7 +352,7 @@ export default function SubirCaletaPage() {
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-t from-mygreen to-mygreen-light px-2 py-8">
       <div className="w-full max-w-4xl">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl md:text-4xl font-special text-[#40C9A9] mb-2">Compartir Recurso</h1>
+          <h1 className="text-3xl md:text-4xl font-special text-[var(--accent-hex)] mb-2">Compartir Recurso</h1>
           <p className="text-white/70 text-base md:text-lg">
             Comparte tus apuntes, exámenes y materiales de estudio con otros estudiantes
           </p>
@@ -360,10 +360,10 @@ export default function SubirCaletaPage() {
 
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Paso 1: Análisis del Contenido */}
-          <Card className="bg-[#354B3A] border-white/10">
+          <Card className="bg-[var(--mygreen-light)] border-white/10">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
-                <Search className="h-5 w-5 text-[#40C9A9]" />
+                <Search className="h-5 w-5 text-[var(--accent-hex)]" />
                 Paso 1: Análisis del Contenido
               </CardTitle>
               <CardDescription className="text-white/70">
@@ -372,17 +372,17 @@ export default function SubirCaletaPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Aviso de moderación */}
-              <div className="bg-[#1C2D20] border border-[#40C9A9]/20 rounded-lg p-4">
+              <div className="bg-[var(--mygreen-dark)] border border-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)] rounded-lg p-4">
                 <div className="flex items-start gap-3">
-                  <Shield className="w-5 h-5 text-[#40C9A9] mt-0.5 flex-shrink-0" />
+                  <Shield className="w-5 h-5 text-[var(--accent-hex)] mt-0.5 flex-shrink-0" />
                   <div>
                     <h3 className="text-white font-semibold mb-2">Moderación de Contenido</h3>
                     <p className="text-white/70 text-sm mb-3">
                       Todos los archivos son revisados por IA para asegurar que contengan solo contenido académico apropiado.
                     </p>
                     {moderacionEstado === 'verificando' && (
-                      <div className="flex items-center gap-2 text-[#40C9A9]">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#40C9A9]"></div>
+                      <div className="flex items-center gap-2 text-[var(--accent-hex)]">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[var(--accent-hex)]"></div>
                         <span className="text-sm">Verificando contenido...</span>
                       </div>
                     )}
@@ -410,10 +410,10 @@ export default function SubirCaletaPage() {
                   type="file"
                   accept=".pdf,.jpg,.jpeg,.png"
                   onChange={handleFileChangeAnalisis}
-                  className="bg-white/10 border-white/20 text-white file:text-white file:bg-[#40C9A9] file:border-0 file:rounded-lg file:px-4 file:py-2 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1"
+                  className="bg-white/10 border-white/20 text-white file:text-white file:bg-[var(--accent-hex)] file:border-0 file:rounded-lg file:px-4 file:py-2 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg mt-1"
                 />
                 {archivoAnalisis && (
-                  <div className="text-[#40C9A9] text-sm mt-1">Archivo seleccionado: {archivoAnalisis.name}</div>
+                  <div className="text-[var(--accent-hex)] text-sm mt-1">Archivo seleccionado: {archivoAnalisis.name}</div>
                 )}
               </div>
 
@@ -421,7 +421,7 @@ export default function SubirCaletaPage() {
               <Button
                 onClick={handleAnalizar}
                 disabled={isAnalizando || !archivoAnalisis}
-                className="w-full bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white font-bold py-3 rounded-xl shadow-lg transition-colors"
+                className="w-full bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white font-bold py-3 rounded-xl shadow-lg transition-colors"
               >
                 {isAnalizando ? "Analizando..." : "Analizar Contenido"}
               </Button>
@@ -429,10 +429,10 @@ export default function SubirCaletaPage() {
           </Card>
 
           {/* Paso 2: Subida del Recurso */}
-          <Card className="bg-[#354B3A] border-white/10">
+          <Card className="bg-[var(--mygreen-light)] border-white/10">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
-                <Upload className="h-5 w-5 text-[#40C9A9]" />
+                <Upload className="h-5 w-5 text-[var(--accent-hex)]" />
                 Paso 2: Subida del Recurso
               </CardTitle>
               <CardDescription className="text-white/70">
@@ -450,10 +450,10 @@ export default function SubirCaletaPage() {
                     accept=".pdf,.jpg,.jpeg,.png"
                     onChange={handleFileChangeSubida}
                     disabled={moderacionEstado !== 'aprobado'}
-                    className="bg-white/10 border-white/20 text-white file:text-white file:bg-[#40C9A9] file:border-0 file:rounded-lg file:px-4 file:py-2 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1 disabled:opacity-50"
+                    className="bg-white/10 border-white/20 text-white file:text-white file:bg-[var(--accent-hex)] file:border-0 file:rounded-lg file:px-4 file:py-2 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg mt-1 disabled:opacity-50"
                   />
                   {archivoSubida && (
-                    <div className="text-[#40C9A9] text-sm mt-1">Archivo seleccionado: {archivoSubida.name}</div>
+                    <div className="text-[var(--accent-hex)] text-sm mt-1">Archivo seleccionado: {archivoSubida.name}</div>
                   )}
                   {moderacionEstado !== 'aprobado' && (
                     <div className="text-orange-400 text-sm mt-1">Primero debes analizar y aprobar el contenido</div>
@@ -469,7 +469,7 @@ export default function SubirCaletaPage() {
                     onChange={(e) => setTitulo(e.target.value)}
                     placeholder="Ej: Examen parcial de Cálculo I"
                     required
-                    className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1"
+                    className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg mt-1"
                   />
                 </div>
 
@@ -483,7 +483,7 @@ export default function SubirCaletaPage() {
                     placeholder="Describe brevemente el contenido del recurso"
                     rows={3}
                     required
-                    className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1"
+                    className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg mt-1"
                   />
                 </div>
 
@@ -491,17 +491,17 @@ export default function SubirCaletaPage() {
                 <div>
                   <Label htmlFor="tipo" className="text-white/80">Tipo de recurso *</Label>
                   <Select value={tipo} onValueChange={setTipo}>
-                    <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1">
+                    <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg mt-1">
                       <SelectValue placeholder="Selecciona el tipo de recurso" />
                     </SelectTrigger>
-                    <SelectContent className="bg-[#203324] text-white">
-                      <SelectItem value="DOCUMENTO" className="hover:bg-[#40C9A9]/10">Documento</SelectItem>
-                      <SelectItem value="ANOTACION" className="hover:bg-[#40C9A9]/10">Anotación</SelectItem>
-                      <SelectItem value="RESUMEN" className="hover:bg-[#40C9A9]/10">Resumen</SelectItem>
-                      <SelectItem value="GUIA_ESTUDIO" className="hover:bg-[#40C9A9]/10">Guía de Estudio</SelectItem>
-                      <SelectItem value="EJERCICIOS" className="hover:bg-[#40C9A9]/10">Ejercicios</SelectItem>
-                      <SelectItem value="PRESENTACION" className="hover:bg-[#40C9A9]/10">Presentación</SelectItem>
-                      <SelectItem value="TIP" className="hover:bg-[#40C9A9]/10">Tip/Consejo</SelectItem>
+                    <SelectContent className="bg-[var(--mygreen)] text-white">
+                      <SelectItem value="DOCUMENTO" className="hover:bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)]">Documento</SelectItem>
+                      <SelectItem value="ANOTACION" className="hover:bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)]">Anotación</SelectItem>
+                      <SelectItem value="RESUMEN" className="hover:bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)]">Resumen</SelectItem>
+                      <SelectItem value="GUIA_ESTUDIO" className="hover:bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)]">Guía de Estudio</SelectItem>
+                      <SelectItem value="EJERCICIOS" className="hover:bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)]">Ejercicios</SelectItem>
+                      <SelectItem value="PRESENTACION" className="hover:bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)]">Presentación</SelectItem>
+                      <SelectItem value="TIP" className="hover:bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)]">Tip/Consejo</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -514,12 +514,12 @@ export default function SubirCaletaPage() {
                     value={tags}
                     onChange={(e) => setTags(e.target.value)}
                     placeholder="Ej: examen, parcial, calculo, derivadas"
-                    className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1"
+                    className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg mt-1"
                   />
                 </div>
 
                 {/* Privacidad */}
-                <div className="bg-[#1C2D20] border border-white/10 rounded-lg p-4 space-y-3">
+                <div className="bg-[var(--mygreen-dark)] border border-white/10 rounded-lg p-4 space-y-3">
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <div className="text-white font-semibold">Privacidad</div>
@@ -536,21 +536,21 @@ export default function SubirCaletaPage() {
                     <Switch
                       checked={esAnonimo}
                       onCheckedChange={setEsAnonimo}
-                      className="data-[state=checked]:bg-[#40C9A9] data-[state=unchecked]:bg-white/20"
+                      className="data-[state=checked]:bg-[var(--accent-hex)] data-[state=unchecked]:bg-white/20"
                     />
                   </div>
                 </div>
 
                 {userUniversidadId ? (
-                  <div className="space-y-4 rounded-lg border border-[#40C9A9]/30 bg-[#1C2D20] p-4">
+                  <div className="space-y-4 rounded-lg border border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] bg-[var(--mygreen-dark)] p-4">
                     <div className="flex gap-3 items-start">
                       <GraduationCap
-                        className="h-5 w-5 text-[#40C9A9] shrink-0 mt-0.5"
+                        className="h-5 w-5 text-[var(--accent-hex)] shrink-0 mt-0.5"
                         aria-hidden
                       />
                       <p className="text-sm text-white/85 min-w-0 flex-1 leading-relaxed">
                         Tu caleta se publica asociada a{" "}
-                        <span className="text-[#40C9A9] font-medium break-words">
+                        <span className="text-[var(--accent-hex)] font-medium break-words">
                           {userUniversidadNombre || "tu universidad"}
                         </span>
                         . Debes elegir la materia de tu carrera.
@@ -569,9 +569,9 @@ export default function SubirCaletaPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="rounded-lg border border-white/10 bg-[#1C2D20] p-4 text-sm text-white/80">
+                  <div className="rounded-lg border border-white/10 bg-[var(--mygreen-dark)] p-4 text-sm text-white/80">
                     <p>
-                      Esta caleta es <span className="text-[#40C9A9] font-medium">genérica</span>: visible para todos los
+                      Esta caleta es <span className="text-[var(--accent-hex)] font-medium">genérica</span>: visible para todos los
                       usuarios y no queda ligada a una universidad. Si en tu perfil registras una universidad, al subir
                       caletas deberás elegir siempre materia de tu carrera.
                     </p>
@@ -582,7 +582,7 @@ export default function SubirCaletaPage() {
                 <Button
                   type="submit"
                   disabled={isSubiendo || moderacionEstado !== 'aprobado' || !archivoSubida}
-                  className="w-full bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white font-bold text-lg py-3 rounded-xl mt-2 shadow-lg transition-colors"
+                  className="w-full bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white font-bold text-lg py-3 rounded-xl mt-2 shadow-lg transition-colors"
                 >
                   {isSubiendo ? "Subiendo..." : "Subir Recurso"}
                 </Button>

@@ -119,7 +119,7 @@ export default function PanelAcademico() {
       <div className="min-h-screen bg-gradient-to-t from-mygreen to-mygreen-light flex items-center justify-center">
         <div className="text-white text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-          <p>Cargando panel académico...</p>
+          <p>Cargando tu progreso…</p>
         </div>
       </div>
     );
@@ -131,22 +131,59 @@ export default function PanelAcademico() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-special text-white mb-2">
-            Panel de Control Académico
+            Académico
           </h1>
           <p className="text-white/70">
-            Gestiona tu progreso académico y visualiza tu rendimiento
+            Tu progreso, tus materias y tus notas en un solo lugar.
           </p>
+        </div>
+
+        {/* Acciones principales (estilo app social: 2 atajos claros) */}
+        <div className="mb-6 grid grid-cols-1 gap-3 md:grid-cols-2">
+          <Button
+            onClick={() => router.push("/academico/historial")}
+            className="h-auto justify-start bg-[var(--accent-hex)] px-4 py-4 text-left text-white hover:bg-[color-mix(in_oklab,var(--accent-hex)_85%,transparent)]"
+          >
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 rounded-xl bg-white/15 p-2">
+                <History className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <div className="font-semibold">Actualizar historial</div>
+                <div className="text-sm text-white/85">
+                  Agrega materias, cambia estados y registra notas.
+                </div>
+              </div>
+            </div>
+          </Button>
+          <Button
+            onClick={() => router.push("/academico/metas")}
+            variant="outline"
+            className="h-auto justify-start border-[color-mix(in_oklab,var(--accent-hex)_40%,transparent)] bg-[var(--mygreen-dark)] px-4 py-4 text-left text-[var(--accent-hex)] hover:bg-white/10"
+          >
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 rounded-xl bg-[color-mix(in_oklab,var(--accent-hex)_15%,transparent)] p-2">
+                <Target className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <div className="font-semibold text-white">Crear / ver metas</div>
+                <div className="text-sm text-white/70">
+                  Objetivos simples para mantener constancia.
+                </div>
+              </div>
+            </div>
+          </Button>
         </div>
 
         {/* Estadísticas Principales */}
         {estadisticas && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <Card className="bg-[#354B3A] border-white/10">
+            <Card className="bg-[var(--mygreen-light)] border-white/10">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-white/70">
                   Progreso de Carrera
                 </CardTitle>
-                <Target className="h-4 w-4 text-[#40C9A9]" />
+                <Target className="h-4 w-4 text-[var(--accent-hex)]" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-white">
@@ -159,12 +196,12 @@ export default function PanelAcademico() {
               </CardContent>
             </Card>
 
-            <Card className="bg-[#354B3A] border-white/10">
+            <Card className="bg-[var(--mygreen-light)] border-white/10">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-white/70">
                   Promedio General
                 </CardTitle>
-                <TrendingUp className="h-4 w-4 text-[#40C9A9]" />
+                <TrendingUp className="h-4 w-4 text-[var(--accent-hex)]" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-white">
@@ -176,12 +213,12 @@ export default function PanelAcademico() {
               </CardContent>
             </Card>
 
-            <Card className="bg-[#354B3A] border-white/10">
+            <Card className="bg-[var(--mygreen-light)] border-white/10">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-white/70">
                   Créditos Aprobados
                 </CardTitle>
-                <Award className="h-4 w-4 text-[#40C9A9]" />
+                <Award className="h-4 w-4 text-[var(--accent-hex)]" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-white">
@@ -193,12 +230,12 @@ export default function PanelAcademico() {
               </CardContent>
             </Card>
 
-            <Card className="bg-[#354B3A] border-white/10">
+            <Card className="bg-[var(--mygreen-light)] border-white/10">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-white/70">
                   Materias en Curso
                 </CardTitle>
-                <Clock className="h-4 w-4 text-[#40C9A9]" />
+                <Clock className="h-4 w-4 text-[var(--accent-hex)]" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-white">
@@ -214,25 +251,25 @@ export default function PanelAcademico() {
 
         {/* Tabs para diferentes vistas */}
         <Tabs defaultValue="actuales" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 bg-[#354B3A] border-white/10">
-            <TabsTrigger value="actuales" className="text-white data-[state=active]:bg-[#40C9A9] data-[state=active]:text-white">
+          <TabsList className="grid w-full grid-cols-3 bg-[var(--mygreen-light)] border-white/10">
+            <TabsTrigger value="actuales" className="text-white data-[state=active]:bg-[var(--accent-hex)] data-[state=active]:text-white">
               Materias Actuales
             </TabsTrigger>
-            <TabsTrigger value="historial" className="text-white data-[state=active]:bg-[#40C9A9] data-[state=active]:text-white">
+            <TabsTrigger value="historial" className="text-white data-[state=active]:bg-[var(--accent-hex)] data-[state=active]:text-white">
               Historial Académico
             </TabsTrigger>
-            <TabsTrigger value="estadisticas" className="text-white data-[state=active]:bg-[#40C9A9] data-[state=active]:text-white">
+            <TabsTrigger value="estadisticas" className="text-white data-[state=active]:bg-[var(--accent-hex)] data-[state=active]:text-white">
               Estadísticas Detalladas
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="actuales" className="space-y-4">
-            <Card className="bg-[#354B3A] border-white/10">
+            <Card className="bg-[var(--mygreen-light)] border-white/10">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle className="text-white flex items-center gap-2">
-                      <Clock className="w-5 h-5 text-[#40C9A9]" />
+                      <Clock className="w-5 h-5 text-[var(--accent-hex)]" />
                       Materias en Curso
                     </CardTitle>
                     <CardDescription className="text-white/70">
@@ -243,17 +280,17 @@ export default function PanelAcademico() {
                     <Button
                       onClick={() => router.push("/academico/historial")}
                       variant="outline"
-                      className="border-[#40C9A9] text-[#40C9A9] hover:bg-[#40C9A9] hover:text-white"
+                      className="border-[var(--accent-hex)] text-[var(--accent-hex)] hover:bg-[var(--accent-hex)] hover:text-white"
                     >
                       <History className="w-4 h-4 mr-2" />
-                      Ver Historial
+                      Historial
                     </Button>
                     <Button
                       onClick={() => router.push("/academico/historial")}
-                      className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                      className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
                     >
                       <Plus className="w-4 h-4 mr-2" />
-                      Agregar Materia
+                      Agregar
                     </Button>
                   </div>
                 </div>
@@ -265,7 +302,7 @@ export default function PanelAcademico() {
                     .map((materia) => (
                       <div
                         key={materia.id}
-                        className="flex items-center justify-between p-4 bg-[#1C2D20] rounded-lg border border-white/5"
+                        className="flex items-center justify-between p-4 bg-[var(--mygreen-dark)] rounded-lg border border-white/5"
                       >
                         <div className="flex-1">
                           <div className="flex items-center gap-3">
@@ -299,7 +336,19 @@ export default function PanelAcademico() {
                   {materiasEstudiante.filter(m => m.estado === "EN_CURSO").length === 0 && (
                     <div className="text-center py-8 text-white/70">
                       <BookOpen className="w-12 h-12 mx-auto mb-4 text-white/30" />
-                      <p>No tienes materias en curso actualmente</p>
+                      <p className="text-white font-medium">Aún no tienes materias en curso</p>
+                      <p className="text-white/70 text-sm mt-1">
+                        Agrega tus materias y la app calculará tu progreso automáticamente.
+                      </p>
+                      <div className="mt-4 flex justify-center">
+                        <Button
+                          onClick={() => router.push("/academico/historial")}
+                          className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          Agregar mi primera materia
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -308,12 +357,12 @@ export default function PanelAcademico() {
           </TabsContent>
 
           <TabsContent value="historial" className="space-y-4">
-            <Card className="bg-[#354B3A] border-white/10">
+            <Card className="bg-[var(--mygreen-light)] border-white/10">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle className="text-white flex items-center gap-2">
-                      <GraduationCap className="w-5 h-5 text-[#40C9A9]" />
+                      <GraduationCap className="w-5 h-5 text-[var(--accent-hex)]" />
                       Historial Académico
                     </CardTitle>
                     <CardDescription className="text-white/70">
@@ -324,14 +373,14 @@ export default function PanelAcademico() {
                     <Button
                       onClick={() => router.push("/academico/historial")}
                       variant="outline"
-                      className="border-[#40C9A9] text-[#40C9A9] hover:bg-[#40C9A9] hover:text-white"
+                      className="border-[var(--accent-hex)] text-[var(--accent-hex)] hover:bg-[var(--accent-hex)] hover:text-white"
                     >
                       <History className="w-4 h-4 mr-2" />
                       Ver Historial Completo
                     </Button>
                     <Button
                       onClick={() => router.push("/academico/historial")}
-                      className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                      className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
                     >
                       <Plus className="w-4 h-4 mr-2" />
                       Gestionar Historial
@@ -351,7 +400,7 @@ export default function PanelAcademico() {
                     .map((materia) => (
                       <div
                         key={materia.id}
-                        className="flex items-center justify-between p-4 bg-[#1C2D20] rounded-lg border border-white/5"
+                        className="flex items-center justify-between p-4 bg-[var(--mygreen-dark)] rounded-lg border border-white/5"
                       >
                         <div className="flex-1">
                           <div className="flex items-center gap-3">
@@ -365,7 +414,7 @@ export default function PanelAcademico() {
                               {materia.estado}
                             </Badge>
                             {materia.nota && (
-                              <Badge className="bg-[#40C9A9]/10 text-[#40C9A9] border-[#40C9A9]/20">
+                              <Badge className="bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] text-[var(--accent-hex)] border-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)]">
                                 Nota: {materia.nota}
                               </Badge>
                             )}
@@ -388,7 +437,7 @@ export default function PanelAcademico() {
 
           <TabsContent value="estadisticas" className="space-y-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="bg-[#354B3A] border-white/10">
+              <Card className="bg-[var(--mygreen-light)] border-white/10">
                 <CardHeader>
                   <CardTitle className="text-white">Distribución por Estado</CardTitle>
                 </CardHeader>
@@ -416,7 +465,7 @@ export default function PanelAcademico() {
                 </CardContent>
               </Card>
 
-              <Card className="bg-[#354B3A] border-white/10">
+              <Card className="bg-[var(--mygreen-light)] border-white/10">
                 <CardHeader>
                   <CardTitle className="text-white">Progreso de Créditos</CardTitle>
                 </CardHeader>

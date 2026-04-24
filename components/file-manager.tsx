@@ -146,10 +146,10 @@ export default function FileManager() {
   };
 
   return (
-    <Card className="bg-[#354B3A] border-white/10">
+    <Card className="bg-[var(--mygreen-light)] border-white/10">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-white font-special">
-          <FolderOpen className="h-5 w-5 text-[#40C9A9]" />
+          <FolderOpen className="h-5 w-5 text-[var(--accent-hex)]" />
           Gestor de Archivos - Bunny.net
         </CardTitle>
       </CardHeader>
@@ -166,7 +166,7 @@ export default function FileManager() {
                 onClick={() => setSelectedFolder(folder.id)}
                 className={`flex items-center gap-2 ${
                   selectedFolder === folder.id 
-                    ? 'bg-[#40C9A9] text-white' 
+                    ? 'bg-[var(--accent-hex)] text-white' 
                     : 'bg-white/10 text-white hover:bg-white/20'
                 }`}
               >
@@ -192,7 +192,7 @@ export default function FileManager() {
         <div className="space-y-2">
           {loading ? (
             <div className="text-center py-8 text-white/70">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#40C9A9] mx-auto"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent-hex)] mx-auto"></div>
               <p className="mt-2">Cargando archivos...</p>
             </div>
           ) : filteredFiles.length === 0 ? (

@@ -12,7 +12,7 @@ export default function SuscripcionBsPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const plan = searchParams.get("plan");
+    const plan = searchParams?.get("plan");
     const url = plan ? `/suscripcion?pagoBs=${encodeURIComponent(plan)}` : "/suscripcion";
     router.replace(url);
   }, [searchParams, router]);

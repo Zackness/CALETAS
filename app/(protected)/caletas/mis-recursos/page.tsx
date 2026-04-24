@@ -244,7 +244,7 @@ export default function MisRecursosPage() {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-t from-mygreen to-mygreen-light">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#40C9A9] mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent-hex)] mx-auto mb-4"></div>
           <p className="text-white/80">Cargando...</p>
         </div>
       </div>
@@ -256,7 +256,7 @@ export default function MisRecursosPage() {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-t from-mygreen to-mygreen-light">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#40C9A9] mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent-hex)] mx-auto mb-4"></div>
           <p className="text-white/80">Cargando tus recursos...</p>
         </div>
       </div>
@@ -270,14 +270,14 @@ export default function MisRecursosPage() {
         <div className="mb-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h1 className="text-3xl md:text-4xl font-special text-[#40C9A9] mb-2">Mis Recursos</h1>
+              <h1 className="text-3xl md:text-4xl font-special text-[var(--accent-hex)] mb-2">Mis Recursos</h1>
               <p className="text-white/70 text-base md:text-lg">
                 Gestiona todos los recursos que has compartido
               </p>
             </div>
             <Button
               onClick={() => router.push("/caletas/crear")}
-              className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+              className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
             >
               <Plus className="w-4 h-4 mr-2" />
               Compartir Nuevo Recurso
@@ -287,18 +287,18 @@ export default function MisRecursosPage() {
 
         {/* Estadísticas */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <Card className="bg-[#354B3A] border-white/10">
+          <Card className="bg-[var(--mygreen-light)] border-white/10">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-white/70 text-sm">Total Recursos</p>
                   <p className="text-white text-2xl font-bold">{Array.isArray(recursos) ? recursos.length : 0}</p>
                 </div>
-                <FileText className="w-8 h-8 text-[#40C9A9]" />
+                <FileText className="w-8 h-8 text-[var(--accent-hex)]" />
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-[#354B3A] border-white/10">
+          <Card className="bg-[var(--mygreen-light)] border-white/10">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -307,11 +307,11 @@ export default function MisRecursosPage() {
                     {Array.isArray(recursos) ? recursos.reduce((sum, r) => sum + r.numVistas, 0) : 0}
                   </p>
                 </div>
-                <Eye className="w-8 h-8 text-[#40C9A9]" />
+                <Eye className="w-8 h-8 text-[var(--accent-hex)]" />
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-[#354B3A] border-white/10">
+          <Card className="bg-[var(--mygreen-light)] border-white/10">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -320,11 +320,11 @@ export default function MisRecursosPage() {
                     {Array.isArray(recursos) ? recursos.reduce((sum, r) => sum + r.numDescargas, 0) : 0}
                   </p>
                 </div>
-                <Download className="w-8 h-8 text-[#40C9A9]" />
+                <Download className="w-8 h-8 text-[var(--accent-hex)]" />
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-[#354B3A] border-white/10">
+          <Card className="bg-[var(--mygreen-light)] border-white/10">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -336,14 +336,14 @@ export default function MisRecursosPage() {
                     }
                   </p>
                 </div>
-                <Star className="w-8 h-8 text-[#40C9A9]" />
+                <Star className="w-8 h-8 text-[var(--accent-hex)]" />
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Filtros y búsqueda */}
-        <Card className="bg-[#354B3A] border-white/10 mb-6">
+        <Card className="bg-[var(--mygreen-light)] border-white/10 mb-6">
           <CardContent className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="relative">
@@ -352,37 +352,37 @@ export default function MisRecursosPage() {
                   placeholder="Buscar recursos..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg pl-10"
+                  className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg pl-10"
                 />
               </div>
               <Select value={filterTipo} onValueChange={setFilterTipo}>
-                <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg">
+                <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg">
                   <Filter className="w-4 h-4 mr-2" />
                   <SelectValue placeholder="Filtrar por tipo" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#203324] text-white">
-                  <SelectItem value="TODOS" className="hover:bg-[#40C9A9]/10">Todos los tipos</SelectItem>
-                  <SelectItem value="DOCUMENTO" className="hover:bg-[#40C9A9]/10">Documento</SelectItem>
-                  <SelectItem value="ANOTACION" className="hover:bg-[#40C9A9]/10">Anotación</SelectItem>
-                  <SelectItem value="RESUMEN" className="hover:bg-[#40C9A9]/10">Resumen</SelectItem>
-                  <SelectItem value="GUIA_ESTUDIO" className="hover:bg-[#40C9A9]/10">Guía de Estudio</SelectItem>
-                  <SelectItem value="EJERCICIOS" className="hover:bg-[#40C9A9]/10">Ejercicios</SelectItem>
-                  <SelectItem value="PRESENTACION" className="hover:bg-[#40C9A9]/10">Presentación</SelectItem>
-                  <SelectItem value="TIP" className="hover:bg-[#40C9A9]/10">Tip/Consejo</SelectItem>
+                <SelectContent className="bg-[var(--mygreen)] text-white">
+                  <SelectItem value="TODOS" className="hover:bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)]">Todos los tipos</SelectItem>
+                  <SelectItem value="DOCUMENTO" className="hover:bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)]">Documento</SelectItem>
+                  <SelectItem value="ANOTACION" className="hover:bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)]">Anotación</SelectItem>
+                  <SelectItem value="RESUMEN" className="hover:bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)]">Resumen</SelectItem>
+                  <SelectItem value="GUIA_ESTUDIO" className="hover:bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)]">Guía de Estudio</SelectItem>
+                  <SelectItem value="EJERCICIOS" className="hover:bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)]">Ejercicios</SelectItem>
+                  <SelectItem value="PRESENTACION" className="hover:bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)]">Presentación</SelectItem>
+                  <SelectItem value="TIP" className="hover:bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)]">Tip/Consejo</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg">
+                <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg">
                   <SortAsc className="w-4 h-4 mr-2" />
                   <SelectValue placeholder="Ordenar por" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#203324] text-white">
-                  <SelectItem value="createdAt" className="hover:bg-[#40C9A9]/10">Fecha de creación</SelectItem>
-                  <SelectItem value="titulo" className="hover:bg-[#40C9A9]/10">Título</SelectItem>
-                  <SelectItem value="materia" className="hover:bg-[#40C9A9]/10">Materia</SelectItem>
-                  <SelectItem value="calificacion" className="hover:bg-[#40C9A9]/10">Calificación</SelectItem>
-                  <SelectItem value="vistas" className="hover:bg-[#40C9A9]/10">Vistas</SelectItem>
-                  <SelectItem value="descargas" className="hover:bg-[#40C9A9]/10">Descargas</SelectItem>
+                <SelectContent className="bg-[var(--mygreen)] text-white">
+                  <SelectItem value="createdAt" className="hover:bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)]">Fecha de creación</SelectItem>
+                  <SelectItem value="titulo" className="hover:bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)]">Título</SelectItem>
+                  <SelectItem value="materia" className="hover:bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)]">Materia</SelectItem>
+                  <SelectItem value="calificacion" className="hover:bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)]">Calificación</SelectItem>
+                  <SelectItem value="vistas" className="hover:bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)]">Vistas</SelectItem>
+                  <SelectItem value="descargas" className="hover:bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)]">Descargas</SelectItem>
                 </SelectContent>
               </Select>
               <Button
@@ -398,7 +398,7 @@ export default function MisRecursosPage() {
 
         {/* Lista de recursos */}
         {filteredAndSortedRecursos.length === 0 ? (
-          <Card className="bg-[#354B3A] border-white/10">
+          <Card className="bg-[var(--mygreen-light)] border-white/10">
             <CardContent className="p-8 text-center">
               <FileText className="w-16 h-16 text-white/30 mx-auto mb-4" />
               <h3 className="text-white text-lg font-semibold mb-2">
@@ -413,7 +413,7 @@ export default function MisRecursosPage() {
               {Array.isArray(recursos) && recursos.length === 0 && (
                 <Button
                   onClick={() => router.push("/caletas/crear")}
-                  className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                  className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Compartir Primer Recurso
@@ -424,7 +424,7 @@ export default function MisRecursosPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredAndSortedRecursos.map((recurso) => (
-              <Card key={recurso.id} className="bg-[#354B3A] border-white/10 hover:border-[#40C9A9]/30 transition-colors">
+              <Card key={recurso.id} className="bg-[var(--mygreen-light)] border-white/10 hover:border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] transition-colors">
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -519,7 +519,7 @@ export default function MisRecursosPage() {
                           <Trash2 className="w-3 h-3" />
                         </Button>
                       </AlertDialogTrigger>
-                      <AlertDialogContent className="bg-[#203324] border-white/10">
+                      <AlertDialogContent className="bg-[var(--mygreen)] border-white/10">
                         <AlertDialogHeader>
                           <AlertDialogTitle className="text-white">¿Eliminar recurso?</AlertDialogTitle>
                           <AlertDialogDescription className="text-white/70">

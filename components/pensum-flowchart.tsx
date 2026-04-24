@@ -445,14 +445,14 @@ export const PensumFlowchart = ({
   };
 
   return (
-    <div ref={containerRef} className="w-full h-full relative overflow-hidden bg-[#1C2D20] rounded-lg">
+    <div ref={containerRef} className="w-full h-full relative overflow-hidden bg-[var(--mygreen-dark)] rounded-lg">
       {/* Controles de zoom */}
       <div className="absolute top-4 right-4 z-10 flex gap-2">
         <Button
           size="sm"
           variant="outline"
           onClick={fitToScreen}
-          className="bg-[#354B3A] border-white/10 text-white hover:bg-white/10"
+          className="bg-[var(--mygreen-light)] border-white/10 text-white hover:bg-white/10"
           title="Centrar y ajustar diagrama"
         >
           <LocateFixed className="w-4 h-4" />
@@ -461,7 +461,7 @@ export const PensumFlowchart = ({
           size="sm"
           variant="outline"
           onClick={handleZoomOut}
-          className="bg-[#354B3A] border-white/10 text-white hover:bg-white/10"
+          className="bg-[var(--mygreen-light)] border-white/10 text-white hover:bg-white/10"
         >
           <ZoomOut className="w-4 h-4" />
         </Button>
@@ -469,7 +469,7 @@ export const PensumFlowchart = ({
           size="sm"
           variant="outline"
           onClick={handleZoomIn}
-          className="bg-[#354B3A] border-white/10 text-white hover:bg-white/10"
+          className="bg-[var(--mygreen-light)] border-white/10 text-white hover:bg-white/10"
         >
           <ZoomIn className="w-4 h-4" />
         </Button>
@@ -477,7 +477,7 @@ export const PensumFlowchart = ({
 
       {/* Indicador de navegación */}
       <div className="absolute top-4 left-4 z-10">
-        <Card className="bg-[#354B3A] border-white/10">
+        <Card className="bg-[var(--mygreen-light)] border-white/10">
           <CardContent className="p-3">
             <div className="space-y-2 text-xs text-white/70">
               <div className="flex items-center gap-2">
@@ -531,7 +531,7 @@ export const PensumFlowchart = ({
               refY="3.5"
               orient="auto"
             >
-              <polygon points="0 0, 10 3.5, 0 7" fill="#40C9A9" />
+              <polygon points="0 0, 10 3.5, 0 7" fill="var(--accent-hex)" />
             </marker>
           </defs>
           {conexiones.map((conexion, index) => {
@@ -583,7 +583,7 @@ export const PensumFlowchart = ({
             >
               {/* Título del semestre */}
               <div className="text-center mb-4">
-                <Badge className="bg-[#40C9A9] text-white px-4 py-2 text-lg font-bold">
+                <Badge className="bg-[var(--accent-hex)] text-white px-4 py-2 text-lg font-bold">
                   {semestre}
                 </Badge>
               </div>
@@ -648,7 +648,7 @@ export const PensumFlowchart = ({
 
       {/* Leyenda */}
       <div className="absolute bottom-4 left-4 z-10">
-        <Card className="bg-[#354B3A] border-white/10">
+        <Card className="bg-[var(--mygreen-light)] border-white/10">
           <CardContent className="p-3">
             <div className="flex items-center gap-4 text-xs text-white/70">
               <div className="flex items-center gap-1">

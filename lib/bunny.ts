@@ -98,6 +98,8 @@ const guessMimeType = (fileName: string) => {
       return "image/webp";
     case "mp4":
       return "video/mp4";
+    case "webm":
+      return "video/webm";
     case "mp3":
       return "audio/mpeg";
     case "zip":

@@ -34,7 +34,7 @@ export const UserButton = () => {
                     onClick={onClick}
                     className="cursor-pointer gap-2 text-white focus:text-white"
                 >
-                    <ExitIcon className="h-4 w-4 text-[#40C9A9]" />
+                    <ExitIcon className="h-4 w-4 text-[var(--accent-hex)]" />
                     Salir
                 </DropdownMenuItem>
             </DropdownMenuContent>

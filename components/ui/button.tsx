@@ -25,7 +25,7 @@ const buttonVariants = cva(
         outline5:
           "border border-fm-red-3 border-2 border-b-4 bg-fm-red hover:border-fm-blue-3 hover:bg-fm-blue-2 hover:text-white/50",
         secondary:
-          "bg-none border-3 border-[#40C9A9] hover:border-[#40C9A9]/50 text-[#40C9A9] cursor-pointer py-6",
+          "bg-none border-3 border-[var(--accent-hex)] hover:border-[color-mix(in_oklab,var(--accent-hex)_50%,transparent)] text-[var(--accent-hex)] cursor-pointer py-6",
         secondary2:
           "text-secondary-foreground hover:bg-fm-blue-1 hover:text-accent-foreground",
         ghost:

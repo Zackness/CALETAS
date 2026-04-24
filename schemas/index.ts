@@ -50,6 +50,11 @@ export const SettingsSchema = z.object ({
     // Nuevos campos para residencia
     ciudadDeResidencia: z.string().optional(),
     estadoDeResidencia: z.string().max(64).optional(),
+
+    // Contexto académico (permitir cambio con confirmación)
+    universidadId: z.string().nullable().optional(),
+    carreraId: z.string().nullable().optional(),
+    confirmarResetProgresoAcademico: z.boolean().optional(),
 })
     .refine((data) => {
         const s = data.estadoDeResidencia?.trim();

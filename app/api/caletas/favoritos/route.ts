@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { createNotification } from "@/lib/notifications";
 
 const ANON_AUTHOR = {
   id: "anon",
@@ -73,6 +74,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const actor = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: { id: true, name: true },
+    });
+    if (!actor) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+
     // Agregar a favoritos
     const favorito = await db.favorito.create({
       data: {
@@ -94,6 +103,14 @@ export async function POST(request: NextRequest) {
         }
       }
     });
+
+    // Notificar al dueño de la caleta/recurso (si no es el mismo usuario)
+    if (favorito.recurso.autorId && favorito.recurso.autorId !== session.user.id) {
+      await createNotification(
+        favorito.recurso.autorId,
+        `${actor.name} agregó tu caleta "${favorito.recurso.titulo}" a favoritos.`
+      );
+    }
 
     return NextResponse.json({
       success: true,

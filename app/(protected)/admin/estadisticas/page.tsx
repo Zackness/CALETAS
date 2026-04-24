@@ -42,16 +42,16 @@ export default function AdminEstadisticasPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-special text-white mb-2 flex items-center gap-2">
-            <ShieldCheck className="w-6 h-6 text-[#40C9A9]" />
+            <ShieldCheck className="w-6 h-6 text-[var(--accent-hex)]" />
             Panel Admin - Estadísticas
           </h1>
           <p className="text-white/70">Resumen global de actividad de Caletas.</p>
         </div>
 
-        <Card className="bg-[#354B3A] border-white/10">
+        <Card className="bg-[var(--mygreen-light)] border-white/10">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-[#40C9A9]" />
+              <BarChart3 className="w-5 h-5 text-[var(--accent-hex)]" />
               Estadísticas globales
             </CardTitle>
             <CardDescription className="text-white/70">
@@ -73,7 +73,7 @@ export default function AdminEstadisticasPage() {
                   ["Pagos manuales totales", stats.manualPaymentsTotal],
                   ["Pagos manuales pendientes", stats.manualPaymentsPending],
                 ].map(([label, value]) => (
-                  <Card key={String(label)} className="bg-[#1C2D20] border-white/10">
+                  <Card key={String(label)} className="bg-[var(--mygreen-dark)] border-white/10">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm text-white/70">{label}</CardTitle>
                     </CardHeader>

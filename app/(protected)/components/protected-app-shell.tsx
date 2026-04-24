@@ -4,6 +4,8 @@ import { Sidebar, SidebarInset, SidebarProvider, SidebarRail } from "@/component
 import { CaletasSidebarNav } from "./caletas-sidebar-nav";
 import { DashboardHeader } from "./app-header";
 import { EmailVerificationBanner } from "./email-verification-banner";
+import { MobileBottomNav } from "./mobile-bottom-nav";
+import { CaletaShareFab } from "@/components/caletas/caleta-share-fab";
 
 type SessionLike = {
   user?: {
@@ -33,20 +35,22 @@ export function ProtectedAppShell({
     >
       <Sidebar
         collapsible="offcanvas"
-        className="border-white/10 text-white [&_[data-sidebar=sidebar]]:!bg-[#203324] [&_[data-sidebar=sidebar]]:!bg-none"
+        className="border-white/10 text-white [&_[data-sidebar=sidebar]]:!bg-[var(--mygreen)] [&_[data-sidebar=sidebar]]:!bg-none"
       >
         <CaletasSidebarNav userRole={session?.user?.role ?? null} />
-        <SidebarRail className="after:bg-white/20 hover:after:bg-[#40C9A9]/50" />
+        <SidebarRail className="after:bg-white/20 hover:after:bg-[color-mix(in_oklab,var(--accent-hex)_50%,transparent)]" />
       </Sidebar>
       <SidebarInset className="flex min-h-0 min-w-0 flex-1 flex-col border-l border-white/10 bg-transparent">
         <DashboardHeader session={session} />
         {showVerificationBanner && userEmail ? (
           <EmailVerificationBanner email={userEmail} />
         ) : null}
-        <main className="mx-auto w-full min-w-0 max-w-7xl flex-1 px-3 py-4 sm:px-4 sm:py-6 md:px-8 md:py-6">
+        <main className="mx-auto w-full min-w-0 max-w-7xl flex-1 px-3 py-4 pb-24 sm:px-4 sm:py-6 md:px-8 md:py-6 md:pb-6">
           {children}
         </main>
       </SidebarInset>
+      <MobileBottomNav />
+      <CaletaShareFab />
     </SidebarProvider>
   );
 }

@@ -45,16 +45,16 @@ export function Header() {
         <Logo />
         {/* Menú de escritorio */}
         <div className="hidden md:flex md:flex-row md:gap-4 lg:gap-6 items-center">
-          <a href="/caracteristicas" className="hover:text-[#40C9A9] transition-colors cursor-pointer text-white text-base px-2 py-1 rounded-md hover:bg-white/10">
+          <a href="/caracteristicas" className="hover:text-[var(--accent-hex)] transition-colors cursor-pointer text-white text-base px-2 py-1 rounded-md hover:bg-white/10">
             Características
           </a>
-          <a href="/testimonios" className="hover:text-[#40C9A9] transition-colors text-white text-base px-2 py-1 rounded-md hover:bg-white/10">
+          <a href="/testimonios" className="hover:text-[var(--accent-hex)] transition-colors text-white text-base px-2 py-1 rounded-md hover:bg-white/10">
             Testimonios
           </a>
-          <a href="/aliados" className="hover:text-[#40C9A9] transition-colors text-white text-base px-2 py-1 rounded-md hover:bg-white/10">
+          <a href="/aliados" className="hover:text-[var(--accent-hex)] transition-colors text-white text-base px-2 py-1 rounded-md hover:bg-white/10">
             Aliados
           </a>
-          <button type="button" onClick={() => goTo("/blog")} className="hover:text-[#40C9A9] transition-colors text-white text-base px-2 py-1 rounded-md hover:bg-white/10">
+          <button type="button" onClick={() => goTo("/blog")} className="hover:text-[var(--accent-hex)] transition-colors text-white text-base px-2 py-1 rounded-md hover:bg-white/10">
             Blog
           </button>
         </div>

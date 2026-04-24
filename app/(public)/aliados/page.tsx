@@ -104,7 +104,7 @@ export default function AliadosPage() {
 
   const getEstadoColor = (estado: string) => {
     return estado === 'activo' 
-      ? 'bg-[#40C9A9]/10 text-[#40C9A9] border-[#40C9A9]/20'
+      ? 'bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] text-[var(--accent-hex)] border-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)]'
       : 'bg-orange-500/10 text-orange-400 border-orange-500/20';
   };
 
@@ -127,7 +127,7 @@ export default function AliadosPage() {
         <section className="mb-20">
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-3 mb-4">
-              <Handshake className="h-8 w-8 text-[#40C9A9]" />
+              <Handshake className="h-8 w-8 text-[var(--accent-hex)]" />
               <h2 className="text-3xl font-special text-white">Aliados Estratégicos</h2>
             </div>
             <p className="text-white/70 text-lg">
@@ -137,11 +137,11 @@ export default function AliadosPage() {
 
           <div className="grid lg:grid-cols-3 gap-8">
             {aliados.map((aliado) => (
-              <Card key={aliado.id} className="bg-[#354B3A] border-white/10 hover:border-[#40C9A9]/30 transition-all">
+              <Card key={aliado.id} className="bg-[var(--mygreen-light)] border-white/10 hover:border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] transition-all">
                 <CardHeader>
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-[#40C9A9]/10 rounded-lg">
+                      <div className="p-2 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-lg">
                         {getTipoIcon(aliado.tipo)}
                       </div>
                       <div>
@@ -168,7 +168,7 @@ export default function AliadosPage() {
                     <h4 className="text-white font-medium mb-3">Beneficios:</h4>
                     {aliado.beneficios.map((beneficio, index) => (
                       <div key={index} className="flex items-start gap-2">
-                        <Star className="h-4 w-4 text-[#40C9A9] mt-0.5 flex-shrink-0" />
+                        <Star className="h-4 w-4 text-[var(--accent-hex)] mt-0.5 flex-shrink-0" />
                         <span className="text-sm text-white/70">{beneficio}</span>
                       </div>
                     ))}
@@ -177,7 +177,7 @@ export default function AliadosPage() {
                   {aliado.website && (
                     <div className="flex gap-2">
                       <Link href={aliado.website} target="_blank" rel="noopener noreferrer">
-                        <Button variant="outline" size="sm" className="border-[#40C9A9] text-[#40C9A9] hover:bg-[#40C9A9] hover:text-white">
+                        <Button variant="outline" size="sm" className="border-[var(--accent-hex)] text-[var(--accent-hex)] hover:bg-[var(--accent-hex)] hover:text-white">
                           <ExternalLink className="h-4 w-4 mr-2" />
                           Visitar Sitio
                         </Button>
@@ -194,7 +194,7 @@ export default function AliadosPage() {
         <section className="mb-20">
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-3 mb-4">
-              <Target className="h-8 w-8 text-[#40C9A9]" />
+              <Target className="h-8 w-8 text-[var(--accent-hex)]" />
               <h2 className="text-3xl font-special text-white">¿Quieres Ser Aliado?</h2>
             </div>
             <p className="text-white/70 text-lg">
@@ -203,10 +203,10 @@ export default function AliadosPage() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
-            <Card className="bg-[#354B3A] border-white/10">
+            <Card className="bg-[var(--mygreen-light)] border-white/10">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
-                  <GraduationCap className="h-6 w-6 text-[#40C9A9]" />
+                  <GraduationCap className="h-6 w-6 text-[var(--accent-hex)]" />
                   Movimientos Estudiantiles
                 </CardTitle>
               </CardHeader>
@@ -216,29 +216,29 @@ export default function AliadosPage() {
                 </CardDescription>
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-sm text-white/70">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Contacta con nuestro equipo</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/70">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Presenta tu universidad y necesidades</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/70">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Recibe soporte para la implementación</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/70">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Acceso a recursos exclusivos</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-[#354B3A] border-white/10">
+            <Card className="bg-[var(--mygreen-light)] border-white/10">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
-                  <Building2 className="h-6 w-6 text-[#40C9A9]" />
+                  <Building2 className="h-6 w-6 text-[var(--accent-hex)]" />
                   Empresas y Startups
                 </CardTitle>
               </CardHeader>
@@ -248,19 +248,19 @@ export default function AliadosPage() {
                 </CardDescription>
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-sm text-white/70">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Propón tu idea de colaboración</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/70">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Integración con nuestra plataforma</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/70">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Acceso a nuestra comunidad estudiantil</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/70">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Desarrollo conjunto de soluciones</span>
                   </div>
                 </div>
@@ -273,7 +273,7 @@ export default function AliadosPage() {
         <section className="mb-20">
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-3 mb-4">
-              <Award className="h-8 w-8 text-[#40C9A9]" />
+              <Award className="h-8 w-8 text-[var(--accent-hex)]" />
               <h2 className="text-3xl font-special text-white">Beneficios de Ser Aliado</h2>
             </div>
             <p className="text-white/70 text-lg">
@@ -282,10 +282,10 @@ export default function AliadosPage() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
-            <Card className="bg-[#354B3A] border-white/10 text-center">
+            <Card className="bg-[var(--mygreen-light)] border-white/10 text-center">
               <CardHeader>
-                <div className="mx-auto p-3 bg-[#40C9A9]/10 rounded-full w-fit mb-4">
-                  <Globe className="h-8 w-8 text-[#40C9A9]" />
+                <div className="mx-auto p-3 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-full w-fit mb-4">
+                  <Globe className="h-8 w-8 text-[var(--accent-hex)]" />
                 </div>
                 <CardTitle className="text-white">Alcance Nacional</CardTitle>
               </CardHeader>
@@ -296,10 +296,10 @@ export default function AliadosPage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-[#354B3A] border-white/10 text-center">
+            <Card className="bg-[var(--mygreen-light)] border-white/10 text-center">
               <CardHeader>
-                <div className="mx-auto p-3 bg-[#40C9A9]/10 rounded-full w-fit mb-4">
-                  <Heart className="h-8 w-8 text-[#40C9A9]" />
+                <div className="mx-auto p-3 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-full w-fit mb-4">
+                  <Heart className="h-8 w-8 text-[var(--accent-hex)]" />
                 </div>
                 <CardTitle className="text-white">Comunidad Comprometida</CardTitle>
               </CardHeader>
@@ -310,10 +310,10 @@ export default function AliadosPage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-[#354B3A] border-white/10 text-center">
+            <Card className="bg-[var(--mygreen-light)] border-white/10 text-center">
               <CardHeader>
-                <div className="mx-auto p-3 bg-[#40C9A9]/10 rounded-full w-fit mb-4">
-                  <Code className="h-8 w-8 text-[#40C9A9]" />
+                <div className="mx-auto p-3 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-full w-fit mb-4">
+                  <Code className="h-8 w-8 text-[var(--accent-hex)]" />
                 </div>
                 <CardTitle className="text-white">Tecnología Avanzada</CardTitle>
               </CardHeader>
@@ -328,7 +328,7 @@ export default function AliadosPage() {
 
         {/* CTA Final */}
         <section className="text-center">
-          <Card className="bg-[#354B3A] border-[#40C9A9]/30 max-w-2xl mx-auto">
+          <Card className="bg-[var(--mygreen-light)] border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] max-w-2xl mx-auto">
             <CardHeader>
               <CardTitle className="text-2xl font-special text-white mb-4">
                 ¿Listo para ser parte del cambio?
@@ -340,7 +340,7 @@ export default function AliadosPage() {
             <CardContent className="space-y-4">
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href="mailto:aliados@caletas.com">
-                  <Button className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white px-8 py-3 text-lg">
+                  <Button className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white px-8 py-3 text-lg">
                     Contactar Equipo
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>

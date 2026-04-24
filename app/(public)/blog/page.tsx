@@ -47,7 +47,7 @@ export default async function BlogPage() {
         </div>
 
         {posts.length === 0 ? (
-          <Card className="bg-[#354B3A] border-white/10">
+          <Card className="bg-[var(--mygreen-light)] border-white/10">
             <CardContent className="p-8 text-center text-white/70">
               Todavía no hay artículos publicados. Pronto verás contenido nuevo aquí.
             </CardContent>
@@ -55,10 +55,10 @@ export default async function BlogPage() {
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {posts.map((post) => (
-              <Card key={post.id} className="bg-[#354B3A] border-white/10 hover:border-[#40C9A9]/30 transition-colors">
+              <Card key={post.id} className="bg-[var(--mygreen-light)] border-white/10 hover:border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] transition-colors">
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between gap-2 mb-2">
-                    <Badge className="bg-[#40C9A9]/20 text-[#40C9A9] border-[#40C9A9]/30">
+                    <Badge className="bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)] text-[var(--accent-hex)] border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)]">
                       {post.category?.name || "General"}
                     </Badge>
                     <span className="text-xs text-white/60 inline-flex items-center gap-1">
@@ -80,7 +80,7 @@ export default async function BlogPage() {
                   </div>
                   <Link
                     href={`/blog/${post.slug ?? ""}`}
-                    className="inline-flex items-center rounded-md bg-[#40C9A9] px-3 py-2 text-sm font-medium text-white hover:bg-[#40C9A9]/80"
+                    className="inline-flex items-center rounded-md bg-[var(--accent-hex)] px-3 py-2 text-sm font-medium text-white hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)]"
                   >
                     Leer artículo
                   </Link>

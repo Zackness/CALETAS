@@ -331,7 +331,7 @@ export default function HistorialPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-special text-white mb-2 flex items-center gap-3">
-            <BookOpen className="w-8 h-8 text-[#40C9A9]" />
+            <BookOpen className="w-8 h-8 text-[var(--accent-hex)]" />
             Gestión de Historial Académico
           </h1>
           <p className="text-white/70">
@@ -340,10 +340,10 @@ export default function HistorialPage() {
         </div>
 
         {semestreInfo ? (
-          <Card className="mb-6 bg-[#354B3A] border-white/10">
+          <Card className="mb-6 bg-[var(--mygreen-light)] border-white/10">
             <CardHeader className="pb-2">
               <CardTitle className="text-white text-lg flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-[#40C9A9]" />
+                <Calendar className="w-5 h-5 text-[var(--accent-hex)]" />
                 Semestre académico
               </CardTitle>
               <CardDescription className="text-white/60">
@@ -356,7 +356,7 @@ export default function HistorialPage() {
               <div className="space-y-1">
                 <div className="text-white">
                   <span className="text-white/70">Tu semestre: </span>
-                  <Badge className="bg-[#40C9A9]/20 text-[#40C9A9] border-[#40C9A9]/40 text-base font-semibold">
+                  <Badge className="bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)] text-[var(--accent-hex)] border-[color-mix(in_oklab,var(--accent-hex)_40%,transparent)] text-base font-semibold">
                     {semestreInfo.actual ?? semestreInfo.sugerido}
                   </Badge>
                   {semestreInfo.manual ? (
@@ -371,7 +371,7 @@ export default function HistorialPage() {
                   {semestreInfo.detalle.maxEnCurso > 0
                     ? ` · en curso hasta S${semestreInfo.detalle.maxEnCurso}`
                     : ""}{" "}
-                  → <span className="text-[#40C9A9] font-medium">{semestreInfo.sugerido}</span>
+                  → <span className="text-[var(--accent-hex)] font-medium">{semestreInfo.sugerido}</span>
                 </div>
               </div>
             </CardContent>
@@ -387,16 +387,16 @@ export default function HistorialPage() {
                 placeholder="Buscar por código o nombre de materia..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-[#354B3A] border-white/10 text-white placeholder:text-white/50"
+                className="pl-10 bg-[var(--mygreen-light)] border-white/10 text-white placeholder:text-white/50"
               />
             </div>
           </div>
           
           <Select value={filterEstado} onValueChange={setFilterEstado}>
-            <SelectTrigger className="w-full lg:w-48 bg-[#354B3A] border-white/10 text-white">
+            <SelectTrigger className="w-full lg:w-48 bg-[var(--mygreen-light)] border-white/10 text-white">
               <SelectValue placeholder="Filtrar por estado" />
             </SelectTrigger>
-            <SelectContent className="bg-[#354B3A] border-white/10">
+            <SelectContent className="bg-[var(--mygreen-light)] border-white/10">
               <SelectItem value="todos" className="text-white">Todos los estados</SelectItem>
               <SelectItem value="APROBADA" className="text-white">Aprobadas</SelectItem>
               <SelectItem value="EN_CURSO" className="text-white">En Curso</SelectItem>
@@ -411,8 +411,8 @@ export default function HistorialPage() {
               variant={viewMode === "list" ? "default" : "outline"}
               onClick={() => setViewMode("list")}
               className={`w-full ${viewMode === "list" 
-                ? "bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white" 
-                : "bg-[#354B3A] border-white/10 text-white hover:bg-white/10"
+                ? "bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white" 
+                : "bg-[var(--mygreen-light)] border-white/10 text-white hover:bg-white/10"
               }`}
             >
               <List className="w-4 h-4 mr-2" />
@@ -422,8 +422,8 @@ export default function HistorialPage() {
               variant={viewMode === "flowchart" ? "default" : "outline"}
               onClick={() => setViewMode("flowchart")}
               className={`w-full ${viewMode === "flowchart" 
-                ? "bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white" 
-                : "bg-[#354B3A] border-white/10 text-white hover:bg-white/10"
+                ? "bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white" 
+                : "bg-[var(--mygreen-light)] border-white/10 text-white hover:bg-white/10"
               }`}
             >
               <GitBranch className="w-4 h-4 mr-2" />
@@ -435,13 +435,13 @@ export default function HistorialPage() {
             <DialogTrigger asChild>
               <Button 
                 onClick={openAddDialog}
-                className="w-full lg:w-auto bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                className="w-full lg:w-auto bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Agregar Materia
               </Button>
             </DialogTrigger>
-            <DialogContent className="bg-[#354B3A] border-white/10 text-white max-w-2xl">
+            <DialogContent className="bg-[var(--mygreen-light)] border-white/10 text-white max-w-2xl">
               <DialogHeader>
                 <DialogTitle>
                   {editingMateria ? "Editar Materia" : "Agregar Materia al Historial"}
@@ -478,10 +478,10 @@ export default function HistorialPage() {
                       value={formData.estado} 
                       onValueChange={(value) => setFormData({...formData, estado: value})}
                     >
-                      <SelectTrigger className="bg-[#1C2D20] border-white/10 text-white">
+                      <SelectTrigger className="bg-[var(--mygreen-dark)] border-white/10 text-white">
                         <SelectValue placeholder="Seleccionar estado" />
                       </SelectTrigger>
-                      <SelectContent className="bg-[#1C2D20] border-white/10">
+                      <SelectContent className="bg-[var(--mygreen-dark)] border-white/10">
                         <SelectItem value="APROBADA" className="text-white">Aprobada</SelectItem>
                         <SelectItem value="EN_CURSO" className="text-white">En Curso</SelectItem>
                         <SelectItem value="APLAZADA" className="text-white">Aplazada</SelectItem>
@@ -505,7 +505,7 @@ export default function HistorialPage() {
                       value={formData.nota}
                       onChange={(e) => setFormData({...formData, nota: e.target.value})}
                       placeholder="0.0 - 20.0"
-                      className="bg-[#1C2D20] border-white/10 text-white placeholder:text-white/50"
+                      className="bg-[var(--mygreen-dark)] border-white/10 text-white placeholder:text-white/50"
                     />
                   </div>
                   
@@ -518,7 +518,7 @@ export default function HistorialPage() {
                       value={formData.semestreCursado}
                       onChange={(e) => setFormData({...formData, semestreCursado: e.target.value})}
                       placeholder="Ej: S1, S2, ANTERIOR"
-                      className="bg-[#1C2D20] border-white/10 text-white placeholder:text-white/50"
+                      className="bg-[var(--mygreen-dark)] border-white/10 text-white placeholder:text-white/50"
                     />
                   </div>
                   
@@ -531,7 +531,7 @@ export default function HistorialPage() {
                       type="date"
                       value={formData.fechaInicio}
                       onChange={(e) => setFormData({...formData, fechaInicio: e.target.value})}
-                      className="bg-[#1C2D20] border-white/10 text-white"
+                      className="bg-[var(--mygreen-dark)] border-white/10 text-white"
                     />
                   </div>
                 </div>
@@ -545,7 +545,7 @@ export default function HistorialPage() {
                     type="date"
                     value={formData.fechaFin}
                     onChange={(e) => setFormData({...formData, fechaFin: e.target.value})}
-                    className="bg-[#1C2D20] border-white/10 text-white"
+                    className="bg-[var(--mygreen-dark)] border-white/10 text-white"
                   />
                 </div>
 
@@ -558,7 +558,7 @@ export default function HistorialPage() {
                     value={formData.observaciones}
                     onChange={(e) => setFormData({...formData, observaciones: e.target.value})}
                     placeholder="Observaciones adicionales..."
-                    className="bg-[#1C2D20] border-white/10 text-white placeholder:text-white/50"
+                    className="bg-[var(--mygreen-dark)] border-white/10 text-white placeholder:text-white/50"
                     rows={3}
                   />
                 </div>
@@ -574,7 +574,7 @@ export default function HistorialPage() {
                   </Button>
                   <Button
                     type="submit"
-                    className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                    className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
                   >
                     {editingMateria ? "Actualizar" : "Agregar"}
                   </Button>
@@ -586,10 +586,10 @@ export default function HistorialPage() {
 
         {/* Contenido según el modo de vista */}
         {viewMode === "list" ? (
-          <Card className="bg-[#354B3A] border-white/10">
+          <Card className="bg-[var(--mygreen-light)] border-white/10">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
-                <Award className="w-5 h-5 text-[#40C9A9]" />
+                <Award className="w-5 h-5 text-[var(--accent-hex)]" />
                 Historial Académico ({filteredMaterias.length} materias)
               </CardTitle>
               <CardDescription className="text-white/70">
@@ -601,7 +601,7 @@ export default function HistorialPage() {
               {filteredMaterias.map((materia) => (
                 <div
                   key={materia.id}
-                  className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4 bg-[#1C2D20] rounded-lg border border-white/5"
+                  className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4 bg-[var(--mygreen-dark)] rounded-lg border border-white/5"
                 >
                   <div className="flex-1">
                     <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
@@ -615,7 +615,7 @@ export default function HistorialPage() {
                         {materia.estado}
                       </Badge>
                       {materia.nota && (
-                        <Badge className="bg-[#40C9A9]/10 text-[#40C9A9] border-[#40C9A9]/20">
+                        <Badge className="bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] text-[var(--accent-hex)] border-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)]">
                           Nota: {materia.nota}
                         </Badge>
                       )}
@@ -645,7 +645,7 @@ export default function HistorialPage() {
                       variant="outline"
                       size="sm"
                       onClick={() => openEditDialog(materia)}
-                      className="border-[#40C9A9] text-[#40C9A9] hover:bg-[#40C9A9] hover:text-white"
+                      className="border-[var(--accent-hex)] text-[var(--accent-hex)] hover:bg-[var(--accent-hex)] hover:text-white"
                     >
                       <Edit className="w-4 h-4" />
                     </Button>
@@ -660,7 +660,7 @@ export default function HistorialPage() {
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </AlertDialogTrigger>
-                      <AlertDialogContent className="bg-[#354B3A] border-white/10">
+                      <AlertDialogContent className="bg-[var(--mygreen-light)] border-white/10">
                         <AlertDialogHeader>
                           <AlertDialogTitle className="text-white">
                             ¿Eliminar materia del historial?
@@ -707,10 +707,10 @@ export default function HistorialPage() {
           </CardContent>
         </Card>
         ) : (
-          <Card className="bg-[#354B3A] border-white/10">
+          <Card className="bg-[var(--mygreen-light)] border-white/10">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
-                <GitBranch className="w-5 h-5 text-[#40C9A9]" />
+                <GitBranch className="w-5 h-5 text-[var(--accent-hex)]" />
                 Diagrama de Flujo del Pensum
               </CardTitle>
               <CardDescription className="text-white/70">

@@ -213,7 +213,7 @@ export default function FileViewerModal({ isOpen, onClose, file }: FileViewerMod
             <p className="text-sm">Este tipo de archivo no se puede previsualizar</p>
             <Button
               onClick={() => window.open(file.url, '_blank')}
-              className="mt-4 bg-[#40C9A9] hover:bg-[#40C9A9]/80"
+              className="mt-4 bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)]"
             >
               <ExternalLink className="h-4 w-4 mr-2" />
               Abrir en nueva pestaña
@@ -226,7 +226,7 @@ export default function FileViewerModal({ isOpen, onClose, file }: FileViewerMod
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent 
-        className="max-w-4xl max-h-[90vh] bg-[#354B3A] border-white/10"
+        className="max-w-4xl max-h-[90vh] bg-[var(--mygreen-light)] border-white/10"
         onContextMenu={(e) => e.preventDefault()}
         onDragStart={(e) => e.preventDefault()}
         onKeyDown={(e) => {
@@ -264,7 +264,7 @@ export default function FileViewerModal({ isOpen, onClose, file }: FileViewerMod
         <div className="flex-1 overflow-auto">
           {isLoading && (
             <div className="flex items-center justify-center h-[400px]">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#40C9A9]"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent-hex)]"></div>
               <span className="ml-2 text-white/70">Cargando archivo...</span>
             </div>
           )}

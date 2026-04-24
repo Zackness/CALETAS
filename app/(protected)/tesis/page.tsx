@@ -69,7 +69,7 @@ export default function TesisPage() {
           </div>
           <Button
             type="button"
-            className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+            className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
             onClick={() => void create()}
             disabled={creating}
           >
@@ -78,10 +78,10 @@ export default function TesisPage() {
           </Button>
         </div>
 
-        <Card className="bg-[#354B3A] border-white/10">
+        <Card className="bg-[var(--mygreen-light)] border-white/10">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
-              <FileText className="w-5 h-5 text-[#40C9A9]" />
+              <FileText className="w-5 h-5 text-[var(--accent-hex)]" />
               Documentos
             </CardTitle>
           </CardHeader>
@@ -89,7 +89,7 @@ export default function TesisPage() {
             {loading ? (
               <div className="text-white/70">Cargando…</div>
             ) : docs.length === 0 ? (
-              <div className="rounded-lg border border-white/10 bg-[#1C2D20] p-6 text-white/70">
+              <div className="rounded-lg border border-white/10 bg-[var(--mygreen-dark)] p-6 text-white/70">
                 No tienes tesis creadas todavía. Crea una para empezar.
               </div>
             ) : (
@@ -97,7 +97,7 @@ export default function TesisPage() {
                 {docs.map((d) => (
                   <div
                     key={d.id}
-                    className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-white/10 bg-[#1C2D20] p-4"
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-white/10 bg-[var(--mygreen-dark)] p-4"
                   >
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 min-w-0">
@@ -111,7 +111,7 @@ export default function TesisPage() {
                     <Button
                       type="button"
                       variant="outline"
-                      className="border-white/10 bg-[#203324] text-white/85 hover:bg-white/10"
+                      className="border-white/10 bg-[var(--mygreen)] text-white/85 hover:bg-white/10"
                       onClick={() => router.push(`/editor/tesis/${encodeURIComponent(d.id)}`)}
                     >
                       <Pencil className="w-4 h-4 mr-2" />

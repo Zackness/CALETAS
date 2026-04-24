@@ -22,7 +22,7 @@ import Link from "next/link";
 export function AppSidebar() {
 
   return (
-    <Sidebar collapsible="icon" className="bg-[#354B3A] border-r border-white/10 text-white">
+    <Sidebar collapsible="icon" className="bg-[var(--mygreen-light)] border-r border-white/10 text-white">
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>

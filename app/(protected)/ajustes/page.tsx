@@ -50,6 +50,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useTheme } from "next-themes";
 
 type ExtendedUser = {
     id: string;
@@ -128,6 +129,7 @@ export default function Ajustes() {
   const [saving2FaPrefs, setSaving2FaPrefs] = useState(false);
   const [passkeys, setPasskeys] = useState<PasskeyItem[]>([]);
   const [passkeyBusy, setPasskeyBusy] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   const [semestreInfo, setSemestreInfo] = useState<{
     actual: string | null;
@@ -138,6 +140,16 @@ export default function Ajustes() {
   const [semestreLoading, setSemestreLoading] = useState(true);
   const [manualSemestre, setManualSemestre] = useState<string>("S1");
   const [semestreSaving, setSemestreSaving] = useState(false);
+
+  const [universidades, setUniversidades] = useState<
+    { id: string; nombre: string; siglas: string; tipo: string; estado: string; ciudad: string; ranking: number | null }[]
+  >([]);
+  const [carreras, setCarreras] = useState<{ id: string; nombre: string; codigo: string }[]>([]);
+  const [loadingUniversidades, setLoadingUniversidades] = useState(false);
+  const [loadingCarreras, setLoadingCarreras] = useState(false);
+
+  const [academicEditMode, setAcademicEditMode] = useState(false);
+  const [academicWarningOpen, setAcademicWarningOpen] = useState(false);
 
   const form = useForm<z.infer<typeof SettingsSchema>>({
       resolver: zodResolver(SettingsSchema),
@@ -151,6 +163,9 @@ export default function Ajustes() {
           password: "",
           newPassword: "",
           isTwoFactorEnabled: undefined,
+          universidadId: null,
+          carreraId: null,
+          confirmarResetProgresoAcademico: false,
       }
   });
 
@@ -258,6 +273,9 @@ export default function Ajustes() {
       password: "",
       newPassword: "",
       isTwoFactorEnabled: undefined,
+      universidadId: user.universidadId ?? null,
+      carreraId: user.carreraId ?? null,
+      confirmarResetProgresoAcademico: false,
     });
     setHasChanges(false);
     setPreferredTwoFaMethod(user.twoFactorPreferredMethod || "TOTP");
@@ -269,6 +287,55 @@ export default function Ajustes() {
       );
     }
   }, [user, form]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        setLoadingUniversidades(true);
+        const res = await fetch("/api/user/onboarding/universidades");
+        if (!res.ok) return;
+        const data = (await res.json()) as typeof universidades;
+        if (!cancelled) setUniversidades(Array.isArray(data) ? data : []);
+      } catch {
+        // silencioso
+      } finally {
+        if (!cancelled) setLoadingUniversidades(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const loadCarrerasForUniversidad = async (universidadId: string) => {
+    setLoadingCarreras(true);
+    try {
+      const res = await fetch(
+        `/api/user/onboarding/carreras?universidadId=${encodeURIComponent(universidadId)}`,
+      );
+      if (!res.ok) {
+        setCarreras([]);
+        return;
+      }
+      const data = (await res.json()) as Array<{ id: string; nombre: string; codigo: string }>;
+      setCarreras(Array.isArray(data) ? data : []);
+    } catch {
+      setCarreras([]);
+    } finally {
+      setLoadingCarreras(false);
+    }
+  };
+
+  useEffect(() => {
+    const universidadId = form.getValues("universidadId");
+    if (!universidadId) {
+      setCarreras([]);
+      return;
+    }
+    void loadCarrerasForUniversidad(universidadId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile?.user?.universidadId]);
 
   const loadPasskeys = async () => {
     try {
@@ -412,7 +479,7 @@ export default function Ajustes() {
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-t from-mygreen to-mygreen-light px-4 py-8">
       <div className="w-full max-w-4xl">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl md:text-4xl font-special text-[#40C9A9] mb-2">Ajustes de la Cuenta</h1>
+          <h1 className="text-3xl md:text-4xl font-special text-[var(--accent-hex)] mb-2">Ajustes de la Cuenta</h1>
           <p className="text-white/70 text-base md:text-lg">
             Gestiona tu información personal y configuración de seguridad
           </p>
@@ -421,10 +488,10 @@ export default function Ajustes() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* Información Personal */}
-            <Card className="bg-[#354B3A] border-white/10">
+            <Card className="bg-[var(--mygreen-light)] border-white/10">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-white">
-                  <User className="w-5 h-5 text-[#40C9A9]" />
+                  <User className="w-5 h-5 text-[var(--accent-hex)]" />
                   Información Personal
                 </CardTitle>
                 <CardDescription className="text-white/70">
@@ -441,7 +508,7 @@ export default function Ajustes() {
                         <FormLabel className="text-white/80">Nombre</FormLabel>
                         <FormControl>
                           <Input
-                            className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg"
+                            className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg"
                             {...field}
                             disabled={true}
                           />
@@ -458,7 +525,7 @@ export default function Ajustes() {
                         <FormLabel className="text-white/80">Apellido</FormLabel>
                         <FormControl>
                           <Input
-                            className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg"
+                            className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg"
                             {...field}
                             disabled={true}
                           />
@@ -478,7 +545,7 @@ export default function Ajustes() {
                         <FormLabel className="text-white/80">Correo</FormLabel>
                         <FormControl>
                           <Input
-                            className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg"
+                            className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg"
                             {...field}
                             disabled={isPending || isSubmitting || isOAuth}
                             type="email"
@@ -496,15 +563,15 @@ export default function Ajustes() {
               </CardContent>
             </Card>
 
-            {/* Universidad y carrera (solo lectura) */}
-            <Card className="bg-[#354B3A] border-white/10">
+            {/* Universidad y carrera */}
+            <Card className="bg-[var(--mygreen-light)] border-white/10">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-white">
-                  <Building2 className="w-5 h-5 text-[#40C9A9]" />
+                  <Building2 className="w-5 h-5 text-[var(--accent-hex)]" />
                   Universidad y carrera
                 </CardTitle>
                 <CardDescription className="text-white/70">
-                  Institución y programa que seleccionaste en tu perfil (solo lectura).
+                  Puedes modificarlas. Al hacerlo, tu progreso académico (materias y metas) se reiniciará.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -512,42 +579,230 @@ export default function Ajustes() {
                   <p className="text-white/60 text-sm">Cargando…</p>
                 ) : (
                   <>
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-white/80 text-sm">
-                        <Building2 className="w-4 h-4 text-[#40C9A9] shrink-0" />
-                        <span>Universidad</span>
-                      </div>
-                      <div className="rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-white">
-                        {user?.universidad?.nombre ? (
-                          <>
-                            {user.universidad.nombre}
-                            {user.universidad.siglas ? (
-                              <span className="text-white/60 text-sm ml-2">({user.universidad.siglas})</span>
-                            ) : null}
-                          </>
-                        ) : (
-                          <span className="text-white/50">No has seleccionado una universidad.</span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-white/80 text-sm">
-                        <GraduationCap className="w-4 h-4 text-[#40C9A9] shrink-0" />
-                        <span>Carrera</span>
-                      </div>
-                      <div className="rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-white">
-                        {user?.carrera?.nombre ? (
-                          <>
-                            {user.carrera.nombre}
-                            {user.carrera.codigo ? (
-                              <span className="text-white/60 text-sm ml-2">· {user.carrera.codigo}</span>
-                            ) : null}
-                          </>
-                        ) : (
-                          <span className="text-white/50">No has seleccionado una carrera.</span>
-                        )}
-                      </div>
-                    </div>
+                    {!academicEditMode ? (
+                      <>
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 text-white/80 text-sm">
+                            <Building2 className="w-4 h-4 text-[var(--accent-hex)] shrink-0" />
+                            <span>Universidad</span>
+                          </div>
+                          <div className="rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-white">
+                            {user?.universidad?.nombre ? (
+                              <>
+                                {user.universidad.nombre}
+                                {user.universidad.siglas ? (
+                                  <span className="text-white/60 text-sm ml-2">({user.universidad.siglas})</span>
+                                ) : null}
+                              </>
+                            ) : (
+                              <span className="text-white/50">No has seleccionado una universidad.</span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 text-white/80 text-sm">
+                            <GraduationCap className="w-4 h-4 text-[var(--accent-hex)] shrink-0" />
+                            <span>Carrera</span>
+                          </div>
+                          <div className="rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-white">
+                            {user?.carrera?.nombre ? (
+                              <>
+                                {user.carrera.nombre}
+                                {user.carrera.codigo ? (
+                                  <span className="text-white/60 text-sm ml-2">· {user.carrera.codigo}</span>
+                                ) : null}
+                              </>
+                            ) : (
+                              <span className="text-white/50">No has seleccionado una carrera.</span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          <Button
+                            type="button"
+                            className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
+                            onClick={() => setAcademicWarningOpen(true)}
+                          >
+                            Cambiar universidad/carrera
+                          </Button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <FormField
+                          control={form.control}
+                          name="universidadId"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-white/80 flex items-center gap-2">
+                                <Building2 className="w-4 h-4 text-[var(--accent-hex)]" />
+                                Universidad
+                              </FormLabel>
+                              <Select
+                                value={field.value ?? "none"}
+                                disabled={isPending || isSubmitting || loadingUniversidades}
+                                onValueChange={async (v) => {
+                                  const nextUni = v === "none" ? null : v;
+                                  form.setValue("universidadId", nextUni, { shouldDirty: true });
+                                  form.setValue("carreraId", null, { shouldDirty: true });
+                                  setHasChanges(true);
+                                  if (nextUni) {
+                                    await loadCarrerasForUniversidad(nextUni);
+                                  } else {
+                                    setCarreras([]);
+                                  }
+                                }}
+                              >
+                                <FormControl>
+                                  <SelectTrigger className="bg-white/10 border-white/20 text-white focus:ring-[var(--accent-hex)]">
+                                    <SelectValue
+                                      placeholder={
+                                        loadingUniversidades ? "Cargando universidades…" : "Selecciona tu universidad"
+                                      }
+                                    />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent className="bg-[var(--mygreen)] border-white/10 text-white">
+                                  <SelectItem value="none" className="focus:bg-white/10 focus:text-white">
+                                    Sin universidad
+                                  </SelectItem>
+                                  {universidades.map((u) => (
+                                    <SelectItem
+                                      key={u.id}
+                                      value={u.id}
+                                      className="focus:bg-white/10 focus:text-white"
+                                    >
+                                      {u.siglas} - {u.nombre}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormDescription className="text-white/50">
+                                Cambiar universidad reinicia tu progreso académico.
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="carreraId"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-white/80 flex items-center gap-2">
+                                <GraduationCap className="w-4 h-4 text-[var(--accent-hex)]" />
+                                Carrera
+                              </FormLabel>
+                              <Select
+                                value={field.value ?? "none"}
+                                disabled={
+                                  isPending ||
+                                  isSubmitting ||
+                                  loadingCarreras ||
+                                  !form.getValues("universidadId")
+                                }
+                                onValueChange={(v) => {
+                                  const nextCarrera = v === "none" ? null : v;
+                                  form.setValue("carreraId", nextCarrera, { shouldDirty: true });
+                                  setHasChanges(true);
+                                }}
+                              >
+                                <FormControl>
+                                  <SelectTrigger className="bg-white/10 border-white/20 text-white focus:ring-[var(--accent-hex)]">
+                                    <SelectValue
+                                      placeholder={
+                                        !form.getValues("universidadId")
+                                          ? "Selecciona universidad primero"
+                                          : loadingCarreras
+                                            ? "Cargando carreras…"
+                                            : "Selecciona tu carrera"
+                                      }
+                                    />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent className="bg-[var(--mygreen)] border-white/10 text-white">
+                                  <SelectItem value="none" className="focus:bg-white/10 focus:text-white">
+                                    Sin carrera
+                                  </SelectItem>
+                                  {carreras.map((c) => (
+                                    <SelectItem
+                                      key={c.id}
+                                      value={c.id}
+                                      className="focus:bg-white/10 focus:text-white"
+                                    >
+                                      {c.codigo} - {c.nombre}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormDescription className="text-white/50">
+                                Cambiar carrera reinicia tu progreso académico.
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="bg-[var(--mygreen-dark)] border-[color-mix(in_oklab,var(--accent-hex)_40%,transparent)] text-[var(--accent-hex)] hover:bg-white/10"
+                            onClick={() => {
+                              form.setValue("universidadId", user?.universidadId ?? null, { shouldDirty: true });
+                              form.setValue("carreraId", user?.carreraId ?? null, { shouldDirty: true });
+                              form.setValue("confirmarResetProgresoAcademico", false, { shouldDirty: true });
+                              setAcademicEditMode(false);
+                              setHasChanges(false);
+                            }}
+                          >
+                            Cancelar cambio
+                          </Button>
+                        </div>
+                      </>
+                    )}
+
+                    <Dialog open={academicWarningOpen} onOpenChange={setAcademicWarningOpen}>
+                      <DialogContent className="bg-[var(--mygreen)] border-white/10 text-white">
+                        <DialogHeader>
+                          <DialogTitle className="text-white">Advertencia</DialogTitle>
+                          <DialogDescription className="text-white/70">
+                            Si cambias tu universidad o tu carrera, se borrará tu progreso académico (materias y metas)
+                            porque no podemos mantener progreso sin carrera.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter className="gap-2 sm:gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="bg-[var(--mygreen-light)] border-white/30 text-white hover:bg-[color-mix(in_oklab,var(--mygreen-light)_88%,white)]"
+                            onClick={() => setAcademicWarningOpen(false)}
+                          >
+                            Cancelar
+                          </Button>
+                          <Button
+                            type="button"
+                            className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
+                            onClick={async () => {
+                              form.setValue("confirmarResetProgresoAcademico", true, { shouldDirty: true });
+                              setAcademicEditMode(true);
+
+                              const uni = form.getValues("universidadId");
+                              if (uni) {
+                                await loadCarrerasForUniversidad(uni);
+                              }
+
+                              setAcademicWarningOpen(false);
+                            }}
+                          >
+                            Entiendo, continuar
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+
                     {!user?.universidad && !user?.carrera && !profileLoading ? (
                       <p className="text-white/50 text-xs">
                         Si eres estudiante universitario, completa el onboarding o revisa tu expediente para
@@ -560,10 +815,10 @@ export default function Ajustes() {
             </Card>
 
             {/* Información de Contacto */}
-            <Card className="bg-[#354B3A] border-white/10">
+            <Card className="bg-[var(--mygreen-light)] border-white/10">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-white">
-                  <Phone className="w-5 h-5 text-[#40C9A9]" />
+                  <Phone className="w-5 h-5 text-[var(--accent-hex)]" />
                   Información de Contacto
                 </CardTitle>
                 <CardDescription className="text-white/70">
@@ -579,7 +834,7 @@ export default function Ajustes() {
                       <FormLabel className="text-white/80">Teléfono</FormLabel>
                   <FormControl>
                     <Input
-                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg"
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg"
                       {...field}
                       disabled={isPending || isSubmitting}
                     />
@@ -594,7 +849,7 @@ export default function Ajustes() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-white/80 flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-[#40C9A9]" />
+                    <MapPin className="h-4 w-4 text-[var(--accent-hex)]" />
                     Estado de residencia
                   </FormLabel>
                   <Select
@@ -605,11 +860,11 @@ export default function Ajustes() {
                     disabled={isPending || isSubmitting}
                   >
                     <FormControl>
-                      <SelectTrigger className="bg-white/10 border-white/20 text-white focus:ring-[#40C9A9]">
+                      <SelectTrigger className="bg-white/10 border-white/20 text-white focus:ring-[var(--accent-hex)]">
                         <SelectValue placeholder="Selecciona tu estado" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent className="bg-[#203324] border-white/10 text-white">
+                    <SelectContent className="bg-[var(--mygreen)] border-white/10 text-white">
                       <SelectItem
                         value={ESTADO_RESIDENCIA_SIN_ESPECIFICAR}
                         className="focus:bg-white/10 focus:text-white"
@@ -642,7 +897,7 @@ export default function Ajustes() {
                       <FormLabel className="text-white/80">Ciudad de residencia</FormLabel>
                   <FormControl>
                     <Input
-                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg"
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg"
                       {...field}
                       value={field.value ?? ""}
                       placeholder="Ej: Barquisimeto, Valencia…"
@@ -659,11 +914,57 @@ export default function Ajustes() {
               </CardContent>
             </Card>
 
-            {/* Semestre académico */}
-            <Card className="bg-[#354B3A] border-white/10">
+            {/* Tema */}
+            <Card className="bg-[var(--mygreen-light)] border-white/10">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-white">
-                  <Calendar className="w-5 h-5 text-[#40C9A9]" />
+                  <User className="w-5 h-5 text-[var(--accent-hex)]" />
+                  Tema
+                </CardTitle>
+                <CardDescription className="text-white/70">
+                  Personaliza el estilo de la app. Puedes cambiarlo cuando quieras.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="space-y-2">
+                  <FormLabel className="text-white/80">Selecciona un tema</FormLabel>
+                  <Select
+                    value={theme ?? "theme-default"}
+                    onValueChange={(v) => setTheme(v)}
+                  >
+                    <SelectTrigger className="bg-white/10 border-white/20 text-white focus:ring-[var(--accent-hex)]">
+                      <SelectValue placeholder="Tema" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[var(--mygreen)] border-white/10 text-white">
+                      <SelectItem value="theme-default" className="focus:bg-white/10 focus:text-white">
+                        Verde (por defecto)
+                      </SelectItem>
+                      <SelectItem value="theme-claro" className="focus:bg-white/10 focus:text-white">
+                        Claro (sage)
+                      </SelectItem>
+                      <SelectItem value="theme-oscuro" className="focus:bg-white/10 focus:text-white">
+                        Oscuro (deep)
+                      </SelectItem>
+                      <SelectItem value="theme-pastel" className="focus:bg-white/10 focus:text-white">
+                        Pastel (lila)
+                      </SelectItem>
+                      <SelectItem value="theme-neon" className="focus:bg-white/10 focus:text-white">
+                        Neón
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormDescription className="text-white/50">
+                    El tema se guarda en tu dispositivo.
+                  </FormDescription>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Semestre académico */}
+            <Card className="bg-[var(--mygreen-light)] border-white/10">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-white">
+                  <Calendar className="w-5 h-5 text-[var(--accent-hex)]" />
                   Semestre académico
                 </CardTitle>
                 <CardDescription className="text-white/70">
@@ -679,7 +980,7 @@ export default function Ajustes() {
                   <>
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-white/80 text-sm">Semestre mostrado:</span>
-                      <Badge className="bg-[#40C9A9]/20 text-[#40C9A9] border-[#40C9A9]/40 text-base">
+                      <Badge className="bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)] text-[var(--accent-hex)] border-[color-mix(in_oklab,var(--accent-hex)_40%,transparent)] text-base">
                         {semestreInfo.actual ?? semestreInfo.sugerido}
                       </Badge>
                       {semestreInfo.manual ? (
@@ -689,7 +990,7 @@ export default function Ajustes() {
                       )}
                     </div>
                     <p className="text-white/60 text-xs">
-                      <span className="text-[#40C9A9] font-medium">{semestreInfo.sugerido}</span>:{" "}
+                      <span className="text-[var(--accent-hex)] font-medium">{semestreInfo.sugerido}</span>:{" "}
                       {semestreInfo.detalle.creditosAprobados} UC aprobadas → semestre por pensum S
                       {semestreInfo.detalle.porCreditosPensum}
                       {semestreInfo.detalle.maxEnCurso > 0
@@ -708,7 +1009,7 @@ export default function Ajustes() {
                           <SelectTrigger className="bg-white/10 border-white/20 text-white">
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent className="bg-[#203324] border-white/10 text-white">
+                          <SelectContent className="bg-[var(--mygreen)] border-white/10 text-white">
                             {SEMESTRES_ORDENADOS.map((s) => (
                               <SelectItem key={s} value={s} className="focus:bg-white/10 focus:text-white">
                                 {s}
@@ -721,7 +1022,7 @@ export default function Ajustes() {
                         <Button
                           type="button"
                           variant="outline"
-                          className="bg-[#1C2D20] border-[#40C9A9]/40 text-[#40C9A9] hover:bg-white/10"
+                          className="bg-[var(--mygreen-dark)] border-[color-mix(in_oklab,var(--accent-hex)_40%,transparent)] text-[var(--accent-hex)] hover:bg-white/10"
                           disabled={semestreSaving}
                           onClick={() => void guardarSemestreManual()}
                         >
@@ -729,7 +1030,7 @@ export default function Ajustes() {
                         </Button>
                         <Button
                           type="button"
-                          className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                          className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
                           disabled={semestreSaving}
                           onClick={() => void guardarSemestreAutomatico()}
                         >
@@ -745,10 +1046,10 @@ export default function Ajustes() {
             </Card>
 
             {/* Suscripción */}
-            <Card className="bg-[#354B3A] border-white/10">
+            <Card className="bg-[var(--mygreen-light)] border-white/10">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-white">
-                  <CreditCard className="w-5 h-5 text-[#40C9A9]" />
+                  <CreditCard className="w-5 h-5 text-[var(--accent-hex)]" />
                   Suscripción
                 </CardTitle>
                 <CardDescription className="text-white/70">
@@ -764,7 +1065,7 @@ export default function Ajustes() {
                       ) : subStatus?.isActive ? (
                         <>
                           Plan:{" "}
-                          <span className="text-[#40C9A9] font-semibold">
+                          <span className="text-[var(--accent-hex)] font-semibold">
                             {subStatus.subscription?.subscriptionType?.name || "Activo"}
                           </span>
                         </>
@@ -805,10 +1106,10 @@ export default function Ajustes() {
             </Card>
 
             {/* Seguridad y Autenticación */}
-              <Card className="bg-[#354B3A] border-white/10">
+              <Card className="bg-[var(--mygreen-light)] border-white/10">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-white">
-                    <Shield className="w-5 h-5 text-[#40C9A9]" />
+                    <Shield className="w-5 h-5 text-[var(--accent-hex)]" />
                     Seguridad y Autenticación
                   </CardTitle>
                   <CardDescription className="text-white/70">
@@ -831,7 +1132,7 @@ export default function Ajustes() {
                             <FormLabel className="text-white/80">Contraseña actual</FormLabel>
                             <FormControl>
                               <Input
-                                className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg"
+                                className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg"
                                 {...field}
                                 disabled={isPending || isSubmitting}
                                 type="password"
@@ -850,7 +1151,7 @@ export default function Ajustes() {
                             <FormLabel className="text-white/80">Nueva contraseña</FormLabel>
                             <FormControl>
                               <Input
-                                className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg"
+                                className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg"
                                 {...field}
                                 disabled={isPending || isSubmitting}
                                 type="password"
@@ -875,7 +1176,7 @@ export default function Ajustes() {
                   </div>
                   <Button
                     type="button"
-                    className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white font-special"
+                    className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white font-special"
                     onClick={() => setTwoFaPanelOpen(true)}
                   >
                     Abrir panel 2FA
@@ -884,10 +1185,10 @@ export default function Ajustes() {
               </div>
 
               <Dialog open={twoFaPanelOpen} onOpenChange={setTwoFaPanelOpen}>
-                <DialogContent className="bg-[#203324] border-white/10 text-white max-w-3xl max-h-[90vh] overflow-y-auto">
+                <DialogContent className="bg-[var(--mygreen)] border-white/10 text-white max-w-3xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle className="text-white flex items-center gap-2">
-                      <Shield className="w-5 h-5 text-[#40C9A9]" />
+                      <Shield className="w-5 h-5 text-[var(--accent-hex)]" />
                       Panel 2FA
                     </DialogTitle>
                     <DialogDescription className="text-white/70">
@@ -910,7 +1211,7 @@ export default function Ajustes() {
                           className={
                             twoFactorEnabled
                               ? "bg-red-500/80 hover:bg-red-500 text-white font-special"
-                              : "bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white font-special"
+                              : "bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white font-special"
                           }
                           onClick={() => {
                             setError(undefined);
@@ -939,7 +1240,7 @@ export default function Ajustes() {
                         </div>
                         <Button
                           type="button"
-                          className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                          className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
                           disabled={saving2FaPrefs}
                           onClick={() => void saveTwoFactorPreferences()}
                         >
@@ -961,7 +1262,7 @@ export default function Ajustes() {
                             }
                             className={`text-left rounded-lg border px-3 py-2 text-sm transition-colors ${
                               preferredTwoFaMethod === opt.value
-                                ? "bg-[#40C9A9]/20 border-[#40C9A9]/50 text-white"
+                                ? "bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)] border-[color-mix(in_oklab,var(--accent-hex)_50%,transparent)] text-white"
                                 : "bg-white/10 border-white/10 text-white/80 hover:bg-white/20"
                             }`}
                           >
@@ -986,7 +1287,7 @@ export default function Ajustes() {
                         <div className="text-white/80 font-semibold">Passkeys registradas</div>
                         <Button
                           type="button"
-                          className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                          className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
                           disabled={passkeyBusy}
                           onClick={async () => {
                             setPasskeyBusy(true);
@@ -1108,10 +1409,10 @@ export default function Ajustes() {
                   }
                 }}
               >
-                <DialogContent className="bg-[#203324] border-white/10 text-white">
+                <DialogContent className="bg-[var(--mygreen)] border-white/10 text-white">
                   <DialogHeader>
                     <DialogTitle className="text-white flex items-center gap-2">
-                      <Shield className="w-5 h-5 text-[#40C9A9]" />
+                      <Shield className="w-5 h-5 text-[var(--accent-hex)]" />
                       {twoFaDialogMode === "enable" ? "Activar 2FA" : "Desactivar 2FA"}
                     </DialogTitle>
                     <DialogDescription className="text-white/70">
@@ -1129,7 +1430,7 @@ export default function Ajustes() {
                             <FormLabel className="text-white/80">Contraseña</FormLabel>
                             <div className="relative">
                               <Input
-                                className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg pr-10"
+                                className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg pr-10"
                                 value={twoFaPassword}
                                 onChange={(e) => setTwoFaPassword(e.target.value)}
                                 placeholder="Tu contraseña"
@@ -1155,13 +1456,13 @@ export default function Ajustes() {
                       ) : (
                         <div className="space-y-4">
                           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                            <div className="bg-[#1C2D20] border border-white/10 rounded-lg p-4 min-w-0">
+                            <div className="bg-[var(--mygreen-dark)] border border-white/10 rounded-lg p-4 min-w-0">
                               <div className="text-white font-semibold mb-2">Escanea el QR</div>
                               {twoFaTotpUri ? (
-                                <div className="bg-[#E8F3ED] p-3 rounded-lg border border-white/10 w-full flex items-center justify-center overflow-hidden">
+                                <div className="bg-[var(--soft-panel-bg)] p-3 rounded-lg border border-white/10 w-full flex items-center justify-center overflow-hidden">
                                   <QRCode
                                     value={twoFaTotpUri}
-                                    bgColor="#E8F3ED"
+                                    bgColor="#FFFFFF"
                                     fgColor="#0B1B10"
                                     size={220}
                                     style={{ width: "100%", maxWidth: 220, height: "auto" }}
@@ -1177,10 +1478,10 @@ export default function Ajustes() {
                               </div>
                             </div>
 
-                            <div className="bg-[#1C2D20] border border-white/10 rounded-lg p-4 space-y-3 min-w-0">
+                            <div className="bg-[var(--mygreen-dark)] border border-white/10 rounded-lg p-4 space-y-3 min-w-0">
                               <div className="text-white font-semibold">Confirmar código</div>
                               <Input
-                                className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg"
+                                className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg"
                                 value={twoFaCode}
                                 onChange={(e) => setTwoFaCode(e.target.value)}
                                 placeholder="Código de 6 dígitos"
@@ -1189,7 +1490,7 @@ export default function Ajustes() {
                               <Button
                                 type="button"
                                 disabled={twoFaBusy || !twoFaCode}
-                                className="w-full bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                                className="w-full bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
                                 onClick={async () => {
                                   setError(undefined);
                                   setSucces(undefined);
@@ -1219,7 +1520,7 @@ export default function Ajustes() {
                           </div>
 
                           {twoFaBackupCodes?.length ? (
-                            <div className="bg-[#1C2D20] border border-white/10 rounded-lg p-4">
+                            <div className="bg-[var(--mygreen-dark)] border border-white/10 rounded-lg p-4">
                               <div className="text-white font-semibold mb-2">Códigos de respaldo</div>
                               <div className="text-white/70 text-sm mb-3">
                                 Guárdalos en un lugar seguro. Sirven si pierdes acceso a la app.
@@ -1245,7 +1546,7 @@ export default function Ajustes() {
                         <FormLabel className="text-white/80">Contraseña</FormLabel>
                         <div className="relative">
                           <Input
-                            className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg pr-10"
+                            className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg pr-10"
                             value={twoFaPassword}
                             onChange={(e) => setTwoFaPassword(e.target.value)}
                             placeholder="Tu contraseña"
@@ -1291,7 +1592,7 @@ export default function Ajustes() {
                     <Button
                       type="button"
                       variant="outline"
-                      className="bg-[#354B3A] border-white/30 text-white hover:bg-[#3f5a45]"
+                      className="bg-[var(--mygreen-light)] border-white/30 text-white hover:bg-[color-mix(in_oklab,var(--mygreen-light)_88%,white)]"
                       disabled={twoFaBusy}
                       onClick={() => setTwoFaDialogOpen(false)}
                     >
@@ -1303,7 +1604,7 @@ export default function Ajustes() {
                         <Button
                           type="button"
                           disabled={twoFaBusy || !twoFaPassword || !hasCredentialAccount}
-                          className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                          className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
                           onClick={async () => {
                             setError(undefined);
                             setSucces(undefined);
@@ -1376,7 +1677,7 @@ export default function Ajustes() {
           <Button 
             disabled={isPending || isSubmitting || !hasChanges} 
             type="submit"
-              className="w-full bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white font-bold text-lg py-3 rounded-xl shadow-lg transition-colors"
+              className="w-full bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white font-bold text-lg py-3 rounded-xl shadow-lg transition-colors"
           >
             {isPending || isSubmitting ? (
               <div className="flex items-center gap-2">

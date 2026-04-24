@@ -18,7 +18,7 @@ import Link from "next/link";
 
 export const NewPasswordForm = () => {
   const searchParams = useSearchParams();
-  const token = searchParams.get("token");
+  const token = searchParams?.get("token");
   const [showPassword, setShowPassword] = useState(false);
 
   const [error, setError] = useState<string | undefined>("");

@@ -50,6 +50,12 @@ export function middleware(request: NextRequest) {
     return nextUrl.pathname.startsWith("/api") ? withCors(request, res) : res;
   }
 
+  // Cron jobs (Bearer CRON_SECRET en la ruta; no hay cookie de usuario)
+  if (nextUrl.pathname.startsWith("/api/cron/")) {
+    const res = NextResponse.next();
+    return nextUrl.pathname.startsWith("/api") ? withCors(request, res) : res;
+  }
+
   const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
   const isAuthRoute = authRoutes.includes(nextUrl.pathname);
   const isPublic = isPublicRoute(nextUrl.pathname);

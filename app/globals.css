@@ -5,20 +5,14 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-    --mygreen-light: #354B3A;
-    --mygreen: #203324;
-    --mygreen-dark: #1C2D20;
+    /* Importante: apuntar a variables runtime (ver :root + .theme-*),
+       para que cambiar tema actualice también utilidades tipo `bg-mygreen`. */
+    --color-mygreen-light: var(--mygreen-light);
+    --color-mygreen: var(--mygreen);
+    --color-mygreen-dark: var(--mygreen-dark);
 }
 
-@theme {
-    --color-mygreen-light: #354B3A;
-    --color-mygreen: #203324;
-    --color-mygreen-dark: #1C2D20;
-}
-
-@theme 
-
-inline {
+@theme inline {
     --radius-sm: calc(var(--radius) - 4px);
     --radius-md: calc(var(--radius) - 2px);
     --radius-lg: var(--radius);
@@ -58,6 +52,16 @@ inline {
 }
 
 :root {
+    /* Paleta “marca” (runtime): defaults = theme-default */
+    --mygreen-light: #354B3A;
+    --mygreen: #203324;
+    --mygreen-dark: #1C2D20;
+    --accent-hex: #40C9A9;
+    /* UI secundarios (para reemplazar hex sueltos en componentes) */
+    --soft-panel-bg: #e8f3ed;
+    --prose-pre-bg: #0f1a24;
+    --prose-code-text: #9fe9d6;
+
     --radius: 0.625rem;
     --background: oklch(1 0 0);
     --foreground: oklch(0.141 0.005 285.823);
@@ -148,7 +152,7 @@ inline {
 }
 
 .overleaf-cm-shell .cm-gutters {
-    background: #203324 !important;
+    background: var(--mygreen) !important;
     border-right: 1px solid rgba(255, 255, 255, 0.1);
     color: rgba(255, 255, 255, 0.45);
 }
@@ -193,9 +197,160 @@ body {
 }
 
 body {
-    background: linear-gradient(to top, var(--mygreen), var(--mygreen-light));
     min-height: 100vh;
+    background: linear-gradient(to top, var(--mygreen), var(--mygreen-light));
     color: white;
+}
+
+/* ===== Themes (no fondo blanco puro) =====
+   Se controlan por clase en <html> via next-themes.
+*/
+.theme-default {
+  --mygreen-light: #354B3A;
+  --mygreen: #203324;
+  --mygreen-dark: #1C2D20;
+  --accent-hex: #40C9A9;
+  --soft-panel-bg: #e8f3ed;
+  --prose-pre-bg: #0f1a24;
+  --prose-code-text: #9fe9d6;
+}
+
+.theme-claro {
+  /* Claro: fondo blanco / beige té, superficies claras, acento más profundo para contraste */
+  --mygreen-light: #ffffff;
+  --mygreen: #f3efe6;
+  --mygreen-dark: #e8e2d6;
+  --accent-hex: #0d8f72;
+  --soft-panel-bg: #f7f4ed;
+  --prose-pre-bg: #1a2420;
+  --prose-code-text: #0f5c4a;
+}
+
+.theme-oscuro {
+  /* Oscuro: casi negro / gris muy profundo (más oscuro que el original) */
+  --mygreen-light: #121816;
+  --mygreen: #060807;
+  --mygreen-dark: #020302;
+  --accent-hex: #52e0c4;
+  --soft-panel-bg: #141918;
+  --prose-pre-bg: #010201;
+  --prose-code-text: #b5f5e8;
+}
+
+.theme-pastel {
+  /* Pastel: acento lila / morado suave (antes rosa) */
+  --mygreen-light: #516A6A;
+  --mygreen: #2B3D3F;
+  --mygreen-dark: #1B2728;
+  --accent-hex: #c4b5f0; /* lila pastel */
+  --soft-panel-bg: #f3eefb; /* lavanda muy clara */
+  --prose-pre-bg: #1e1a28; /* bloques de código con tinte morado */
+  --prose-code-text: #e8daf8; /* código legible sobre fondo oscuro */
+}
+
+.theme-neon {
+  /* Neón (moderno) */
+  --mygreen-light: #1B2A2B;
+  --mygreen: #0C1616;
+  --mygreen-dark: #070E0F;
+  --accent-hex: #00FFD1; /* menta neón */
+  --soft-panel-bg: #061a18;
+  --prose-pre-bg: #020b0a;
+  --prose-code-text: #bafff4;
+}
+
+/* Fondos de página por tema (el gradiente usa --mygreen / --mygreen-light) */
+html.theme-claro body {
+  background: #faf7f2;
+  background-image: linear-gradient(to bottom, #ffffff, #f2ebe0);
+  color: hsl(150 22% 12%);
+}
+
+html.theme-oscuro body {
+  background: #020302;
+  background-image: linear-gradient(to top, #010201, #0f1210);
+  color: rgba(255, 255, 255, 0.94);
+}
+
+/*
+  Tema claro: la UI usa muchas utilidades `text-white` / `text-white/xx`.
+  Forzamos tinta oscura solo bajo html.theme-claro (no toca pastel/neón/default).
+*/
+html.theme-claro .text-white {
+  color: hsl(152 24% 11%) !important;
+}
+
+html.theme-claro .text-white\/30 {
+  color: color-mix(in oklab, hsl(152 24% 11%) 30%, transparent) !important;
+}
+html.theme-claro .text-white\/40 {
+  color: color-mix(in oklab, hsl(152 24% 11%) 40%, transparent) !important;
+}
+html.theme-claro .text-white\/45 {
+  color: color-mix(in oklab, hsl(152 24% 11%) 45%, transparent) !important;
+}
+html.theme-claro .text-white\/50 {
+  color: color-mix(in oklab, hsl(152 24% 11%) 50%, transparent) !important;
+}
+html.theme-claro .text-white\/55 {
+  color: color-mix(in oklab, hsl(152 24% 11%) 55%, transparent) !important;
+}
+html.theme-claro .text-white\/60 {
+  color: color-mix(in oklab, hsl(152 24% 11%) 60%, transparent) !important;
+}
+html.theme-claro .text-white\/65 {
+  color: color-mix(in oklab, hsl(152 24% 11%) 65%, transparent) !important;
+}
+html.theme-claro .text-white\/70 {
+  color: color-mix(in oklab, hsl(152 24% 11%) 70%, transparent) !important;
+}
+html.theme-claro .text-white\/75 {
+  color: color-mix(in oklab, hsl(152 24% 11%) 75%, transparent) !important;
+}
+html.theme-claro .text-white\/80 {
+  color: color-mix(in oklab, hsl(152 24% 11%) 80%, transparent) !important;
+}
+html.theme-claro .text-white\/85 {
+  color: color-mix(in oklab, hsl(152 24% 11%) 85%, transparent) !important;
+}
+html.theme-claro .text-white\/90 {
+  color: color-mix(in oklab, hsl(152 24% 11%) 90%, transparent) !important;
+}
+html.theme-claro .text-white\/95 {
+  color: color-mix(in oklab, hsl(152 24% 11%) 95%, transparent) !important;
+}
+
+html.theme-claro .placeholder\:text-white\/50::placeholder {
+  color: color-mix(in oklab, hsl(152 24% 11%) 45%, transparent) !important;
+}
+
+html.theme-claro .border-white\/5 {
+  border-color: color-mix(in oklab, hsl(152 24% 11%) 8%, transparent) !important;
+}
+html.theme-claro .border-white\/10 {
+  border-color: color-mix(in oklab, hsl(152 24% 11%) 12%, transparent) !important;
+}
+html.theme-claro .border-white\/15 {
+  border-color: color-mix(in oklab, hsl(152 24% 11%) 16%, transparent) !important;
+}
+html.theme-claro .border-white\/20 {
+  border-color: color-mix(in oklab, hsl(152 24% 11%) 20%, transparent) !important;
+}
+html.theme-claro .border-white\/30 {
+  border-color: color-mix(in oklab, hsl(152 24% 11%) 28%, transparent) !important;
+}
+
+html.theme-claro .bg-white\/5 {
+  background-color: color-mix(in oklab, hsl(152 24% 11%) 6%, transparent) !important;
+}
+html.theme-claro .bg-white\/10 {
+  background-color: color-mix(in oklab, hsl(152 24% 11%) 10%, transparent) !important;
+}
+html.theme-claro .hover\:bg-white\/5:hover {
+  background-color: color-mix(in oklab, hsl(152 24% 11%) 6%, transparent) !important;
+}
+html.theme-claro .hover\:bg-white\/10:hover {
+  background-color: color-mix(in oklab, hsl(152 24% 11%) 10%, transparent) !important;
 }
 
 @keyframes fadeInDown {

@@ -53,10 +53,10 @@ export default function CPanelStatus() {
   }, []);
 
   return (
-    <Card className="bg-[#354B3A] border-white/10">
+    <Card className="bg-[var(--mygreen-light)] border-white/10">
       <CardHeader>
         <CardTitle className="text-white flex items-center gap-2">
-          <Wifi className="h-5 w-5 text-[#40C9A9]" />
+          <Wifi className="h-5 w-5 text-[var(--accent-hex)]" />
           Estado de Conexión cPanel
         </CardTitle>
         <CardDescription className="text-white/70">

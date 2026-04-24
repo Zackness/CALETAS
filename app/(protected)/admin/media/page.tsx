@@ -83,11 +83,11 @@ export default function AdminMediaPage() {
         <div>
           <h1 className="text-3xl font-special text-white mb-2">Panel Admin - Biblioteca de medios</h1>
           <p className="text-white/70">
-            Gestiona archivos en Bunny bajo la carpeta <span className="text-[#40C9A9]">caletas/</span>.
+            Gestiona archivos en Bunny bajo la carpeta <span className="text-[var(--accent-hex)]">caletas/</span>.
           </p>
         </div>
 
-        <Card className="bg-[#354B3A] border-white/10">
+        <Card className="bg-[var(--mygreen-light)] border-white/10">
           <CardHeader>
             <CardTitle className="text-white">Subir archivo</CardTitle>
             <CardDescription className="text-white/70">
@@ -101,14 +101,14 @@ export default function AdminMediaPage() {
                 <Input
                   value={subfolder}
                   onChange={(e) => setSubfolder(e.target.value)}
-                  className="bg-[#1C2D20] border-white/20 text-white"
+                  className="bg-[var(--mygreen-dark)] border-white/20 text-white"
                   placeholder="media o blog o cursos"
                 />
               </div>
               <div className="flex items-end gap-2">
                 <Button
                   type="button"
-                  className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white w-full"
+                  className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white w-full"
                   onClick={() => void loadFiles()}
                 >
                   <RefreshCw className="w-4 h-4 mr-2" />
@@ -119,7 +119,7 @@ export default function AdminMediaPage() {
 
             <Input
               type="file"
-              className="bg-[#1C2D20] border-white/20 text-white"
+              className="bg-[var(--mygreen-dark)] border-white/20 text-white"
               disabled={uploading}
               onChange={(e) => {
                 const file = e.target.files?.[0];
@@ -129,7 +129,7 @@ export default function AdminMediaPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-[#354B3A] border-white/10">
+        <Card className="bg-[var(--mygreen-light)] border-white/10">
           <CardHeader>
             <CardTitle className="text-white">Archivos</CardTitle>
             <CardDescription className="text-white/70">
@@ -144,7 +144,7 @@ export default function AdminMediaPage() {
             ) : (
               <div className="space-y-2">
                 {files.map((f) => (
-                  <div key={f.url} className="rounded-lg border border-white/10 bg-[#1C2D20] p-3 flex items-center justify-between gap-3">
+                  <div key={f.url} className="rounded-lg border border-white/10 bg-[var(--mygreen-dark)] p-3 flex items-center justify-between gap-3">
                     <div className="min-w-0">
                       <p className="text-white truncate">{f.name}</p>
                       <p className="text-xs text-white/60 truncate">{f.url}</p>

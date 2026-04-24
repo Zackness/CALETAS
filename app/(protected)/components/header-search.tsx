@@ -181,7 +181,7 @@ export function HeaderSearch() {
         onChange={(e) => setQuery(e.target.value)}
         onFocus={() => query.trim().length >= 2 && setOpen(true)}
         onKeyDown={handleKeyDown}
-        className="w-full min-w-0 max-w-full pl-8 pr-2 py-2 text-sm placeholder:text-white/55 border border-white/10 bg-white/10 text-white focus:border-[#40C9A9] focus:outline-none md:pl-10 md:pr-4 md:text-base"
+        className="w-full min-w-0 max-w-full pl-8 pr-2 py-2 text-sm placeholder:text-white/55 border border-white/10 bg-white/10 text-white focus:border-[var(--accent-hex)] focus:outline-none md:pl-10 md:pr-4 md:text-base"
         aria-autocomplete="list"
         aria-expanded={showDropdown}
         aria-controls="header-search-listbox"
@@ -191,7 +191,7 @@ export function HeaderSearch() {
       {showDropdown && (
         <div
           id="header-search-listbox"
-          className="absolute top-full left-0 right-0 mt-1 rounded-lg border border-white/10 bg-[#203324] shadow-xl z-50 max-h-[min(400px,70vh)] overflow-y-auto"
+          className="absolute top-full left-0 right-0 mt-1 rounded-lg border border-white/10 bg-[var(--mygreen)] shadow-xl z-50 max-h-[min(400px,70vh)] overflow-y-auto"
           role="listbox"
         >
           {loading ? (
@@ -203,7 +203,7 @@ export function HeaderSearch() {
             <>
               {suggestions.recursos.length > 0 && (
                 <div className="py-1">
-                  <div className="px-3 py-1.5 text-xs font-semibold text-[#40C9A9] uppercase tracking-wider">
+                  <div className="px-3 py-1.5 text-xs font-semibold text-[var(--accent-hex)] uppercase tracking-wider">
                     Caletas
                   </div>
                   {suggestions.recursos.map((r, i) => {
@@ -219,7 +219,7 @@ export function HeaderSearch() {
                         onClick={() => selectRecurso(r.id)}
                         className={`w-full flex items-center gap-3 px-3 py-2.5 text-left rounded-none hover:bg-white/10 ${isHighlight ? "bg-white/10" : ""} text-white`}
                       >
-                        <FileText className="h-4 w-4 text-[#40C9A9] flex-shrink-0" />
+                        <FileText className="h-4 w-4 text-[var(--accent-hex)] flex-shrink-0" />
                         <div className="min-w-0 flex-1">
                           <div className="font-medium truncate">{r.titulo}</div>
                           <div className="text-xs text-white/60 truncate">
@@ -233,7 +233,7 @@ export function HeaderSearch() {
               )}
               {suggestions.materias.length > 0 && (
                 <div className="py-1 border-t border-white/5">
-                  <div className="px-3 py-1.5 text-xs font-semibold text-[#40C9A9] uppercase tracking-wider">
+                  <div className="px-3 py-1.5 text-xs font-semibold text-[var(--accent-hex)] uppercase tracking-wider">
                     Materias
                   </div>
                   {suggestions.materias.map((m) => {
@@ -249,7 +249,7 @@ export function HeaderSearch() {
                         onClick={() => selectMateria(m.id)}
                         className={`w-full flex items-center gap-3 px-3 py-2.5 text-left rounded-none hover:bg-white/10 ${isHighlight ? "bg-white/10" : ""} text-white`}
                       >
-                        <BookOpen className="h-4 w-4 text-[#40C9A9] flex-shrink-0" />
+                        <BookOpen className="h-4 w-4 text-[var(--accent-hex)] flex-shrink-0" />
                         <div className="min-w-0 flex-1">
                           <div className="font-medium truncate">{m.codigo} - {m.nombre}</div>
                           {m.carrera?.universidad?.siglas && (
@@ -263,7 +263,7 @@ export function HeaderSearch() {
               )}
               {suggestions.universidades.length > 0 && (
                 <div className="py-1 border-t border-white/5">
-                  <div className="px-3 py-1.5 text-xs font-semibold text-[#40C9A9] uppercase tracking-wider">
+                  <div className="px-3 py-1.5 text-xs font-semibold text-[var(--accent-hex)] uppercase tracking-wider">
                     Universidades
                   </div>
                   {suggestions.universidades.map((u) => {
@@ -279,7 +279,7 @@ export function HeaderSearch() {
                         onClick={selectUniversidad}
                         className={`w-full flex items-center gap-3 px-3 py-2.5 text-left rounded-none hover:bg-white/10 ${isHighlight ? "bg-white/10" : ""} text-white`}
                       >
-                        <Building2 className="h-4 w-4 text-[#40C9A9] flex-shrink-0" />
+                        <Building2 className="h-4 w-4 text-[var(--accent-hex)] flex-shrink-0" />
                         <div className="min-w-0 flex-1">
                           <div className="font-medium truncate">{u.nombre}</div>
                           <div className="text-xs text-white/60">{u.siglas}</div>

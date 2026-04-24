@@ -10,9 +10,9 @@ const config: Config = {
     extend: {
       colors: {
         mygreen: {
-          light: "#354B3A",
-          DEFAULT: "#203324",
-          dark: "#1C2D20",
+          light: "var(--mygreen-light)",
+          DEFAULT: "var(--mygreen)",
+          dark: "var(--mygreen-dark)",
         },
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",

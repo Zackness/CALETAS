@@ -222,14 +222,14 @@ export default function AdminUsuarioEditPage() {
               <span className="truncate">Editar usuario</span>
             </div>
             <h1 className="mt-3 flex items-center gap-2 text-2xl font-special text-white sm:text-3xl">
-              <ShieldCheck className="h-6 w-6 text-[#40C9A9]" />
+              <ShieldCheck className="h-6 w-6 text-[var(--accent-hex)]" />
               Administración de usuario
             </h1>
           </div>
 
           <Button
             type="button"
-            className="bg-[#40C9A9] text-white hover:bg-[#40C9A9]/80"
+            className="bg-[var(--accent-hex)] text-white hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)]"
             onClick={() => void handleSave()}
             disabled={saving || loading}
           >
@@ -239,16 +239,16 @@ export default function AdminUsuarioEditPage() {
         </div>
 
         {loading ? (
-          <Card className="bg-[#354B3A] border-white/10">
+          <Card className="bg-[var(--mygreen-light)] border-white/10">
             <CardContent className="py-10 text-center text-white/70">Cargando...</CardContent>
           </Card>
         ) : (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
             <div className="lg:col-span-7 space-y-6">
-              <Card className="bg-[#354B3A] border-white/10">
+              <Card className="bg-[var(--mygreen-light)] border-white/10">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
-                    <UserIcon className="h-5 w-5 text-[#40C9A9]" />
+                    <UserIcon className="h-5 w-5 text-[var(--accent-hex)]" />
                     Datos del usuario
                   </CardTitle>
                   <CardDescription className="text-white/70">
@@ -260,7 +260,7 @@ export default function AdminUsuarioEditPage() {
                     <div>
                       <Label className="text-white/80">Nombre</Label>
                       <Input
-                        className="bg-[#1C2D20] border-white/20 text-white"
+                        className="bg-[var(--mygreen-dark)] border-white/20 text-white"
                         value={form.name}
                         onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                       />
@@ -268,7 +268,7 @@ export default function AdminUsuarioEditPage() {
                     <div>
                       <Label className="text-white/80">Correo</Label>
                       <Input
-                        className="bg-[#1C2D20] border-white/20 text-white"
+                        className="bg-[var(--mygreen-dark)] border-white/20 text-white"
                         value={form.email}
                         onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
                       />
@@ -278,7 +278,7 @@ export default function AdminUsuarioEditPage() {
                     <div>
                       <Label className="text-white/80">Teléfono</Label>
                       <Input
-                        className="bg-[#1C2D20] border-white/20 text-white"
+                        className="bg-[var(--mygreen-dark)] border-white/20 text-white"
                         value={form.telefono}
                         onChange={(e) => setForm((f) => ({ ...f, telefono: e.target.value }))}
                       />
@@ -289,10 +289,10 @@ export default function AdminUsuarioEditPage() {
                         value={form.role}
                         onValueChange={(v) => setForm((f) => ({ ...f, role: v as Role }))}
                       >
-                        <SelectTrigger className="bg-[#1C2D20] border-white/20 text-white">
+                        <SelectTrigger className="bg-[var(--mygreen-dark)] border-white/20 text-white">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="bg-[#203324] text-white border-white/10">
+                        <SelectContent className="bg-[var(--mygreen)] text-white border-white/10">
                           <SelectItem value="CLIENT">CLIENT</SelectItem>
                           <SelectItem value="ADMIN">ADMIN</SelectItem>
                         </SelectContent>
@@ -302,7 +302,7 @@ export default function AdminUsuarioEditPage() {
                 </CardContent>
               </Card>
 
-              <Card className="bg-[#354B3A] border-white/10">
+              <Card className="bg-[var(--mygreen-light)] border-white/10">
                 <CardHeader>
                   <CardTitle className="text-white">Académico</CardTitle>
                   <CardDescription className="text-white/70">
@@ -320,10 +320,10 @@ export default function AdminUsuarioEditPage() {
                           setMateriasEdit([]);
                         }}
                       >
-                        <SelectTrigger className="bg-[#1C2D20] border-white/20 text-white">
+                        <SelectTrigger className="bg-[var(--mygreen-dark)] border-white/20 text-white">
                           <SelectValue placeholder="Selecciona universidad" />
                         </SelectTrigger>
-                        <SelectContent className="bg-[#203324] text-white border-white/10 max-h-72">
+                        <SelectContent className="bg-[var(--mygreen)] text-white border-white/10 max-h-72">
                           <SelectItem value="none">Sin universidad</SelectItem>
                           {pensumUniversidades.map((u) => (
                             <SelectItem key={u.id} value={u.id}>
@@ -340,10 +340,10 @@ export default function AdminUsuarioEditPage() {
                         onValueChange={(v) => setForm((f) => ({ ...f, carreraId: v }))}
                         disabled={form.universidadId === "none"}
                       >
-                        <SelectTrigger className="bg-[#1C2D20] border-white/20 text-white">
+                        <SelectTrigger className="bg-[var(--mygreen-dark)] border-white/20 text-white">
                           <SelectValue placeholder="Selecciona carrera" />
                         </SelectTrigger>
-                        <SelectContent className="bg-[#203324] text-white border-white/10 max-h-72">
+                        <SelectContent className="bg-[var(--mygreen)] text-white border-white/10 max-h-72">
                           <SelectItem value="none">Sin carrera</SelectItem>
                           {carrerasOptions.map((c) => (
                             <SelectItem key={c.id} value={c.id}>
@@ -358,7 +358,7 @@ export default function AdminUsuarioEditPage() {
                   <div>
                     <Label className="text-white/80">Semestre actual</Label>
                     <Input
-                      className="bg-[#1C2D20] border-white/20 text-white"
+                      className="bg-[var(--mygreen-dark)] border-white/20 text-white"
                       placeholder="Ej: S4"
                       value={form.semestreActual}
                       onChange={(e) => setForm((f) => ({ ...f, semestreActual: e.target.value }))}
@@ -367,7 +367,7 @@ export default function AdminUsuarioEditPage() {
 
                   <div className="space-y-2">
                     <Label className="text-white/80">Materias (estado y nota)</Label>
-                    <div className="rounded-lg border border-white/10 bg-[#1C2D20] p-3 space-y-2">
+                    <div className="rounded-lg border border-white/10 bg-[var(--mygreen-dark)] p-3 space-y-2">
                       {form.carreraId === "none" ? (
                         <div className="text-sm text-white/60">Selecciona una carrera para gestionar materias.</div>
                       ) : materiasOptions.length === 0 ? (
@@ -384,10 +384,10 @@ export default function AdminUsuarioEditPage() {
                               });
                             }}
                           >
-                            <SelectTrigger className="bg-[#203324] border-white/10 text-white">
+                            <SelectTrigger className="bg-[var(--mygreen)] border-white/10 text-white">
                               <SelectValue placeholder="Añadir materia..." />
                             </SelectTrigger>
-                            <SelectContent className="bg-[#203324] text-white border-white/10 max-h-72">
+                            <SelectContent className="bg-[var(--mygreen)] text-white border-white/10 max-h-72">
                               {materiasOptions.map((m) => (
                                 <SelectItem key={m.id} value={m.id}>
                                   {m.codigo} — {m.nombre}
@@ -405,7 +405,7 @@ export default function AdminUsuarioEditPage() {
                                 return (
                                   <div
                                     key={me.materiaId}
-                                    className="flex flex-col gap-3 rounded-lg border border-white/10 bg-[#203324] p-3 md:flex-row md:items-start"
+                                    className="flex flex-col gap-3 rounded-lg border border-white/10 bg-[var(--mygreen)] p-3 md:flex-row md:items-start"
                                   >
                                     <div className="min-w-0 flex-1 text-sm text-white/85 md:basis-[52%] md:pr-2">
                                       <div className="whitespace-normal break-words font-medium leading-snug">
@@ -428,10 +428,10 @@ export default function AdminUsuarioEditPage() {
                                           )
                                         }
                                       >
-                                        <SelectTrigger className="h-9 bg-[#1C2D20] border-white/10 text-white md:w-44">
+                                        <SelectTrigger className="h-9 bg-[var(--mygreen-dark)] border-white/10 text-white md:w-44">
                                           <SelectValue />
                                         </SelectTrigger>
-                                        <SelectContent className="bg-[#203324] text-white border-white/10">
+                                        <SelectContent className="bg-[var(--mygreen)] text-white border-white/10">
                                           <SelectItem value="NO_CURSADA">No cursada</SelectItem>
                                           <SelectItem value="EN_CURSO">En curso</SelectItem>
                                           <SelectItem value="APROBADA">Aprobada</SelectItem>
@@ -440,7 +440,7 @@ export default function AdminUsuarioEditPage() {
                                         </SelectContent>
                                       </Select>
                                       <Input
-                                        className="h-9 bg-[#1C2D20] border-white/10 text-white md:w-24"
+                                        className="h-9 bg-[var(--mygreen-dark)] border-white/10 text-white md:w-24"
                                         placeholder="Nota"
                                         value={me.nota}
                                         onChange={(e) =>
@@ -476,7 +476,7 @@ export default function AdminUsuarioEditPage() {
             </div>
 
             <div className="lg:col-span-5 space-y-6">
-              <Card className="bg-[#354B3A] border-white/10">
+              <Card className="bg-[var(--mygreen-light)] border-white/10">
                 <CardHeader>
                   <CardTitle className="text-white">Estado</CardTitle>
                   <CardDescription className="text-white/70">
@@ -485,7 +485,7 @@ export default function AdminUsuarioEditPage() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex flex-wrap gap-2">
-                    <Badge className="bg-[#40C9A9]/10 text-[#40C9A9] border-[#40C9A9]/20">
+                    <Badge className="bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] text-[var(--accent-hex)] border-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)]">
                       {user?.role ?? form.role}
                     </Badge>
                     {user?.subscriptionStartedAt ? (
@@ -498,7 +498,7 @@ export default function AdminUsuarioEditPage() {
                   </div>
 
                   {user?.subscriptionStartedAt ? (
-                    <div className="rounded-lg border border-white/10 bg-[#203324] p-3">
+                    <div className="rounded-lg border border-white/10 bg-[var(--mygreen)] p-3">
                       <div className="text-xs text-white/50">Suscripción desde</div>
                       <div className="text-sm text-white/85">
                         {new Date(user.subscriptionStartedAt).toLocaleString()}
@@ -515,7 +515,7 @@ export default function AdminUsuarioEditPage() {
 
                   <div className="text-xs text-white/55">
                     Volver a la lista en{" "}
-                    <Link href="/admin/usuarios" className="text-[#40C9A9] hover:underline">
+                    <Link href="/admin/usuarios" className="text-[var(--accent-hex)] hover:underline">
                       /admin/usuarios
                     </Link>
                   </div>

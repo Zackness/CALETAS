@@ -234,7 +234,7 @@ export default function AgregarUniversidadPage() {
         <div className="max-w-4xl mx-auto">
           {/* Hero Section */}
           <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 bg-[#40C9A9]/20 text-[#40C9A9] px-4 py-2 rounded-full text-sm font-medium mb-6">
+            <div className="inline-flex items-center gap-2 bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)] text-[var(--accent-hex)] px-4 py-2 rounded-full text-sm font-medium mb-6">
               <GraduationCap className="h-4 w-4" />
               Integración Automática
             </div>
@@ -251,38 +251,38 @@ export default function AgregarUniversidadPage() {
           </div>
 
           {/* Información del proceso */}
-          <Card className="bg-[#354B3A] border-[#40C9A9]/30 mb-8">
+          <Card className="bg-[var(--mygreen-light)] border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] mb-8">
             <CardContent className="p-6">
               <div className="flex items-start gap-3">
-                <Info className="w-5 h-5 text-[#40C9A9] mt-0.5 flex-shrink-0" />
+                <Info className="w-5 h-5 text-[var(--accent-hex)] mt-0.5 flex-shrink-0" />
                 <div>
                   <h3 className="text-white font-semibold mb-3">¿Cómo funciona?</h3>
                   <div className="grid md:grid-cols-2 gap-4 text-sm text-white/80">
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                        <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                         <span>Reúne al menos 10 estudiantes interesados</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                        <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                         <span>Proporciona el pensum de la carrera</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                        <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                         <span>Envía el formulario</span>
                       </div>
                     </div>
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                        <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                         <span>¡Integración automática inmediata!</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                        <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                         <span>Cuentas creadas automáticamente</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                        <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                         <span>¡Listo para usar Caletas!</span>
                       </div>
                     </div>
@@ -295,10 +295,10 @@ export default function AgregarUniversidadPage() {
           {/* Formulario */}
           <form onSubmit={handleSubmit} className="space-y-8">
             {/* Información de la universidad y carrera */}
-            <Card className="bg-[#354B3A] border-white/10">
+            <Card className="bg-[var(--mygreen-light)] border-white/10">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
-                  <Building2 className="h-5 w-5 text-[#40C9A9]" />
+                  <Building2 className="h-5 w-5 text-[var(--accent-hex)]" />
                   Información de la Universidad y Carrera
                 </CardTitle>
                 <CardDescription className="text-white/70">
@@ -314,7 +314,7 @@ export default function AgregarUniversidadPage() {
                       value={universidad}
                       onChange={(e) => setUniversidad(e.target.value)}
                       placeholder="Ej: Universidad Central de Venezuela"
-                      className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1"
+                      className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg mt-1"
                       required
                     />
                   </div>
@@ -325,7 +325,7 @@ export default function AgregarUniversidadPage() {
                       value={siglasUniversidad}
                       onChange={(e) => setSiglasUniversidad(e.target.value)}
                       placeholder="Ej: UCV"
-                      className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1"
+                      className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg mt-1"
                       required
                     />
                   </div>
@@ -333,7 +333,7 @@ export default function AgregarUniversidadPage() {
                 <div>
                   <Label htmlFor="tipoUniversidad" className="text-white/80">Tipo de Universidad *</Label>
                   <Select onValueChange={(value) => setTipoUniversidad(value)} defaultValue="PUBLICA">
-                    <SelectTrigger className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1">
+                    <SelectTrigger className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg mt-1">
                       <SelectValue placeholder="Selecciona un tipo" />
                     </SelectTrigger>
                     <SelectContent>
@@ -350,7 +350,7 @@ export default function AgregarUniversidadPage() {
                     value={carrera}
                     onChange={(e) => setCarrera(e.target.value)}
                     placeholder="Ej: Ingeniería Informática"
-                    className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1"
+                    className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg mt-1"
                     required
                   />
                 </div>
@@ -363,7 +363,7 @@ export default function AgregarUniversidadPage() {
                     onChange={(e) => setDescripcionCarrera(e.target.value)}
                     placeholder="Información adicional sobre la carrera, especializaciones, etc."
                     rows={3}
-                    className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1"
+                    className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg mt-1"
                   />
                 </div>
 
@@ -374,11 +374,11 @@ export default function AgregarUniversidadPage() {
                     type="file"
                     accept=".pdf"
                     onChange={handleFileChange}
-                    className="bg-white/10 border-white/20 text-white file:text-white file:bg-[#40C9A9] file:border-0 file:rounded-lg file:px-4 file:py-2 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1"
+                    className="bg-white/10 border-white/20 text-white file:text-white file:bg-[var(--accent-hex)] file:border-0 file:rounded-lg file:px-4 file:py-2 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg mt-1"
                     required
                   />
                   {pensum && (
-                    <div className="text-[#40C9A9] text-sm mt-1 flex items-center gap-2">
+                    <div className="text-[var(--accent-hex)] text-sm mt-1 flex items-center gap-2">
                       <FileText className="h-4 w-4" />
                       Archivo seleccionado: {pensum.name}
                     </div>
@@ -388,10 +388,10 @@ export default function AgregarUniversidadPage() {
             </Card>
 
             {/* Lista de estudiantes */}
-            <Card className="bg-[#354B3A] border-white/10">
+            <Card className="bg-[var(--mygreen-light)] border-white/10">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
-                  <Users className="h-5 w-5 text-[#40C9A9]" />
+                  <Users className="h-5 w-5 text-[var(--accent-hex)]" />
                   Estudiantes Interesados ({estudiantes.length}/10)
                 </CardTitle>
                 <CardDescription className="text-white/70">
@@ -400,7 +400,7 @@ export default function AgregarUniversidadPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {estudiantes.map((estudiante, index) => (
-                  <div key={estudiante.id} className="bg-[#1C2D20] border border-white/10 rounded-lg p-4">
+                  <div key={estudiante.id} className="bg-[var(--mygreen-dark)] border border-white/10 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="text-white font-medium">Estudiante {index + 1}</h4>
                       {estudiantes.length > 1 && (
@@ -423,7 +423,7 @@ export default function AgregarUniversidadPage() {
                           value={estudiante.nombre}
                           onChange={(e) => actualizarEstudiante(estudiante.id, "nombre", e.target.value)}
                           placeholder="Nombre y apellido"
-                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1"
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg mt-1"
                           required
                         />
                       </div>
@@ -434,7 +434,7 @@ export default function AgregarUniversidadPage() {
                           value={estudiante.email}
                           onChange={(e) => actualizarEstudiante(estudiante.id, "email", e.target.value)}
                           placeholder="correo@ejemplo.com"
-                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1"
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg mt-1"
                           required
                         />
                       </div>
@@ -444,7 +444,7 @@ export default function AgregarUniversidadPage() {
                           value={estudiante.carnet}
                           onChange={(e) => actualizarEstudiante(estudiante.id, "carnet", e.target.value)}
                           placeholder="Número de carnet"
-                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1"
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg mt-1"
                           required
                         />
                       </div>
@@ -456,7 +456,7 @@ export default function AgregarUniversidadPage() {
                   type="button"
                   onClick={agregarEstudiante}
                   variant="outline"
-                  className="w-full border-[#40C9A9] text-[#40C9A9] hover:bg-[#40C9A9]/10"
+                  className="w-full border-[var(--accent-hex)] text-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)]"
                   disabled={estudiantes.length >= 10}
                 >
                   <Plus className="h-4 w-4 mr-2" />
@@ -466,10 +466,10 @@ export default function AgregarUniversidadPage() {
             </Card>
 
             {/* Información adicional */}
-            <Card className="bg-[#1C2D20] border-[#40C9A9]/30">
+            <Card className="bg-[var(--mygreen-dark)] border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)]">
               <CardContent className="p-6">
                 <div className="flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-[#40C9A9] mt-0.5 flex-shrink-0" />
+                  <AlertCircle className="w-5 h-5 text-[var(--accent-hex)] mt-0.5 flex-shrink-0" />
                   <div>
                     <h3 className="text-white font-semibold mb-2">Integración Automática</h3>
                     <ul className="text-white/70 text-sm space-y-1">
@@ -490,7 +490,7 @@ export default function AgregarUniversidadPage() {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white font-bold text-lg py-4 rounded-xl shadow-lg"
+              className="w-full bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white font-bold text-lg py-4 rounded-xl shadow-lg"
             >
               {isSubmitting ? "Integrando..." : "Integrar Universidad"}
             </Button>

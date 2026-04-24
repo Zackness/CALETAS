@@ -107,10 +107,10 @@ export default function CPanelQuickTest() {
   };
 
   return (
-    <Card className="bg-[#354B3A] border-white/10">
+    <Card className="bg-[var(--mygreen-light)] border-white/10">
       <CardHeader>
         <CardTitle className="text-white flex items-center gap-2">
-          <Zap className="h-5 w-5 text-[#40C9A9]" />
+          <Zap className="h-5 w-5 text-[var(--accent-hex)]" />
           Prueba Rápida
         </CardTitle>
         <CardDescription className="text-white/70">
@@ -136,7 +136,7 @@ export default function CPanelQuickTest() {
         <Button
           onClick={runQuickTest}
           disabled={isRunning}
-          className="w-full bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+          className="w-full bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
         >
           {isRunning ? (
             <>

@@ -27,7 +27,7 @@ export default async function EditorLayout({
   if (!user) return redirect("/login");
 
   return (
-    <html lang="es">
+    <html lang="es" suppressHydrationWarning>
       <body>
         <div className="min-h-screen bg-gradient-to-t from-mygreen to-mygreen-light">{children}</div>
       </body>

@@ -143,40 +143,40 @@ export default function TestimoniosPage() {
         {/* Estadísticas */}
         <section className="mb-20">
           <div className="grid md:grid-cols-4 gap-6 mb-12">
-            <Card className="bg-[#354B3A] border-white/10 text-center">
+            <Card className="bg-[var(--mygreen-light)] border-white/10 text-center">
               <CardContent className="pt-6">
-                <div className="mx-auto p-3 bg-[#40C9A9]/10 rounded-full w-fit mb-4">
-                  <Users className="h-8 w-8 text-[#40C9A9]" />
+                <div className="mx-auto p-3 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-full w-fit mb-4">
+                  <Users className="h-8 w-8 text-[var(--accent-hex)]" />
                 </div>
                 <h3 className="text-2xl font-special text-white mb-2">500+</h3>
                 <p className="text-white/70">Estudiantes Activos</p>
               </CardContent>
             </Card>
 
-            <Card className="bg-[#354B3A] border-white/10 text-center">
+            <Card className="bg-[var(--mygreen-light)] border-white/10 text-center">
               <CardContent className="pt-6">
-                <div className="mx-auto p-3 bg-[#40C9A9]/10 rounded-full w-fit mb-4">
-                  <Star className="h-8 w-8 text-[#40C9A9]" />
+                <div className="mx-auto p-3 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-full w-fit mb-4">
+                  <Star className="h-8 w-8 text-[var(--accent-hex)]" />
                 </div>
                 <h3 className="text-2xl font-special text-white mb-2">4.9/5</h3>
                 <p className="text-white/70">Calificación Promedio</p>
               </CardContent>
             </Card>
 
-            <Card className="bg-[#354B3A] border-white/10 text-center">
+            <Card className="bg-[var(--mygreen-light)] border-white/10 text-center">
               <CardContent className="pt-6">
-                <div className="mx-auto p-3 bg-[#40C9A9]/10 rounded-full w-fit mb-4">
-                  <BookOpen className="h-8 w-8 text-[#40C9A9]" />
+                <div className="mx-auto p-3 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-full w-fit mb-4">
+                  <BookOpen className="h-8 w-8 text-[var(--accent-hex)]" />
                 </div>
                 <h3 className="text-2xl font-special text-white mb-2">1,200+</h3>
                 <p className="text-white/70">Recursos Compartidos</p>
               </CardContent>
             </Card>
 
-            <Card className="bg-[#354B3A] border-white/10 text-center">
+            <Card className="bg-[var(--mygreen-light)] border-white/10 text-center">
               <CardContent className="pt-6">
-                <div className="mx-auto p-3 bg-[#40C9A9]/10 rounded-full w-fit mb-4">
-                  <TrendingUp className="h-8 w-8 text-[#40C9A9]" />
+                <div className="mx-auto p-3 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-full w-fit mb-4">
+                  <TrendingUp className="h-8 w-8 text-[var(--accent-hex)]" />
                 </div>
                 <h3 className="text-2xl font-special text-white mb-2">85%</h3>
                 <p className="text-white/70">Mejora en Rendimiento</p>
@@ -190,24 +190,24 @@ export default function TestimoniosPage() {
           <section className="mb-20">
             <div className="text-center mb-12">
               <div className="inline-flex items-center gap-3 mb-4">
-                <Award className="h-8 w-8 text-[#40C9A9]" />
+                <Award className="h-8 w-8 text-[var(--accent-hex)]" />
                 <h2 className="text-3xl font-special text-white">Testimonio Destacado</h2>
               </div>
             </div>
 
-            <Card className="bg-[#354B3A] border-[#40C9A9]/30 max-w-4xl mx-auto">
+            <Card className="bg-[var(--mygreen-light)] border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] max-w-4xl mx-auto">
               <CardHeader>
                 <div className="flex items-start gap-4">
                   <Avatar className="h-16 w-16">
                     <AvatarImage src={testimoniosDestacados[0].foto} />
-                    <AvatarFallback className="bg-[#40C9A9] text-white text-lg font-medium">
+                    <AvatarFallback className="bg-[var(--accent-hex)] text-white text-lg font-medium">
                       {getInitials(testimoniosDestacados[0].nombre)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <h3 className="text-xl font-special text-white">{testimoniosDestacados[0].nombre}</h3>
-                      <Badge className="bg-[#40C9A9]/10 text-[#40C9A9] border-[#40C9A9]/20">
+                      <Badge className="bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] text-[var(--accent-hex)] border-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)]">
                         Destacado
                       </Badge>
                     </div>
@@ -218,7 +218,7 @@ export default function TestimoniosPage() {
                       {renderStars(testimoniosDestacados[0].calificacion)}
                     </div>
                   </div>
-                  <Quote className="h-8 w-8 text-[#40C9A9] opacity-50" />
+                  <Quote className="h-8 w-8 text-[var(--accent-hex)] opacity-50" />
                 </div>
               </CardHeader>
               <CardContent>
@@ -231,7 +231,7 @@ export default function TestimoniosPage() {
                   <div className="grid md:grid-cols-3 gap-2">
                     {testimoniosDestacados[0].beneficios.map((beneficio, index) => (
                       <div key={index} className="flex items-center gap-2 text-sm text-white/70">
-                        <Heart className="h-4 w-4 text-[#40C9A9]" />
+                        <Heart className="h-4 w-4 text-[var(--accent-hex)]" />
                         <span>{beneficio}</span>
                       </div>
                     ))}
@@ -250,7 +250,7 @@ export default function TestimoniosPage() {
         <section className="mb-20">
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-3 mb-4">
-              <MessageSquare className="h-8 w-8 text-[#40C9A9]" />
+              <MessageSquare className="h-8 w-8 text-[var(--accent-hex)]" />
               <h2 className="text-3xl font-special text-white">Más Experiencias</h2>
             </div>
             <p className="text-white/70 text-lg">
@@ -260,12 +260,12 @@ export default function TestimoniosPage() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {testimoniosRegulares.map((testimonio) => (
-              <Card key={testimonio.id} className="bg-[#354B3A] border-white/10 hover:border-[#40C9A9]/30 transition-all">
+              <Card key={testimonio.id} className="bg-[var(--mygreen-light)] border-white/10 hover:border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] transition-all">
                 <CardHeader>
                   <div className="flex items-start gap-3">
                     <Avatar className="h-12 w-12">
                       <AvatarImage src={testimonio.foto} />
-                      <AvatarFallback className="bg-[#40C9A9] text-white font-medium">
+                      <AvatarFallback className="bg-[var(--accent-hex)] text-white font-medium">
                         {getInitials(testimonio.nombre)}
                       </AvatarFallback>
                     </Avatar>
@@ -289,7 +289,7 @@ export default function TestimoniosPage() {
                     <h4 className="text-white font-medium text-sm">Beneficios:</h4>
                     {testimonio.beneficios.map((beneficio, index) => (
                       <div key={index} className="flex items-center gap-2 text-xs text-white/60">
-                        <Heart className="h-3 w-3 text-[#40C9A9]" />
+                        <Heart className="h-3 w-3 text-[var(--accent-hex)]" />
                         <span>{beneficio}</span>
                       </div>
                     ))}
@@ -306,7 +306,7 @@ export default function TestimoniosPage() {
 
         {/* CTA Final */}
         <section className="text-center">
-          <Card className="bg-[#354B3A] border-[#40C9A9]/30 max-w-2xl mx-auto">
+          <Card className="bg-[var(--mygreen-light)] border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] max-w-2xl mx-auto">
             <CardHeader>
               <CardTitle className="text-2xl font-special text-white mb-4">
                 ¿Listo para transformar tu experiencia académica?
@@ -318,7 +318,7 @@ export default function TestimoniosPage() {
             <CardContent className="space-y-4">
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href="/auth/register">
-                  <Button className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white px-8 py-3 text-lg">
+                  <Button className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white px-8 py-3 text-lg">
                     Comenzar Ahora
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>

@@ -20,7 +20,7 @@ type Obra = {
 
 export default function BibliotecaObraPage() {
   const params = useParams();
-  const slug = typeof params.slug === "string" ? params.slug : "";
+  const slug = typeof params?.slug === "string" ? params.slug : "";
   const { loading: subLoading, isActive } = useSubscriptionRequired({ requireBiblioteca: true });
   const [obra, setObra] = useState<Obra | null>(null);
   const [loading, setLoading] = useState(true);
@@ -60,7 +60,7 @@ export default function BibliotecaObraPage() {
     return (
       <div className="min-h-screen bg-gradient-to-t from-mygreen to-mygreen-light flex flex-col items-center justify-center gap-4 px-4">
         <p className="text-white/80">{error || "Obra no encontrada"}</p>
-        <Button asChild className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white">
+        <Button asChild className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white">
           <Link href="/biblioteca">Volver a la biblioteca</Link>
         </Button>
       </div>
@@ -73,7 +73,7 @@ export default function BibliotecaObraPage() {
         <Button
           asChild
           variant="outline"
-          className="border-[#40C9A9]/40 bg-[#1C2D20] text-[#40C9A9] hover:bg-[#203324]"
+          className="border-[color-mix(in_oklab,var(--accent-hex)_40%,transparent)] bg-[var(--mygreen-dark)] text-[var(--accent-hex)] hover:bg-[var(--mygreen)]"
         >
           <Link href="/biblioteca" className="inline-flex items-center gap-2">
             <ArrowLeft className="w-4 h-4" />
@@ -81,10 +81,10 @@ export default function BibliotecaObraPage() {
           </Link>
         </Button>
 
-        <Card className="bg-[#354B3A] border-white/10">
+        <Card className="bg-[var(--mygreen-light)] border-white/10">
           <CardHeader>
             <CardTitle className="text-white font-special text-2xl flex items-center gap-2">
-              <Library className="w-7 h-7 text-[#40C9A9]" />
+              <Library className="w-7 h-7 text-[var(--accent-hex)]" />
               {obra.titulo}
             </CardTitle>
             {obra.descripcion ? <p className="text-white/70 text-sm">{obra.descripcion}</p> : null}

@@ -89,10 +89,10 @@ export default function ResumirPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Panel de Entrada */}
-          <Card className="bg-[#354B3A] border-white/10">
+          <Card className="bg-[var(--mygreen-light)] border-white/10">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
-                <FileText className="w-5 h-5 text-[#40C9A9]" />
+                <FileText className="w-5 h-5 text-[var(--accent-hex)]" />
                 Contenido a Procesar
               </CardTitle>
               <CardDescription className="text-white/70">
@@ -104,7 +104,7 @@ export default function ResumirPage() {
                 {/* Subir Archivo */}
                 <div className="space-y-2">
                   <label className="text-white font-medium">Subir PDF</label>
-                  <div className="border-2 border-dashed border-white/20 rounded-lg p-6 text-center hover:border-[#40C9A9] transition-colors">
+                  <div className="border-2 border-dashed border-white/20 rounded-lg p-6 text-center hover:border-[var(--accent-hex)] transition-colors">
                     <Upload className="w-8 h-8 text-white/50 mx-auto mb-2" />
                     <input
                       type="file"
@@ -119,7 +119,7 @@ export default function ResumirPage() {
                     </label>
                   </div>
                   {file && (
-                    <p className="text-[#40C9A9] text-sm">✓ {file.name}</p>
+                    <p className="text-[var(--accent-hex)] text-sm">✓ {file.name}</p>
                   )}
                 </div>
 
@@ -135,13 +135,13 @@ export default function ResumirPage() {
                     placeholder="Pega aquí el texto que quieres resumir o explicar..."
                     value={text}
                     onChange={(e) => setText(e.target.value)}
-                    className="bg-[#1C2D20] border-white/10 text-white placeholder:text-white/50 min-h-[120px]"
+                    className="bg-[var(--mygreen-dark)] border-white/10 text-white placeholder:text-white/50 min-h-[120px]"
                   />
                 </div>
 
                 <Button 
                   type="submit" 
-                  className="w-full bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                  className="w-full bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
                   disabled={loading}
                 >
                   {loading ? (
@@ -161,10 +161,10 @@ export default function ResumirPage() {
           </Card>
 
           {/* Panel de Resultado */}
-          <Card className="bg-[#354B3A] border-white/10">
+          <Card className="bg-[var(--mygreen-light)] border-white/10">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-[#40C9A9]" />
+                <Sparkles className="w-5 h-5 text-[var(--accent-hex)]" />
                 Resultado
               </CardTitle>
               <CardDescription className="text-white/70">
@@ -173,7 +173,7 @@ export default function ResumirPage() {
             </CardHeader>
             <CardContent>
               {result ? (
-                <div className="bg-[#1C2D20] rounded-lg p-4">
+                <div className="bg-[var(--mygreen-dark)] rounded-lg p-4">
                   <div className="text-white leading-relaxed">
                     {(() => {
                       try {
@@ -181,12 +181,12 @@ export default function ResumirPage() {
                         return (
                           <div className="space-y-4">
                             <div>
-                              <h4 className="font-semibold text-[#40C9A9] mb-2">Tema Principal</h4>
+                              <h4 className="font-semibold text-[var(--accent-hex)] mb-2">Tema Principal</h4>
                               <p className="text-white/90">{resumen.temaPrincipal}</p>
                             </div>
                             
                             <div>
-                              <h4 className="font-semibold text-[#40C9A9] mb-2">Puntos Clave</h4>
+                              <h4 className="font-semibold text-[var(--accent-hex)] mb-2">Puntos Clave</h4>
                               <ul className="list-disc list-inside space-y-1">
                                 {resumen.puntosClave.map((punto: string, idx: number) => (
                                   <li key={idx} className="text-white/80">{punto}</li>
@@ -195,7 +195,7 @@ export default function ResumirPage() {
                             </div>
                             
                             <div>
-                              <h4 className="font-semibold text-[#40C9A9] mb-2">Conceptos Importantes</h4>
+                              <h4 className="font-semibold text-[var(--accent-hex)] mb-2">Conceptos Importantes</h4>
                               <ul className="list-disc list-inside space-y-1">
                                 {resumen.conceptosImportantes.map((concepto: string, idx: number) => (
                                   <li key={idx} className="text-white/80">{concepto}</li>
@@ -204,7 +204,7 @@ export default function ResumirPage() {
                             </div>
                             
                             <div>
-                              <h4 className="font-semibold text-[#40C9A9] mb-2">Aplicaciones Prácticas</h4>
+                              <h4 className="font-semibold text-[var(--accent-hex)] mb-2">Aplicaciones Prácticas</h4>
                               <ul className="list-disc list-inside space-y-1">
                                 {resumen.aplicacionesPracticas.map((aplicacion: string, idx: number) => (
                                   <li key={idx} className="text-white/80">{aplicacion}</li>
@@ -213,12 +213,12 @@ export default function ResumirPage() {
                             </div>
                             
                             <div>
-                              <h4 className="font-semibold text-[#40C9A9] mb-2">Conclusiones</h4>
+                              <h4 className="font-semibold text-[var(--accent-hex)] mb-2">Conclusiones</h4>
                               <p className="text-white/90">{resumen.conclusiones}</p>
                             </div>
                             
                             <div>
-                              <h4 className="font-semibold text-[#40C9A9] mb-2">Resumen General</h4>
+                              <h4 className="font-semibold text-[var(--accent-hex)] mb-2">Resumen General</h4>
                               <p className="text-white/90">{resumen.resumenGeneral}</p>
                             </div>
                           </div>
@@ -230,7 +230,7 @@ export default function ResumirPage() {
                   </div>
                 </div>
               ) : (
-                <div className="bg-[#1C2D20] rounded-lg p-8 text-center">
+                <div className="bg-[var(--mygreen-dark)] rounded-lg p-8 text-center">
                   <Sparkles className="w-12 h-12 text-white/30 mx-auto mb-4" />
                   <p className="text-white/50">
                     El resultado aparecerá aquí después de procesar el contenido

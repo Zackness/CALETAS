@@ -35,8 +35,8 @@ export const LoginForm = () => {
   
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl");
-  const urlError = searchParams.get("error") || "";
+  const callbackUrl = searchParams?.get("callbackUrl");
+  const urlError = searchParams?.get("error") || "";
 
   const [showTwoFactor, setShowTwoFactor] = useState(false);
   const [twoFactorMethod, setTwoFactorMethod] = useState<

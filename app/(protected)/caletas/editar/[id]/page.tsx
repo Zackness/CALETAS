@@ -220,7 +220,7 @@ export default function EditarRecursoPage({ params }: { params: Promise<{ id: st
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-t from-mygreen to-mygreen-light">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#40C9A9] mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent-hex)] mx-auto mb-4"></div>
           <p className="text-white/80">Cargando recurso...</p>
         </div>
       </div>
@@ -234,7 +234,7 @@ export default function EditarRecursoPage({ params }: { params: Promise<{ id: st
           <p className="text-white/80">Recurso no encontrado</p>
           <Button
             onClick={() => router.push("/caletas/mis-recursos")}
-            className="mt-4 bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+            className="mt-4 bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
           >
             Volver a Mis Recursos
           </Button>
@@ -257,7 +257,7 @@ export default function EditarRecursoPage({ params }: { params: Promise<{ id: st
               Volver
             </Button>
           </div>
-          <h1 className="text-3xl md:text-4xl font-special text-[#40C9A9] mb-2">Editar Recurso</h1>
+          <h1 className="text-3xl md:text-4xl font-special text-[var(--accent-hex)] mb-2">Editar Recurso</h1>
           <p className="text-white/70 text-base md:text-lg">
             Modifica la información de tu recurso académico
           </p>
@@ -265,10 +265,10 @@ export default function EditarRecursoPage({ params }: { params: Promise<{ id: st
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Información básica */}
-          <Card className="bg-[#354B3A] border-white/10">
+          <Card className="bg-[var(--mygreen-light)] border-white/10">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-white">
-                <Edit className="w-5 h-5 text-[#40C9A9]" />
+                <Edit className="w-5 h-5 text-[var(--accent-hex)]" />
                 Información del Recurso
               </CardTitle>
               <CardDescription className="text-white/70">
@@ -284,7 +284,7 @@ export default function EditarRecursoPage({ params }: { params: Promise<{ id: st
                   onChange={(e) => setTitulo(e.target.value)}
                   placeholder="Ej: Examen parcial de Cálculo I"
                   required
-                  className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1"
+                  className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg mt-1"
                 />
               </div>
               <div>
@@ -296,24 +296,24 @@ export default function EditarRecursoPage({ params }: { params: Promise<{ id: st
                   placeholder="Describe brevemente el contenido del recurso"
                   rows={3}
                   required
-                  className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1"
+                  className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg mt-1"
                 />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="tipo" className="text-white/80">Tipo de recurso *</Label>
                   <Select value={tipo} onValueChange={setTipo}>
-                    <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1">
+                    <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg mt-1">
                       <SelectValue placeholder="Selecciona el tipo de recurso" />
                     </SelectTrigger>
-                    <SelectContent className="bg-[#203324] text-white">
-                      <SelectItem value="DOCUMENTO" className="hover:bg-[#40C9A9]/10">Documento</SelectItem>
-                      <SelectItem value="ANOTACION" className="hover:bg-[#40C9A9]/10">Anotación</SelectItem>
-                      <SelectItem value="RESUMEN" className="hover:bg-[#40C9A9]/10">Resumen</SelectItem>
-                      <SelectItem value="GUIA_ESTUDIO" className="hover:bg-[#40C9A9]/10">Guía de Estudio</SelectItem>
-                      <SelectItem value="EJERCICIOS" className="hover:bg-[#40C9A9]/10">Ejercicios</SelectItem>
-                      <SelectItem value="PRESENTACION" className="hover:bg-[#40C9A9]/10">Presentación</SelectItem>
-                      <SelectItem value="TIP" className="hover:bg-[#40C9A9]/10">Tip/Consejo</SelectItem>
+                    <SelectContent className="bg-[var(--mygreen)] text-white">
+                      <SelectItem value="DOCUMENTO" className="hover:bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)]">Documento</SelectItem>
+                      <SelectItem value="ANOTACION" className="hover:bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)]">Anotación</SelectItem>
+                      <SelectItem value="RESUMEN" className="hover:bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)]">Resumen</SelectItem>
+                      <SelectItem value="GUIA_ESTUDIO" className="hover:bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)]">Guía de Estudio</SelectItem>
+                      <SelectItem value="EJERCICIOS" className="hover:bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)]">Ejercicios</SelectItem>
+                      <SelectItem value="PRESENTACION" className="hover:bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)]">Presentación</SelectItem>
+                      <SelectItem value="TIP" className="hover:bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)]">Tip/Consejo</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -324,7 +324,7 @@ export default function EditarRecursoPage({ params }: { params: Promise<{ id: st
                     value={tags}
                     onChange={(e) => setTags(e.target.value)}
                     placeholder="Ej: examen, parcial, calculo, derivadas"
-                    className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1"
+                    className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg mt-1"
                   />
                 </div>
               </div>
@@ -332,10 +332,10 @@ export default function EditarRecursoPage({ params }: { params: Promise<{ id: st
           </Card>
 
           {/* Selección de materia */}
-          <Card className="bg-[#354B3A] border-white/10">
+          <Card className="bg-[var(--mygreen-light)] border-white/10">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-white">
-                <BookOpen className="w-5 h-5 text-[#40C9A9]" />
+                <BookOpen className="w-5 h-5 text-[var(--accent-hex)]" />
                 Materia Asociada
               </CardTitle>
               <CardDescription className="text-white/70">
@@ -347,14 +347,14 @@ export default function EditarRecursoPage({ params }: { params: Promise<{ id: st
                 <div>
                   <Label htmlFor="universidad" className="text-white/80">Universidad</Label>
                   <Select value={selectedUniversidad} onValueChange={setSelectedUniversidad}>
-                    <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1">
+                    <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg mt-1">
                       <SelectValue placeholder="Selecciona una universidad" />
                     </SelectTrigger>
-                    <SelectContent className="bg-[#203324] text-white">
+                    <SelectContent className="bg-[var(--mygreen)] text-white">
                       {universidades.map((universidad) => (
-                        <SelectItem key={universidad.id} value={universidad.id} className="hover:bg-[#40C9A9]/10">
+                        <SelectItem key={universidad.id} value={universidad.id} className="hover:bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)]">
                           <div className="flex items-center gap-2">
-                            <GraduationCap className="h-4 w-4 text-[#40C9A9]" />
+                            <GraduationCap className="h-4 w-4 text-[var(--accent-hex)]" />
                             {universidad.nombre}
                           </div>
                         </SelectItem>
@@ -365,13 +365,13 @@ export default function EditarRecursoPage({ params }: { params: Promise<{ id: st
                 <div>
                   <Label htmlFor="carrera" className="text-white/80">Carrera</Label>
                   <Select value={selectedCarrera} onValueChange={setSelectedCarrera} disabled={!selectedUniversidad}>
-                    <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1 disabled:opacity-50">
+                    <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg mt-1 disabled:opacity-50">
                       <SelectValue placeholder="Selecciona una carrera" />
                     </SelectTrigger>
-                    <SelectContent className="bg-[#203324] text-white">
+                    <SelectContent className="bg-[var(--mygreen)] text-white">
                       {carreras.map((carrera) => (
-                        <SelectItem key={carrera.id} value={carrera.id} className="hover:bg-[#40C9A9]/10">
-                          <BookOpen className="h-4 w-4 text-[#40C9A9] mr-1" />
+                        <SelectItem key={carrera.id} value={carrera.id} className="hover:bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)]">
+                          <BookOpen className="h-4 w-4 text-[var(--accent-hex)] mr-1" />
                           {carrera.nombre}
                         </SelectItem>
                       ))}
@@ -381,13 +381,13 @@ export default function EditarRecursoPage({ params }: { params: Promise<{ id: st
                 <div>
                   <Label htmlFor="materia" className="text-white/80">Materia *</Label>
                   <Select value={selectedMateria} onValueChange={setSelectedMateria} disabled={!selectedCarrera} required>
-                    <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1 disabled:opacity-50">
+                    <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg mt-1 disabled:opacity-50">
                       <SelectValue placeholder="Selecciona una materia" />
                     </SelectTrigger>
-                    <SelectContent className="bg-[#203324] text-white">
+                    <SelectContent className="bg-[var(--mygreen)] text-white">
                       {materias.map((materia) => (
-                        <SelectItem key={materia.id} value={materia.id} className="hover:bg-[#40C9A9]/10">
-                          <FileText className="h-4 w-4 text-[#40C9A9] mr-1" />
+                        <SelectItem key={materia.id} value={materia.id} className="hover:bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)]">
+                          <FileText className="h-4 w-4 text-[var(--accent-hex)] mr-1" />
                           {materia.nombre}
                         </SelectItem>
                       ))}
@@ -399,10 +399,10 @@ export default function EditarRecursoPage({ params }: { params: Promise<{ id: st
           </Card>
 
           {/* Privacidad */}
-          <Card className="bg-[#354B3A] border-white/10">
+          <Card className="bg-[var(--mygreen-light)] border-white/10">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-white">
-                <FileText className="w-5 h-5 text-[#40C9A9]" />
+                <FileText className="w-5 h-5 text-[var(--accent-hex)]" />
                 Privacidad
               </CardTitle>
               <CardDescription className="text-white/70">
@@ -420,7 +420,7 @@ export default function EditarRecursoPage({ params }: { params: Promise<{ id: st
                 <Switch 
                   checked={esAnonimo}
                   onCheckedChange={setEsAnonimo}
-                  className="data-[state=checked]:bg-[#40C9A9] data-[state=unchecked]:bg-white/20"
+                  className="data-[state=checked]:bg-[var(--accent-hex)] data-[state=unchecked]:bg-white/20"
                 />
               </div>
             </CardContent>
@@ -429,7 +429,7 @@ export default function EditarRecursoPage({ params }: { params: Promise<{ id: st
           {/* Botón de guardar */}
           <Button
             type="submit"
-            className="w-full bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white font-bold text-lg py-3 rounded-xl shadow-lg transition-colors"
+            className="w-full bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white font-bold text-lg py-3 rounded-xl shadow-lg transition-colors"
             disabled={isLoading}
           >
             {isLoading ? (

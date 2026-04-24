@@ -5,7 +5,7 @@
   "scripts": {
     "postinstall": "prisma generate",
     "dev": "NODE_OPTIONS=--dns-result-order=ipv4first next dev",
-    "build": "prisma generate && NODE_OPTIONS=--dns-result-order=ipv4first next build",
+    "build": "rm -rf .next && prisma generate && NODE_OPTIONS=--dns-result-order=ipv4first next build",
     "export": "next build && next export",
     "start": "NODE_OPTIONS=--dns-result-order=ipv4first next start",
     "lint": "next lint",

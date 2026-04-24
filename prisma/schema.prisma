@@ -30,6 +30,7 @@ model User {
   materiasActuales       String?                @db.Text
   semestreActual         String?
   semestreActualManual   Boolean                @default(false)
+  caletaTutorialCompleted Boolean               @default(false)
   universidadId          String?
   carreraId              String?
   accounts               Account[]
@@ -58,9 +59,47 @@ model User {
   paymentRecords         PaymentRecord[]
   pensumVersions         PensumVersion[]      @relation("PensumVersionCreatedBy")
   tesisDocumentos      TesisDocumento[]
+  following              UserFollow[]         @relation("FollowsInitiated")
+  followers              UserFollow[]         @relation("FollowsReceived")
+  profileBio             String?              @db.Text
+  profileBannerUrl       String?
+  profileGalleryUrls     Json?                // array de URLs (strings), p. ej. ["https://..."]
+  historias                Historia[]
 
   @@index([role])
   @@index([universidadId])
+}
+
+model UserFollow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+  follower    User     @relation("FollowsInitiated", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("FollowsReceived", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+}
+
+/** Historia efímera (foto o video); el archivo vive en Bunny bajo prefijo `historia/`. */
+model Historia {
+  id        String            @id @default(cuid())
+  autorId   String
+  autor     User              @relation(fields: [autorId], references: [id], onDelete: Cascade)
+  mediaUrl  String            @db.Text
+  mediaType HistoriaMediaType
+  expiresAt DateTime
+  createdAt DateTime          @default(now())
+
+  @@index([expiresAt])
+  @@index([autorId, expiresAt])
+}
+
+enum HistoriaMediaType {
+  IMAGE
+  VIDEO
 }
 
 model AuthSession {

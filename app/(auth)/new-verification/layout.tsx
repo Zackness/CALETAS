@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import '@fontsource-variable/montserrat';
 import "@/app/globals.css";
+import { ThemeProvider } from "@/components/theme-provider";
 
 export const metadata: Metadata = {
   title: "Verificación de Correo - Caletas",
@@ -16,9 +17,9 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="es">
-      <body suppressHydrationWarning={true}>
-          {children}
+    <html lang="es" suppressHydrationWarning>
+      <body>
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   )

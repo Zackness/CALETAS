@@ -32,7 +32,7 @@ const baseTemplate = (content: string) => `
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
         }
         .header {
-            background: linear-gradient(135deg, #203324 0%, #354B3A 100%);
+            background: linear-gradient(135deg, var(--mygreen) 0%, var(--mygreen-light) 100%);
             color: white;
             padding: 40px 30px;
             text-align: center;
@@ -53,7 +53,7 @@ const baseTemplate = (content: string) => `
             background-color: #ffffff;
         }
         .content h2 {
-            color: #203324;
+            color: var(--mygreen);
             font-size: 1.8rem;
             font-weight: 600;
             margin: 0 0 20px 0;
@@ -66,7 +66,7 @@ const baseTemplate = (content: string) => `
         .button {
             display: inline-block;
             padding: 16px 32px;
-            background: linear-gradient(135deg, #203324 0%, #354B3A 100%);
+            background: linear-gradient(135deg, var(--mygreen) 0%, var(--mygreen-light) 100%);
             color: white !important;
             text-decoration: none;
             border-radius: 12px;
@@ -101,7 +101,7 @@ const baseTemplate = (content: string) => `
             font-weight: 700;
             letter-spacing: 4px;
             margin: 25px 0;
-            color: #203324;
+            color: var(--mygreen);
             border: 2px solid #e2e8f0;
         }
         .highlight {

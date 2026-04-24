@@ -45,7 +45,7 @@ export default function CaracteristicasPage() {
         <section className="mb-20">
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-3 mb-4">
-              <GraduationCap className="h-8 w-8 text-[#40C9A9]" />
+              <GraduationCap className="h-8 w-8 text-[var(--accent-hex)]" />
               <h2 className="text-3xl font-special text-white">Sistema Académico Integral</h2>
             </div>
             <p className="text-white/70 text-lg">
@@ -54,11 +54,11 @@ export default function CaracteristicasPage() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card className="bg-[#354B3A] border-white/10 hover:border-[#40C9A9]/30 transition-all">
+            <Card className="bg-[var(--mygreen-light)] border-white/10 hover:border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] transition-all">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[#40C9A9]/10 rounded-lg">
-                    <BarChart3 className="h-6 w-6 text-[#40C9A9]" />
+                  <div className="p-2 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-lg">
+                    <BarChart3 className="h-6 w-6 text-[var(--accent-hex)]" />
                   </div>
                   <CardTitle className="text-white">Panel de Control</CardTitle>
                 </div>
@@ -69,26 +69,26 @@ export default function CaracteristicasPage() {
                 </CardDescription>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Progreso visual por semestre</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Estadísticas de rendimiento</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Resumen de materias actuales</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-[#354B3A] border-white/10 hover:border-[#40C9A9]/30 transition-all">
+            <Card className="bg-[var(--mygreen-light)] border-white/10 hover:border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] transition-all">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[#40C9A9]/10 rounded-lg">
-                    <Target className="h-6 w-6 text-[#40C9A9]" />
+                  <div className="p-2 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-lg">
+                    <Target className="h-6 w-6 text-[var(--accent-hex)]" />
                   </div>
                   <CardTitle className="text-white">Metas Académicas</CardTitle>
                 </div>
@@ -99,26 +99,26 @@ export default function CaracteristicasPage() {
                 </CardDescription>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Metas por GPA, materias o créditos</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Seguimiento automático de progreso</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Notificaciones de logros</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-[#354B3A] border-white/10 hover:border-[#40C9A9]/30 transition-all">
+            <Card className="bg-[var(--mygreen-light)] border-white/10 hover:border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] transition-all">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[#40C9A9]/10 rounded-lg">
-                    <BookOpen className="h-6 w-6 text-[#40C9A9]" />
+                  <div className="p-2 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-lg">
+                    <BookOpen className="h-6 w-6 text-[var(--accent-hex)]" />
                   </div>
                   <CardTitle className="text-white">Historial Académico</CardTitle>
                 </div>
@@ -129,26 +129,26 @@ export default function CaracteristicasPage() {
                 </CardDescription>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Registro de materias aprobadas</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Gestión de estados (cursando, retirada)</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Validación automática de prerrequisitos</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-[#354B3A] border-white/10 hover:border-[#40C9A9]/30 transition-all">
+            <Card className="bg-[var(--mygreen-light)] border-white/10 hover:border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] transition-all">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[#40C9A9]/10 rounded-lg">
-                    <Lightbulb className="h-6 w-6 text-[#40C9A9]" />
+                  <div className="p-2 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-lg">
+                    <Lightbulb className="h-6 w-6 text-[var(--accent-hex)]" />
                   </div>
                   <CardTitle className="text-white">Recomendaciones</CardTitle>
                 </div>
@@ -159,26 +159,26 @@ export default function CaracteristicasPage() {
                 </CardDescription>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Análisis de prerrequisitos</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Sugerencias optimizadas</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Planificación semestral</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-[#354B3A] border-white/10 hover:border-[#40C9A9]/30 transition-all">
+            <Card className="bg-[var(--mygreen-light)] border-white/10 hover:border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] transition-all">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[#40C9A9]/10 rounded-lg">
-                    <TrendingUp className="h-6 w-6 text-[#40C9A9]" />
+                  <div className="p-2 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-lg">
+                    <TrendingUp className="h-6 w-6 text-[var(--accent-hex)]" />
                   </div>
                   <CardTitle className="text-white">Estadísticas Avanzadas</CardTitle>
                 </div>
@@ -189,26 +189,26 @@ export default function CaracteristicasPage() {
                 </CardDescription>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Gráficos de rendimiento</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Comparación con otros estudiantes</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Proyecciones académicas</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-[#354B3A] border-white/10 hover:border-[#40C9A9]/30 transition-all">
+            <Card className="bg-[var(--mygreen-light)] border-white/10 hover:border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] transition-all">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[#40C9A9]/10 rounded-lg">
-                    <Bell className="h-6 w-6 text-[#40C9A9]" />
+                  <div className="p-2 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-lg">
+                    <Bell className="h-6 w-6 text-[var(--accent-hex)]" />
                   </div>
                   <CardTitle className="text-white">Notificaciones</CardTitle>
                 </div>
@@ -219,15 +219,15 @@ export default function CaracteristicasPage() {
                 </CardDescription>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Recordatorios de metas</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Alertas de materias próximas a vencer</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Notificaciones de logros</span>
                   </div>
                 </div>
@@ -240,7 +240,7 @@ export default function CaracteristicasPage() {
         <section className="mb-20">
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-3 mb-4">
-              <Share2 className="h-8 w-8 text-[#40C9A9]" />
+              <Share2 className="h-8 w-8 text-[var(--accent-hex)]" />
               <h2 className="text-3xl font-special text-white">Plataforma Colaborativa</h2>
             </div>
             <p className="text-white/70 text-lg">
@@ -249,11 +249,11 @@ export default function CaracteristicasPage() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card className="bg-[#354B3A] border-white/10 hover:border-[#40C9A9]/30 transition-all">
+            <Card className="bg-[var(--mygreen-light)] border-white/10 hover:border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] transition-all">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[#40C9A9]/10 rounded-lg">
-                    <FileText className="h-6 w-6 text-[#40C9A9]" />
+                  <div className="p-2 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-lg">
+                    <FileText className="h-6 w-6 text-[var(--accent-hex)]" />
                   </div>
                   <CardTitle className="text-white">Subir Caletas</CardTitle>
                 </div>
@@ -264,26 +264,26 @@ export default function CaracteristicasPage() {
                 </CardDescription>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Subida de PDFs e imágenes</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Moderación automática con IA</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Organización por materias</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-[#354B3A] border-white/10 hover:border-[#40C9A9]/30 transition-all">
+            <Card className="bg-[var(--mygreen-light)] border-white/10 hover:border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] transition-all">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[#40C9A9]/10 rounded-lg">
-                    <Search className="h-6 w-6 text-[#40C9A9]" />
+                  <div className="p-2 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-lg">
+                    <Search className="h-6 w-6 text-[var(--accent-hex)]" />
                   </div>
                   <CardTitle className="text-white">Descubrir Recursos</CardTitle>
                 </div>
@@ -294,26 +294,26 @@ export default function CaracteristicasPage() {
                 </CardDescription>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Búsqueda avanzada por materias</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Filtros por tipo de contenido</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Recursos populares y destacados</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-[#354B3A] border-white/10 hover:border-[#40C9A9]/30 transition-all">
+            <Card className="bg-[var(--mygreen-light)] border-white/10 hover:border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] transition-all">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[#40C9A9]/10 rounded-lg">
-                    <Heart className="h-6 w-6 text-[#40C9A9]" />
+                  <div className="p-2 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-lg">
+                    <Heart className="h-6 w-6 text-[var(--accent-hex)]" />
                   </div>
                   <CardTitle className="text-white">Favoritos</CardTitle>
                 </div>
@@ -324,26 +324,26 @@ export default function CaracteristicasPage() {
                 </CardDescription>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Marcar recursos como favoritos</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Organización personalizada</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Acceso rápido desde dashboard</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-[#354B3A] border-white/10 hover:border-[#40C9A9]/30 transition-all">
+            <Card className="bg-[var(--mygreen-light)] border-white/10 hover:border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] transition-all">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[#40C9A9]/10 rounded-lg">
-                    <MessageSquare className="h-6 w-6 text-[#40C9A9]" />
+                  <div className="p-2 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-lg">
+                    <MessageSquare className="h-6 w-6 text-[var(--accent-hex)]" />
                   </div>
                   <CardTitle className="text-white">Comentarios</CardTitle>
                 </div>
@@ -354,26 +354,26 @@ export default function CaracteristicasPage() {
                 </CardDescription>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Sistema de comentarios</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Valoraciones con estrellas</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Comunidad colaborativa</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-[#354B3A] border-white/10 hover:border-[#40C9A9]/30 transition-all">
+            <Card className="bg-[var(--mygreen-light)] border-white/10 hover:border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] transition-all">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[#40C9A9]/10 rounded-lg">
-                    <Download className="h-6 w-6 text-[#40C9A9]" />
+                  <div className="p-2 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-lg">
+                    <Download className="h-6 w-6 text-[var(--accent-hex)]" />
                   </div>
                   <CardTitle className="text-white">Descargas</CardTitle>
                 </div>
@@ -384,26 +384,26 @@ export default function CaracteristicasPage() {
                 </CardDescription>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Descarga directa de archivos</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Almacenamiento seguro</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Acceso sin conexión</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-[#354B3A] border-white/10 hover:border-[#40C9A9]/30 transition-all">
+            <Card className="bg-[var(--mygreen-light)] border-white/10 hover:border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] transition-all">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[#40C9A9]/10 rounded-lg">
-                    <Shield className="h-6 w-6 text-[#40C9A9]" />
+                  <div className="p-2 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-lg">
+                    <Shield className="h-6 w-6 text-[var(--accent-hex)]" />
                   </div>
                   <CardTitle className="text-white">Moderación IA</CardTitle>
                 </div>
@@ -414,15 +414,15 @@ export default function CaracteristicasPage() {
                 </CardDescription>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Análisis automático de contenido</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Filtrado de contenido inapropiado</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Comunidad académica segura</span>
                   </div>
                 </div>
@@ -435,7 +435,7 @@ export default function CaracteristicasPage() {
         <section className="mb-20">
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-3 mb-4">
-              <Brain className="h-8 w-8 text-[#40C9A9]" />
+              <Brain className="h-8 w-8 text-[var(--accent-hex)]" />
               <h2 className="text-3xl font-special text-white">Herramientas de Inteligencia Artificial</h2>
             </div>
             <p className="text-white/70 text-lg">
@@ -444,11 +444,11 @@ export default function CaracteristicasPage() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card className="bg-[#354B3A] border-white/10 hover:border-[#40C9A9]/30 transition-all">
+            <Card className="bg-[var(--mygreen-light)] border-white/10 hover:border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] transition-all">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[#40C9A9]/10 rounded-lg">
-                    <FileText className="h-6 w-6 text-[#40C9A9]" />
+                  <div className="p-2 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-lg">
+                    <FileText className="h-6 w-6 text-[var(--accent-hex)]" />
                   </div>
                   <CardTitle className="text-white">Fichas de Estudio</CardTitle>
                 </div>
@@ -459,26 +459,26 @@ export default function CaracteristicasPage() {
                 </CardDescription>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Generación automática de flashcards</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Basado en tus caletas favoritas</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Personalización por materia</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-[#354B3A] border-white/10 hover:border-[#40C9A9]/30 transition-all">
+            <Card className="bg-[var(--mygreen-light)] border-white/10 hover:border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] transition-all">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[#40C9A9]/10 rounded-lg">
-                    <BookOpen className="h-6 w-6 text-[#40C9A9]" />
+                  <div className="p-2 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-lg">
+                    <BookOpen className="h-6 w-6 text-[var(--accent-hex)]" />
                   </div>
                   <CardTitle className="text-white">Resúmenes de PDF</CardTitle>
                 </div>
@@ -489,26 +489,26 @@ export default function CaracteristicasPage() {
                 </CardDescription>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Análisis completo de documentos</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Extracción de puntos clave</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Resúmenes estructurados</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-[#354B3A] border-white/10 hover:border-[#40C9A9]/30 transition-all">
+            <Card className="bg-[var(--mygreen-light)] border-white/10 hover:border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] transition-all">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[#40C9A9]/10 rounded-lg">
-                    <Target className="h-6 w-6 text-[#40C9A9]" />
+                  <div className="p-2 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-lg">
+                    <Target className="h-6 w-6 text-[var(--accent-hex)]" />
                   </div>
                   <CardTitle className="text-white">Cuestionarios</CardTitle>
                 </div>
@@ -519,15 +519,15 @@ export default function CaracteristicasPage() {
                 </CardDescription>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Generación automática de preguntas</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Diferentes tipos de preguntas</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Guardado opcional de cuestionarios</span>
                   </div>
                 </div>
@@ -540,7 +540,7 @@ export default function CaracteristicasPage() {
         <section className="mb-20">
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-3 mb-4">
-              <Zap className="h-8 w-8 text-[#40C9A9]" />
+              <Zap className="h-8 w-8 text-[var(--accent-hex)]" />
               <h2 className="text-3xl font-special text-white">Características Técnicas</h2>
             </div>
             <p className="text-white/70 text-lg">
@@ -550,55 +550,55 @@ export default function CaracteristicasPage() {
 
           <div className="grid md:grid-cols-2 gap-8">
             <div className="space-y-6">
-              <Card className="bg-[#354B3A] border-white/10">
+              <Card className="bg-[var(--mygreen-light)] border-white/10">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
-                    <Shield className="h-5 w-5 text-[#40C9A9]" />
+                    <Shield className="h-5 w-5 text-[var(--accent-hex)]" />
                     Seguridad y Privacidad
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex items-center gap-2 text-sm text-white/70">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Autenticación segura con NextAuth.js</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/70">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Protección de rutas y datos</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/70">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Almacenamiento seguro en la nube</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/70">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Cumplimiento de estándares de privacidad</span>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="bg-[#354B3A] border-white/10">
+              <Card className="bg-[var(--mygreen-light)] border-white/10">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5 text-[#40C9A9]" />
+                    <TrendingUp className="h-5 w-5 text-[var(--accent-hex)]" />
                     Rendimiento
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex items-center gap-2 text-sm text-white/70">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Optimización con Next.js 15</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/70">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Base de datos PostgreSQL (Neon)</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/70">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Carga rápida de archivos</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/70">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Interfaz responsive y fluida</span>
                   </div>
                 </CardContent>
@@ -606,55 +606,55 @@ export default function CaracteristicasPage() {
             </div>
 
             <div className="space-y-6">
-              <Card className="bg-[#354B3A] border-white/10">
+              <Card className="bg-[var(--mygreen-light)] border-white/10">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
-                    <Users className="h-5 w-5 text-[#40C9A9]" />
+                    <Users className="h-5 w-5 text-[var(--accent-hex)]" />
                     Experiencia de Usuario
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex items-center gap-2 text-sm text-white/70">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Interfaz moderna y intuitiva</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/70">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Diseño responsive para todos los dispositivos</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/70">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Navegación fluida y accesible</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/70">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Feedback visual en tiempo real</span>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="bg-[#354B3A] border-white/10">
+              <Card className="bg-[var(--mygreen-light)] border-white/10">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-[#40C9A9]" />
+                    <Calendar className="h-5 w-5 text-[var(--accent-hex)]" />
                     Integración y Compatibilidad
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex items-center gap-2 text-sm text-white/70">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Compatible con múltiples navegadores</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/70">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Funciona en dispositivos móviles</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/70">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Integración con OpenAI para IA</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/70">
-                    <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>API RESTful para futuras integraciones</span>
                   </div>
                 </CardContent>
@@ -665,7 +665,7 @@ export default function CaracteristicasPage() {
 
         {/* CTA Final */}
         <section className="text-center">
-          <Card className="bg-[#354B3A] border-[#40C9A9]/30 max-w-2xl mx-auto">
+          <Card className="bg-[var(--mygreen-light)] border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] max-w-2xl mx-auto">
             <CardHeader>
               <CardTitle className="text-2xl font-special text-white mb-4">
                 ¿Listo para transformar tu experiencia académica?
@@ -677,7 +677,7 @@ export default function CaracteristicasPage() {
             <CardContent className="space-y-4">
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href="/auth/register">
-                  <Button className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white px-8 py-3 text-lg">
+                  <Button className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white px-8 py-3 text-lg">
                     Comenzar Ahora
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>

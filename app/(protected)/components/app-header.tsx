@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, LogOut, Heart, Upload, BarChart3, User, ShieldCheck, CreditCard } from "lucide-react";
+import { Bell, LogOut, Heart, BarChart3, User, ShieldCheck, CreditCard } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -71,7 +71,7 @@ export function DashboardHeader({ session }: AppHeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 z-20 w-full shrink-0 border-b border-white/10 bg-[#203324] py-2 md:h-16 md:py-4">
+    <header className="sticky top-0 z-20 w-full shrink-0 border-b border-white/10 bg-[var(--mygreen)] py-2 md:h-16 md:py-4">
       <div className="flex min-w-0 flex-wrap items-center gap-2 px-2 md:h-full md:flex-nowrap md:justify-between md:gap-4 md:px-4">
         <SidebarTrigger
           className="order-1 shrink-0 text-white hover:bg-white/10"
@@ -89,22 +89,17 @@ export function DashboardHeader({ session }: AppHeaderProps) {
               <Heart className="h-4 w-4 md:h-5 md:w-5" />
             </Button>
           </Link>
-          <Link href="/caletas/crear" className="hidden sm:block">
-            <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 h-8 w-8 md:h-10 md:w-10 cursor-pointer">
-              <Upload className="h-4 w-4 md:h-5 md:w-5" />
-            </Button>
-          </Link>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 relative h-8 w-8 md:h-10 md:w-10 cursor-pointer">
                 <Bell className="h-4 w-4 md:h-5 md:w-5" />
                 {notifications.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-[#40C9A9] text-xs text-white rounded-full px-1.5 py-0.5 font-bold border-2 border-[#203324]">{notifications.length}</span>
+                  <span className="absolute -top-1 -right-1 bg-[var(--accent-hex)] text-xs text-white rounded-full px-1.5 py-0.5 font-bold border-2 border-[var(--mygreen)]">{notifications.length}</span>
                 )}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" sideOffset={8} className="w-80 max-w-[calc(100vw-1rem)]">
-              <div className="p-2 font-bold text-[#40C9A9]">Notificaciones</div>
+              <div className="p-2 font-bold text-[var(--accent-hex)]">Notificaciones</div>
               {loading ? (
                 <div className="p-4 text-center text-white/70">Cargando...</div>
               ) : notifications.length === 0 ? (
@@ -130,10 +125,10 @@ export function DashboardHeader({ session }: AppHeaderProps) {
           </DropdownMenu>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-full p-0 w-8 h-8 md:w-10 md:h-10 bg-[#40C9A9] text-white hover:bg-[#40C9A9]/80 cursor-pointer">
+              <Button variant="ghost" size="icon" className="rounded-full p-0 w-8 h-8 md:w-10 md:h-10 bg-[var(--accent-hex)] text-white hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] cursor-pointer">
                 <Avatar className="h-6 w-6 md:h-8 md:w-8">
                   <AvatarImage src={session?.user?.image || "/globe.svg"} alt={session?.user?.name || "Usuario"} />
-                  <AvatarFallback className="bg-[#40C9A9] text-white text-xs md:text-sm font-semibold">
+                  <AvatarFallback className="bg-[var(--accent-hex)] text-white text-xs md:text-sm font-semibold">
                     {session?.user?.name ? getUserInitials(session.user.name) : "US"}
                   </AvatarFallback>
                 </Avatar>
@@ -141,15 +136,22 @@ export function DashboardHeader({ session }: AppHeaderProps) {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" sideOffset={8} className="w-56 min-w-[12rem] max-w-[calc(100vw-1rem)]">
               <DropdownMenuItem asChild className="cursor-pointer gap-2">
+                <Link href="/perfil">
+                  <User className="h-4 w-4 text-[var(--accent-hex)]" />
+                  <span>Ir a mi perfil</span>
+                </Link>
+              </DropdownMenuItem>
+
+              <DropdownMenuItem asChild className="cursor-pointer gap-2">
                 <Link href="/suscripcion">
-                  <CreditCard className="h-4 w-4 text-[#40C9A9]" />
+                  <CreditCard className="h-4 w-4 text-[var(--accent-hex)]" />
                   <span>Suscripción</span>
                 </Link>
               </DropdownMenuItem>
 
               <DropdownMenuItem asChild className="cursor-pointer gap-2">
                 <Link href="/caletas/estadisticas">
-                  <BarChart3 className="h-4 w-4 text-[#40C9A9]" />
+                  <BarChart3 className="h-4 w-4 text-[var(--accent-hex)]" />
                   <span>Estadísticas de mis caletas</span>
                 </Link>
               </DropdownMenuItem>
@@ -157,7 +159,7 @@ export function DashboardHeader({ session }: AppHeaderProps) {
               {isAdmin ? (
                 <DropdownMenuItem asChild className="cursor-pointer gap-2">
                   <Link href="/admin/estadisticas">
-                    <ShieldCheck className="h-4 w-4 text-[#40C9A9]" />
+                    <ShieldCheck className="h-4 w-4 text-[var(--accent-hex)]" />
                     <span>Panel admin</span>
                   </Link>
                 </DropdownMenuItem>
@@ -165,7 +167,7 @@ export function DashboardHeader({ session }: AppHeaderProps) {
 
               <DropdownMenuItem asChild className="cursor-pointer gap-2">
                 <Link href="/ajustes">
-                  <User className="h-4 w-4 text-[#40C9A9]" />
+                  <User className="h-4 w-4 text-[var(--accent-hex)]" />
                   <span>Ajustes</span>
                 </Link>
               </DropdownMenuItem>

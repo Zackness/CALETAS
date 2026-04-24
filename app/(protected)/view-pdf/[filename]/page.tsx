@@ -36,7 +36,7 @@ export default function ViewPDFPage() {
   useEffect(() => {
     const loadFileInfo = async () => {
       try {
-        const filename = params.filename as string;
+        const filename = (params?.filename as string | undefined) ?? "";
         if (!filename) {
           setError("Nombre de archivo no válido");
           return;
@@ -64,10 +64,10 @@ export default function ViewPDFPage() {
       }
     };
 
-    if (params.filename) {
+    if (params?.filename) {
       loadFileInfo();
     }
-  }, [params.filename]);
+  }, [params?.filename]);
 
   if (isLoading) {
     return (
@@ -81,14 +81,14 @@ export default function ViewPDFPage() {
     return (
       <div className="min-h-screen bg-gradient-to-t from-mygreen to-mygreen-light p-4">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-[#354B3A] border-white/10 rounded-lg p-8 text-center">
+          <div className="bg-[var(--mygreen-light)] border-white/10 rounded-lg p-8 text-center">
             <div className="text-6xl mb-4">📄</div>
             <h1 className="text-2xl font-special text-white mb-4">Error al cargar el PDF</h1>
             <p className="text-white/70 mb-6">{error}</p>
             <div className="flex justify-center gap-4">
               <Button
                 onClick={() => router.back()}
-                className="bg-[#40C9A9] hover:bg-[#40C9A9]/80"
+                className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)]"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Volver
@@ -111,13 +111,13 @@ export default function ViewPDFPage() {
     return (
       <div className="min-h-screen bg-gradient-to-t from-mygreen to-mygreen-light p-4">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-[#354B3A] border-white/10 rounded-lg p-8 text-center">
+          <div className="bg-[var(--mygreen-light)] border-white/10 rounded-lg p-8 text-center">
             <div className="text-6xl mb-4">📄</div>
             <h1 className="text-2xl font-special text-white mb-4">Archivo no encontrado</h1>
             <p className="text-white/70 mb-6">No se pudo cargar la información del archivo</p>
             <Button
               onClick={() => router.push("/test-cpanel")}
-              className="bg-[#40C9A9] hover:bg-[#40C9A9]/80"
+              className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)]"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Volver a cPanel
@@ -131,7 +131,7 @@ export default function ViewPDFPage() {
   return (
     <div className="min-h-screen bg-gradient-to-t from-mygreen to-mygreen-light">
       {/* Header con información del archivo */}
-      <div className="bg-[#354B3A] border-b border-white/10 p-4">
+      <div className="bg-[var(--mygreen-light)] border-b border-white/10 p-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button

@@ -124,7 +124,7 @@ export default function EstadisticasPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-special text-white mb-2 flex items-center gap-3">
-            <BarChart3 className="w-8 h-8 text-[#40C9A9]" />
+            <BarChart3 className="w-8 h-8 text-[var(--accent-hex)]" />
             Estadísticas Académicas Detalladas
           </h1>
           <p className="text-white/70">
@@ -134,12 +134,12 @@ export default function EstadisticasPage() {
 
         {/* Métricas Principales */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-[#354B3A] border-white/10">
+          <Card className="bg-[var(--mygreen-light)] border-white/10">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-white/70">
                 Promedio General
               </CardTitle>
-              <Star className="h-4 w-4 text-[#40C9A9]" />
+              <Star className="h-4 w-4 text-[var(--accent-hex)]" />
             </CardHeader>
             <CardContent>
               <div className={`text-2xl font-bold ${getRendimientoColor(estadisticas.promedioGeneral)}`}>
@@ -151,12 +151,12 @@ export default function EstadisticasPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-[#354B3A] border-white/10">
+          <Card className="bg-[var(--mygreen-light)] border-white/10">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-white/70">
                 Progreso de Carrera
               </CardTitle>
-              <Target className="h-4 w-4 text-[#40C9A9]" />
+              <Target className="h-4 w-4 text-[var(--accent-hex)]" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-white">
@@ -169,12 +169,12 @@ export default function EstadisticasPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-[#354B3A] border-white/10">
+          <Card className="bg-[var(--mygreen-light)] border-white/10">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-white/70">
                 Créditos Aprobados
               </CardTitle>
-              <Award className="h-4 w-4 text-[#40C9A9]" />
+              <Award className="h-4 w-4 text-[var(--accent-hex)]" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-white">
@@ -186,12 +186,12 @@ export default function EstadisticasPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-[#354B3A] border-white/10">
+          <Card className="bg-[var(--mygreen-light)] border-white/10">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-white/70">
                 Total Materias
               </CardTitle>
-              <BookOpen className="h-4 w-4 text-[#40C9A9]" />
+              <BookOpen className="h-4 w-4 text-[var(--accent-hex)]" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-white">
@@ -206,27 +206,27 @@ export default function EstadisticasPage() {
 
         {/* Tabs para diferentes análisis */}
         <Tabs defaultValue="general" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 bg-[#354B3A] border-white/10">
-            <TabsTrigger value="general" className="text-white data-[state=active]:bg-[#40C9A9] data-[state=active]:text-white">
+          <TabsList className="grid w-full grid-cols-4 bg-[var(--mygreen-light)] border-white/10">
+            <TabsTrigger value="general" className="text-white data-[state=active]:bg-[var(--accent-hex)] data-[state=active]:text-white">
               General
             </TabsTrigger>
-            <TabsTrigger value="semestral" className="text-white data-[state=active]:bg-[#40C9A9] data-[state=active]:text-white">
+            <TabsTrigger value="semestral" className="text-white data-[state=active]:bg-[var(--accent-hex)] data-[state=active]:text-white">
               Por Semestre
             </TabsTrigger>
-            <TabsTrigger value="estados" className="text-white data-[state=active]:bg-[#40C9A9] data-[state=active]:text-white">
+            <TabsTrigger value="estados" className="text-white data-[state=active]:bg-[var(--accent-hex)] data-[state=active]:text-white">
               Estados
             </TabsTrigger>
-            <TabsTrigger value="rendimiento" className="text-white data-[state=active]:bg-[#40C9A9] data-[state=active]:text-white">
+            <TabsTrigger value="rendimiento" className="text-white data-[state=active]:bg-[var(--accent-hex)] data-[state=active]:text-white">
               Rendimiento
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="general" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="bg-[#354B3A] border-white/10">
+              <Card className="bg-[var(--mygreen-light)] border-white/10">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
-                    <PieChart className="w-5 h-5 text-[#40C9A9]" />
+                    <PieChart className="w-5 h-5 text-[var(--accent-hex)]" />
                     Distribución por Estado
                   </CardTitle>
                 </CardHeader>
@@ -272,10 +272,10 @@ export default function EstadisticasPage() {
                 </CardContent>
               </Card>
 
-              <Card className="bg-[#354B3A] border-white/10">
+              <Card className="bg-[var(--mygreen-light)] border-white/10">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
-                    <Activity className="w-5 h-5 text-[#40C9A9]" />
+                    <Activity className="w-5 h-5 text-[var(--accent-hex)]" />
                     Progreso de Créditos
                   </CardTitle>
                 </CardHeader>
@@ -308,10 +308,10 @@ export default function EstadisticasPage() {
           </TabsContent>
 
           <TabsContent value="semestral" className="space-y-6">
-            <Card className="bg-[#354B3A] border-white/10">
+            <Card className="bg-[var(--mygreen-light)] border-white/10">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-[#40C9A9]" />
+                  <Calendar className="w-5 h-5 text-[var(--accent-hex)]" />
                   Rendimiento por Semestre
                 </CardTitle>
               </CardHeader>
@@ -320,13 +320,13 @@ export default function EstadisticasPage() {
                   {estadisticas.rendimientoPorSemestre.map((semestre) => (
                     <div
                       key={semestre.semestre}
-                      className="p-4 bg-[#1C2D20] rounded-lg border border-white/5"
+                      className="p-4 bg-[var(--mygreen-dark)] rounded-lg border border-white/5"
                     >
                       <div className="flex items-center justify-between mb-3">
                         <h4 className="text-white font-medium">
                           {semestre.semestre}
                         </h4>
-                        <Badge className="bg-[#40C9A9]/10 text-[#40C9A9] border-[#40C9A9]/20">
+                        <Badge className="bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] text-[var(--accent-hex)] border-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)]">
                           {semestre.materias} materias
                         </Badge>
                       </div>
@@ -359,10 +359,10 @@ export default function EstadisticasPage() {
           </TabsContent>
 
           <TabsContent value="estados" className="space-y-6">
-            <Card className="bg-[#354B3A] border-white/10">
+            <Card className="bg-[var(--mygreen-light)] border-white/10">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
-                  <BookOpen className="w-5 h-5 text-[#40C9A9]" />
+                  <BookOpen className="w-5 h-5 text-[var(--accent-hex)]" />
                   Análisis de Estados
                 </CardTitle>
               </CardHeader>
@@ -371,7 +371,7 @@ export default function EstadisticasPage() {
                   {Object.entries(estadisticas.materiasPorEstado).map(([estado, cantidad]) => (
                     <div
                       key={estado}
-                      className="p-4 bg-[#1C2D20] rounded-lg border border-white/5"
+                      className="p-4 bg-[var(--mygreen-dark)] rounded-lg border border-white/5"
                     >
                       <div className="flex items-center justify-between mb-2">
                         <Badge className={getEstadoColor(estado)}>
@@ -396,30 +396,30 @@ export default function EstadisticasPage() {
           </TabsContent>
 
           <TabsContent value="rendimiento" className="space-y-6">
-            <Card className="bg-[#354B3A] border-white/10">
+            <Card className="bg-[var(--mygreen-light)] border-white/10">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-[#40C9A9]" />
+                  <TrendingUp className="w-5 h-5 text-[var(--accent-hex)]" />
                   Análisis de Rendimiento
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="text-center p-4 bg-[#1C2D20] rounded-lg border border-white/5">
+                    <div className="text-center p-4 bg-[var(--mygreen-dark)] rounded-lg border border-white/5">
                       <div className="text-2xl font-bold text-green-300 mb-1">
                         {estadisticas.promedioGeneral >= 16 ? "Excelente" : 
                          estadisticas.promedioGeneral >= 14 ? "Bueno" : "Necesita Mejorar"}
                       </div>
                       <p className="text-white/70 text-sm">Nivel de Rendimiento</p>
                     </div>
-                    <div className="text-center p-4 bg-[#1C2D20] rounded-lg border border-white/5">
+                    <div className="text-center p-4 bg-[var(--mygreen-dark)] rounded-lg border border-white/5">
                       <div className="text-2xl font-bold text-white mb-1">
                         {estadisticas.progresoCarrera.toFixed(1)}%
                       </div>
                       <p className="text-white/70 text-sm">Progreso de Carrera</p>
                     </div>
-                    <div className="text-center p-4 bg-[#1C2D20] rounded-lg border border-white/5">
+                    <div className="text-center p-4 bg-[var(--mygreen-dark)] rounded-lg border border-white/5">
                       <div className="text-2xl font-bold text-white mb-1">
                         {estadisticas.creditosAprobados}
                       </div>
@@ -427,7 +427,7 @@ export default function EstadisticasPage() {
                     </div>
                   </div>
 
-                  <div className="p-4 bg-[#1C2D20] rounded-lg border border-white/5">
+                  <div className="p-4 bg-[var(--mygreen-dark)] rounded-lg border border-white/5">
                     <h4 className="text-white font-medium mb-3">Recomendaciones</h4>
                     <div className="space-y-2 text-sm text-white/70">
                       {estadisticas.promedioGeneral < 14 && (

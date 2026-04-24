@@ -36,10 +36,10 @@ export default async function BlogPostDetailPage({
           Volver al blog
         </Link>
 
-        <Card className="bg-[#354B3A] border-white/10">
+        <Card className="bg-[var(--mygreen-light)] border-white/10">
           <CardContent className="p-6 md:p-8">
             <div className="mb-4 flex flex-wrap items-center gap-2">
-              <Badge className="bg-[#40C9A9]/20 text-[#40C9A9] border-[#40C9A9]/30">
+              <Badge className="bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)] text-[var(--accent-hex)] border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)]">
                 {post.category?.name || "General"}
               </Badge>
               <span className="inline-flex items-center gap-1 text-sm text-white/60">

@@ -154,10 +154,10 @@ export default function FichasIA() {
 
         {!fichas ? (
           /* Selección de Recurso */
-          <Card className="bg-[#354B3A] border-white/10 max-w-2xl mx-auto">
+          <Card className="bg-[var(--mygreen-light)] border-white/10 max-w-2xl mx-auto">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
-                <Brain className="w-5 h-5 text-[#40C9A9]" />
+                <Brain className="w-5 h-5 text-[var(--accent-hex)]" />
                 Generar Fichas de Estudio
               </CardTitle>
               <CardDescription className="text-white/70">
@@ -168,10 +168,10 @@ export default function FichasIA() {
             <div className="space-y-2">
                 <label className="text-white font-medium">Seleccionar Recurso</label>
                 <Select value={recursoSeleccionado} onValueChange={setRecursoSeleccionado}>
-                  <SelectTrigger className="bg-[#1C2D20] border-white/10 text-white">
+                  <SelectTrigger className="bg-[var(--mygreen-dark)] border-white/10 text-white">
                     <SelectValue placeholder="Elige un recurso de tus caletas" />
                   </SelectTrigger>
-                  <SelectContent className="bg-[#1C2D20] border-white/10">
+                  <SelectContent className="bg-[var(--mygreen-dark)] border-white/10">
                     {recursos.map((recurso) => {
                       const tipoRecurso = getTipoRecurso(recurso);
                       return (
@@ -194,7 +194,7 @@ export default function FichasIA() {
 
             <Button
                 onClick={generarFichas}
-                className="w-full bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                className="w-full bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
                 disabled={!recursoSeleccionado || generando}
             >
                 {generando ? (
@@ -215,7 +215,7 @@ export default function FichasIA() {
           /* Fichas Generadas */
           <div className="max-w-6xl mx-auto space-y-6">
             {/* Header de las Fichas */}
-            <Card className="bg-[#354B3A] border-white/10">
+            <Card className="bg-[var(--mygreen-light)] border-white/10">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
@@ -229,7 +229,7 @@ export default function FichasIA() {
                       variant="outline"
                       size="sm"
                       onClick={reiniciar}
-                      className="border-[#40C9A9] text-[#40C9A9] hover:bg-[#40C9A9] hover:text-white"
+                      className="border-[var(--accent-hex)] text-[var(--accent-hex)] hover:bg-[var(--accent-hex)] hover:text-white"
                     >
                       <RotateCcw className="w-4 h-4 mr-1" />
                       Generar Nuevas
@@ -238,7 +238,7 @@ export default function FichasIA() {
                       size="sm"
                       onClick={guardarFichas}
                       disabled={loading}
-                      className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                      className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
                     >
                       <Save className="w-4 h-4 mr-1" />
                       {loading ? "Guardando..." : "Guardar Fichas"}
@@ -251,10 +251,10 @@ export default function FichasIA() {
             {/* Lista de Fichas */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {fichas.map((ficha, index) => (
-                <Card key={ficha.id} className="bg-[#354B3A] border-white/10">
+                <Card key={ficha.id} className="bg-[var(--mygreen-light)] border-white/10">
                   <CardHeader>
                     <div className="flex items-center gap-2">
-                      <FileText className="w-5 h-5 text-[#40C9A9]" />
+                      <FileText className="w-5 h-5 text-[var(--accent-hex)]" />
                       <CardTitle className="text-white">Ficha {index + 1}: {ficha.concepto}</CardTitle>
                     </div>
                   </CardHeader>
@@ -271,7 +271,7 @@ export default function FichasIA() {
                       <ul className="space-y-1">
                         {ficha.ejemplos.map((ejemplo, idx) => (
                           <li key={idx} className="text-white/70 text-sm flex items-start gap-2">
-                            <span className="text-[#40C9A9] mt-1">•</span>
+                            <span className="text-[var(--accent-hex)] mt-1">•</span>
                             {ejemplo}
                           </li>
                         ))}
@@ -283,7 +283,7 @@ export default function FichasIA() {
                       <h4 className="text-white font-medium mb-2">Puntos Clave</h4>
                       <div className="space-y-1">
                         {ficha.puntosClave.map((punto, idx) => (
-                          <Badge key={idx} variant="secondary" className="bg-[#1C2D20] text-white/80 border-white/10 mr-1 mb-1">
+                          <Badge key={idx} variant="secondary" className="bg-[var(--mygreen-dark)] text-white/80 border-white/10 mr-1 mb-1">
                             {punto}
                           </Badge>
                         ))}

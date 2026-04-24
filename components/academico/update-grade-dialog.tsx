@@ -85,12 +85,12 @@ export function UpdateGradeDialog({ materiaEstudiante, onUpdate }: UpdateGradeDi
         <Button 
           variant="outline" 
           size="sm"
-          className="border-[#40C9A9] text-[#40C9A9] hover:bg-[#40C9A9] hover:text-white"
+          className="border-[var(--accent-hex)] text-[var(--accent-hex)] hover:bg-[var(--accent-hex)] hover:text-white"
         >
           Actualizar Nota
         </Button>
       </DialogTrigger>
-      <DialogContent className="bg-[#354B3A] border-white/10 text-white">
+      <DialogContent className="bg-[var(--mygreen-light)] border-white/10 text-white">
         <DialogHeader>
           <DialogTitle className="text-white">
             Actualizar Calificación
@@ -115,7 +115,7 @@ export function UpdateGradeDialog({ materiaEstudiante, onUpdate }: UpdateGradeDi
                 value={nota}
                 onChange={(e) => setNota(e.target.value)}
                 placeholder="0.0 - 20.0"
-                className="bg-[#1C2D20] border-white/10 text-white placeholder:text-white/50"
+                className="bg-[var(--mygreen-dark)] border-white/10 text-white placeholder:text-white/50"
               />
             </div>
             
@@ -124,10 +124,10 @@ export function UpdateGradeDialog({ materiaEstudiante, onUpdate }: UpdateGradeDi
                 Estado
               </Label>
               <Select value={estado} onValueChange={setEstado}>
-                <SelectTrigger className="bg-[#1C2D20] border-white/10 text-white">
+                <SelectTrigger className="bg-[var(--mygreen-dark)] border-white/10 text-white">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-[#1C2D20] border-white/10">
+                <SelectContent className="bg-[var(--mygreen-dark)] border-white/10">
                   <SelectItem value={EstadoMateria.NO_CURSADA} className="text-white">
                     No Cursada
                   </SelectItem>
@@ -157,7 +157,7 @@ export function UpdateGradeDialog({ materiaEstudiante, onUpdate }: UpdateGradeDi
               value={observaciones}
               onChange={(e) => setObservaciones(e.target.value)}
               placeholder="Observaciones adicionales..."
-              className="bg-[#1C2D20] border-white/10 text-white placeholder:text-white/50"
+              className="bg-[var(--mygreen-dark)] border-white/10 text-white placeholder:text-white/50"
               rows={3}
             />
           </div>
@@ -182,7 +182,7 @@ export function UpdateGradeDialog({ materiaEstudiante, onUpdate }: UpdateGradeDi
             <Button
               type="submit"
               disabled={loading}
-              className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+              className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
             >
               {loading ? "Actualizando..." : "Actualizar"}
             </Button>

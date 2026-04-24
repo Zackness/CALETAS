@@ -22,10 +22,10 @@ export function MarkdownMath({ children, className, style }: MarkdownMathProps) 
           "prose prose-invert prose-sm md:prose-base max-w-none text-white/90",
           "prose-headings:text-white prose-headings:font-semibold",
           "prose-p:leading-7 prose-li:leading-7",
-          "prose-a:text-[#40C9A9] prose-strong:text-white",
-          "prose-pre:bg-[#0F1A24] prose-pre:border prose-pre:border-white/10",
-          "prose-code:text-[#9FE9D6]",
-          "prose-blockquote:border-[#40C9A9]/40 prose-blockquote:text-white/75",
+          "prose-a:text-[var(--accent-hex)] prose-strong:text-white",
+          "prose-pre:bg-[var(--prose-pre-bg)] prose-pre:border prose-pre:border-white/10",
+          "prose-code:text-[var(--prose-code-text)]",
+          "prose-blockquote:border-[color-mix(in_oklab,var(--accent-hex)_40%,transparent)] prose-blockquote:text-white/75",
           "prose-hr:border-white/10",
         ].join(" ")
       }

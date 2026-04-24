@@ -5,6 +5,7 @@ import { ProtectedAppShell } from "./components/protected-app-shell";
 import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
+import { ThemeProvider } from "@/components/theme-provider";
 
 export const metadata: Metadata = {
   title: "Dashboard - Caletas",
@@ -45,15 +46,17 @@ export default async function ProtectedLayout({
   const userEmail = session.user.email ?? "";
 
   return (
-    <html lang="es">
+    <html lang="es" suppressHydrationWarning>
       <body>
-        <ProtectedAppShell
-          session={session}
-          showVerificationBanner={showVerificationBanner}
-          userEmail={userEmail}
-        >
-          {children}
-        </ProtectedAppShell>
+        <ThemeProvider>
+          <ProtectedAppShell
+            session={session}
+            showVerificationBanner={showVerificationBanner}
+            userEmail={userEmail}
+          >
+            {children}
+          </ProtectedAppShell>
+        </ThemeProvider>
       </body>
     </html>
   );

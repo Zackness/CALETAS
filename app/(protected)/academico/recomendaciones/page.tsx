@@ -120,7 +120,7 @@ export default function RecomendacionesPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-special text-white mb-2 flex items-center gap-3">
-            <Lightbulb className="w-8 h-8 text-[#40C9A9]" />
+            <Lightbulb className="w-8 h-8 text-[var(--accent-hex)]" />
             Recomendaciones Académicas
           </h1>
           <p className="text-white/70">
@@ -131,12 +131,12 @@ export default function RecomendacionesPage() {
         {/* Estadísticas */}
         {estadisticas && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <Card className="bg-[#354B3A] border-white/10">
+            <Card className="bg-[var(--mygreen-light)] border-white/10">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-white/70">
                   Progreso de Carrera
                 </CardTitle>
-                <TrendingUp className="h-4 w-4 text-[#40C9A9]" />
+                <TrendingUp className="h-4 w-4 text-[var(--accent-hex)]" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-white">
@@ -148,12 +148,12 @@ export default function RecomendacionesPage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-[#354B3A] border-white/10">
+            <Card className="bg-[var(--mygreen-light)] border-white/10">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-white/70">
                   Materias Disponibles
                 </CardTitle>
-                <BookOpen className="h-4 w-4 text-[#40C9A9]" />
+                <BookOpen className="h-4 w-4 text-[var(--accent-hex)]" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-white">
@@ -165,12 +165,12 @@ export default function RecomendacionesPage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-[#354B3A] border-white/10">
+            <Card className="bg-[var(--mygreen-light)] border-white/10">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-white/70">
                   Materias Aprobadas
                 </CardTitle>
-                <Award className="h-4 w-4 text-[#40C9A9]" />
+                <Award className="h-4 w-4 text-[var(--accent-hex)]" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-white">
@@ -182,12 +182,12 @@ export default function RecomendacionesPage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-[#354B3A] border-white/10">
+            <Card className="bg-[var(--mygreen-light)] border-white/10">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-white/70">
                   En Curso
                 </CardTitle>
-                <Clock className="h-4 w-4 text-[#40C9A9]" />
+                <Clock className="h-4 w-4 text-[var(--accent-hex)]" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-white">
@@ -203,10 +203,10 @@ export default function RecomendacionesPage() {
 
         {/* Próximo Semestre */}
         {proximoSemestre && (
-          <Card className="bg-[#354B3A] border-white/10 mb-8">
+          <Card className="bg-[var(--mygreen-light)] border-white/10 mb-8">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-[#40C9A9]" />
+                <Calendar className="w-5 h-5 text-[var(--accent-hex)]" />
                 Próximo Semestre Recomendado: {proximoSemestre}
               </CardTitle>
               <CardDescription className="text-white/70">
@@ -219,7 +219,7 @@ export default function RecomendacionesPage() {
         {/* Recomendaciones */}
         <div className="space-y-6">
           {recomendaciones.map((recomendacion, index) => (
-            <Card key={index} className="bg-[#354B3A] border-white/10">
+            <Card key={index} className="bg-[var(--mygreen-light)] border-white/10">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -241,13 +241,13 @@ export default function RecomendacionesPage() {
                   {recomendacion.materias.map((materia) => (
                     <div
                       key={materia.id}
-                      className="p-4 bg-[#1C2D20] rounded-lg border border-white/5 hover:border-[#40C9A9]/30 transition-colors"
+                      className="p-4 bg-[var(--mygreen-dark)] rounded-lg border border-white/5 hover:border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] transition-colors"
                     >
                       <div className="flex items-center justify-between mb-2">
                         <span className="font-medium text-white text-sm">
                           {materia.codigo}
                         </span>
-                        <Badge className="bg-[#40C9A9]/10 text-[#40C9A9] border-[#40C9A9]/20 text-xs">
+                        <Badge className="bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] text-[var(--accent-hex)] border-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)] text-xs">
                           {materia.semestre}
                         </Badge>
                       </div>
@@ -273,7 +273,7 @@ export default function RecomendacionesPage() {
           ))}
 
           {recomendaciones.length === 0 && (
-            <Card className="bg-[#354B3A] border-white/10">
+            <Card className="bg-[var(--mygreen-light)] border-white/10">
               <CardContent className="text-center py-12">
                 <Lightbulb className="w-16 h-16 mx-auto mb-4 text-white/30" />
                 <h3 className="text-xl font-medium text-white mb-2">
@@ -283,7 +283,7 @@ export default function RecomendacionesPage() {
                   Has completado todas las materias disponibles para tu nivel actual.
                 </p>
                 <Button 
-                  className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                  className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
                   onClick={() => window.history.back()}
                 >
                   Volver al Panel Académico
@@ -294,10 +294,10 @@ export default function RecomendacionesPage() {
         </div>
 
         {/* Consejos */}
-        <Card className="bg-[#354B3A] border-white/10 mt-8">
+        <Card className="bg-[var(--mygreen-light)] border-white/10 mt-8">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
-              <Lightbulb className="w-5 h-5 text-[#40C9A9]" />
+              <Lightbulb className="w-5 h-5 text-[var(--accent-hex)]" />
               Consejos para tu Planificación
             </CardTitle>
           </CardHeader>
@@ -305,19 +305,19 @@ export default function RecomendacionesPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-3">
                 <div className="flex items-start gap-3">
-                  <div className="w-2 h-2 bg-[#40C9A9] rounded-full mt-2 flex-shrink-0"></div>
+                  <div className="w-2 h-2 bg-[var(--accent-hex)] rounded-full mt-2 flex-shrink-0"></div>
                   <p className="text-white/70 text-sm">
                     Prioriza las materias de <strong>alta prioridad</strong> para mantener un buen flujo académico
                   </p>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-2 h-2 bg-[#40C9A9] rounded-full mt-2 flex-shrink-0"></div>
+                  <div className="w-2 h-2 bg-[var(--accent-hex)] rounded-full mt-2 flex-shrink-0"></div>
                   <p className="text-white/70 text-sm">
                     Considera tu carga académica y no sobrecargues tu horario
                   </p>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-2 h-2 bg-[#40C9A9] rounded-full mt-2 flex-shrink-0"></div>
+                  <div className="w-2 h-2 bg-[var(--accent-hex)] rounded-full mt-2 flex-shrink-0"></div>
                   <p className="text-white/70 text-sm">
                     Las materias electivas te ayudan a especializarte en áreas de tu interés
                   </p>
@@ -325,19 +325,19 @@ export default function RecomendacionesPage() {
               </div>
               <div className="space-y-3">
                 <div className="flex items-start gap-3">
-                  <div className="w-2 h-2 bg-[#40C9A9] rounded-full mt-2 flex-shrink-0"></div>
+                  <div className="w-2 h-2 bg-[var(--accent-hex)] rounded-full mt-2 flex-shrink-0"></div>
                   <p className="text-white/70 text-sm">
                     Revisa los horarios y evita conflictos entre materias
                   </p>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-2 h-2 bg-[#40C9A9] rounded-full mt-2 flex-shrink-0"></div>
+                  <div className="w-2 h-2 bg-[var(--accent-hex)] rounded-full mt-2 flex-shrink-0"></div>
                   <p className="text-white/70 text-sm">
                     Consulta con tu coordinador académico para confirmar tu plan de estudios
                   </p>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-2 h-2 bg-[#40C9A9] rounded-full mt-2 flex-shrink-0"></div>
+                  <div className="w-2 h-2 bg-[var(--accent-hex)] rounded-full mt-2 flex-shrink-0"></div>
                   <p className="text-white/70 text-sm">
                     Mantén un balance entre materias teóricas y prácticas
                   </p>

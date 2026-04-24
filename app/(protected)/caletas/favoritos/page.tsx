@@ -151,7 +151,7 @@ export default function FavoritosPage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#40C9A9] mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent-hex)] mx-auto mb-4"></div>
           <p className="text-white/80">Cargando favoritos...</p>
         </div>
       </div>
@@ -175,23 +175,23 @@ export default function FavoritosPage() {
                 Volver
               </Button>
               <div>
-                <h1 className="text-3xl md:text-4xl font-special text-[#40C9A9] mb-2">Mis Favoritos</h1>
+                <h1 className="text-3xl md:text-4xl font-special text-[var(--accent-hex)] mb-2">Mis Favoritos</h1>
                 <p className="text-white/70 text-base md:text-lg">
                   Tus recursos guardados para acceso rápido
                 </p>
               </div>
             </div>
-            <Button onClick={() => router.push("/recursos")} variant="outline" className="border-[#40C9A9] text-[#40C9A9] hover:bg-[#40C9A9]/10 cursor-pointer">
+            <Button onClick={() => router.push("/recursos")} variant="outline" className="border-[var(--accent-hex)] text-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] cursor-pointer">
               <FileText className="h-4 w-4 mr-2" />
               Ver Todas las Caletas
             </Button>
           </div>
 
           {/* Búsqueda */}
-          <div className="bg-[#354B3A] border border-white/10 rounded-2xl shadow-xl p-4 md:p-6 mb-4">
+          <div className="bg-[var(--mygreen-light)] border border-white/10 rounded-2xl shadow-xl p-4 md:p-6 mb-4">
             <div className="flex items-center gap-2 mb-2">
-              <Search className="h-5 w-5 text-[#40C9A9]" />
-              <span className="font-special text-lg text-[#40C9A9]">Buscar en favoritos</span>
+              <Search className="h-5 w-5 text-[var(--accent-hex)]" />
+              <span className="font-special text-lg text-[var(--accent-hex)]">Buscar en favoritos</span>
             </div>
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-white/50" />
@@ -199,7 +199,7 @@ export default function FavoritosPage() {
                 placeholder="Buscar en tus favoritos..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg"
+                className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg"
               />
             </div>
           </div>
@@ -207,7 +207,7 @@ export default function FavoritosPage() {
 
         {/* Resultados */}
         <div className="mb-4">
-          <p className="text-[#40C9A9] font-bold">
+          <p className="text-[var(--accent-hex)] font-bold">
             {filteredRecursos.length} recurso{filteredRecursos.length !== 1 ? 's' : ''} favorito{filteredRecursos.length !== 1 ? 's' : ''}
           </p>
         </div>
@@ -215,10 +215,10 @@ export default function FavoritosPage() {
         {/* Lista de recursos favoritos */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredRecursos.map((recurso) => (
-            <div key={recurso.id} className="bg-[#354B3A] border border-white/10 rounded-2xl shadow-xl p-4 flex flex-col justify-between text-white hover:shadow-2xl transition-shadow">
+            <div key={recurso.id} className="bg-[var(--mygreen-light)] border border-white/10 rounded-2xl shadow-xl p-4 flex flex-col justify-between text-white hover:shadow-2xl transition-shadow">
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1">
-                  <h2 className="text-lg font-special text-[#40C9A9] mb-1 line-clamp-2">{recurso.titulo}</h2>
+                  <h2 className="text-lg font-special text-[var(--accent-hex)] mb-1 line-clamp-2">{recurso.titulo}</h2>
                   <p className="text-white/70 text-sm line-clamp-2 mb-1">{recurso.descripcion}</p>
                 </div>
                 <Button
@@ -237,17 +237,17 @@ export default function FavoritosPage() {
               </div>
               <div className="flex flex-col gap-2 mb-2">
                 <div className="flex items-center gap-2 text-white/80 text-xs">
-                  <BookOpen className="h-4 w-4 text-[#40C9A9]" />
+                  <BookOpen className="h-4 w-4 text-[var(--accent-hex)]" />
                   <span>{recurso.materia.nombre}</span>
                   <span className="text-white/40">|</span>
-                  <GraduationCap className="h-4 w-4 text-[#40C9A9]" />
+                  <GraduationCap className="h-4 w-4 text-[var(--accent-hex)]" />
                   <span>{recurso.materia.carrera.nombre}</span>
                 </div>
                 <div className="flex items-center gap-2 text-white/80 text-xs">
-                  <User className="h-4 w-4 text-[#40C9A9]" />
+                  <User className="h-4 w-4 text-[var(--accent-hex)]" />
                   <span>{recurso.autor.name}</span>
                   <span className="text-white/40">|</span>
-                  <Calendar className="h-4 w-4 text-[#40C9A9]" />
+                  <Calendar className="h-4 w-4 text-[var(--accent-hex)]" />
                   <span>{formatDate(recurso.createdAt)}</span>
                 </div>
               </div>
@@ -258,7 +258,7 @@ export default function FavoritosPage() {
                     href={recurso.archivoUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="ml-auto text-[#40C9A9] hover:underline text-sm font-bold cursor-pointer"
+                    className="ml-auto text-[var(--accent-hex)] hover:underline text-sm font-bold cursor-pointer"
                   >
                     Ver archivo
                   </a>

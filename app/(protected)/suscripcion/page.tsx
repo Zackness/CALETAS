@@ -90,7 +90,7 @@ export default function SuscripcionPage() {
 
   // Abrir diálogo de pago Bs si viene por URL (ej. desde /suscripcion/bs?plan=...)
   useEffect(() => {
-    const plan = searchParams.get("pagoBs") || searchParams.get("plan");
+    const plan = searchParams?.get("pagoBs") || searchParams?.get("plan");
     if (plan) {
       setPagoBsPlanId(plan);
       setPagoBsDialogOpen(true);
@@ -154,7 +154,7 @@ export default function SuscripcionPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-special text-white mb-2 flex items-center gap-2">
-            <Shield className="w-6 h-6 text-[#40C9A9]" />
+            <Shield className="w-6 h-6 text-[var(--accent-hex)]" />
             Suscripción
           </h1>
           <p className="text-white/70">
@@ -162,7 +162,7 @@ export default function SuscripcionPage() {
           </p>
         </div>
 
-        <Card className="bg-[#354B3A] border-white/10 mb-6">
+        <Card className="bg-[var(--mygreen-light)] border-white/10 mb-6">
           <CardHeader>
             <CardTitle className="text-white">Estado</CardTitle>
             <CardDescription className="text-white/70">
@@ -211,10 +211,10 @@ export default function SuscripcionPage() {
         </Card>
 
         {/* Historial y estadísticas */}
-        <Card className="bg-[#354B3A] border-white/10 mb-6">
+        <Card className="bg-[var(--mygreen-light)] border-white/10 mb-6">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-[#40C9A9]" />
+              <BarChart3 className="w-5 h-5 text-[var(--accent-hex)]" />
               Historial y estadísticas
             </CardTitle>
             <CardDescription className="text-white/70">
@@ -227,21 +227,21 @@ export default function SuscripcionPage() {
             ) : (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                  <div className="rounded-lg bg-[#1C2D20] border border-white/10 p-3">
+                  <div className="rounded-lg bg-[var(--mygreen-dark)] border border-white/10 p-3">
                     <div className="text-white/60 text-xs">Pagos con tarjeta</div>
                     <div className="text-white font-semibold text-lg">{usdPaidCount}</div>
                     <div className="text-white/50 text-xs">
                       Total: ${(usdTotal / 100).toFixed(2)}
                     </div>
                   </div>
-                  <div className="rounded-lg bg-[#1C2D20] border border-white/10 p-3">
+                  <div className="rounded-lg bg-[var(--mygreen-dark)] border border-white/10 p-3">
                     <div className="text-white/60 text-xs">Pagos Bs</div>
                     <div className="text-white font-semibold text-lg">{bsCount}</div>
                     <div className="text-white/50 text-xs">
                       Aprobados: {bsApproved}
                     </div>
                   </div>
-                  <div className="rounded-lg bg-[#1C2D20] border border-white/10 p-3">
+                  <div className="rounded-lg bg-[var(--mygreen-dark)] border border-white/10 p-3">
                     <div className="text-white/60 text-xs">Último pago</div>
                     <div className="text-white/80 text-sm">
                       {(() => {
@@ -255,7 +255,7 @@ export default function SuscripcionPage() {
                       })()}
                     </div>
                   </div>
-                  <div className="rounded-lg bg-[#1C2D20] border border-white/10 p-3">
+                  <div className="rounded-lg bg-[var(--mygreen-dark)] border border-white/10 p-3">
                     <div className="text-white/60 text-xs">Recibos</div>
                     <div className="text-white/80 text-sm">
                       Tarjeta: {stripeInvoices.length} · Bs: {bsPayments.length}
@@ -264,9 +264,9 @@ export default function SuscripcionPage() {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  <div className="rounded-lg bg-[#1C2D20] border border-white/10 p-4">
+                  <div className="rounded-lg bg-[var(--mygreen-dark)] border border-white/10 p-4">
                     <div className="text-white font-semibold mb-2 flex items-center gap-2">
-                      <ReceiptText className="w-4 h-4 text-[#40C9A9]" />
+                      <ReceiptText className="w-4 h-4 text-[var(--accent-hex)]" />
                       Tarjeta (facturas)
                     </div>
                     {stripeInvoices.length === 0 ? (
@@ -291,7 +291,7 @@ export default function SuscripcionPage() {
                                 href={inv.hostedInvoiceUrl}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="text-[#40C9A9] text-xs underline underline-offset-4 inline-flex items-center gap-1"
+                                className="text-[var(--accent-hex)] text-xs underline underline-offset-4 inline-flex items-center gap-1"
                               >
                                 <ExternalLink className="w-3 h-3" />
                                 Ver
@@ -303,9 +303,9 @@ export default function SuscripcionPage() {
                     )}
                   </div>
 
-                  <div className="rounded-lg bg-[#1C2D20] border border-white/10 p-4">
+                  <div className="rounded-lg bg-[var(--mygreen-dark)] border border-white/10 p-4">
                     <div className="text-white font-semibold mb-2 flex items-center gap-2">
-                      <ReceiptText className="w-4 h-4 text-[#40C9A9]" />
+                      <ReceiptText className="w-4 h-4 text-[var(--accent-hex)]" />
                       Bs (verificación)
                     </div>
                     {bsPayments.length === 0 ? (
@@ -331,7 +331,7 @@ export default function SuscripcionPage() {
                                 href={p.proofUrl}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="text-[#40C9A9] text-xs underline underline-offset-4 inline-flex items-center gap-1"
+                                className="text-[var(--accent-hex)] text-xs underline underline-offset-4 inline-flex items-center gap-1"
                               >
                                 <ExternalLink className="w-3 h-3" />
                                 Ver
@@ -355,20 +355,20 @@ export default function SuscripcionPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {loading ? (
-            <Card className="bg-[#354B3A] border-white/10">
+            <Card className="bg-[var(--mygreen-light)] border-white/10">
               <CardContent className="p-6 text-white/70">Cargando planes...</CardContent>
             </Card>
           ) : (
             sorted.map((t) => {
               const isPro = t.name.toLowerCase().includes("pro");
               return (
-                <Card key={t.id} className="bg-[#354B3A] border-white/10">
+                <Card key={t.id} className="bg-[var(--mygreen-light)] border-white/10">
                   <CardHeader>
                     <CardTitle className="text-white flex items-center gap-2">
                       {isPro ? (
-                        <Crown className="w-5 h-5 text-[#40C9A9]" />
+                        <Crown className="w-5 h-5 text-[var(--accent-hex)]" />
                       ) : (
-                        <Shield className="w-5 h-5 text-[#40C9A9]" />
+                        <Shield className="w-5 h-5 text-[var(--accent-hex)]" />
                       )}
                       {t.name}
                     </CardTitle>
@@ -387,7 +387,7 @@ export default function SuscripcionPage() {
                     <div className="grid grid-cols-1 gap-2">
                       <Button
                         type="button"
-                        className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                        className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
                         disabled={creating === t.id}
                         onClick={() => void startStripe(t.id)}
                       >

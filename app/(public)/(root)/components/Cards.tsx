@@ -7,7 +7,7 @@ interface CardsProps {
 
 export default function Cards({ titulo, contenido, picture, alt }: CardsProps) {
     return (
-        <div className="border-10 border-[#40C9A9] rounded-4xl p-4 sm:p-5 md:p-6 mb-4 sm:mb-6 md:mb-10 text-left content-between h-full flex flex-col">
+        <div className="border-10 border-[var(--accent-hex)] rounded-4xl p-4 sm:p-5 md:p-6 mb-4 sm:mb-6 md:mb-10 text-left content-between h-full flex flex-col">
             <div className="justify-items-center items-start mb-3 sm:mb-4 flex-shrink-0">
                 <img
                     src={ picture }

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,28 +11,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { 
-  BookOpen,
-  Plus,
-  Search, 
-  Star,
-  Eye,
-  Download,
-  TrendingUp,
-  Clock,
-  Award,
-  Users,
-  FileText,
-  Video,
-  Link as LinkIcon,
-  Lightbulb
-} from "lucide-react";
+import { BookOpen, Download, Eye, Search, Star, LayoutGrid, List } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
 import axios from "axios";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { shareOrCopyUrl } from "@/lib/share";
+import {
+  CaletaExploreGridCard,
+  recursoToExploreHref,
+} from "@/components/caletas/caleta-explore-grid-card";
+import { CaletaExploreListCard } from "@/components/caletas/caleta-explore-list-card";
 
 interface Recurso {
   id: string;
@@ -100,9 +89,28 @@ export default function CaletasPage() {
   const [filterTipo, setFilterTipo] = useState<string>("todos");
   const [sortBy, setSortBy] = useState<string>("recientes");
   const [fullCaletasPlanLocked, setFullCaletasPlanLocked] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
 
   useEffect(() => {
-    const materiaId = searchParams.get("materia");
+    try {
+      const stored = localStorage.getItem("caletas-feed-view");
+      if (stored === "list" || stored === "grid") setViewMode(stored);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("caletas-feed-view", viewMode);
+    } catch {
+      /* ignore */
+    }
+  }, [viewMode]);
+
+  useEffect(() => {
+    const materiaId = searchParams?.get("materia");
     if (materiaId) setFilterMateria(materiaId);
   }, [searchParams]);
 
@@ -182,6 +190,21 @@ export default function CaletasPage() {
     }
   };
 
+  const shareRecurso = async (recurso: Recurso) => {
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const url = `${origin}/caletas/${recurso.id}`;
+    try {
+      const res = await shareOrCopyUrl({
+        title: recurso.titulo,
+        text: recurso.descripcion?.slice(0, 140) || "Caleta en Caletas",
+        url,
+      });
+      if (!res.shared) toast.success("Link copiado al portapapeles");
+    } catch {
+      toast.error("No se pudo compartir/copiar el enlace");
+    }
+  };
+
   const registrarVista = async (recursoId: string) => {
     // Optimistic: sube 1 y luego sincroniza con el servidor si responde
     setRecursos((prev) =>
@@ -197,90 +220,6 @@ export default function CaletasPage() {
     } catch (error) {
       console.error("Error registrando vista:", error);
       // Rollback suave: no molestamos al usuario; el contador se corregirá al recargar.
-    }
-  };
-
-  const getTipoIcon = (tipo: string) => {
-    switch (tipo) {
-      case "ANOTACION":
-        return <FileText className="w-4 h-4" />;
-      case "RESUMEN":
-        return <BookOpen className="w-4 h-4" />;
-      case "GUIA_ESTUDIO":
-        return <Award className="w-4 h-4" />;
-      case "EJERCICIOS":
-        return <TrendingUp className="w-4 h-4" />;
-      case "PRESENTACION":
-        return <Video className="w-4 h-4" />;
-      case "VIDEO":
-        return <Video className="w-4 h-4" />;
-      case "AUDIO":
-        return <Video className="w-4 h-4" />;
-      case "DOCUMENTO":
-        return <FileText className="w-4 h-4" />;
-      case "ENLACE":
-        return <LinkIcon className="w-4 h-4" />;
-      case "TIP":
-        return <Lightbulb className="w-4 h-4" />;
-      default:
-        return <FileText className="w-4 h-4" />;
-    }
-  };
-
-  /** Categoría (tipo) en tarjetas: variaciones dentro de la paleta oscura + acento mint. */
-  const getTipoBadgeClass = (tipo: string) => {
-    const base =
-      "shrink-0 rounded-full border px-2.5 py-1 text-xs font-medium bg-[#1C2D20]";
-    switch (tipo) {
-      case "ANOTACION":
-        return cn(base, "border-[#40C9A9]/50 text-[#40C9A9]");
-      case "RESUMEN":
-        return cn(base, "border-[#40C9A9]/35 text-emerald-200/95");
-      case "GUIA_ESTUDIO":
-        return cn(base, "border-white/20 text-[#40C9A9]/90");
-      case "EJERCICIOS":
-        return cn(base, "border-[#40C9A9]/30 text-white/90");
-      case "PRESENTACION":
-        return cn(base, "border-emerald-400/35 text-emerald-100/90");
-      case "VIDEO":
-        return cn(base, "border-[#40C9A9]/45 text-[#40C9A9]");
-      case "AUDIO":
-        return cn(base, "border-white/15 text-white/85");
-      case "DOCUMENTO":
-        return cn(base, "border-white/20 text-white/80");
-      case "ENLACE":
-        return cn(base, "border-[#40C9A9]/40 text-[#40C9A9]/95");
-      case "TIP":
-        return cn(base, "border-amber-400/25 text-amber-100/90");
-      default:
-        return cn(base, "border-white/15 text-white/75");
-    }
-  };
-
-  const getTipoNombre = (tipo: string) => {
-    switch (tipo) {
-      case "ANOTACION":
-        return "Anotación";
-      case "RESUMEN":
-        return "Resumen";
-      case "GUIA_ESTUDIO":
-        return "Guía de Estudio";
-      case "EJERCICIOS":
-        return "Ejercicios";
-      case "PRESENTACION":
-        return "Presentación";
-      case "VIDEO":
-        return "Video";
-      case "AUDIO":
-        return "Audio";
-      case "DOCUMENTO":
-        return "Documento";
-      case "ENLACE":
-        return "Enlace";
-      case "TIP":
-        return "Tip";
-      default:
-        return tipo;
     }
   };
 
@@ -329,27 +268,28 @@ export default function CaletasPage() {
       {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-special text-white mb-2 flex items-center gap-3">
-            <BookOpen className="w-8 h-8 text-[#40C9A9]" />
-            Caletas - Recursos Colaborativos
+            <BookOpen className="w-8 h-8 text-[var(--accent-hex)]" />
+            Caletas
           </h1>
-        <p className="text-white/70">
-            Comparte y descubre recursos académicos con otros estudiantes
-            </p>
+        <p className="max-w-2xl text-white/70">
+            Tu feed colaborativo: explora lo que subió la comunidad, guarda en favoritos y comparte
+            enlaces como en una red social.
+          </p>
           {fullCaletasPlanLocked ? (
-            <div className="mt-3 rounded-lg border border-[#40C9A9]/40 bg-[#1C2D20] px-4 py-3 text-sm text-white/85">
+            <div className="mt-3 rounded-lg border border-[color-mix(in_oklab,var(--accent-hex)_40%,transparent)] bg-[var(--mygreen-dark)] px-4 py-3 text-sm text-white/85">
               Para ver caletas de otras universidades necesitas Caleta Pro (plan de $7). Los planes de $3 incluyen tu universidad y las caletas genéricas.
             </div>
           ) : null}
           </div>
 
         {/* Estadísticas */}
-        <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-4">
-          <Card className="bg-[#354B3A] border-white/10">
+        <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-4 md:gap-6">
+          <Card className="bg-[var(--mygreen-light)] border-white/10">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-white/70">
                 Total Recursos
               </CardTitle>
-              <BookOpen className="h-4 w-4 text-[#40C9A9]" />
+              <BookOpen className="h-4 w-4 text-[var(--accent-hex)]" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-white">
@@ -361,12 +301,12 @@ export default function CaletasPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-[#354B3A] border-white/10">
+          <Card className="bg-[var(--mygreen-light)] border-white/10">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-white/70">
                 Total Vistas
               </CardTitle>
-              <Eye className="h-4 w-4 text-[#40C9A9]" />
+              <Eye className="h-4 w-4 text-[var(--accent-hex)]" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-white">
@@ -378,12 +318,12 @@ export default function CaletasPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-[#354B3A] border-white/10">
+          <Card className="bg-[var(--mygreen-light)] border-white/10">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-white/70">
                 Promedio Calificación
               </CardTitle>
-              <Star className="h-4 w-4 text-[#40C9A9]" />
+              <Star className="h-4 w-4 text-[var(--accent-hex)]" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-white">
@@ -400,12 +340,12 @@ export default function CaletasPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-[#354B3A] border-white/10">
+          <Card className="bg-[var(--mygreen-light)] border-white/10">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-white/70">
                 Total Descargas
               </CardTitle>
-              <Download className="h-4 w-4 text-[#40C9A9]" />
+              <Download className="h-4 w-4 text-[var(--accent-hex)]" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-white">
@@ -419,237 +359,211 @@ export default function CaletasPage() {
         </div>
 
         {/* Controles de búsqueda y filtros */}
-        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:flex-wrap">
+        <div className="mb-6 flex flex-col gap-3">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center">
           <div className="relative min-w-0 flex-1 md:min-w-[200px]">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50" />
             <Input
-              placeholder="Buscar recursos por título, descripción o tags..."
+              placeholder="Buscar caletas por título, descripción o tags…"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="border-white/10 bg-[#354B3A] pl-10 text-white placeholder:text-white/50"
+              className="border-white/10 bg-[var(--mygreen-light)] pl-10 text-white placeholder:text-white/50"
             />
           </div>
 
-          <Select value={filterMateria} onValueChange={setFilterMateria}>
-            <SelectTrigger className="w-full border-white/10 bg-[#354B3A] text-white md:w-48">
-              <SelectValue placeholder="Filtrar por materia" />
-            </SelectTrigger>
-            <SelectContent className="border-white/10 bg-[#203324] text-white">
-              <SelectItem value="todas" className="focus:bg-white/10">
-                Todas las materias
-              </SelectItem>
-              <SelectItem value="genericas" className="focus:bg-white/10">
-                Solo genéricas (sin universidad)
-              </SelectItem>
-              {materias.map((materia) => (
-                <SelectItem
-                  key={materia.id}
-                  value={materia.id}
-                  className="focus:bg-white/10"
-                >
-                  {materia.codigo} — {materia.nombre}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select value={filterTipo} onValueChange={setFilterTipo}>
-            <SelectTrigger className="w-full border-white/10 bg-[#354B3A] text-white md:w-48">
-              <SelectValue placeholder="Filtrar por tipo" />
-            </SelectTrigger>
-            <SelectContent className="max-h-72 border-white/10 bg-[#203324] text-white">
-              {TIPO_FILTRO_OPCIONES.map((opt) => (
-                <SelectItem
-                  key={opt.value}
-                  value={opt.value}
-                  className="focus:bg-white/10"
-                >
-                  {opt.value === "todos" ? "Todos los tipos" : opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-full border-white/10 bg-[#354B3A] text-white md:w-48">
-              <SelectValue placeholder="Ordenar por" />
-            </SelectTrigger>
-            <SelectContent className="border-white/10 bg-[#203324] text-white">
-              <SelectItem value="recientes" className="focus:bg-white/10">
-                Más recientes
-              </SelectItem>
-              <SelectItem value="populares" className="focus:bg-white/10">
-                Más populares
-              </SelectItem>
-              <SelectItem value="mejor-calificados" className="focus:bg-white/10">
-                Mejor calificados
-              </SelectItem>
-              <SelectItem value="mas-descargados" className="focus:bg-white/10">
-                Más descargados
-              </SelectItem>
-            </SelectContent>
-          </Select>
-
           <Button
-            asChild
-            className="w-full shrink-0 bg-[#40C9A9] text-white hover:bg-[#40C9A9]/80 md:ml-auto md:w-auto"
+            type="button"
+            variant="outline"
+            className="bg-[var(--mygreen-light)] border-white/10 text-white hover:bg-white/10 md:hidden"
+            onClick={() => setShowFilters((v) => !v)}
           >
-            <Link
-              href="/caletas/crear"
-              className="inline-flex items-center justify-center gap-2"
-            >
-              <Plus className="h-4 w-4 shrink-0" />
-              Compartir recurso
-            </Link>
+            <Search className="h-4 w-4 mr-2" />
+            {showFilters ? "Ocultar filtros" : "Mostrar filtros"}
           </Button>
+
+          <div className="flex items-center gap-2 md:hidden">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setViewMode("list")}
+              className={cn(
+                "flex-1 border-white/10 bg-[var(--mygreen-light)] text-white hover:bg-white/10",
+                viewMode === "list" &&
+                  "border-[color-mix(in_oklab,var(--accent-hex)_40%,transparent)] bg-[color-mix(in_oklab,var(--accent-hex)_15%,transparent)]",
+              )}
+              title="Vista lista"
+              aria-pressed={viewMode === "list"}
+            >
+              <List className="mx-auto h-4 w-4" />
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setViewMode("grid")}
+              className={cn(
+                "flex-1 border-white/10 bg-[var(--mygreen-light)] text-white hover:bg-white/10",
+                viewMode === "grid" &&
+                  "border-[color-mix(in_oklab,var(--accent-hex)_40%,transparent)] bg-[color-mix(in_oklab,var(--accent-hex)_15%,transparent)]",
+              )}
+              title="Vista cuadrícula"
+              aria-pressed={viewMode === "grid"}
+            >
+              <LayoutGrid className="mx-auto h-4 w-4" />
+            </Button>
+          </div>
+
+          <div className="hidden md:flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setViewMode("list")}
+              className={cn(
+                "border-white/10 bg-[var(--mygreen-light)] text-white hover:bg-white/10",
+                viewMode === "list" && "border-[color-mix(in_oklab,var(--accent-hex)_40%,transparent)] bg-[color-mix(in_oklab,var(--accent-hex)_15%,transparent)]",
+              )}
+              title="Vista lista"
+            >
+              <List className="h-4 w-4" />
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setViewMode("grid")}
+              className={cn(
+                "border-white/10 bg-[var(--mygreen-light)] text-white hover:bg-white/10",
+                viewMode === "grid" && "border-[color-mix(in_oklab,var(--accent-hex)_40%,transparent)] bg-[color-mix(in_oklab,var(--accent-hex)_15%,transparent)]",
+              )}
+              title="Vista tipo Pinterest"
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </Button>
+          </div>
+
+          </div>
+
+          <div
+            className={cn(
+              "grid grid-cols-1 gap-3 md:grid-cols-3",
+              !showFilters && "hidden md:grid",
+            )}
+          >
+            <Select value={filterMateria} onValueChange={setFilterMateria}>
+              <SelectTrigger className="w-full border-white/10 bg-[var(--mygreen-light)] text-white">
+                <SelectValue placeholder="Materia" />
+              </SelectTrigger>
+              <SelectContent className="border-white/10 bg-[var(--mygreen)] text-white">
+                <SelectItem value="todas" className="focus:bg-white/10">
+                  Todas las materias
+                </SelectItem>
+                <SelectItem value="genericas" className="focus:bg-white/10">
+                  Solo genéricas (sin universidad)
+                </SelectItem>
+                {materias.map((materia) => (
+                  <SelectItem key={materia.id} value={materia.id} className="focus:bg-white/10">
+                    {materia.codigo} — {materia.nombre}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={filterTipo} onValueChange={setFilterTipo}>
+              <SelectTrigger className="w-full border-white/10 bg-[var(--mygreen-light)] text-white">
+                <SelectValue placeholder="Tipo" />
+              </SelectTrigger>
+              <SelectContent className="max-h-72 border-white/10 bg-[var(--mygreen)] text-white">
+                {TIPO_FILTRO_OPCIONES.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value} className="focus:bg-white/10">
+                    {opt.value === "todos" ? "Todos los tipos" : opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-full border-white/10 bg-[var(--mygreen-light)] text-white">
+                <SelectValue placeholder="Ordenar" />
+              </SelectTrigger>
+              <SelectContent className="border-white/10 bg-[var(--mygreen)] text-white">
+                <SelectItem value="recientes" className="focus:bg-white/10">
+                  Más recientes
+                </SelectItem>
+                <SelectItem value="populares" className="focus:bg-white/10">
+                  Más vistas
+                </SelectItem>
+                <SelectItem value="mejor-calificados" className="focus:bg-white/10">
+                  Mejor calificados
+                </SelectItem>
+                <SelectItem value="mas-descargados" className="focus:bg-white/10">
+                  Más descargados
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
-        {/* Lista de recursos */}
-        <div className="space-y-4">
-          {filteredRecursos.map((recurso) => (
-            <Card
-              key={recurso.id}
-              className="border-white/10 bg-[#354B3A] transition-colors hover:border-[#40C9A9]/25"
-            >
-              <CardHeader className="space-y-3 pb-2">
-                <h3 className="font-special text-lg leading-snug text-white sm:text-xl">
-                  {recurso.titulo}
-                </h3>
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-                  <span
-                    className={cn(
-                      "inline-flex items-center gap-1.5",
-                      getTipoBadgeClass(recurso.tipo),
-                    )}
-                  >
-                    <span className="shrink-0 text-[#40C9A9]">
-                      {getTipoIcon(recurso.tipo)}
-                    </span>
-                    {getTipoNombre(recurso.tipo)}
-                  </span>
-                  <Badge
-                    variant="outline"
-                    className="rounded-full border-white/15 bg-[#203324] px-2.5 py-1 text-xs font-normal text-white/80"
-                  >
-                    <BookOpen className="mr-1 inline h-3.5 w-3.5 text-[#40C9A9]" />
-                    {recurso.materia
-                      ? `${recurso.materia.codigo} · ${recurso.materia.nombre}`
-                      : "Caleta genérica"}
-                  </Badge>
-                  <span
-                    className={cn(
-                      "inline-flex items-center gap-1.5 text-sm",
-                      recurso.isFavorito ? "text-white/85" : "text-white/55",
-                    )}
-                    title={
-                      recurso.isFavorito
-                        ? "Este recurso está en tus favoritos"
-                        : "Aún no está en tus favoritos"
-                    }
-                  >
-                    <Star
-                      className={cn(
-                        "h-4 w-4 shrink-0",
-                        recurso.isFavorito
-                          ? "fill-[#40C9A9] text-[#40C9A9]"
-                          : "text-white/45",
-                      )}
-                    />
-                    <span className="font-medium text-white/85">
-                      {recurso.numFavoritos ?? 0}
-                    </span>
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 text-sm text-white/65">
-                    <Eye className="h-4 w-4 shrink-0 text-[#40C9A9]" />
-                    {recurso.numVistas}
-                  </span>
-                </div>
-                <div className="flex flex-wrap content-start gap-1.5">
-                  {(() => {
-                    const tags = (recurso.tags ?? "")
-                      .split(",")
-                      .map((t) => t.trim())
-                      .filter(Boolean);
-                    if (tags.length === 0) {
-                      return (
-                        <span className="text-xs text-white/40">
-                          Sin etiquetas
-                        </span>
-                      );
-                    }
-                    return tags.map((tag, index) => (
-                      <span
-                        key={`${recurso.id}-tag-${index}`}
-                        className="inline-flex max-w-full items-center rounded-full border border-white/10 bg-[#1C2D20] px-2.5 py-0.5 text-xs leading-5 text-white/80"
-                      >
-                        <span className="truncate">{tag}</span>
-                      </span>
-                    ));
-                  })()}
-                </div>
-                <p className="text-sm leading-relaxed text-white/70">
-                  {recurso.descripcion}
-                </p>
-                <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-white/55">
-                  <span className="inline-flex items-center gap-1.5">
-                    <Clock className="h-3.5 w-3.5 shrink-0 text-[#40C9A9]/80" />
-                    {new Date(recurso.createdAt).toLocaleDateString()}
-                  </span>
-                  <span className="inline-flex items-center gap-1.5">
-                    <Users className="h-3.5 w-3.5 shrink-0 text-[#40C9A9]/80" />
-                    {recurso.autor.name}
-                  </span>
-                </div>
-              </CardHeader>
-              <CardContent className="border-t border-white/10 pt-4">
-                <div className="flex w-full flex-wrap items-center justify-stretch gap-2 sm:justify-end">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="h-9 min-h-9 w-full border-[#40C9A9]/40 bg-[#1C2D20] text-sm font-medium text-[#40C9A9] shadow-none hover:bg-white/10 hover:text-[#40C9A9] sm:w-auto"
-                      onClick={() => {
-                        void registrarVista(recurso.id);
-                        if (recurso.archivoUrl) {
-                          const urlParts = recurso.archivoUrl.split("/");
-                          const filename = urlParts[urlParts.length - 1];
-                          window.location.href = `/view-pdf/${encodeURIComponent(filename)}`;
-                        } else {
-                          window.location.href = `/caletas/${recurso.id}`;
-                        }
-                      }}
-                    >
-                      Ver caleta
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => toggleFavorito(recurso.id)}
-                      className={cn(
-                        "h-9 min-h-9 w-full text-sm font-medium shadow-none sm:w-auto",
-                        recurso.isFavorito
-                          ? "border-[#40C9A9]/50 bg-[#40C9A9]/20 text-white hover:bg-[#40C9A9]/30 hover:text-white"
-                          : "border-[#40C9A9]/40 bg-[#1C2D20] text-[#40C9A9] hover:bg-white/10 hover:text-[#40C9A9]",
-                      )}
-                    >
-                      <Star
-                        className={cn(
-                          "mr-1.5 h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4",
-                          recurso.isFavorito && "fill-[#40C9A9] text-[#40C9A9]",
-                        )}
-                      />
-                      <span className="sm:hidden">
-                        {recurso.isFavorito ? "Guardado" : "Favorito"}
-                      </span>
-                      <span className="hidden sm:inline">
-                        {recurso.isFavorito
-                          ? "En favoritos"
-                          : "Añadir a favoritos"}
-                      </span>
-                    </Button>
-                </div>
-              </CardContent>
-            </Card>
-        ))}
+        {/* Feed de caletas (lista detallada · grid tipo home) */}
+        {filteredRecursos.length > 0 ? (
+          <p className="mb-3 text-xs text-white/55">
+            <span className="font-medium text-white/80">{filteredRecursos.length}</span>{" "}
+            {filteredRecursos.length === 1 ? "caleta" : "caletas"}
+            {viewMode === "grid" ? (
+              <span className="text-white/45"> · tarjetas compactas</span>
+            ) : null}
+          </p>
+        ) : null}
+
+        <div
+          className={cn(
+            viewMode === "list"
+              ? "space-y-4"
+              : "grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3",
+          )}
+        >
+          {filteredRecursos.map((recurso) =>
+            viewMode === "list" ? (
+              <CaletaExploreListCard
+                key={recurso.id}
+                recurso={{
+                  id: recurso.id,
+                  titulo: recurso.titulo,
+                  descripcion: recurso.descripcion,
+                  tipo: recurso.tipo,
+                  tags: recurso.tags,
+                  createdAt: recurso.createdAt,
+                  numVistas: recurso.numVistas,
+                  numDescargas: recurso.numDescargas,
+                  numFavoritos: recurso.numFavoritos,
+                  isFavorito: recurso.isFavorito,
+                  materia: recurso.materia,
+                  autor: { id: recurso.autor.id, name: recurso.autor.name },
+                }}
+                href={recursoToExploreHref(recurso)}
+                onOpen={() => void registrarVista(recurso.id)}
+                onToggleFavorito={() => void toggleFavorito(recurso.id)}
+                onShare={() => void shareRecurso(recurso)}
+              />
+            ) : (
+              <CaletaExploreGridCard
+                key={recurso.id}
+                recurso={{
+                  id: recurso.id,
+                  titulo: recurso.titulo,
+                  tipo: recurso.tipo,
+                  createdAt: recurso.createdAt,
+                  numVistas: recurso.numVistas,
+                  numDescargas: recurso.numDescargas,
+                  numFavoritos: recurso.numFavoritos,
+                  isFavorito: recurso.isFavorito,
+                  materia: recurso.materia,
+                  autor: { id: recurso.autor.id, name: recurso.autor.name },
+                }}
+                href={recursoToExploreHref(recurso)}
+                onRegistrarVista={() => void registrarVista(recurso.id)}
+                onToggleFavorito={() => void toggleFavorito(recurso.id)}
+                onShare={() => void shareRecurso(recurso)}
+              />
+            )
+          )}
           
           {filteredRecursos.length === 0 && (
             <div className="text-center py-12 text-white/70">
@@ -657,13 +571,13 @@ export default function CaletasPage() {
               <h3 className="text-xl font-medium text-white mb-2">
                 {searchTerm || filterMateria !== "todas" || filterTipo !== "todos"
                   ? "No se encontraron recursos" 
-                  : "No hay recursos disponibles"
+                  : "Aún no hay caletas"
                 }
               </h3>
               <p className="text-white/70">
                 {searchTerm || filterMateria !== "todas" || filterTipo !== "todos"
                 ? "Intenta ajustar los filtros de búsqueda"
-                  : "Sé el primero en compartir un recurso académico"
+                  : "Sé el primero en compartir una caleta"
                 }
               </p>
             </div>

@@ -125,7 +125,7 @@ export default function TestUploadCPanelPage() {
           </p>
         </div>
 
-        <div className="bg-[#354B3A] border-white/10 rounded-lg p-6">
+        <div className="bg-[var(--mygreen-light)] border-white/10 rounded-lg p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Archivo */}
             <div>
@@ -135,10 +135,10 @@ export default function TestUploadCPanelPage() {
                 type="file"
                 accept=".pdf,.jpg,.jpeg,.png"
                 onChange={handleFileChange}
-                className="bg-white/10 border-white/20 text-white file:text-white file:bg-[#40C9A9] file:border-0 file:rounded-lg file:px-4 file:py-2 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1"
+                className="bg-white/10 border-white/20 text-white file:text-white file:bg-[var(--accent-hex)] file:border-0 file:rounded-lg file:px-4 file:py-2 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg mt-1"
               />
               {file && (
-                <div className="text-[#40C9A9] text-sm mt-1">
+                <div className="text-[var(--accent-hex)] text-sm mt-1">
                   Archivo seleccionado: {file.name} ({file.size} bytes)
                 </div>
               )}
@@ -151,7 +151,7 @@ export default function TestUploadCPanelPage() {
                 id="titulo"
                 value={titulo}
                 onChange={(e) => setTitulo(e.target.value)}
-                className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1"
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg mt-1"
               />
             </div>
 
@@ -163,7 +163,7 @@ export default function TestUploadCPanelPage() {
                 value={descripcion}
                 onChange={(e) => setDescripcion(e.target.value)}
                 rows={3}
-                className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1"
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg mt-1"
               />
             </div>
 
@@ -171,10 +171,10 @@ export default function TestUploadCPanelPage() {
             <div>
               <Label htmlFor="tipo" className="text-white/80">Tipo *</Label>
               <Select value={tipo} onValueChange={setTipo}>
-                <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1">
+                <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg mt-1">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-[#203324] text-white">
+                <SelectContent className="bg-[var(--mygreen)] text-white">
                   <SelectItem value="DOCUMENTO">Documento</SelectItem>
                   <SelectItem value="ANOTACION">Anotación</SelectItem>
                   <SelectItem value="RESUMEN">Resumen</SelectItem>
@@ -193,7 +193,7 @@ export default function TestUploadCPanelPage() {
                 id="materiaId"
                 value={materiaId}
                 onChange={(e) => setMateriaId(e.target.value)}
-                className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1"
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg mt-1"
               />
             </div>
 
@@ -204,7 +204,7 @@ export default function TestUploadCPanelPage() {
                 id="tags"
                 value={tags}
                 onChange={(e) => setTags(e.target.value)}
-                className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#40C9A9] focus:ring-[#40C9A9] rounded-lg mt-1"
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg mt-1"
               />
             </div>
 
@@ -212,7 +212,7 @@ export default function TestUploadCPanelPage() {
             <Button
               type="submit"
               disabled={isSubiendo || !file}
-              className="w-full bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white font-bold py-3 rounded-xl shadow-lg transition-colors"
+              className="w-full bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white font-bold py-3 rounded-xl shadow-lg transition-colors"
             >
               {isSubiendo ? (
                 <>
@@ -230,7 +230,7 @@ export default function TestUploadCPanelPage() {
         </div>
 
         {/* Información */}
-        <div className="bg-[#354B3A] border-white/10 rounded-lg p-6">
+        <div className="bg-[var(--mygreen-light)] border-white/10 rounded-lg p-6">
           <h2 className="text-xl font-special text-white mb-4">
             📋 Información de la prueba
           </h2>
@@ -248,7 +248,7 @@ export default function TestUploadCPanelPage() {
         <div className="flex justify-center gap-4">
           <Button
             onClick={() => router.push("/test-cpanel")}
-            className="bg-[#40C9A9] hover:bg-[#40C9A9]/80"
+            className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)]"
           >
             Ir a cPanel
           </Button>

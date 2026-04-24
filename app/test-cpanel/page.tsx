@@ -39,7 +39,7 @@ export default async function TestCPanelPage() {
         {/* Gestor de archivos */}
         <FileManager />
 
-        <div className="bg-[#354B3A] border-white/10 rounded-lg p-6">
+        <div className="bg-[var(--mygreen-light)] border-white/10 rounded-lg p-6">
           <h2 className="text-xl font-special text-white mb-4">
             📋 Información de Configuración
           </h2>
@@ -64,7 +64,7 @@ export default async function TestCPanelPage() {
           </div>
         </div>
 
-        <div className="bg-[#354B3A] border-white/10 rounded-lg p-6">
+        <div className="bg-[var(--mygreen-light)] border-white/10 rounded-lg p-6">
           <h2 className="text-xl font-special text-white mb-4">
             🔧 Funcionalidades Disponibles
           </h2>
@@ -80,18 +80,18 @@ export default async function TestCPanelPage() {
           </div>
         </div>
 
-        <div className="bg-[#354B3A] border-white/10 rounded-lg p-6">
+        <div className="bg-[var(--mygreen-light)] border-white/10 rounded-lg p-6">
           <h2 className="text-xl font-special text-white mb-4">
             📤 Pruebas Disponibles
           </h2>
           <div className="text-white/70 space-y-2">
-            <p>• <strong>Prueba Subida cPanel</strong>: <a href="/test-upload-cpanel" className="text-[#40C9A9] hover:underline">📤 Subida de archivos a cPanel</a></p>
-            <p>• <strong>Crear Caleta</strong>: <a href="/caletas/crear" className="text-[#40C9A9] hover:underline">📝 Formulario completo de subida</a></p>
-            <p>• <strong>Test PDF</strong>: <a href="/test-pdf" className="text-[#40C9A9] hover:underline">📄 Pruebas de visualización PDF</a></p>
-            <p>• <strong>Test PDF Proxy</strong>: <a href="/test-pdf-proxy" className="text-[#40C9A9] hover:underline">🔗 Pruebas con proxy</a></p>
-            <p>• <strong>Test PDF Blob</strong>: <a href="/test-pdf-blob" className="text-[#40C9A9] hover:underline">💾 Pruebas con Blob</a></p>
-            <p>• <strong>Test PDF XHR</strong>: <a href="/test-pdf-xhr" className="text-[#40C9A9] hover:underline">📡 Pruebas con XHR</a></p>
-            <p>• <strong>PDF Diagnostic</strong>: <a href="/pdf-diagnostic" className="text-[#40C9A9] hover:underline">🔍 Diagnóstico completo</a></p>
+            <p>• <strong>Prueba Subida cPanel</strong>: <a href="/test-upload-cpanel" className="text-[var(--accent-hex)] hover:underline">📤 Subida de archivos a cPanel</a></p>
+            <p>• <strong>Crear Caleta</strong>: <a href="/caletas/crear" className="text-[var(--accent-hex)] hover:underline">📝 Formulario completo de subida</a></p>
+            <p>• <strong>Test PDF</strong>: <a href="/test-pdf" className="text-[var(--accent-hex)] hover:underline">📄 Pruebas de visualización PDF</a></p>
+            <p>• <strong>Test PDF Proxy</strong>: <a href="/test-pdf-proxy" className="text-[var(--accent-hex)] hover:underline">🔗 Pruebas con proxy</a></p>
+            <p>• <strong>Test PDF Blob</strong>: <a href="/test-pdf-blob" className="text-[var(--accent-hex)] hover:underline">💾 Pruebas con Blob</a></p>
+            <p>• <strong>Test PDF XHR</strong>: <a href="/test-pdf-xhr" className="text-[var(--accent-hex)] hover:underline">📡 Pruebas con XHR</a></p>
+            <p>• <strong>PDF Diagnostic</strong>: <a href="/pdf-diagnostic" className="text-[var(--accent-hex)] hover:underline">🔍 Diagnóstico completo</a></p>
           </div>
         </div>
       </div>

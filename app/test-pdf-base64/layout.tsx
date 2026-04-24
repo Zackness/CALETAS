@@ -25,7 +25,7 @@ export default async function ProtectedLayout({
   }
 
   return (
-    <html lang="es">
+    <html lang="es" suppressHydrationWarning>
       <body>
         <ProtectedAppShell
           session={session}

@@ -133,15 +133,15 @@ export default function AdminPagosPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-special text-white mb-2 flex items-center gap-2">
-            <ShieldCheck className="w-6 h-6 text-[#40C9A9]" />
+            <ShieldCheck className="w-6 h-6 text-[var(--accent-hex)]" />
             Panel Admin - Pagos
           </h1>
         </div>
 
-        <Card className="bg-[#354B3A] border-white/10">
+        <Card className="bg-[var(--mygreen-light)] border-white/10">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
-              <CreditCard className="w-5 h-5 text-[#40C9A9]" />
+              <CreditCard className="w-5 h-5 text-[var(--accent-hex)]" />
               Pagos y suscripciones
             </CardTitle>
             <CardDescription className="text-white/70">
@@ -154,17 +154,17 @@ export default function AdminPagosPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Buscar por usuario o correo..."
-                className="rounded-lg bg-[#1C2D20] border border-white/10 text-white px-3 py-2 placeholder:text-white/50"
+                className="rounded-lg bg-[var(--mygreen-dark)] border border-white/10 text-white px-3 py-2 placeholder:text-white/50"
               />
               <input
                 value={referenceSearch}
                 onChange={(e) => setReferenceSearch(e.target.value)}
                 placeholder="Referencia bancaria o código operación..."
-                className="rounded-lg bg-[#1C2D20] border border-white/10 text-white px-3 py-2 placeholder:text-white/50"
+                className="rounded-lg bg-[var(--mygreen-dark)] border border-white/10 text-white px-3 py-2 placeholder:text-white/50"
               />
               <Button
                 type="button"
-                className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
                 onClick={() => void loadData({ search, reference: referenceSearch })}
               >
                 Buscar
@@ -178,7 +178,7 @@ export default function AdminPagosPage() {
             ) : (
               <div className="rounded-lg border border-white/10 max-h-[560px] overflow-auto">
                 <table className="w-full text-sm">
-                  <thead className="bg-[#1C2D20] text-white/70">
+                  <thead className="bg-[var(--mygreen-dark)] text-white/70">
                     <tr>
                       <th className="px-3 py-2 text-left">Usuario</th>
                       <th className="px-3 py-2 text-left">Plan</th>
@@ -192,7 +192,7 @@ export default function AdminPagosPage() {
                   </thead>
                   <tbody>
                     {rows.map((row) => (
-                      <tr key={row.id} className="border-t border-white/5 bg-[#203324]">
+                      <tr key={row.id} className="border-t border-white/5 bg-[var(--mygreen)]">
                         <td className="px-3 py-2">
                           <div className="text-white">{row.usuario}</div>
                           <div className="text-xs text-white/60">{row.email}</div>
@@ -209,7 +209,7 @@ export default function AdminPagosPage() {
                           {row.status === "PENDING" ? (
                             <Badge className="bg-white/10 text-white/80 border-white/20">Pendiente</Badge>
                           ) : row.status === "APPROVED" ? (
-                            <Badge className="bg-[#40C9A9]/20 text-[#40C9A9] border-[#40C9A9]/30">Aprobado</Badge>
+                            <Badge className="bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)] text-[var(--accent-hex)] border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)]">Aprobado</Badge>
                           ) : row.status === "REJECTED" ? (
                             <div className="space-y-1">
                               <Badge className="bg-red-500/20 text-red-300 border-red-500/30">Rechazado</Badge>
@@ -237,7 +237,7 @@ export default function AdminPagosPage() {
                               {row.proofUrl ? (
                                 <DropdownMenuItem asChild className="cursor-pointer hover:bg-white/10">
                                   <a href={row.proofUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2">
-                                    <ExternalLink className="h-4 w-4 text-[#40C9A9]" />
+                                    <ExternalLink className="h-4 w-4 text-[var(--accent-hex)]" />
                                     Ver comprobante
                                   </a>
                                 </DropdownMenuItem>

@@ -60,7 +60,7 @@ export default function FullscreenPDFViewer({ url, fileName }: FullscreenPDFView
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center bg-white z-10">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#40C9A9] mx-auto mb-2" />
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent-hex)] mx-auto mb-2" />
             <p className="text-gray-600">Cargando PDF...</p>
             <p className="text-sm text-gray-500">{fileName}</p>
           </div>

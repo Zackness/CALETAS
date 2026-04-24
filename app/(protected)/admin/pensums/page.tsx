@@ -298,13 +298,13 @@ export default function AdminPensumsPage() {
       <div className="container mx-auto px-4 py-8 space-y-6">
         <div>
           <h1 className="text-3xl font-special text-white mb-2 flex items-center gap-2">
-            <BookOpen className="w-6 h-6 text-[#40C9A9]" />
+            <BookOpen className="w-6 h-6 text-[var(--accent-hex)]" />
             Panel Admin - Pensums
           </h1>
           <p className="text-white/70">Crea, edita y previsualiza pensums por universidad y carrera.</p>
         </div>
 
-        <Card className="bg-[#354B3A] border-white/10">
+        <Card className="bg-[var(--mygreen-light)] border-white/10">
           <CardHeader>
             <CardTitle className="text-white">Contexto del pensum</CardTitle>
             <CardDescription className="text-white/70">Selecciona universidad y carrera.</CardDescription>
@@ -318,10 +318,10 @@ export default function AdminPensumsPage() {
                 setMaterias([]);
               }}
             >
-              <SelectTrigger className="bg-[#1C2D20] border-white/20 text-white">
+              <SelectTrigger className="bg-[var(--mygreen-dark)] border-white/20 text-white">
                 <SelectValue placeholder="Universidad" />
               </SelectTrigger>
-              <SelectContent className="bg-[#203324] border-white/10 text-white">
+              <SelectContent className="bg-[var(--mygreen)] border-white/10 text-white">
                 {universidades.map((u) => (
                   <SelectItem key={u.id} value={u.id}>
                     {u.nombre}
@@ -338,10 +338,10 @@ export default function AdminPensumsPage() {
               }}
               disabled={!selectedUniversidad}
             >
-              <SelectTrigger className="bg-[#1C2D20] border-white/20 text-white">
+              <SelectTrigger className="bg-[var(--mygreen-dark)] border-white/20 text-white">
                 <SelectValue placeholder="Carrera" />
               </SelectTrigger>
-              <SelectContent className="bg-[#203324] border-white/10 text-white">
+              <SelectContent className="bg-[var(--mygreen)] border-white/10 text-white">
                 {carrerasDisponibles.map((c) => (
                   <SelectItem key={c.id} value={c.id}>
                     {c.nombre}
@@ -351,7 +351,7 @@ export default function AdminPensumsPage() {
             </Select>
 
             <div className="flex gap-2">
-              <Button className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white flex-1" onClick={openCreate} disabled={!selectedCarrera}>
+              <Button className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white flex-1" onClick={openCreate} disabled={!selectedCarrera}>
                 <PlusCircle className="w-4 h-4 mr-2" />
                 Nueva materia
               </Button>
@@ -359,7 +359,7 @@ export default function AdminPensumsPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-[#354B3A] border-white/10">
+        <Card className="bg-[var(--mygreen-light)] border-white/10">
           <CardHeader>
             <CardTitle className="text-white">Instituciones y carreras</CardTitle>
             <CardDescription className="text-white/70">
@@ -369,7 +369,7 @@ export default function AdminPensumsPage() {
           <CardContent className="flex flex-wrap gap-2">
             <Button
               type="button"
-              className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+              className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
               onClick={() => setInstitutionDialogOpen(true)}
             >
               <PlusCircle className="w-4 h-4 mr-2" />
@@ -378,7 +378,7 @@ export default function AdminPensumsPage() {
             <Button
               type="button"
               variant="outline"
-              className="border-[#40C9A9]/40 bg-[#1C2D20] text-[#40C9A9] hover:bg-[#203324]"
+              className="border-[color-mix(in_oklab,var(--accent-hex)_40%,transparent)] bg-[var(--mygreen-dark)] text-[var(--accent-hex)] hover:bg-[var(--mygreen)]"
               onClick={() => setCareerDialogOpen(true)}
               disabled={!selectedUniversidad}
             >
@@ -389,7 +389,7 @@ export default function AdminPensumsPage() {
         </Card>
 
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          <Card className="bg-[#354B3A] border-white/10">
+          <Card className="bg-[var(--mygreen-light)] border-white/10">
             <CardHeader>
               <CardTitle className="text-white">Materias del pensum</CardTitle>
               <CardDescription className="text-white/70">
@@ -406,7 +406,7 @@ export default function AdminPensumsPage() {
             ) : (
               <div className="rounded-lg border border-white/10 overflow-auto">
                 <table className="w-full text-sm">
-                  <thead className="bg-[#1C2D20] text-white/70">
+                  <thead className="bg-[var(--mygreen-dark)] text-white/70">
                     <tr>
                       <th className="px-3 py-2 text-left">Código</th>
                       <th className="px-3 py-2 text-left">Materia</th>
@@ -418,7 +418,7 @@ export default function AdminPensumsPage() {
                   </thead>
                   <tbody>
                     {materias.map((m) => (
-                      <tr key={m.id} className="border-t border-white/5 bg-[#203324]">
+                      <tr key={m.id} className="border-t border-white/5 bg-[var(--mygreen)]">
                         <td className="px-3 py-2 text-white">{m.codigo}</td>
                         <td className="px-3 py-2 text-white">{m.nombre}</td>
                         <td className="px-3 py-2 text-white/80">{m.semestre}</td>
@@ -428,10 +428,10 @@ export default function AdminPensumsPage() {
                         </td>
                         <td className="px-3 py-2 align-middle">
                           <div className="flex justify-end gap-1">
-                            <Button size="icon" variant="outline" className="h-7 w-7 border-[#40C9A9]/40 bg-[#1C2D20] text-[#40C9A9] hover:bg-[#203324]" onClick={() => openEdit(m)}>
+                            <Button size="icon" variant="outline" className="h-7 w-7 border-[color-mix(in_oklab,var(--accent-hex)_40%,transparent)] bg-[var(--mygreen-dark)] text-[var(--accent-hex)] hover:bg-[var(--mygreen)]" onClick={() => openEdit(m)}>
                               <Pencil className="w-3.5 h-3.5" />
                             </Button>
-                            <Button size="icon" variant="outline" className="h-7 w-7 border-red-500/30 bg-[#1C2D20] text-red-300 hover:bg-red-500/10" onClick={() => void removeMateria(m)}>
+                            <Button size="icon" variant="outline" className="h-7 w-7 border-red-500/30 bg-[var(--mygreen-dark)] text-red-300 hover:bg-red-500/10" onClick={() => void removeMateria(m)}>
                               <Trash2 className="w-3.5 h-3.5" />
                             </Button>
                           </div>
@@ -444,7 +444,7 @@ export default function AdminPensumsPage() {
             )}
             </CardContent>
           </Card>
-          <Card className="bg-[#354B3A] border-white/10">
+          <Card className="bg-[var(--mygreen-light)] border-white/10">
             <CardHeader>
               <CardTitle className="text-white">Orden visual del flujo</CardTitle>
               <CardDescription className="text-white/70">
@@ -457,25 +457,25 @@ export default function AdminPensumsPage() {
               ) : (
                 <>
                   <Select value={activeOrderSemester} onValueChange={setActiveOrderSemester}>
-                    <SelectTrigger className="bg-[#1C2D20] border-white/20 text-white">
+                    <SelectTrigger className="bg-[var(--mygreen-dark)] border-white/20 text-white">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-[#203324] border-white/10 text-white">
+                    <SelectContent className="bg-[var(--mygreen)] border-white/10 text-white">
                       {SEMESTRES.map((s) => (
                         <SelectItem key={s} value={s}>{s}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  <div className="rounded-lg border border-white/10 bg-[#1C2D20] p-2 max-h-[55vh] overflow-auto space-y-1">
+                  <div className="rounded-lg border border-white/10 bg-[var(--mygreen-dark)] p-2 max-h-[55vh] overflow-auto space-y-1">
                     {getOrderedCodesForSemester(activeOrderSemester).map((code, idx) => (
-                      <div key={`${activeOrderSemester}-${code}`} className="flex items-center justify-between rounded-md bg-[#203324] px-2 py-1.5">
+                      <div key={`${activeOrderSemester}-${code}`} className="flex items-center justify-between rounded-md bg-[var(--mygreen)] px-2 py-1.5">
                         <span className="text-xs text-white/90">{idx + 1}. {code}</span>
                         <div className="flex gap-1">
                           <Button
                             type="button"
                             size="icon"
                             variant="outline"
-                            className="h-6 w-6 border-white/20 bg-[#1C2D20] text-white hover:bg-white/10"
+                            className="h-6 w-6 border-white/20 bg-[var(--mygreen-dark)] text-white hover:bg-white/10"
                             onClick={() => moveOrderItem(activeOrderSemester, idx, "up")}
                             disabled={idx === 0}
                           >
@@ -485,7 +485,7 @@ export default function AdminPensumsPage() {
                             type="button"
                             size="icon"
                             variant="outline"
-                            className="h-6 w-6 border-white/20 bg-[#1C2D20] text-white hover:bg-white/10"
+                            className="h-6 w-6 border-white/20 bg-[var(--mygreen-dark)] text-white hover:bg-white/10"
                             onClick={() => moveOrderItem(activeOrderSemester, idx, "down")}
                             disabled={idx === getOrderedCodesForSemester(activeOrderSemester).length - 1}
                           >
@@ -502,7 +502,7 @@ export default function AdminPensumsPage() {
               )}
             </CardContent>
           </Card>
-          <Card className="bg-[#354B3A] border-white/10 xl:col-span-1">
+          <Card className="bg-[var(--mygreen-light)] border-white/10 xl:col-span-1">
             <CardHeader>
               <CardTitle className="text-white">Organigrama del pensum</CardTitle>
               <CardDescription className="text-white/70">
@@ -515,7 +515,7 @@ export default function AdminPensumsPage() {
               ) : !materias.length ? (
                 <p className="text-white/70">Aún no hay materias para mostrar el flujo.</p>
               ) : (
-                <div className="h-[70vh] rounded-lg border border-white/10 bg-[#203324] overflow-hidden">
+                <div className="h-[70vh] rounded-lg border border-white/10 bg-[var(--mygreen)] overflow-hidden">
                   <PensumFlowchart
                     materias={materias as any}
                     materiasEstudiante={[]}
@@ -529,27 +529,27 @@ export default function AdminPensumsPage() {
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="bg-[#354B3A] border-white/10 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-[var(--mygreen-light)] border-white/10 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editing ? "Editar materia" : "Nueva materia"}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-3 py-2">
             <div className="grid gap-1">
               <Label className="text-white/80">Código</Label>
-              <Input className="bg-[#1C2D20] border-white/10 text-white" value={form.codigo} onChange={(e) => setForm((f) => ({ ...f, codigo: e.target.value }))} />
+              <Input className="bg-[var(--mygreen-dark)] border-white/10 text-white" value={form.codigo} onChange={(e) => setForm((f) => ({ ...f, codigo: e.target.value }))} />
             </div>
             <div className="grid gap-1">
               <Label className="text-white/80">Nombre</Label>
-              <Input className="bg-[#1C2D20] border-white/10 text-white" value={form.nombre} onChange={(e) => setForm((f) => ({ ...f, nombre: e.target.value }))} />
+              <Input className="bg-[var(--mygreen-dark)] border-white/10 text-white" value={form.nombre} onChange={(e) => setForm((f) => ({ ...f, nombre: e.target.value }))} />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div className="grid gap-1">
                 <Label className="text-white/80">Semestre</Label>
                 <Select value={form.semestre} onValueChange={(v) => setForm((f) => ({ ...f, semestre: v }))}>
-                  <SelectTrigger className="bg-[#1C2D20] border-white/20 text-white">
+                  <SelectTrigger className="bg-[var(--mygreen-dark)] border-white/20 text-white">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-[#203324] border-white/10 text-white">
+                  <SelectContent className="bg-[var(--mygreen)] border-white/10 text-white">
                     {SEMESTRES.map((s) => (
                       <SelectItem key={s} value={s}>
                         {s}
@@ -560,19 +560,19 @@ export default function AdminPensumsPage() {
               </div>
               <div className="grid gap-1">
                 <Label className="text-white/80">Créditos</Label>
-                <Input type="number" className="bg-[#1C2D20] border-white/10 text-white" value={form.creditos} onChange={(e) => setForm((f) => ({ ...f, creditos: Number(e.target.value) || 0 }))} />
+                <Input type="number" className="bg-[var(--mygreen-dark)] border-white/10 text-white" value={form.creditos} onChange={(e) => setForm((f) => ({ ...f, creditos: Number(e.target.value) || 0 }))} />
               </div>
               <div className="grid gap-1">
                 <Label className="text-white/80">Horas T/P</Label>
                 <div className="flex gap-2">
-                  <Input type="number" className="bg-[#1C2D20] border-white/10 text-white" value={form.horasTeoria} onChange={(e) => setForm((f) => ({ ...f, horasTeoria: Number(e.target.value) || 0 }))} />
-                  <Input type="number" className="bg-[#1C2D20] border-white/10 text-white" value={form.horasPractica} onChange={(e) => setForm((f) => ({ ...f, horasPractica: Number(e.target.value) || 0 }))} />
+                  <Input type="number" className="bg-[var(--mygreen-dark)] border-white/10 text-white" value={form.horasTeoria} onChange={(e) => setForm((f) => ({ ...f, horasTeoria: Number(e.target.value) || 0 }))} />
+                  <Input type="number" className="bg-[var(--mygreen-dark)] border-white/10 text-white" value={form.horasPractica} onChange={(e) => setForm((f) => ({ ...f, horasPractica: Number(e.target.value) || 0 }))} />
                 </div>
               </div>
             </div>
             <div className="grid gap-1">
               <Label className="text-white/80">Prerrequisitos</Label>
-              <div className="max-h-40 overflow-auto rounded-lg border border-white/10 bg-[#1C2D20] p-2 space-y-1">
+              <div className="max-h-40 overflow-auto rounded-lg border border-white/10 bg-[var(--mygreen-dark)] p-2 space-y-1">
                 {materias
                   .filter((m) => !editing || m.id !== editing.id)
                   .map((m) => {
@@ -603,7 +603,7 @@ export default function AdminPensumsPage() {
             <Button type="button" variant="outline" className="border-white/20 text-white hover:bg-white/10" onClick={() => setDialogOpen(false)}>
               Cancelar
             </Button>
-            <Button type="button" className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white" onClick={() => void save()} disabled={saving}>
+            <Button type="button" className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white" onClick={() => void save()} disabled={saving}>
               {saving ? "Guardando..." : editing ? "Actualizar" : "Crear"}
             </Button>
           </DialogFooter>
@@ -611,26 +611,26 @@ export default function AdminPensumsPage() {
       </Dialog>
 
       <Dialog open={institutionDialogOpen} onOpenChange={setInstitutionDialogOpen}>
-        <DialogContent className="bg-[#354B3A] border-white/10 text-white max-w-2xl">
+        <DialogContent className="bg-[var(--mygreen-light)] border-white/10 text-white max-w-2xl">
           <DialogHeader>
             <DialogTitle>Nueva institución</DialogTitle>
           </DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="grid gap-1">
               <Label className="text-white/80">Nombre</Label>
-              <Input className="bg-[#1C2D20] border-white/10 text-white" value={institutionForm.nombre} onChange={(e) => setInstitutionForm((f) => ({ ...f, nombre: e.target.value }))} />
+              <Input className="bg-[var(--mygreen-dark)] border-white/10 text-white" value={institutionForm.nombre} onChange={(e) => setInstitutionForm((f) => ({ ...f, nombre: e.target.value }))} />
             </div>
             <div className="grid gap-1">
               <Label className="text-white/80">Siglas</Label>
-              <Input className="bg-[#1C2D20] border-white/10 text-white" value={institutionForm.siglas} onChange={(e) => setInstitutionForm((f) => ({ ...f, siglas: e.target.value.toUpperCase() }))} />
+              <Input className="bg-[var(--mygreen-dark)] border-white/10 text-white" value={institutionForm.siglas} onChange={(e) => setInstitutionForm((f) => ({ ...f, siglas: e.target.value.toUpperCase() }))} />
             </div>
             <div className="grid gap-1">
               <Label className="text-white/80">Tipo</Label>
               <Select value={institutionForm.tipo} onValueChange={(value) => setInstitutionForm((f) => ({ ...f, tipo: value }))}>
-                <SelectTrigger className="bg-[#1C2D20] border-white/20 text-white">
+                <SelectTrigger className="bg-[var(--mygreen-dark)] border-white/20 text-white">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-[#203324] border-white/10 text-white">
+                <SelectContent className="bg-[var(--mygreen)] border-white/10 text-white">
                   <SelectItem value="UNIVERSIDAD">Universidad</SelectItem>
                   <SelectItem value="INSTITUTO">Instituto</SelectItem>
                 </SelectContent>
@@ -638,34 +638,34 @@ export default function AdminPensumsPage() {
             </div>
             <div className="grid gap-1">
               <Label className="text-white/80">Estado</Label>
-              <Input className="bg-[#1C2D20] border-white/10 text-white" value={institutionForm.estado} onChange={(e) => setInstitutionForm((f) => ({ ...f, estado: e.target.value }))} />
+              <Input className="bg-[var(--mygreen-dark)] border-white/10 text-white" value={institutionForm.estado} onChange={(e) => setInstitutionForm((f) => ({ ...f, estado: e.target.value }))} />
             </div>
             <div className="grid gap-1">
               <Label className="text-white/80">Ciudad</Label>
-              <Input className="bg-[#1C2D20] border-white/10 text-white" value={institutionForm.ciudad} onChange={(e) => setInstitutionForm((f) => ({ ...f, ciudad: e.target.value }))} />
+              <Input className="bg-[var(--mygreen-dark)] border-white/10 text-white" value={institutionForm.ciudad} onChange={(e) => setInstitutionForm((f) => ({ ...f, ciudad: e.target.value }))} />
             </div>
             <div className="grid gap-1">
               <Label className="text-white/80">Teléfono</Label>
-              <Input className="bg-[#1C2D20] border-white/10 text-white" value={institutionForm.telefono} onChange={(e) => setInstitutionForm((f) => ({ ...f, telefono: e.target.value }))} />
+              <Input className="bg-[var(--mygreen-dark)] border-white/10 text-white" value={institutionForm.telefono} onChange={(e) => setInstitutionForm((f) => ({ ...f, telefono: e.target.value }))} />
             </div>
             <div className="grid gap-1 md:col-span-2">
               <Label className="text-white/80">Dirección</Label>
-              <Input className="bg-[#1C2D20] border-white/10 text-white" value={institutionForm.direccion} onChange={(e) => setInstitutionForm((f) => ({ ...f, direccion: e.target.value }))} />
+              <Input className="bg-[var(--mygreen-dark)] border-white/10 text-white" value={institutionForm.direccion} onChange={(e) => setInstitutionForm((f) => ({ ...f, direccion: e.target.value }))} />
             </div>
             <div className="grid gap-1">
               <Label className="text-white/80">Email</Label>
-              <Input className="bg-[#1C2D20] border-white/10 text-white" value={institutionForm.email} onChange={(e) => setInstitutionForm((f) => ({ ...f, email: e.target.value }))} />
+              <Input className="bg-[var(--mygreen-dark)] border-white/10 text-white" value={institutionForm.email} onChange={(e) => setInstitutionForm((f) => ({ ...f, email: e.target.value }))} />
             </div>
             <div className="grid gap-1">
               <Label className="text-white/80">Website</Label>
-              <Input className="bg-[#1C2D20] border-white/10 text-white" value={institutionForm.website} onChange={(e) => setInstitutionForm((f) => ({ ...f, website: e.target.value }))} />
+              <Input className="bg-[var(--mygreen-dark)] border-white/10 text-white" value={institutionForm.website} onChange={(e) => setInstitutionForm((f) => ({ ...f, website: e.target.value }))} />
             </div>
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" className="border-white/20 text-white hover:bg-white/10" onClick={() => setInstitutionDialogOpen(false)}>
               Cancelar
             </Button>
-            <Button type="button" className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white" onClick={() => void createInstitution()} disabled={savingInstitution}>
+            <Button type="button" className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white" onClick={() => void createInstitution()} disabled={savingInstitution}>
               {savingInstitution ? "Guardando..." : "Crear institución"}
             </Button>
           </DialogFooter>
@@ -673,39 +673,39 @@ export default function AdminPensumsPage() {
       </Dialog>
 
       <Dialog open={careerDialogOpen} onOpenChange={setCareerDialogOpen}>
-        <DialogContent className="bg-[#354B3A] border-white/10 text-white max-w-xl">
+        <DialogContent className="bg-[var(--mygreen-light)] border-white/10 text-white max-w-xl">
           <DialogHeader>
             <DialogTitle>Nueva carrera</DialogTitle>
           </DialogHeader>
           <div className="grid gap-3">
             <div className="grid gap-1">
               <Label className="text-white/80">Nombre</Label>
-              <Input className="bg-[#1C2D20] border-white/10 text-white" value={careerForm.nombre} onChange={(e) => setCareerForm((f) => ({ ...f, nombre: e.target.value }))} />
+              <Input className="bg-[var(--mygreen-dark)] border-white/10 text-white" value={careerForm.nombre} onChange={(e) => setCareerForm((f) => ({ ...f, nombre: e.target.value }))} />
             </div>
             <div className="grid gap-1">
               <Label className="text-white/80">Código</Label>
-              <Input className="bg-[#1C2D20] border-white/10 text-white" value={careerForm.codigo} onChange={(e) => setCareerForm((f) => ({ ...f, codigo: e.target.value.toUpperCase() }))} />
+              <Input className="bg-[var(--mygreen-dark)] border-white/10 text-white" value={careerForm.codigo} onChange={(e) => setCareerForm((f) => ({ ...f, codigo: e.target.value.toUpperCase() }))} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="grid gap-1">
                 <Label className="text-white/80">Duración (semestres)</Label>
-                <Input type="number" className="bg-[#1C2D20] border-white/10 text-white" value={careerForm.duracion} onChange={(e) => setCareerForm((f) => ({ ...f, duracion: Number(e.target.value) || 1 }))} />
+                <Input type="number" className="bg-[var(--mygreen-dark)] border-white/10 text-white" value={careerForm.duracion} onChange={(e) => setCareerForm((f) => ({ ...f, duracion: Number(e.target.value) || 1 }))} />
               </div>
               <div className="grid gap-1">
                 <Label className="text-white/80">Créditos</Label>
-                <Input type="number" className="bg-[#1C2D20] border-white/10 text-white" value={careerForm.creditos} onChange={(e) => setCareerForm((f) => ({ ...f, creditos: Number(e.target.value) || 0 }))} />
+                <Input type="number" className="bg-[var(--mygreen-dark)] border-white/10 text-white" value={careerForm.creditos} onChange={(e) => setCareerForm((f) => ({ ...f, creditos: Number(e.target.value) || 0 }))} />
               </div>
             </div>
             <div className="grid gap-1">
               <Label className="text-white/80">Descripción</Label>
-              <Input className="bg-[#1C2D20] border-white/10 text-white" value={careerForm.descripcion} onChange={(e) => setCareerForm((f) => ({ ...f, descripcion: e.target.value }))} />
+              <Input className="bg-[var(--mygreen-dark)] border-white/10 text-white" value={careerForm.descripcion} onChange={(e) => setCareerForm((f) => ({ ...f, descripcion: e.target.value }))} />
             </div>
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" className="border-white/20 text-white hover:bg-white/10" onClick={() => setCareerDialogOpen(false)}>
               Cancelar
             </Button>
-            <Button type="button" className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white" onClick={() => void createCareer()} disabled={savingCareer}>
+            <Button type="button" className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white" onClick={() => void createCareer()} disabled={savingCareer}>
               {savingCareer ? "Guardando..." : "Crear carrera"}
             </Button>
           </DialogFooter>

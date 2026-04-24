@@ -116,10 +116,10 @@ export function PagoBsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#354B3A] border-white/10 text-white max-w-md">
+      <DialogContent className="bg-[var(--mygreen-light)] border-white/10 text-white max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-white">
-            <Banknote className="w-5 h-5 text-[#40C9A9]" />
+            <Banknote className="w-5 h-5 text-[var(--accent-hex)]" />
             Pago en Bs (pago móvil)
           </DialogTitle>
           <DialogDescription className="text-white/70">
@@ -139,14 +139,14 @@ export function PagoBsDialog({
               value={selectedPlan ? selectedPlan.name : "—"}
               readOnly
               disabled
-              className="bg-[#1C2D20] border-white/10 text-white/90 cursor-not-allowed"
+              className="bg-[var(--mygreen-dark)] border-white/10 text-white/90 cursor-not-allowed"
             />
           </div>
 
           <div className="space-y-2">
             <Label className="text-white/80">Monto en Bs</Label>
             {bcvLoading ? (
-              <div className="flex items-center gap-2 rounded-lg bg-[#1C2D20] border border-white/10 px-3 py-2 text-white/70">
+              <div className="flex items-center gap-2 rounded-lg bg-[var(--mygreen-dark)] border border-white/10 px-3 py-2 text-white/70">
                 <Loader2 className="w-4 h-4 animate-spin" />
                 Obteniendo tasa BCV...
               </div>
@@ -159,7 +159,7 @@ export function PagoBsDialog({
                 value={montoBs != null ? `Bs ${montoBs.toLocaleString()}` : "—"}
                 readOnly
                 disabled
-                className="bg-[#1C2D20] border-white/10 text-white/90 cursor-not-allowed"
+                className="bg-[var(--mygreen-dark)] border-white/10 text-white/90 cursor-not-allowed"
               />
             )}
           </div>
@@ -169,7 +169,7 @@ export function PagoBsDialog({
             <Input
               value={referenceLast4}
               onChange={(e) => setReferenceLast4(e.target.value.replace(/\D/g, "").slice(0, 4))}
-              className="bg-[#1C2D20] border-white/10 text-white placeholder:text-white/50"
+              className="bg-[var(--mygreen-dark)] border-white/10 text-white placeholder:text-white/50"
               placeholder="Ej: 1234"
               maxLength={4}
               disabled={submitting}
@@ -181,7 +181,7 @@ export function PagoBsDialog({
             <Input
               value={bank}
               onChange={(e) => setBank(e.target.value)}
-              className="bg-[#1C2D20] border-white/10 text-white placeholder:text-white/50"
+              className="bg-[var(--mygreen-dark)] border-white/10 text-white placeholder:text-white/50"
               placeholder="Ej: Banco de Venezuela"
               disabled={submitting}
             />
@@ -189,7 +189,7 @@ export function PagoBsDialog({
 
           <Button
             type="button"
-            className="w-full bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+            className="w-full bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
             disabled={submitting || !selectedPlan || montoBs == null || montoBs <= 0 || bcvLoading || bcvError}
             onClick={() => void submit()}
           >

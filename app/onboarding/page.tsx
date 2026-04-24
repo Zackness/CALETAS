@@ -540,7 +540,7 @@ export default function OnboardingPage() {
           <div className="space-y-4 p-4 border-2 border-mygreen/30 rounded-lg bg-mygreen/10">
             <div className="space-y-1">
               <h3 className="text-white font-semibold flex items-center gap-2">
-                <FileText className="h-5 w-5 text-[#40C9A9]" />
+                <FileText className="h-5 w-5 text-[var(--accent-hex)]" />
                 Verifica tu correo
               </h3>
               <p className="text-sm text-white/70">
@@ -565,7 +565,7 @@ export default function OnboardingPage() {
                   type="button"
                   onClick={verifyEmailCode}
                   disabled={verifyingCode || sendingCode}
-                  className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                  className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
                 >
                   {verifyingCode ? "Verificando..." : "Verificar"}
                 </Button>
@@ -602,7 +602,7 @@ export default function OnboardingPage() {
                 type="button"
                 className={`rounded-lg px-3 py-2 text-sm border transition-colors ${
                   docTipo === "carnet"
-                    ? "border-[#40C9A9]/50 bg-[#40C9A9]/15 text-white"
+                    ? "border-[color-mix(in_oklab,var(--accent-hex)_50%,transparent)] bg-[color-mix(in_oklab,var(--accent-hex)_15%,transparent)] text-white"
                     : "border-white/10 bg-white/5 text-white/80 hover:bg-white/10 hover:text-white"
                 }`}
                 onClick={() => {
@@ -618,7 +618,7 @@ export default function OnboardingPage() {
                 type="button"
                 className={`rounded-lg px-3 py-2 text-sm border transition-colors ${
                   docTipo === "planilla"
-                    ? "border-[#40C9A9]/50 bg-[#40C9A9]/15 text-white"
+                    ? "border-[color-mix(in_oklab,var(--accent-hex)_50%,transparent)] bg-[color-mix(in_oklab,var(--accent-hex)_15%,transparent)] text-white"
                     : "border-white/10 bg-white/5 text-white/80 hover:bg-white/10 hover:text-white"
                 }`}
                 onClick={() => {

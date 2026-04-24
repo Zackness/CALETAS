@@ -49,7 +49,7 @@ export default function BibliotecaPage() {
       <div className="container mx-auto px-4 py-8 space-y-6">
         <div>
           <h1 className="text-3xl font-special text-white mb-2 flex items-center gap-2">
-            <Library className="w-8 h-8 text-[#40C9A9]" />
+            <Library className="w-8 h-8 text-[var(--accent-hex)]" />
             Biblioteca
           </h1>
           <p className="text-white/70 max-w-2xl">
@@ -60,10 +60,10 @@ export default function BibliotecaPage() {
         <div className="grid gap-4 md:grid-cols-2">
           {obras.map((o) => (
             <Link key={o.id} href={`/biblioteca/${encodeURIComponent(o.slug)}`}>
-              <Card className="bg-[#354B3A] border-white/10 hover:border-[#40C9A9]/40 transition-colors h-full">
+              <Card className="bg-[var(--mygreen-light)] border-white/10 hover:border-[color-mix(in_oklab,var(--accent-hex)_40%,transparent)] transition-colors h-full">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2 text-lg">
-                    <BookMarked className="w-5 h-5 text-[#40C9A9]" />
+                    <BookMarked className="w-5 h-5 text-[var(--accent-hex)]" />
                     {o.titulo}
                   </CardTitle>
                   {o.descripcion ? (
@@ -71,7 +71,7 @@ export default function BibliotecaPage() {
                   ) : null}
                 </CardHeader>
                 <CardContent>
-                  <span className="text-sm text-[#40C9A9]">Leer en la app →</span>
+                  <span className="text-sm text-[var(--accent-hex)]">Leer en la app →</span>
                 </CardContent>
               </Card>
             </Link>

@@ -84,18 +84,18 @@ export default function AdminBibliotecaPage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-3xl font-special text-white mb-1 flex items-center gap-2">
-              <BookMarked className="w-7 h-7 text-[#40C9A9]" />
+              <BookMarked className="w-7 h-7 text-[var(--accent-hex)]" />
               Biblioteca (admin)
             </h1>
             <p className="text-white/70 text-sm">Obras en Markdown. Los usuarios leen en la app; no hay descarga.</p>
           </div>
-          <Button className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white" onClick={() => void createDraftAndOpen()}>
+          <Button className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white" onClick={() => void createDraftAndOpen()}>
             <PlusCircle className="w-4 h-4 mr-2" />
             Nueva obra
           </Button>
         </div>
 
-        <Card className="bg-[#354B3A] border-white/10">
+        <Card className="bg-[var(--mygreen-light)] border-white/10">
           <CardHeader>
             <CardTitle className="text-white">Obras</CardTitle>
             <CardDescription className="text-white/70">Solo publicadas las ve el usuario.</CardDescription>
@@ -106,7 +106,7 @@ export default function AdminBibliotecaPage() {
             ) : (
               <div className="rounded-lg border border-white/10 overflow-auto">
                 <table className="w-full text-sm">
-                  <thead className="bg-[#1C2D20] text-white/70">
+                  <thead className="bg-[var(--mygreen-dark)] text-white/70">
                     <tr>
                       <th className="px-3 py-2 text-left">Título</th>
                       <th className="px-3 py-2 text-left">Slug</th>
@@ -116,14 +116,14 @@ export default function AdminBibliotecaPage() {
                   </thead>
                   <tbody>
                     {obras.map((o) => (
-                      <tr key={o.id} className="border-t border-white/5 bg-[#203324]">
+                      <tr key={o.id} className="border-t border-white/5 bg-[var(--mygreen)]">
                         <td className="px-3 py-2 text-white">{o.titulo}</td>
                         <td className="px-3 py-2 text-white/80">{o.slug}</td>
                         <td className="px-3 py-2">
                           <Badge
                             className={
                               o.isPublished
-                                ? "bg-[#40C9A9]/20 text-[#40C9A9] border-[#40C9A9]/30"
+                                ? "bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)] text-[var(--accent-hex)] border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)]"
                                 : "bg-white/10 text-white/80 border-white/20"
                             }
                           >
@@ -135,7 +135,7 @@ export default function AdminBibliotecaPage() {
                             <Button
                               size="icon"
                               variant="outline"
-                              className="h-7 w-7 border-[#40C9A9]/40 bg-[#1C2D20] text-[#40C9A9] hover:bg-[#203324]"
+                              className="h-7 w-7 border-[color-mix(in_oklab,var(--accent-hex)_40%,transparent)] bg-[var(--mygreen-dark)] text-[var(--accent-hex)] hover:bg-[var(--mygreen)]"
                               onClick={() => router.push(`/editor/admin/biblioteca/${o.id}`)}
                             >
                               <Pencil className="w-3.5 h-3.5" />
@@ -143,7 +143,7 @@ export default function AdminBibliotecaPage() {
                             <Button
                               size="icon"
                               variant="outline"
-                              className="h-7 w-7 border-red-500/30 bg-[#1C2D20] text-red-300 hover:bg-red-500/10"
+                              className="h-7 w-7 border-red-500/30 bg-[var(--mygreen-dark)] text-red-300 hover:bg-red-500/10"
                               onClick={() => void remove(o)}
                             >
                               <Trash2 className="w-3.5 h-3.5" />

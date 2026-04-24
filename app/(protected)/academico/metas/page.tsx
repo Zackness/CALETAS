@@ -307,7 +307,7 @@ export default function MetasAcademicasPage() {
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button 
-                  className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                  className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
                   onClick={() => {
                     resetForm();
                     setIsDialogOpen(true);
@@ -317,7 +317,7 @@ export default function MetasAcademicasPage() {
                   Nueva Meta
                 </Button>
               </DialogTrigger>
-              <DialogContent className="bg-[#354B3A] border-white/10 text-white">
+              <DialogContent className="bg-[var(--mygreen-light)] border-white/10 text-white">
                 <DialogHeader>
                   <DialogTitle>
                     {editingMeta ? "Editar Meta" : "Crear Nueva Meta"}
@@ -336,7 +336,7 @@ export default function MetasAcademicasPage() {
                       id="titulo"
                       value={formData.titulo}
                       onChange={(e) => setFormData({...formData, titulo: e.target.value})}
-                      className="bg-[#1C2D20] border-white/20 text-white"
+                      className="bg-[var(--mygreen-dark)] border-white/20 text-white"
                       placeholder="Ej: Alcanzar promedio de 18 puntos"
                       required
                     />
@@ -348,7 +348,7 @@ export default function MetasAcademicasPage() {
                       id="descripcion"
                       value={formData.descripcion}
                       onChange={(e) => setFormData({...formData, descripcion: e.target.value})}
-                      className="bg-[#1C2D20] border-white/20 text-white"
+                      className="bg-[var(--mygreen-dark)] border-white/20 text-white"
                       placeholder="Describe tu meta en detalle..."
                       rows={3}
                     />
@@ -361,10 +361,10 @@ export default function MetasAcademicasPage() {
                       onValueChange={(value) => setFormData({...formData, tipo: value})}
                       required
                     >
-                      <SelectTrigger className="bg-[#1C2D20] border-white/20 text-white">
+                      <SelectTrigger className="bg-[var(--mygreen-dark)] border-white/20 text-white">
                         <SelectValue placeholder="Selecciona el tipo de meta" />
                       </SelectTrigger>
-                      <SelectContent className="bg-[#354B3A] border-white/10">
+                      <SelectContent className="bg-[var(--mygreen-light)] border-white/10">
                         <SelectItem value="PROMEDIO_GENERAL">Promedio General</SelectItem>
                         <SelectItem value="MATERIAS_APROBADAS">Materias Aprobadas</SelectItem>
                         <SelectItem value="CREDITOS_COMPLETADOS">Créditos Completados</SelectItem>
@@ -383,10 +383,10 @@ export default function MetasAcademicasPage() {
                         onValueChange={(value) => setFormData({...formData, tipo: value})}
                         required
                       >
-                        <SelectTrigger className="bg-[#1C2D20] border-white/20 text-white">
+                        <SelectTrigger className="bg-[var(--mygreen-dark)] border-white/20 text-white">
                           <SelectValue placeholder="Selecciona el tipo de meta" />
                         </SelectTrigger>
-                        <SelectContent className="bg-[#354B3A] border-white/10">
+                        <SelectContent className="bg-[var(--mygreen-light)] border-white/10">
                           <SelectItem value="PROMEDIO_GENERAL">📊 Promedio General</SelectItem>
                           <SelectItem value="MATERIAS_APROBADAS">📚 Materias Aprobadas</SelectItem>
                           <SelectItem value="CREDITOS_COMPLETADOS">🎓 Créditos Completados</SelectItem>
@@ -399,8 +399,8 @@ export default function MetasAcademicasPage() {
 
                     {/* Explicación dinámica según el tipo */}
                     {formData.tipo && (
-                      <div className="p-3 bg-[#1C2D20] rounded-lg border border-[#40C9A9]/20">
-                        <h4 className="text-[#40C9A9] font-medium mb-2">
+                      <div className="p-3 bg-[var(--mygreen-dark)] rounded-lg border border-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)]">
+                        <h4 className="text-[var(--accent-hex)] font-medium mb-2">
                           {getTipoNombre(formData.tipo)} - ¿Cómo funciona?
                         </h4>
                         <p className="text-white/70 text-sm">
@@ -445,7 +445,7 @@ export default function MetasAcademicasPage() {
                           max={formData.tipo === "PROMEDIO_GENERAL" ? "20" : formData.tipo === "SEMESTRE_ESPECIFICO" ? "10" : "999"}
                           value={formData.valorObjetivo}
                           onChange={(e) => setFormData({...formData, valorObjetivo: parseFloat(e.target.value)})}
-                          className="bg-[#1C2D20] border-white/20 text-white"
+                          className="bg-[var(--mygreen-dark)] border-white/20 text-white"
                           placeholder={
                             formData.tipo === "PROMEDIO_GENERAL" ? "18.0" :
                             formData.tipo === "MATERIAS_APROBADAS" ? "10" :
@@ -483,7 +483,7 @@ export default function MetasAcademicasPage() {
                           max={formData.tipo === "PROMEDIO_GENERAL" ? "20" : formData.tipo === "SEMESTRE_ESPECIFICO" ? "10" : "999"}
                           value={formData.valorActual}
                           onChange={(e) => setFormData({...formData, valorActual: parseFloat(e.target.value)})}
-                          className="bg-[#1C2D20] border-white/20 text-white"
+                          className="bg-[var(--mygreen-dark)] border-white/20 text-white"
                           placeholder={
                             formData.tipo === "PROMEDIO_GENERAL" ? "16.5" :
                             formData.tipo === "MATERIAS_APROBADAS" ? "7" :
@@ -514,10 +514,10 @@ export default function MetasAcademicasPage() {
                           onValueChange={(value) => setFormData({...formData, materiaId: value})}
                           required
                         >
-                          <SelectTrigger className="bg-[#1C2D20] border-white/20 text-white">
+                          <SelectTrigger className="bg-[var(--mygreen-dark)] border-white/20 text-white">
                             <SelectValue placeholder="Selecciona la materia que quieres aprobar" />
                           </SelectTrigger>
-                          <SelectContent className="bg-[#354B3A] border-white/10">
+                          <SelectContent className="bg-[var(--mygreen-light)] border-white/10">
                             {materias.map((materia) => (
                               <SelectItem key={materia.id} value={materia.id}>
                                 {materia.codigo} - {materia.nombre} (S{materia.semestre})
@@ -539,7 +539,7 @@ export default function MetasAcademicasPage() {
                       type="date"
                       value={formData.fechaLimite}
                       onChange={(e) => setFormData({...formData, fechaLimite: e.target.value})}
-                      className="bg-[#1C2D20] border-white/20 text-white"
+                      className="bg-[var(--mygreen-dark)] border-white/20 text-white"
                     />
                   </div>
                   
@@ -554,7 +554,7 @@ export default function MetasAcademicasPage() {
                     </Button>
                     <Button 
                       type="submit" 
-                      className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                      className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
                     >
                       {editingMeta ? "Actualizar" : "Crear"} Meta
                     </Button>
@@ -566,17 +566,17 @@ export default function MetasAcademicasPage() {
         </div>
 
         {/* Guía de uso */}
-        <Card className="bg-[#354B3A] border-white/10 mb-6">
+        <Card className="bg-[var(--mygreen-light)] border-white/10 mb-6">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
-              <Lightbulb className="w-5 h-5 text-[#40C9A9]" />
+              <Lightbulb className="w-5 h-5 text-[var(--accent-hex)]" />
               ¿Cómo funcionan las Metas Académicas?
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-3">
-                <h4 className="text-[#40C9A9] font-medium">📊 Tipos de Metas:</h4>
+                <h4 className="text-[var(--accent-hex)] font-medium">📊 Tipos de Metas:</h4>
                 <ul className="text-white/70 text-sm space-y-2">
                   <li><strong>Promedio General:</strong> Establece tu meta de calificación (ej: 18.0 puntos)</li>
                   <li><strong>Materias Aprobadas:</strong> Define cuántas materias quieres aprobar (ej: 10 materias)</li>
@@ -587,14 +587,14 @@ export default function MetasAcademicasPage() {
                 </ul>
               </div>
               <div className="space-y-3">
-                <h4 className="text-[#40C9A9] font-medium">🎯 Cómo establecer metas:</h4>
+                <h4 className="text-[var(--accent-hex)] font-medium">🎯 Cómo establecer metas:</h4>
                 <ul className="text-white/70 text-sm space-y-2">
                   <li><strong>Valor Objetivo:</strong> Es tu meta final (lo que quieres alcanzar)</li>
                   <li><strong>Valor Actual:</strong> Es tu progreso actual (donde estás ahora)</li>
                   <li><strong>Progreso:</strong> Se calcula automáticamente y se muestra visualmente</li>
                   <li><strong>Fecha Límite:</strong> Opcional, para establecer un plazo</li>
                 </ul>
-                <div className="p-3 bg-[#1C2D20] rounded-lg">
+                <div className="p-3 bg-[var(--mygreen-dark)] rounded-lg">
                   <p className="text-white text-sm">
                     <strong>Ejemplo:</strong> Si quieres alcanzar un promedio de 18.0 y actualmente tienes 16.5:
                     <br />
@@ -612,12 +612,12 @@ export default function MetasAcademicasPage() {
 
         {/* Estadísticas */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-[#354B3A] border-white/10">
+          <Card className="bg-[var(--mygreen-light)] border-white/10">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-white/70">
                 Total de Metas
               </CardTitle>
-              <Target className="h-4 w-4 text-[#40C9A9]" />
+              <Target className="h-4 w-4 text-[var(--accent-hex)]" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-white">{metas.length}</div>
@@ -627,12 +627,12 @@ export default function MetasAcademicasPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-[#354B3A] border-white/10">
+          <Card className="bg-[var(--mygreen-light)] border-white/10">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-white/70">
                 Metas Activas
               </CardTitle>
-              <Clock className="h-4 w-4 text-[#40C9A9]" />
+              <Clock className="h-4 w-4 text-[var(--accent-hex)]" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-white">{metasActivas.length}</div>
@@ -642,12 +642,12 @@ export default function MetasAcademicasPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-[#354B3A] border-white/10">
+          <Card className="bg-[var(--mygreen-light)] border-white/10">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-white/70">
                 Metas Completadas
               </CardTitle>
-              <CheckCircle className="h-4 w-4 text-[#40C9A9]" />
+              <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-white">{metasCompletadas.length}</div>
@@ -657,12 +657,12 @@ export default function MetasAcademicasPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-[#354B3A] border-white/10">
+          <Card className="bg-[var(--mygreen-light)] border-white/10">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-white/70">
                 Progreso General
               </CardTitle>
-              <TrendingUp className="h-4 w-4 text-[#40C9A9]" />
+              <TrendingUp className="h-4 w-4 text-[var(--accent-hex)]" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-white">{progresoGeneral.toFixed(1)}%</div>
@@ -676,11 +676,11 @@ export default function MetasAcademicasPage() {
 
         {/* Tabs */}
         <Tabs defaultValue="activas" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 bg-[#354B3A] border-white/10">
-            <TabsTrigger value="activas" className="text-white data-[state=active]:bg-[#40C9A9] data-[state=active]:text-white">
+          <TabsList className="grid w-full grid-cols-2 bg-[var(--mygreen-light)] border-white/10">
+            <TabsTrigger value="activas" className="text-white data-[state=active]:bg-[var(--accent-hex)] data-[state=active]:text-white">
               Metas Activas ({metasActivas.length})
             </TabsTrigger>
-            <TabsTrigger value="completadas" className="text-white data-[state=active]:bg-[#40C9A9] data-[state=active]:text-white">
+            <TabsTrigger value="completadas" className="text-white data-[state=active]:bg-[var(--accent-hex)] data-[state=active]:text-white">
               Completadas ({metasCompletadas.length})
             </TabsTrigger>
           </TabsList>
@@ -688,7 +688,7 @@ export default function MetasAcademicasPage() {
           {/* Metas Activas */}
           <TabsContent value="activas" className="space-y-4">
             {metasActivas.length === 0 ? (
-              <Card className="bg-[#354B3A] border-white/10">
+              <Card className="bg-[var(--mygreen-light)] border-white/10">
                 <CardContent className="text-center py-12">
                   <Target className="w-12 h-12 text-white/30 mx-auto mb-4" />
                   <h3 className="text-white font-medium mb-2">No tienes metas activas</h3>
@@ -696,7 +696,7 @@ export default function MetasAcademicasPage() {
                     Crea tu primera meta académica para comenzar a trabajar en tus objetivos
                   </p>
                   <Button 
-                    className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                    className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
                     onClick={() => {
                       resetForm();
                       setIsDialogOpen(true);
@@ -710,7 +710,7 @@ export default function MetasAcademicasPage() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {metasActivas.map((meta) => (
-                  <Card key={meta.id} className="bg-[#354B3A] border-white/10">
+                  <Card key={meta.id} className="bg-[var(--mygreen-light)] border-white/10">
                     <CardHeader>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
@@ -775,7 +775,7 @@ export default function MetasAcademicasPage() {
                         <div className="flex gap-2">
                           <Button 
                             size="sm"
-                            className="flex-1 bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                            className="flex-1 bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
                             onClick={() => handleToggleComplete(meta)}
                           >
                             <CheckCircle className="w-4 h-4 mr-1" />
@@ -799,7 +799,7 @@ export default function MetasAcademicasPage() {
                                 <Trash2 className="w-4 h-4" />
                               </Button>
                             </AlertDialogTrigger>
-                            <AlertDialogContent className="bg-[#354B3A] border-white/10">
+                            <AlertDialogContent className="bg-[var(--mygreen-light)] border-white/10">
                               <AlertDialogHeader>
                                 <AlertDialogTitle className="text-white">
                                   ¿Eliminar meta?
@@ -833,7 +833,7 @@ export default function MetasAcademicasPage() {
           {/* Metas Completadas */}
           <TabsContent value="completadas" className="space-y-4">
             {metasCompletadas.length === 0 ? (
-              <Card className="bg-[#354B3A] border-white/10">
+              <Card className="bg-[var(--mygreen-light)] border-white/10">
                 <CardContent className="text-center py-12">
                   <Award className="w-12 h-12 text-white/30 mx-auto mb-4" />
                   <h3 className="text-white font-medium mb-2">No hay metas completadas</h3>
@@ -845,7 +845,7 @@ export default function MetasAcademicasPage() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {metasCompletadas.map((meta) => (
-                  <Card key={meta.id} className="bg-[#354B3A] border-white/10">
+                  <Card key={meta.id} className="bg-[var(--mygreen-light)] border-white/10">
                     <CardHeader>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
@@ -918,7 +918,7 @@ export default function MetasAcademicasPage() {
                                 <Trash2 className="w-4 h-4" />
                               </Button>
                             </AlertDialogTrigger>
-                            <AlertDialogContent className="bg-[#354B3A] border-white/10">
+                            <AlertDialogContent className="bg-[var(--mygreen-light)] border-white/10">
                               <AlertDialogHeader>
                                 <AlertDialogTitle className="text-white">
                                   ¿Eliminar meta?

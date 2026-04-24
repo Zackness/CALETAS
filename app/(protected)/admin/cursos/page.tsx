@@ -178,26 +178,26 @@ export default function AdminCursosPage() {
               </Link>
             </Button>
             <h1 className="text-3xl font-special text-white flex items-center gap-2">
-              <Library className="w-8 h-8 text-[#40C9A9]" />
+              <Library className="w-8 h-8 text-[var(--accent-hex)]" />
               Cursos y tutoriales
             </h1>
             <p className="text-white/70 mt-1">
               Gestiona los cursos y tutoriales que ven los estudiantes. Solo admin puede crear o editar.
             </p>
             <p className="text-xs text-white/60 mt-1">
-              Para imágenes usa la Biblioteca de medios en <span className="text-[#40C9A9]">Admin &gt; Biblioteca de medios</span> (Bunny `caletas/`).
+              Para imágenes usa la Biblioteca de medios en <span className="text-[var(--accent-hex)]">Admin &gt; Biblioteca de medios</span> (Bunny `caletas/`).
             </p>
           </div>
           <Button
             onClick={openCreate}
-            className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+            className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
           >
             <PlusCircle className="w-4 h-4 mr-2" />
             Nuevo curso
           </Button>
         </div>
 
-        <Card className="bg-[#354B3A] border-white/10">
+        <Card className="bg-[var(--mygreen-light)] border-white/10">
           <CardHeader>
             <CardTitle className="text-white">Listado de cursos</CardTitle>
             <CardDescription className="text-white/70">
@@ -260,7 +260,7 @@ export default function AdminCursosPage() {
         </Card>
 
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="bg-[#354B3A] border-white/10 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="bg-[var(--mygreen-light)] border-white/10 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editing ? "Editar curso" : "Nuevo curso"}</DialogTitle>
               <CardDescription className="text-white/70">
@@ -273,7 +273,7 @@ export default function AdminCursosPage() {
                 <Input
                   value={form.titulo}
                   onChange={(e) => setForm((f) => ({ ...f, titulo: e.target.value }))}
-                  className="bg-[#1C2D20] border-white/10 text-white"
+                  className="bg-[var(--mygreen-dark)] border-white/10 text-white"
                   placeholder="Ej: Introducción a Python"
                 />
               </div>
@@ -282,7 +282,7 @@ export default function AdminCursosPage() {
                 <Input
                   value={form.tema}
                   onChange={(e) => setForm((f) => ({ ...f, tema: e.target.value }))}
-                  className="bg-[#1C2D20] border-white/10 text-white"
+                  className="bg-[var(--mygreen-dark)] border-white/10 text-white"
                   placeholder="Ej: Programación"
                 />
               </div>
@@ -291,7 +291,7 @@ export default function AdminCursosPage() {
                 <Input
                   value={form.descripcion}
                   onChange={(e) => setForm((f) => ({ ...f, descripcion: e.target.value }))}
-                  className="bg-[#1C2D20] border-white/10 text-white"
+                  className="bg-[var(--mygreen-dark)] border-white/10 text-white"
                   placeholder="Breve resumen"
                 />
               </div>
@@ -300,7 +300,7 @@ export default function AdminCursosPage() {
                 <Input
                   value={form.urlVideo}
                   onChange={(e) => setForm((f) => ({ ...f, urlVideo: e.target.value }))}
-                  className="bg-[#1C2D20] border-white/10 text-white"
+                  className="bg-[var(--mygreen-dark)] border-white/10 text-white"
                   placeholder="https://www.youtube.com/watch?v=..."
                 />
               </div>
@@ -310,7 +310,7 @@ export default function AdminCursosPage() {
                   <Input
                     value={form.imagenUrl}
                     onChange={(e) => setForm((f) => ({ ...f, imagenUrl: e.target.value }))}
-                    className="bg-[#1C2D20] border-white/10 text-white"
+                    className="bg-[var(--mygreen-dark)] border-white/10 text-white"
                     placeholder="https://..."
                   />
                   <Button
@@ -332,7 +332,7 @@ export default function AdminCursosPage() {
                   type="number"
                   value={form.orden}
                   onChange={(e) => setForm((f) => ({ ...f, orden: parseInt(e.target.value, 10) || 0 }))}
-                  className="bg-[#1C2D20] border-white/10 text-white"
+                  className="bg-[var(--mygreen-dark)] border-white/10 text-white"
                 />
               </div>
               <div className="grid gap-2">
@@ -340,7 +340,7 @@ export default function AdminCursosPage() {
                 <textarea
                   value={form.contenido}
                   onChange={(e) => setForm((f) => ({ ...f, contenido: e.target.value }))}
-                  className="min-h-[120px] w-full rounded-lg bg-[#1C2D20] border border-white/10 text-white px-3 py-2 placeholder:text-white/50"
+                  className="min-h-[120px] w-full rounded-lg bg-[var(--mygreen-dark)] border border-white/10 text-white px-3 py-2 placeholder:text-white/50"
                   placeholder="Contenido del curso o tutorial..."
                 />
               </div>
@@ -354,7 +354,7 @@ export default function AdminCursosPage() {
                 Cancelar
               </Button>
               <Button
-                className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
                 onClick={() => void save()}
                 disabled={saving}
               >
@@ -365,7 +365,7 @@ export default function AdminCursosPage() {
         </Dialog>
 
         <Dialog open={mediaDialogOpen} onOpenChange={setMediaDialogOpen}>
-          <DialogContent className="bg-[#354B3A] border-white/10 text-white max-w-3xl max-h-[85vh] overflow-y-auto">
+          <DialogContent className="bg-[var(--mygreen-light)] border-white/10 text-white max-w-3xl max-h-[85vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Seleccionar imagen desde biblioteca</DialogTitle>
             </DialogHeader>
@@ -374,12 +374,12 @@ export default function AdminCursosPage() {
                 <Input
                   value={mediaSubfolder}
                   onChange={(e) => setMediaSubfolder(e.target.value)}
-                  className="bg-[#1C2D20] border-white/10 text-white"
+                  className="bg-[var(--mygreen-dark)] border-white/10 text-white"
                   placeholder="Subcarpeta (ej: cursos)"
                 />
                 <Button
                   type="button"
-                  className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                  className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
                   onClick={() => void loadMediaFiles()}
                 >
                   Cargar
@@ -395,7 +395,7 @@ export default function AdminCursosPage() {
                     <button
                       key={file.url}
                       type="button"
-                      className="text-left rounded-lg border border-white/10 bg-[#1C2D20] p-3 hover:bg-[#203324]"
+                      className="text-left rounded-lg border border-white/10 bg-[var(--mygreen-dark)] p-3 hover:bg-[var(--mygreen)]"
                       onClick={() => {
                         setForm((f) => ({ ...f, imagenUrl: file.url }));
                         setMediaDialogOpen(false);

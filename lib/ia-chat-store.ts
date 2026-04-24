@@ -86,7 +86,7 @@ export function loadIAStore(): IAChatStore {
     const projects = (parsed.projects || []).map((p) => ({
       ...p,
       icon: (p as IAProject).icon || "📁",
-      color: (p as IAProject).color || "#40C9A9",
+      color: (p as IAProject).color || "var(--accent-hex)",
     })) as IAProject[];
     const projectFiles = Array.isArray(parsed.projectFiles) ? parsed.projectFiles : [];
     const threads = Array.isArray(parsed.threads) ? parsed.threads : [];

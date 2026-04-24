@@ -30,7 +30,7 @@ export default function TerminosYCondiciones() {
             ol: ({node, ...props}) => <ol className="list-decimal pl-6 mb-4" {...props} />,
             li: ({node, ...props}) => <li className="mb-2" {...props} />,
             strong: ({node, ...props}) => <strong className="font-bold text-white" {...props} />,
-            em: ({node, ...props}) => <em className="italic text-[#40C9A9]" {...props} />,
+            em: ({node, ...props}) => <em className="italic text-[var(--accent-hex)]" {...props} />,
           }}
         >
           {content}

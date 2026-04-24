@@ -210,10 +210,10 @@ export default function CuestionarioPage() {
 
         {!cuestionario ? (
           /* Selección de Recurso */
-          <Card className="bg-[#354B3A] border-white/10 max-w-2xl mx-auto">
+          <Card className="bg-[var(--mygreen-light)] border-white/10 max-w-2xl mx-auto">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
-                <Brain className="w-5 h-5 text-[#40C9A9]" />
+                <Brain className="w-5 h-5 text-[var(--accent-hex)]" />
                 Generar Cuestionario
               </CardTitle>
               <CardDescription className="text-white/70">
@@ -224,10 +224,10 @@ export default function CuestionarioPage() {
               <div className="space-y-2">
                 <label className="text-white font-medium">Seleccionar Recurso</label>
                 <Select value={recursoSeleccionado} onValueChange={setRecursoSeleccionado}>
-                  <SelectTrigger className="bg-[#1C2D20] border-white/10 text-white">
+                  <SelectTrigger className="bg-[var(--mygreen-dark)] border-white/10 text-white">
                     <SelectValue placeholder="Elige un recurso de tus caletas" />
                   </SelectTrigger>
-                  <SelectContent className="bg-[#1C2D20] border-white/10">
+                  <SelectContent className="bg-[var(--mygreen-dark)] border-white/10">
                     {recursos.map((recurso) => {
                       const tipoRecurso = getTipoRecurso(recurso);
                       return (
@@ -250,7 +250,7 @@ export default function CuestionarioPage() {
 
               <Button 
                 onClick={generarCuestionario}
-                className="w-full bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                className="w-full bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
                 disabled={!recursoSeleccionado || generando}
               >
                 {generando ? (
@@ -271,7 +271,7 @@ export default function CuestionarioPage() {
           /* Cuestionario */
           <div className="max-w-4xl mx-auto space-y-6">
             {/* Header del Cuestionario */}
-            <Card className="bg-[#354B3A] border-white/10">
+            <Card className="bg-[var(--mygreen-light)] border-white/10">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
@@ -285,7 +285,7 @@ export default function CuestionarioPage() {
                       variant="outline"
                       size="sm"
                       onClick={reiniciarCuestionario}
-                      className="border-[#40C9A9] text-[#40C9A9] hover:bg-[#40C9A9] hover:text-white"
+                      className="border-[var(--accent-hex)] text-[var(--accent-hex)] hover:bg-[var(--accent-hex)] hover:text-white"
                     >
                       <RotateCcw className="w-4 h-4 mr-1" />
                       Reiniciar
@@ -294,7 +294,7 @@ export default function CuestionarioPage() {
                       size="sm"
                       onClick={guardarCuestionario}
                       disabled={loading}
-                      className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                      className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
                     >
                       <Save className="w-4 h-4 mr-1" />
                       {loading ? "Guardando..." : "Guardar"}
@@ -306,7 +306,7 @@ export default function CuestionarioPage() {
 
             {!mostrarResultados ? (
               /* Pregunta Actual */
-              <Card className="bg-[#354B3A] border-white/10">
+              <Card className="bg-[var(--mygreen-light)] border-white/10">
                 <CardContent className="p-6">
                   <div className="space-y-6">
                     <div>
@@ -320,8 +320,8 @@ export default function CuestionarioPage() {
                             onClick={() => responderPregunta(index)}
                             className={`w-full p-4 text-left rounded-lg border transition-colors ${
                               respuestas[preguntaActual] === index
-                                ? "bg-[#40C9A9] text-white border-[#40C9A9]"
-                                : "bg-[#1C2D20] text-white border-white/10 hover:bg-[#203324]"
+                                ? "bg-[var(--accent-hex)] text-white border-[var(--accent-hex)]"
+                                : "bg-[var(--mygreen-dark)] text-white border-white/10 hover:bg-[var(--mygreen)]"
                             }`}
                           >
                             <span className="font-medium mr-2">{String.fromCharCode(65 + index)}.</span>
@@ -336,14 +336,14 @@ export default function CuestionarioPage() {
                         variant="outline"
                         onClick={preguntaAnterior}
                         disabled={preguntaActual === 0}
-                        className="border-[#40C9A9] text-[#40C9A9] hover:bg-[#40C9A9] hover:text-white"
+                        className="border-[var(--accent-hex)] text-[var(--accent-hex)] hover:bg-[var(--accent-hex)] hover:text-white"
                       >
                         Anterior
                       </Button>
                       <Button
                         onClick={siguientePregunta}
                         disabled={respuestas[preguntaActual] === -1}
-                        className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                        className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
                       >
                         {preguntaActual === cuestionario.preguntas.length - 1 ? "Ver Resultados" : "Siguiente"}
                       </Button>
@@ -353,17 +353,17 @@ export default function CuestionarioPage() {
               </Card>
             ) : (
               /* Resultados */
-              <Card className="bg-[#354B3A] border-white/10">
+              <Card className="bg-[var(--mygreen-light)] border-white/10">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5 text-[#40C9A9]" />
+                    <CheckCircle className="w-5 h-5 text-[var(--accent-hex)]" />
                     Resultados del Cuestionario
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   {/* Puntaje */}
                   <div className="text-center">
-                    <div className="text-4xl font-bold text-[#40C9A9] mb-2">
+                    <div className="text-4xl font-bold text-[var(--accent-hex)] mb-2">
                       {calcularPuntaje()}%
                     </div>
                     <p className="text-white/70">
@@ -376,7 +376,7 @@ export default function CuestionarioPage() {
                   {/* Revisión de Preguntas */}
                   <div className="space-y-4">
                     {cuestionario.preguntas.map((pregunta, index) => (
-                      <div key={pregunta.id} className="bg-[#1C2D20] rounded-lg p-4">
+                      <div key={pregunta.id} className="bg-[var(--mygreen-dark)] rounded-lg p-4">
                         <div className="flex items-start gap-3 mb-3">
                           {respuestas[index] === pregunta.respuestaCorrecta ? (
                             <CheckCircle className="w-5 h-5 text-green-400 mt-1 flex-shrink-0" />
@@ -416,7 +416,7 @@ export default function CuestionarioPage() {
                     <Button
                       variant="outline"
                       onClick={reiniciarCuestionario}
-                      className="border-[#40C9A9] text-[#40C9A9] hover:bg-[#40C9A9] hover:text-white"
+                      className="border-[var(--accent-hex)] text-[var(--accent-hex)] hover:bg-[var(--accent-hex)] hover:text-white"
                     >
                       <RotateCcw className="w-4 h-4 mr-1" />
                       Hacer Otro Cuestionario
@@ -424,7 +424,7 @@ export default function CuestionarioPage() {
                     <Button
                       onClick={guardarCuestionario}
                       disabled={loading}
-                      className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
+                      className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
                     >
                       <Save className="w-4 h-4 mr-1" />
                       {loading ? "Guardando..." : "Guardar Cuestionario"}
