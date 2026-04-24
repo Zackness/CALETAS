@@ -20,7 +20,7 @@ type StoryItem = {
 };
 
 type Bucket = {
-  autor: { id: string; name: string; image: string | null };
+  autor: { id: string; username?: string | null; name: string; image: string | null };
   items: StoryItem[];
 };
 
@@ -409,9 +409,11 @@ export function HomeHistoriasStrip() {
               </div>
 
               <div className="flex items-center justify-center gap-4 border-t border-white/10 bg-black/80 px-4 py-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] text-[11px] text-white/55">
-                <Link href={`/u/${currentBucket.autor.id}`} className="text-[var(--accent-hex)] hover:underline">
-                  Perfil
-                </Link>
+                {currentBucket.autor.username ? (
+                  <Link href={`/u/${currentBucket.autor.username}`} className="text-[var(--accent-hex)] hover:underline">
+                    Perfil
+                  </Link>
+                ) : null}
                 <span>
                   {itemIdx + 1}/{currentBucket.items.length}
                 </span>

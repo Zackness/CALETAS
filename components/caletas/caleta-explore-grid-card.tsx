@@ -16,7 +16,7 @@ export type CaletaExploreRecurso = {
   numFavoritos?: number;
   isFavorito?: boolean;
   materia: { codigo: string; nombre: string } | null;
-  autor: { id?: string; name: string };
+  autor: { id?: string; username?: string | null; name: string };
 };
 
 type Props = {
@@ -63,9 +63,9 @@ export function CaletaExploreGridCard({
           <div className="line-clamp-2 text-sm font-medium leading-snug text-white">{recurso.titulo}</div>
           <div className="mt-1 line-clamp-2 text-[11px] leading-snug text-white/55">
             {recurso.materia ? recurso.materia.codigo : "Genérica"} ·{" "}
-            {recurso.autor.id ? (
+            {recurso.autor.username ? (
               <Link
-                href={`/u/${recurso.autor.id}`}
+                href={`/u/${recurso.autor.username}`}
                 className="text-[color-mix(in_oklab,var(--accent-hex)_92%,transparent)] hover:underline"
                 onClick={(e) => e.stopPropagation()}
               >
@@ -139,7 +139,7 @@ export function recursoToExploreHref(recurso: { id: string; archivoUrl?: string 
   if (recurso.archivoUrl) {
     const urlParts = recurso.archivoUrl.split("/");
     const filename = urlParts[urlParts.length - 1];
-    return `/view-pdf/${encodeURIComponent(filename ?? "")}`;
+    return `/view-file/${encodeURIComponent(filename ?? "")}`;
   }
   return `/caletas/${recurso.id}`;
 }

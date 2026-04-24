@@ -49,7 +49,8 @@ interface Recurso {
     };
   } | null;
   autor: {
-        id: string;
+    id: string;
+    username?: string | null;
     name: string;
     email: string;
   };
@@ -535,7 +536,7 @@ export default function CaletasPage() {
                   numFavoritos: recurso.numFavoritos,
                   isFavorito: recurso.isFavorito,
                   materia: recurso.materia,
-                  autor: { id: recurso.autor.id, name: recurso.autor.name },
+                  autor: { id: recurso.autor.id, username: recurso.autor.username, name: recurso.autor.name },
                 }}
                 href={recursoToExploreHref(recurso)}
                 onOpen={() => void registrarVista(recurso.id)}
@@ -555,7 +556,7 @@ export default function CaletasPage() {
                   numFavoritos: recurso.numFavoritos,
                   isFavorito: recurso.isFavorito,
                   materia: recurso.materia,
-                  autor: { id: recurso.autor.id, name: recurso.autor.name },
+                  autor: { id: recurso.autor.id, username: recurso.autor.username, name: recurso.autor.name },
                 }}
                 href={recursoToExploreHref(recurso)}
                 onRegistrarVista={() => void registrarVista(recurso.id)}

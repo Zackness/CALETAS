@@ -27,7 +27,7 @@ export type CaletaListRecurso = {
   numFavoritos?: number;
   isFavorito?: boolean;
   materia: { id: string; codigo: string; nombre: string } | null;
-  autor: { id: string; name: string };
+  autor: { id: string; username?: string | null; name: string };
 };
 
 function inicialesAutor(nombre: string) {
@@ -139,13 +139,17 @@ export function CaletaExploreListCard({ recurso, href, onOpen, onToggleFavorito,
             </span>
             <span className="inline-flex min-w-0 items-center gap-1.5">
               <Users className="h-3.5 w-3.5 shrink-0 text-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)]" />
-              <Link
-                href={`/u/${recurso.autor.id}`}
-                className="truncate font-medium text-[var(--accent-hex)] hover:underline"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {recurso.autor.name}
-              </Link>
+              {recurso.autor.username ? (
+                <Link
+                  href={`/u/${recurso.autor.username}`}
+                  className="truncate font-medium text-[var(--accent-hex)] hover:underline"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {recurso.autor.name}
+                </Link>
+              ) : (
+                <span className="truncate font-medium text-white/80">{recurso.autor.name}</span>
+              )}
             </span>
           </span>
         </div>

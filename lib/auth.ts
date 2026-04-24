@@ -57,10 +57,25 @@ if (process.env.TWITCH_CLIENT_ID && process.env.TWITCH_CLIENT_SECRET) {
   };
 }
 
-const authSecret =
-  process.env.BETTER_AUTH_SECRET?.trim() ||
-  process.env.AUTH_SECRET?.trim() ||
-  undefined;
+const betterAuthSecret = process.env.BETTER_AUTH_SECRET?.trim();
+const legacyAuthSecret = process.env.AUTH_SECRET?.trim();
+
+// Better Auth encripta datos (p. ej. secreto TOTP). Si el secret cambia entre despliegues/instancias,
+// vas a ver errores tipo "invalid tag" al desencriptar.
+if (
+  process.env.NODE_ENV === "production" &&
+  (!betterAuthSecret && !legacyAuthSecret)
+) {
+  throw new Error("Falta configurar BETTER_AUTH_SECRET/AUTH_SECRET en producción");
+}
+
+if (betterAuthSecret && legacyAuthSecret && betterAuthSecret !== legacyAuthSecret) {
+  console.warn(
+    "[auth] BETTER_AUTH_SECRET y AUTH_SECRET difieren. Esto puede romper sesiones/2FA si alguna instancia usa el otro valor.",
+  );
+}
+
+const authSecret = betterAuthSecret || legacyAuthSecret || undefined;
 
 export const auth = betterAuth({
   appName: "Caletas",

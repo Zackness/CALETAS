@@ -54,14 +54,14 @@ export async function GET(request: NextRequest) {
         mediaType: true,
         expiresAt: true,
         createdAt: true,
-        autor: { select: { id: true, name: true, image: true } },
+        autor: { select: { id: true, username: true, name: true, image: true } },
       },
     });
 
     const byAutor = new Map<
       string,
       {
-        autor: { id: string; name: string; image: string | null };
+        autor: { id: string; username: string | null; name: string; image: string | null };
         items: Array<{
           id: string;
           mediaUrl: string;

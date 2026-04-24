@@ -1,12 +1,13 @@
-import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import { parseProfileGalleryUrls } from "@/lib/profile-gallery";
 import { UserFollowButton } from "@/components/perfil/user-follow-button";
-import { TipoRecursoIcon, tipoEtiquetaCorta } from "@/components/caletas/recurso-tipo";
+import { TipoRecursoIcon } from "@/components/caletas/recurso-tipo";
+import { tipoEtiquetaCorta } from "@/components/caletas/recurso-tipo-utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Eye } from "lucide-react";
+import { Eye, Settings2 } from "lucide-react";
+import { getSession } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -17,15 +18,18 @@ function iniciales(nombre: string) {
   return (p[0]![0] + p[1]![0]).toUpperCase();
 }
 
-export default async function PerfilPublicoPage({ params }: { params: Promise<{ userId: string }> }) {
+export default async function PerfilPublicoPage({ params }: { params: Promise<{ username: string }> }) {
   const session = await getSession();
-  if (!session?.user?.id) redirect("/login");
+  const viewerId = session?.user?.id ?? null;
 
-  const { userId } = await params;
+  const { username } = await params;
+  const u = (username || "").toLowerCase();
+
   const user = await db.user.findUnique({
-    where: { id: userId },
+    where: { username: u },
     select: {
       id: true,
+      username: true,
       name: true,
       image: true,
       profileBio: true,
@@ -36,25 +40,24 @@ export default async function PerfilPublicoPage({ params }: { params: Promise<{ 
 
   if (!user) notFound();
 
-  const viewerId = session.user.id;
-  const isOwnProfile = viewerId === userId;
+  const isOwnProfile = !!viewerId && viewerId === user.id;
 
   const [followersCount, followingCount, caletasCount, followRow, recursos] = await Promise.all([
-    db.userFollow.count({ where: { followingId: userId } }),
-    db.userFollow.count({ where: { followerId: userId } }),
+    db.userFollow.count({ where: { followingId: user.id } }),
+    db.userFollow.count({ where: { followerId: user.id } }),
     db.recurso.count({
-      where: { autorId: userId, esPublico: true, esAnonimo: false },
+      where: { autorId: user.id, esPublico: true, esAnonimo: false },
     }),
-    isOwnProfile
+    !viewerId || isOwnProfile
       ? Promise.resolve(null)
       : db.userFollow.findUnique({
           where: {
-            followerId_followingId: { followerId: viewerId, followingId: userId },
+            followerId_followingId: { followerId: viewerId, followingId: user.id },
           },
           select: { id: true },
         }),
     db.recurso.findMany({
-      where: { autorId: userId, esPublico: true, esAnonimo: false },
+      where: { autorId: user.id, esPublico: true, esAnonimo: false },
       orderBy: { createdAt: "desc" },
       take: 48,
       select: {
@@ -69,19 +72,15 @@ export default async function PerfilPublicoPage({ params }: { params: Promise<{ 
   ]);
 
   const gallery = parseProfileGalleryUrls(user.profileGalleryUrls);
-  const isFollowing = !isOwnProfile && !!followRow;
+  const isFollowing = !!viewerId && !isOwnProfile && !!followRow;
 
   return (
-    <div className="min-h-[calc(100dvh-6rem)]">
+    <div className="min-h-[calc(100dvh-6rem)] p-4 sm:p-6">
       <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#354B3A] shadow-lg">
         <div className="relative h-36 sm:h-44">
           {user.profileBannerUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={user.profileBannerUrl}
-              alt=""
-              className="h-full w-full object-cover"
-            />
+            <img src={user.profileBannerUrl} alt="" className="h-full w-full object-cover" />
           ) : (
             <div className="h-full w-full bg-gradient-to-r from-[#1C2D20] via-[#2a3d32] to-[color-mix(in_oklab,var(--accent-hex)_25%,#1C2D20)]" />
           )}
@@ -97,6 +96,7 @@ export default async function PerfilPublicoPage({ params }: { params: Promise<{ 
               </Avatar>
               <div className="text-center sm:mb-1 sm:text-left">
                 <h1 className="font-special text-2xl text-white sm:text-3xl">{user.name}</h1>
+                <div className="mt-1 text-sm text-white/60">@{user.username}</div>
                 <div className="mt-2 flex flex-wrap justify-center gap-4 text-sm text-white/70 sm:justify-start">
                   <span>
                     <strong className="text-white">{caletasCount}</strong> caletas
@@ -110,24 +110,26 @@ export default async function PerfilPublicoPage({ params }: { params: Promise<{ 
                 </div>
               </div>
             </div>
-            {!isOwnProfile ? (
+
+            {!isOwnProfile && viewerId ? (
               <div className="flex justify-center sm:justify-end">
                 <UserFollowButton userId={user.id} initialFollowing={isFollowing} />
               </div>
-            ) : (
+            ) : isOwnProfile ? (
               <Link
-                href="/perfil"
-                className="self-center rounded-lg border border-[color-mix(in_oklab,var(--accent-hex)_45%,transparent)] bg-[#1C2D20] px-4 py-2 text-sm text-[var(--accent-hex)] hover:bg-white/10 sm:self-end"
+                href="/perfil/configuracion"
+                className="inline-flex items-center justify-center gap-2 self-center rounded-lg border border-[color-mix(in_oklab,var(--accent-hex)_45%,transparent)] bg-[#1C2D20] px-4 py-2 text-sm text-[var(--accent-hex)] hover:bg-white/10 sm:self-end"
               >
-                Editar perfil social
+                <Settings2 className="h-4 w-4" />
+                Configuración
               </Link>
-            )}
+            ) : null}
           </div>
 
           {user.profileBio ? (
             <p className="mt-5 max-w-2xl whitespace-pre-wrap text-sm leading-relaxed text-white/80">{user.profileBio}</p>
           ) : (
-            <p className="mt-5 text-sm text-white/50">{isOwnProfile ? "Añade una bio desde Perfil → perfil social." : "Sin biografía aún."}</p>
+            <p className="mt-5 text-sm text-white/50">{isOwnProfile ? "Añade una bio desde Configuración." : "Sin biografía aún."}</p>
           )}
         </div>
       </div>
@@ -184,3 +186,4 @@ export default async function PerfilPublicoPage({ params }: { params: Promise<{ 
     </div>
   );
 }
+
