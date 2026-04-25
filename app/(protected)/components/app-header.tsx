@@ -71,7 +71,7 @@ export function DashboardHeader({ session }: AppHeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 z-20 w-full shrink-0 border-b border-white/10 bg-[var(--mygreen)] py-2 md:h-16 md:py-4">
+    <header className="sticky top-0 z-[100] w-full shrink-0 border-b border-white/10 bg-[var(--mygreen)] py-2 md:h-16 md:py-4">
       <div className="flex min-w-0 flex-wrap items-center gap-2 px-2 md:h-full md:flex-nowrap md:justify-between md:gap-4 md:px-4">
         <SidebarTrigger
           className="order-1 shrink-0 text-white hover:bg-white/10"

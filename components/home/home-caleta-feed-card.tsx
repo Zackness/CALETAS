@@ -7,9 +7,11 @@ import { Download, Eye, Share2, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TipoRecursoIcon, tipoEtiquetaCorta } from "@/components/caletas/recurso-tipo";
 import { shareOrCopyUrl } from "@/lib/share";
+import { recursoToExploreHref } from "@/lib/recurso-view-href";
 
 export type FeedCaleta = {
   id: string;
+  archivoUrl?: string | null;
   titulo: string;
   createdAt: string | Date;
   tipo?: string;
@@ -34,7 +36,10 @@ export function HomeCaletaFeedCard({
   const [isFavorito, setIsFavorito] = useState(item.isFavorito);
   const [favoritosCount, setFavoritosCount] = useState(item.favoritosCount);
 
-  const href = useMemo(() => `/caletas/${item.id}`, [item.id]);
+  const href = useMemo(
+    () => recursoToExploreHref({ id: item.id, archivoUrl: item.archivoUrl }),
+    [item.id, item.archivoUrl],
+  );
 
   const shareUrl = () => {
     const origin = typeof window !== "undefined" ? window.location.origin : "";

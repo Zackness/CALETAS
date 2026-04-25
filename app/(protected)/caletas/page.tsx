@@ -193,7 +193,7 @@ export default function CaletasPage() {
 
   const shareRecurso = async (recurso: Recurso) => {
     const origin = typeof window !== "undefined" ? window.location.origin : "";
-    const url = `${origin}/caletas/${recurso.id}`;
+    const url = `${origin}${recursoToExploreHref(recurso)}`;
     try {
       const res = await shareOrCopyUrl({
         title: recurso.titulo,

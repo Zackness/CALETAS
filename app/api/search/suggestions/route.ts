@@ -44,6 +44,7 @@ export async function GET(request: NextRequest) {
           id: true,
           titulo: true,
           tipo: true,
+          archivoUrl: true,
           materia: {
             select: { codigo: true, nombre: true },
           },

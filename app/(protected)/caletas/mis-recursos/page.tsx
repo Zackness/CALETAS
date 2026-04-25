@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { recursoToExploreHref } from "@/lib/recurso-view-href";
 
 interface Recurso {
   id: string;
@@ -496,7 +497,7 @@ export default function MisRecursosPage() {
                       size="sm"
                       variant="outline"
                       className="flex-1 bg-white/10 border-white/20 text-white hover:bg-white/20"
-                      onClick={() => router.push(`/caletas/${recurso.id}`)}
+                      onClick={() => router.push(recursoToExploreHref(recurso))}
                     >
                       <Eye className="w-3 h-3 mr-1" />
                       Ver

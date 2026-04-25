@@ -5,6 +5,7 @@ import { parseProfileGalleryUrls } from "@/lib/profile-gallery";
 import { UserFollowButton } from "@/components/perfil/user-follow-button";
 import { TipoRecursoIcon } from "@/components/caletas/recurso-tipo";
 import { tipoEtiquetaCorta } from "@/components/caletas/recurso-tipo-utils";
+import { recursoToExploreHref } from "@/lib/recurso-view-href";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Eye, Settings2 } from "lucide-react";
 import { getSession } from "@/lib/auth";
@@ -64,6 +65,7 @@ export default async function PerfilPublicoPage({ params }: { params: Promise<{ 
         id: true,
         titulo: true,
         tipo: true,
+        archivoUrl: true,
         createdAt: true,
         numVistas: true,
         materia: { select: { nombre: true } },
@@ -161,7 +163,7 @@ export default async function PerfilPublicoPage({ params }: { params: Promise<{ 
             {recursos.map((r) => (
               <Link
                 key={r.id}
-                href={`/caletas/${r.id}`}
+                href={recursoToExploreHref(r)}
                 className="group flex flex-col overflow-hidden rounded-xl border border-white/10 bg-[#354B3A] transition hover:border-[color-mix(in_oklab,var(--accent-hex)_40%,transparent)] hover:bg-[#3d5649]"
               >
                 <div className="relative flex aspect-[4/3] items-center justify-center bg-gradient-to-br from-[#1C2D20] to-[#2a3d32]">

@@ -135,11 +135,4 @@ export function CaletaExploreGridCard({
   );
 }
 
-export function recursoToExploreHref(recurso: { id: string; archivoUrl?: string }) {
-  if (recurso.archivoUrl) {
-    const urlParts = recurso.archivoUrl.split("/");
-    const filename = urlParts[urlParts.length - 1];
-    return `/view-file/${encodeURIComponent(filename ?? "")}`;
-  }
-  return `/caletas/${recurso.id}`;
-}
+export { recursoToExploreHref } from "@/lib/recurso-view-href";

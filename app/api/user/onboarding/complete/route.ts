@@ -97,22 +97,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Actualizar el perfil del usuario
-    const updatedUser = await db.user.update({
-      where: { id: session.user.id },
-      data: {
-        // Información básica
-        telefono: telefono || null,
-        ciudadDeResidencia: ciudad || null,
-        estadoDeResidencia: estado?.trim() || null,
-        
-        // Estado del onboarding
-        onboardingStatus: OnboardingStatus.FINALIZADO,
-      },
-    });
-
-    // Exigir verificación de email antes de finalizar onboarding.
-    // Si ya está verificado, seguimos; si no, el usuario debe ingresar el código en onboarding.
+    // Exigir correo verificado antes de persistir perfil / marcar onboarding finalizado.
     const current = await db.user.findUnique({
       where: { id: session.user.id },
       select: { id: true, isEmailVerified: true },
@@ -127,6 +112,17 @@ export async function POST(request: NextRequest) {
         { status: 403 },
       );
     }
+
+    // Actualizar el perfil del usuario (solo tras verificación de correo)
+    const updatedUser = await db.user.update({
+      where: { id: session.user.id },
+      data: {
+        telefono: telefono || null,
+        ciudadDeResidencia: ciudad || null,
+        estadoDeResidencia: estado?.trim() || null,
+        onboardingStatus: OnboardingStatus.FINALIZADO,
+      },
+    });
 
     // Validar y guardar materias actuales
     if (materiasActuales) {

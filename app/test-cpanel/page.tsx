@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import FileManager from "@/components/file-manager";
@@ -85,13 +86,48 @@ export default async function TestCPanelPage() {
             📤 Pruebas Disponibles
           </h2>
           <div className="text-white/70 space-y-2">
-            <p>• <strong>Prueba Subida cPanel</strong>: <a href="/test-upload-cpanel" className="text-[var(--accent-hex)] hover:underline">📤 Subida de archivos a cPanel</a></p>
-            <p>• <strong>Crear Caleta</strong>: <a href="/caletas/crear" className="text-[var(--accent-hex)] hover:underline">📝 Formulario completo de subida</a></p>
-            <p>• <strong>Test PDF</strong>: <a href="/test-pdf" className="text-[var(--accent-hex)] hover:underline">📄 Pruebas de visualización PDF</a></p>
-            <p>• <strong>Test PDF Proxy</strong>: <a href="/test-pdf-proxy" className="text-[var(--accent-hex)] hover:underline">🔗 Pruebas con proxy</a></p>
-            <p>• <strong>Test PDF Blob</strong>: <a href="/test-pdf-blob" className="text-[var(--accent-hex)] hover:underline">💾 Pruebas con Blob</a></p>
-            <p>• <strong>Test PDF XHR</strong>: <a href="/test-pdf-xhr" className="text-[var(--accent-hex)] hover:underline">📡 Pruebas con XHR</a></p>
-            <p>• <strong>PDF Diagnostic</strong>: <a href="/pdf-diagnostic" className="text-[var(--accent-hex)] hover:underline">🔍 Diagnóstico completo</a></p>
+            <p>
+              • <strong>Prueba Subida cPanel</strong>:{" "}
+              <Link href="/test-upload-cpanel" className="text-[var(--accent-hex)] hover:underline">
+                📤 Subida de archivos a cPanel
+              </Link>
+            </p>
+            <p>
+              • <strong>Crear Caleta</strong>:{" "}
+              <Link href="/caletas/crear" className="text-[var(--accent-hex)] hover:underline">
+                📝 Formulario completo de subida
+              </Link>
+            </p>
+            <p>
+              • <strong>Test PDF</strong>:{" "}
+              <Link href="/test-pdf" className="text-[var(--accent-hex)] hover:underline">
+                📄 Pruebas de visualización PDF
+              </Link>
+            </p>
+            <p>
+              • <strong>Test PDF Proxy</strong>:{" "}
+              <Link href="/test-pdf-proxy" className="text-[var(--accent-hex)] hover:underline">
+                🔗 Pruebas con proxy
+              </Link>
+            </p>
+            <p>
+              • <strong>Test PDF Blob</strong>:{" "}
+              <Link href="/test-pdf-blob" className="text-[var(--accent-hex)] hover:underline">
+                💾 Pruebas con Blob
+              </Link>
+            </p>
+            <p>
+              • <strong>Test PDF XHR</strong>:{" "}
+              <Link href="/test-pdf-xhr" className="text-[var(--accent-hex)] hover:underline">
+                📡 Pruebas con XHR
+              </Link>
+            </p>
+            <p>
+              • <strong>PDF Diagnostic</strong>:{" "}
+              <Link href="/pdf-diagnostic" className="text-[var(--accent-hex)] hover:underline">
+                🔍 Diagnóstico completo
+              </Link>
+            </p>
           </div>
         </div>
       </div>

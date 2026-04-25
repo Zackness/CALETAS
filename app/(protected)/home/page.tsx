@@ -167,6 +167,7 @@ export default async function HomePage() {
       titulo: true,
       descripcion: true,
       tipo: true,
+      archivoUrl: true,
       createdAt: true,
       calificacion: true,
       numCalificaciones: true,
@@ -209,6 +210,7 @@ export default async function HomePage() {
       titulo: true,
       descripcion: true,
       tipo: true,
+      archivoUrl: true,
       createdAt: true,
       calificacion: true,
       numVistas: true,
@@ -233,6 +235,7 @@ export default async function HomePage() {
 
   const toFeedCaletaClient = (r: (typeof recursosRecientesMasked)[number]): FeedCaleta => ({
     id: r.id,
+    archivoUrl: r.archivoUrl,
     titulo: r.titulo,
     tipo: r.tipo,
     createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : String(r.createdAt),
