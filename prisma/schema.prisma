@@ -66,9 +66,31 @@ model User {
   profileBannerUrl       String?
   profileGalleryUrls     Json?                // array de URLs (strings), p. ej. ["https://..."]
   historias                Historia[]
+  calendarEvents           CalendarEvent[]
 
   @@index([role])
   @@index([universidadId])
+}
+
+model CalendarEvent {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String?  @db.Text
+  location    String?
+
+  startAt     DateTime
+  endAt       DateTime
+  allDay      Boolean  @default(false)
+
+  color       String?  // hex o token UI (p.ej. "#AABBCC")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId, startAt])
+  @@index([userId, endAt])
 }
 
 model UserFollow {
