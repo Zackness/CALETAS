@@ -5,21 +5,15 @@
  */
 
 export const publicRoutes = [
-  "/",
-  "/caracteristicas",
-  "/testimonios",
-  "/aliados",
-  "/agregar-universidad",
-  "/terminos-y-condiciones",
-  "/blog",
-  "/blog/.*",
-  "/u/.*",
-  "/zeno-notes/connect",
-  "/api/zeno-notes/workspace",
-  "/api/zeno-notes/workspace/local/.*",
-  "/api/stripe/webhook",
-  "/api/stripe-url",
-  "/new-verification",
+    "/",
+    "/nosotros",
+    "/blog/.*",      // Patrones dinámicos
+    "/u/.*",
+    "/zeno-notes/connect",
+    "/api/stripe/webhook",
+    "/api/stripe-url",
+    "/new-verification",
+    "/terminos-y-condiciones",
 ];
 
 /**

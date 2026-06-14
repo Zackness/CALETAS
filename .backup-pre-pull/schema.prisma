@@ -1,0 +1,873 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                            String                 @id @default(cuid())
+  name                          String
+  email                         String                 @unique
+  emailVerified                 DateTime?
+  isEmailVerified               Boolean                @default(false)
+  image                         String?                @default("/globe.svg")
+  password                      String?
+  role                          UserRole               @default(CLIENT)
+  isTwoFactorEnabled            Boolean                @default(false)
+  twoFactorPreferredMethod      String                 @default("TOTP")
+  twoFactorEmailFallbackEnabled Boolean                @default(true)
+  createdAt                     DateTime               @default(now())
+  updatedAt                     DateTime               @updatedAt
+  apellido                      String?
+  ciudadDeResidencia            String?
+  onboardingStatus              OnboardingStatus       @default(PENDIENTE)
+  telefono                      String?                @unique
+  expediente                    String?
+  materiasActuales              String?
+  semestreActual                String?
+  universidadId                 String?
+  carreraId                     String?
+  estadoDeResidencia            String?
+  semestreActualManual          Boolean                @default(false)
+  caletaTutorialCompleted       Boolean                @default(false)
+  profileBannerUrl              String?
+  profileBio                    String?
+  profileGalleryUrls            Json?
+  username                      String?                @unique
+  referralCode                  String?                @unique
+  referredByUserId              String?
+  iaConsumptionDiscountPercent  Int                    @default(0)
+  walletBalanceCents            Int                    @default(0)
+  iaModelChat                   String?
+  iaModelCronograma             String?
+  iaModelHeavy                  String?
+  iaLlmModeChat                 String                 @default("manual")
+  iaLlmModeCronograma           String                 @default("manual")
+  iaLlmModeHeavy                String                 @default("manual")
+  accounts                      Account[]
+  blogPosts                     BlogPost[]
+  calendarEvents                CalendarEvent[]
+  calificaciones                CalificacionRecurso[]
+  comentarios                   ComentarioRecurso[]
+  cursos                        Curso[]
+  descargas                     DescargaRecurso[]
+  favoritos                     Favorito[]
+  historias                     Historia[]
+  manualPaymentsReviewed        ManualPayment[]        @relation("ManualPaymentReviewedBy")
+  manualPayments                ManualPayment[]
+  materiasEstudiante            MateriaEstudiante[]
+  metas                         MetaAcademica[]
+  notifications                 Notification[]
+  paymentRecords                PaymentRecord[]
+  pensumVersions                PensumVersion[]        @relation("PensumVersionCreatedBy")
+  recursos                      Recurso[]
+  ReferralBoost                 ReferralBoost[]
+  StripeCustomer                StripeCustomer?
+  tesisDocumentos               TesisDocumento[]
+  twoFactorConfirmation         TwoFactorConfirmation?
+  carrera                       Carrera?               @relation(fields: [carreraId], references: [id])
+  User                          User?                  @relation("UserToUser", fields: [referredByUserId], references: [id])
+  other_User                    User[]                 @relation("UserToUser")
+  universidad                   Universidad?           @relation(fields: [universidadId], references: [id])
+  following                     UserFollow[]           @relation("FollowsInitiated")
+  followers                     UserFollow[]           @relation("FollowsReceived")
+  UserSubscription              UserSubscription[]
+  vistas                        VistaRecurso[]
+  WalletLedger                  WalletLedger[]
+  authAccounts                  AuthAccount[]
+  authSessions                  AuthSession[]
+  authTwoFactors                TwoFactor[]
+  passkeys                      Passkey[]
+
+  @@index([role])
+  @@index([universidadId])
+  @@index([referredByUserId])
+}
+
+model CalendarEvent {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  description String?
+  location    String?
+  startAt     DateTime
+  endAt       DateTime
+  allDay      Boolean  @default(false)
+  color       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, startAt])
+  @@index([userId, endAt])
+}
+
+model UserFollow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+  follower    User     @relation("FollowsInitiated", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("FollowsReceived", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+}
+
+/// * Historia efímera (foto o video); el archivo vive en Bunny bajo prefijo `historia/`.
+model Historia {
+  id        String            @id @default(cuid())
+  autorId   String
+  mediaUrl  String
+  mediaType HistoriaMediaType
+  expiresAt DateTime
+  createdAt DateTime          @default(now())
+  autor     User              @relation(fields: [autorId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
+  @@index([autorId, expiresAt])
+}
+
+model AuthSession {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("ba_session")
+}
+
+model AuthAccount {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("ba_account")
+}
+
+model AuthVerification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("ba_verification")
+}
+
+model TwoFactor {
+  id          String @id
+  secret      String
+  backupCodes String
+  userId      String
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([secret])
+  @@index([userId])
+  @@map("ba_twoFactor")
+}
+
+model Passkey {
+  id           String    @id
+  name         String?
+  publicKey    String
+  userId       String
+  credentialID String
+  counter      Int
+  deviceType   String
+  backedUp     Boolean
+  transports   String?
+  createdAt    DateTime?
+  aaguid       String?
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([credentialID])
+  @@map("passkey")
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+  @@index([userId])
+}
+
+model VerificationToken {
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model PasswordResetToken {
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model TwoFactorToken {
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model TwoFactorConfirmation {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model StripeCustomer {
+  id               String   @id @default(uuid())
+  userId           String   @unique
+  stripeCustomerId String   @unique
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserSubscription {
+  id                     String            @id @default(uuid())
+  userId                 String
+  subscriptionTypeId     String?
+  stripeCustomerId       String?
+  stripeSubscriptionId   String?
+  stripePriceId          String?
+  stripeCurrentPeriodEnd DateTime?
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
+  iaIncludedTokensUsed   Int               @default(0)
+  iaMeterPeriodEnd       DateTime?
+  subscriptionType       SubscriptionType? @relation(fields: [subscriptionTypeId], references: [id])
+  user                   User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([subscriptionTypeId])
+}
+
+model SubscriptionType {
+  id                        String                     @id @default(uuid())
+  name                      String
+  description               String?
+  price                     Int
+  period                    String
+  createdAt                 DateTime                   @default(now())
+  updatedAt                 DateTime                   @updatedAt
+  billingKind               String                     @default("stripe_recurring")
+  minWalletTopUpCents       Int                        @default(0)
+  iaTokenOverflowPolicy     String                     @default("wallet")
+  includedIaTokensPerPeriod Int?
+  manualPayments            ManualPayment[]
+  paymentRecords            PaymentRecord[]
+  SubscriptionTypeIaAccess  SubscriptionTypeIaAccess[]
+  subscriptions             UserSubscription[]
+}
+
+model Universidad {
+  id             String          @id @default(uuid())
+  nombre         String          @unique
+  siglas         String          @unique
+  direccion      String
+  telefono       String
+  email          String
+  website        String?
+  estado         String
+  ciudad         String
+  tipo           String          @default("PÚBLICA")
+  ranking        Int?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  password       String?
+  isActive       Boolean         @default(true)
+  carreras       Carrera[]
+  pensumVersions PensumVersion[]
+  recursos       Recurso[]
+  users          User[]
+}
+
+model Carrera {
+  id             String          @id @default(uuid())
+  nombre         String
+  codigo         String          @unique
+  descripcion    String?
+  duracion       Int
+  creditos       Int
+  universidadId  String
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  isActive       Boolean         @default(true)
+  universidad    Universidad     @relation(fields: [universidadId], references: [id], onDelete: Cascade)
+  materias       Materia[]
+  pensumVersions PensumVersion[]
+  usuarios       User[]
+
+  @@index([universidadId])
+}
+
+model PensumVersion {
+  id            String              @id @default(cuid())
+  universidadId String
+  carreraId     String
+  versionNumber Int
+  name          String
+  notes         String?
+  status        PensumVersionStatus @default(DRAFT)
+  snapshot      Json
+  createdById   String
+  createdAt     DateTime            @default(now())
+  publishedAt   DateTime?
+  carrera       Carrera             @relation(fields: [carreraId], references: [id], onDelete: Cascade)
+  createdBy     User                @relation("PensumVersionCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
+  universidad   Universidad         @relation(fields: [universidadId], references: [id], onDelete: Cascade)
+
+  @@unique([carreraId, versionNumber])
+  @@index([universidadId])
+  @@index([carreraId])
+  @@index([status])
+}
+
+model Materia {
+  id                 String                 @id @default(uuid())
+  nombre             String
+  codigo             String                 @unique
+  descripcion        String?
+  creditos           Int
+  semestre           Semestre
+  horasTeoria        Int
+  horasPractica      Int
+  carreraId          String
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
+  isActive           Boolean                @default(true)
+  carrera            Carrera                @relation(fields: [carreraId], references: [id], onDelete: Cascade)
+  materiasEstudiante MateriaEstudiante[]
+  prerrequisitos     MateriaPrerrequisito[] @relation("MateriaPrerrequisito")
+  esPrerrequisitoDe  MateriaPrerrequisito[] @relation("MateriaQueRequiere")
+  recursos           Recurso[]
+
+  @@index([carreraId])
+}
+
+model MateriaPrerrequisito {
+  id                String            @id @default(uuid())
+  materiaId         String
+  prerrequisitoId   String
+  tipoPrerrequisito TipoPrerrequisito @default(OBLIGATORIO)
+  createdAt         DateTime          @default(now())
+  materia           Materia           @relation("MateriaPrerrequisito", fields: [materiaId], references: [id], onDelete: Cascade)
+  prerrequisito     Materia           @relation("MateriaQueRequiere", fields: [prerrequisitoId], references: [id], onDelete: Cascade)
+
+  @@unique([materiaId, prerrequisitoId])
+  @@index([materiaId])
+  @@index([prerrequisitoId])
+}
+
+model MateriaEstudiante {
+  id              String        @id @default(uuid())
+  userId          String
+  materiaId       String
+  estado          EstadoMateria @default(NO_CURSADA)
+  nota            Float?
+  semestreCursado String?
+  fechaInicio     DateTime?
+  fechaFin        DateTime?
+  observaciones   String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  materia         Materia       @relation(fields: [materiaId], references: [id], onDelete: Cascade)
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, materiaId])
+  @@index([userId])
+  @@index([materiaId])
+}
+
+model BlogPost {
+  id          String        @id @default(cuid())
+  title       String
+  slug        String?       @unique
+  content     String?
+  imageUrl    String?
+  isPublished Boolean       @default(false)
+  authorId    String
+  categoryId  String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  description String?
+  titleMeta   String?
+  author      User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  category    BlogCategory? @relation(fields: [categoryId], references: [id])
+
+  @@index([authorId])
+  @@index([categoryId])
+}
+
+model BlogCategory {
+  id    String     @id @default(cuid())
+  name  String     @unique
+  posts BlogPost[]
+}
+
+model Curso {
+  id          String   @id @default(cuid())
+  titulo      String
+  slug        String?  @unique
+  descripcion String
+  contenido   String
+  urlVideo    String?
+  imagenUrl   String?
+  tema        String?
+  orden       Int      @default(0)
+  autorId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  autor       User     @relation(fields: [autorId], references: [id], onDelete: Cascade)
+
+  @@index([autorId])
+  @@index([tema])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Recurso {
+  id                String                @id @default(cuid())
+  titulo            String
+  descripcion       String
+  tipo              TipoRecurso
+  contenido         String
+  archivoUrl        String?
+  archivoSizeBytes  Int?
+  materiaId         String?
+  universidadId     String?
+  autorId           String
+  calificacion      Float                 @default(0)
+  numCalificaciones Int                   @default(0)
+  numVistas         Int                   @default(0)
+  numDescargas      Int                   @default(0)
+  esPublico         Boolean               @default(true)
+  esAnonimo         Boolean               @default(false)
+  tags              String
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+  calificaciones    CalificacionRecurso[]
+  comentarios       ComentarioRecurso[]
+  descargas         DescargaRecurso[]
+  favoritos         Favorito[]
+  autor             User                  @relation(fields: [autorId], references: [id], onDelete: Cascade)
+  materia           Materia?              @relation(fields: [materiaId], references: [id], onDelete: Cascade)
+  universidad       Universidad?          @relation(fields: [universidadId], references: [id])
+  vistas            VistaRecurso[]
+
+  @@index([materiaId])
+  @@index([universidadId])
+  @@index([autorId])
+  @@index([tipo])
+  @@index([esPublico])
+  @@index([esAnonimo])
+}
+
+model BibliotecaObra {
+  id          String   @id @default(cuid())
+  titulo      String
+  slug        String   @unique
+  descripcion String?
+  cuerpo      String
+  orden       Int      @default(0)
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isPublished])
+  @@index([orden])
+}
+
+model TesisDocumento {
+  id             String   @id @default(cuid())
+  titulo         String
+  cuerpo         String
+  headerTemplate String   @default("{{title}}")
+  footerTemplate String   @default("Página {{page}} de {{pages}}")
+  paperSize      String   @default("a4")
+  paperMode      String   @default("light")
+  zoom           Int      @default(100)
+  fontScale      Float    @default(0.92)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  ownerId        String
+  owner          User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId])
+  @@index([updatedAt])
+}
+
+model CalificacionRecurso {
+  id           String   @id @default(cuid())
+  recursoId    String
+  usuarioId    String
+  calificacion Int
+  comentario   String?
+  createdAt    DateTime @default(now())
+  recurso      Recurso  @relation(fields: [recursoId], references: [id], onDelete: Cascade)
+  usuario      User     @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@unique([recursoId, usuarioId])
+  @@index([recursoId])
+  @@index([usuarioId])
+}
+
+model ComentarioRecurso {
+  id                String   @id @default(cuid())
+  recursoId         String
+  autorId           String
+  contenido         String
+  esRespuesta       Boolean  @default(false)
+  comentarioPadreId String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  autor             User     @relation(fields: [autorId], references: [id], onDelete: Cascade)
+  recurso           Recurso  @relation(fields: [recursoId], references: [id], onDelete: Cascade)
+
+  @@index([recursoId])
+  @@index([autorId])
+}
+
+model VistaRecurso {
+  id        String   @id @default(cuid())
+  recursoId String
+  usuarioId String?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  recurso   Recurso  @relation(fields: [recursoId], references: [id], onDelete: Cascade)
+  usuario   User?    @relation(fields: [usuarioId], references: [id])
+
+  @@index([recursoId])
+  @@index([usuarioId])
+}
+
+model DescargaRecurso {
+  id        String   @id @default(cuid())
+  recursoId String
+  usuarioId String
+  createdAt DateTime @default(now())
+  recurso   Recurso  @relation(fields: [recursoId], references: [id], onDelete: Cascade)
+  usuario   User     @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([recursoId])
+  @@index([usuarioId])
+}
+
+model MetaAcademica {
+  id            String    @id @default(cuid())
+  usuarioId     String
+  titulo        String
+  descripcion   String?
+  tipo          TipoMeta
+  valorObjetivo Float
+  valorActual   Float     @default(0)
+  fechaLimite   DateTime?
+  completada    Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  usuario       User      @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId])
+  @@index([tipo])
+  @@index([completada])
+}
+
+model ManualPayment {
+  id                 String              @id @default(uuid())
+  userId             String
+  subscriptionTypeId String
+  amountBs           Int
+  reference          String
+  proofUrl           String?
+  status             ManualPaymentStatus @default(PENDING)
+  reviewedAt         DateTime?
+  reviewedById       String?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  reviewedBy         User?               @relation("ManualPaymentReviewedBy", fields: [reviewedById], references: [id])
+  subscriptionType   SubscriptionType    @relation(fields: [subscriptionTypeId], references: [id], onDelete: Cascade)
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  paymentRecord      PaymentRecord?
+
+  @@index([userId])
+  @@index([subscriptionTypeId])
+  @@index([status])
+  @@index([reviewedById])
+}
+
+model PaymentRecord {
+  id                    String              @id @default(cuid())
+  userId                String
+  subscriptionTypeId    String?
+  source                PaymentSource
+  status                ManualPaymentStatus @default(PENDING)
+  amountBs              Int?
+  amountUsdCents        Int?
+  reference             String?
+  operationCode         String?
+  rejectionReason       String?
+  periodStart           DateTime?
+  periodEnd             DateTime?
+  paidAt                DateTime?
+  manualPaymentId       String?             @unique
+  stripeInvoiceId       String?             @unique
+  stripePaymentIntentId String?
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  manualPayment         ManualPayment?      @relation(fields: [manualPaymentId], references: [id])
+  subscriptionType      SubscriptionType?   @relation(fields: [subscriptionTypeId], references: [id])
+  user                  User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([subscriptionTypeId])
+  @@index([status])
+  @@index([source])
+  @@index([periodEnd])
+}
+
+model Favorito {
+  id        String   @id @default(cuid())
+  usuarioId String
+  recursoId String
+  createdAt DateTime @default(now())
+  recurso   Recurso  @relation(fields: [recursoId], references: [id], onDelete: Cascade)
+  usuario   User     @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@unique([usuarioId, recursoId])
+  @@index([usuarioId])
+  @@index([recursoId])
+}
+
+model AiUsageLog {
+  id               String   @id @default(cuid())
+  userId           String?
+  endpoint         String
+  promptTokens     Int      @default(0)
+  completionTokens Int      @default(0)
+  totalTokens      Int      @default(0)
+  createdAt        DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([endpoint])
+}
+
+model IaFeatureCatalog {
+  id                       String                     @id
+  featureKey               String                     @unique
+  displayNameEs            String
+  descriptionEs            String?
+  vercelPricingUrl         String
+  listInputUsdPer1M        Float?
+  listOutputUsdPer1M       Float?
+  referenceModelIds        String?
+  freeInTrial              Boolean                    @default(false)
+  meteredAfterTrial        Boolean                    @default(true)
+  sortOrder                Int                        @default(0)
+  SubscriptionTypeIaAccess SubscriptionTypeIaAccess[]
+}
+
+model ReferralBoost {
+  id                String              @id
+  userId            String
+  kind              ReferralBoostKind
+  status            ReferralBoostStatus @default(PENDING)
+  startsAt          DateTime?
+  endsAt            DateTime?
+  triggeredByUserId String?
+  createdAt         DateTime            @default(now())
+  User              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([kind, status])
+  @@index([userId, status])
+}
+
+model SubscriptionTypeIaAccess {
+  id                 String           @id
+  subscriptionTypeId String
+  iaFeatureCatalogId String
+  accessKind         String           @default("consumption")
+  notesEs            String?
+  IaFeatureCatalog   IaFeatureCatalog @relation(fields: [iaFeatureCatalogId], references: [id], onDelete: Cascade)
+  SubscriptionType   SubscriptionType @relation(fields: [subscriptionTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([subscriptionTypeId, iaFeatureCatalogId])
+  @@index([subscriptionTypeId])
+}
+
+model WalletLedger {
+  id                String   @id
+  userId            String
+  deltaCents        Int
+  balanceAfterCents Int
+  reason            String   @db.VarChar(64)
+  meta              Json?
+  createdAt         DateTime @default(now())
+  User              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+enum HistoriaMediaType {
+  IMAGE
+  VIDEO
+}
+
+enum PensumVersionStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum UserRole {
+  CLIENT
+  ADMIN
+}
+
+enum ManualPaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum PaymentSource {
+  MOBILE_BS
+  CARD
+}
+
+enum Estado {
+  PENDIENTE
+  APROBADA
+  EN_PROGRESO
+  FINALIZADA
+  RECHAZADA
+}
+
+enum OnboardingStatus {
+  PENDIENTE
+  FINALIZADO
+  CANCELADO
+}
+
+enum TipoPrerrequisito {
+  OBLIGATORIO
+  RECOMENDADO
+  CO_REQUISITO
+}
+
+enum Semestre {
+  S1
+  S2
+  S3
+  S4
+  S5
+  S6
+  S7
+  S8
+  S9
+  S10
+}
+
+enum EstadoMateria {
+  NO_CURSADA
+  EN_CURSO
+  APROBADA
+  APLAZADA
+  RETIRADA
+}
+
+enum TipoRecurso {
+  ANOTACION
+  RESUMEN
+  GUIA_ESTUDIO
+  EJERCICIOS
+  PRESENTACION
+  VIDEO
+  AUDIO
+  DOCUMENTO
+  ENLACE
+  TIP
+}
+
+enum TipoMeta {
+  PROMEDIO_GENERAL
+  MATERIAS_APROBADAS
+  CREDITOS_COMPLETADOS
+  SEMESTRE_ESPECIFICO
+  MATERIA_ESPECIFICA
+  HORAS_ESTUDIO
+}
+
+enum ReferralBoostKind {
+  REFEREE_WELCOME
+  REFERRER_REWARD
+}
+
+enum ReferralBoostStatus {
+  PENDING
+  ACTIVE
+}
+
+model ZenoWorkspace {
+  ownerId   String   @id @map("owner_id")
+  payload   Json
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("zeno_workspaces")
+}

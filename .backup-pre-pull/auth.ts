@@ -78,12 +78,6 @@ if (betterAuthSecret && legacyAuthSecret && betterAuthSecret !== legacyAuthSecre
 
 const authSecret = betterAuthSecret || legacyAuthSecret || undefined;
 
-if (process.env.NODE_ENV !== "production" && !authSecret) {
-  console.warn(
-    "[auth] En local no hay BETTER_AUTH_SECRET ni AUTH_SECRET. Better Auth puede usar un secreto inestable y el 2FA guardado en la BD fallará al verificar TOTP (error típico: \"invalid tag\"). Define el mismo secreto que en producción si usas una copia de esa base de datos.",
-  );
-}
-
 export const auth = betterAuth({
   appName: "Caletas",
   ...(authSecret ? { secret: authSecret } : {}),

@@ -937,3 +937,11 @@ model AiUsageLog {
   @@index([createdAt])
   @@index([endpoint])
 }
+
+model ZenoWorkspace {
+  ownerId   String   @id @map("owner_id")
+  payload   Json
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("zeno_workspaces")
+}
