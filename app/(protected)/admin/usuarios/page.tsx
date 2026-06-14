@@ -144,6 +144,9 @@ export default function AdminUsuariosPage() {
 
   const handleSaveUser = async () => {
     if (!userForm.name || !userForm.email) return toast.error("Nombre y correo son obligatorios");
+    if (userForm.password && userForm.password.length < 8) {
+      return toast.error("La contraseña debe tener al menos 8 caracteres (o déjala vacía)");
+    }
     setSavingUser(true);
     try {
       const method = editingUser ? "PATCH" : "POST";
@@ -372,7 +375,7 @@ export default function AdminUsuariosPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div><Label className="text-white/80">Contraseña</Label><Input type="password" className="bg-[var(--mygreen-dark)] border-white/20 text-white" value={userForm.password} onChange={(e) => setUserForm((f) => ({ ...f, password: e.target.value }))} /></div>
+            <div><Label className="text-white/80">Contraseña</Label><Input type="password" autoComplete="new-password" className="bg-[var(--mygreen-dark)] border-white/20 text-white" value={userForm.password} onChange={(e) => setUserForm((f) => ({ ...f, password: e.target.value }))} /><p className="text-xs text-white/50 mt-1">Opcional al crear. Mínimo 8 caracteres si la indicas.</p></div>
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" className="border-white/20 text-white bg-transparent hover:bg-white/10" onClick={() => setUserDialogOpen(false)}>Cancelar</Button>

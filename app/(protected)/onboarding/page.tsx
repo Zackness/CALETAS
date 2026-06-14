@@ -6,11 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Building2, User, GraduationCap, MapPin, FileText, BookOpen, Mail } from "lucide-react";
+import { Loader2, Building2, User, GraduationCap, MapPin, FileText, BookOpen } from "lucide-react";
 import { OnboardingStatus } from "@prisma/client";
 import { useToast } from "@/components/ui/use-toast";
 import axios from "axios";
-import { useOnboarding } from "../(protected)/home/hooks/use-onboarding";
+import { useOnboarding } from "../home/hooks/use-onboarding";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MultiSelect } from "@/components/multi-select";
 import { VENEZUELA_ESTADOS } from "@/lib/venezuela-estados";
@@ -44,7 +44,7 @@ export default function OnboardingPage() {
   const [materiasActuales, setMateriasActuales] = useState<string[]>([]);
   const [materiasCarrera, setMateriasCarrera] = useState<{ id: string; codigo: string; nombre: string; semestre: string; creditos: number }[]>([]);
   const [materiasOptions, setMateriasOptions] = useState<{ label: string; value: string; icon: any }[]>([]);
-  const [validatingMaterias, setValidatingMaterias] = useState(false);
+  const [referralCodeInput, setReferralCodeInput] = useState("");
 
   useEffect(() => {
     if (onboardingStatus === OnboardingStatus.FINALIZADO) {
@@ -129,33 +129,34 @@ export default function OnboardingPage() {
 
   const handleSkip = async () => {
     try {
-      const fd = new FormData();
-      fd.append("status", OnboardingStatus.FINALIZADO);
-      const res = await fetch("/api/user/onboarding", { method: "PUT", body: fd });
-      if (!res.ok) {
-        const msg = await res.text().catch(() => "");
-        throw new Error(msg || "No se pudo omitir el onboarding");
-      }
-      toast({ title: "Listo", description: "Puedes completar tu perfil más adelante en configuración." });
+      // Redirigir directamente al home sin llamar a la API eliminada
       router.push("/home");
-      router.refresh();
     } catch (error) {
       console.error("Error skipping onboarding:", error);
-      toast({
-        title: "No se pudo omitir",
-        description: error instanceof Error ? error.message : "Intenta de nuevo",
-        variant: "destructive",
-      });
     }
   };
 
-  const handleNext = async () => {
+  const handleNext = () => {
     if (currentStep === 'company-selection') {
       if (userType === 'independent') {
-        setCurrentStep('direccion');
+        if (!isEmailVerified) setCurrentStep("email-verification");
+        else setCurrentStep('direccion');
       } else if (userType === 'allied' && universidad) {
-        setCurrentStep('carnet-semestre');
+        if (!isEmailVerified) setCurrentStep("email-verification");
+        else setCurrentStep('carnet-semestre');
       }
+    } else if (currentStep === "email-verification") {
+      if (!isEmailVerified) {
+        setError("Debes verificar tu correo para continuar");
+        toast({
+          title: "Verificación requerida",
+          description: "Ingresa el código de 6 dígitos enviado a tu email.",
+          variant: "destructive",
+        });
+        return;
+      }
+      if (userType === "allied") setCurrentStep("carnet-semestre");
+      else setCurrentStep("direccion");
     } else if (currentStep === 'carnet-semestre') {
       // Validar que el carnet fue subido y analizado correctamente
       if (!carnetData) {
@@ -181,55 +182,6 @@ export default function OnboardingPage() {
       setCurrentStep('direccion');
     } else if (currentStep === 'direccion') {
       setCurrentStep('materias-actuales');
-    } else if (currentStep === 'materias-actuales') {
-      if (materiasActuales.length === 0) {
-        setError("Selecciona al menos una materia en curso o vuelve atrás");
-        toast({
-          title: "Materias requeridas",
-          description: "Selecciona las materias que estás cursando.",
-          variant: "destructive",
-        });
-        return;
-      }
-      setValidatingMaterias(true);
-      try {
-        const validationResponse = await axios.post("/api/user/onboarding/validate-materias", {
-          materiasSeleccionadas: materiasActuales,
-        });
-        if (!validationResponse.data.esValido) {
-          setError("Error de prerrequisitos en las materias seleccionadas");
-          toast({
-            title: "❌ Error de Prerrequisitos",
-            description: (
-              <div className="space-y-2">
-                <p className="font-medium">Las siguientes materias tienen prerrequisitos faltantes:</p>
-                <ul className="list-disc list-inside space-y-1 text-sm">
-                  {validationResponse.data.errores.map((err: string, index: number) => (
-                    <li key={index} className="text-red-300">
-                      {err}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ),
-            variant: "destructive",
-            duration: 10000,
-          });
-          return;
-        }
-      } catch {
-        setError("Error al validar las materias seleccionadas");
-        toast({
-          title: "Error de Validación",
-          description: "No se pudieron validar las materias seleccionadas",
-          variant: "destructive",
-        });
-        return;
-      } finally {
-        setValidatingMaterias(false);
-      }
-      setError(null);
-      setCurrentStep("email-verification");
     }
   };
 
@@ -237,9 +189,7 @@ export default function OnboardingPage() {
     // Limpiar errores al retroceder
       setError(null);
     
-    if (currentStep === "email-verification") {
-      setCurrentStep("materias-actuales");
-    } else if (currentStep === 'materias-actuales') {
+    if (currentStep === 'materias-actuales') {
       setCurrentStep('direccion');
     } else if (currentStep === 'direccion') {
       if (userType === 'independent') {
@@ -247,6 +197,8 @@ export default function OnboardingPage() {
       } else {
         setCurrentStep('carnet-semestre');
       }
+    } else if (currentStep === "email-verification") {
+      setCurrentStep("company-selection");
     } else if (currentStep === 'carnet-semestre') {
       setCurrentStep('company-selection');
     }
@@ -266,16 +218,11 @@ export default function OnboardingPage() {
 
   const getStepNumber = (step: Step) => {
     switch (step) {
-      case 'company-selection':
-        return 1;
-      case 'carnet-semestre':
-        return 2;
-      case 'direccion':
-        return userType === 'independent' ? 2 : 3;
-      case 'materias-actuales':
-        return userType === 'independent' ? 3 : 4;
-      case 'email-verification':
-        return userType === 'independent' ? 4 : 5;
+      case 'company-selection': return 1;
+      case 'email-verification': return 2;
+      case 'carnet-semestre': return userType === 'independent' ? 3 : 3;
+      case 'direccion': return userType === 'independent' ? 3 : 4;
+      case 'materias-actuales': return userType === 'independent' ? 4 : 5;
     }
   };
 
@@ -411,8 +358,9 @@ export default function OnboardingPage() {
       if (carnetData) {
         formData.append("carnetData", JSON.stringify(carnetData));
       }
+      formData.append("referralCode", referralCodeInput.trim());
 
-      await axios.post("/api/user/onboarding/complete", formData, {
+      const completeRes = await axios.post("/api/user/onboarding/complete", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -420,7 +368,9 @@ export default function OnboardingPage() {
 
         toast({
         title: "¡Perfil completado!",
-        description: "Tu información ha sido guardada correctamente.",
+        description: completeRes.data?.referralApplied
+          ? "Tu información se guardó. Activaste 24 h de IA completa por referido."
+          : "Tu información ha sido guardada correctamente.",
       });
 
       router.push("/home");
@@ -594,7 +544,7 @@ export default function OnboardingPage() {
           <div className="space-y-4 p-4 border-2 border-mygreen/30 rounded-lg bg-mygreen/10">
             <div className="space-y-1">
               <h3 className="text-white font-semibold flex items-center gap-2">
-                <FileText className="h-5 w-5 text-[var(--accent-hex)]" />
+                <FileText className="h-5 w-5 text-[#40C9A9]" />
                 Verifica tu correo
               </h3>
               <p className="text-sm text-white/70">
@@ -619,7 +569,7 @@ export default function OnboardingPage() {
                   type="button"
                   onClick={verifyEmailCode}
                   disabled={verifyingCode || sendingCode}
-                  className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
+                  className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
                 >
                   {verifyingCode ? "Verificando..." : "Verificar"}
                 </Button>
@@ -656,7 +606,7 @@ export default function OnboardingPage() {
                 type="button"
                 className={`rounded-lg px-3 py-2 text-sm border transition-colors ${
                   docTipo === "carnet"
-                    ? "border-[color-mix(in_oklab,var(--accent-hex)_50%,transparent)] bg-[color-mix(in_oklab,var(--accent-hex)_15%,transparent)] text-white"
+                    ? "border-[#40C9A9]/50 bg-[#40C9A9]/15 text-white"
                     : "border-white/10 bg-white/5 text-white/80 hover:bg-white/10 hover:text-white"
                 }`}
                 onClick={() => {
@@ -672,7 +622,7 @@ export default function OnboardingPage() {
                 type="button"
                 className={`rounded-lg px-3 py-2 text-sm border transition-colors ${
                   docTipo === "planilla"
-                    ? "border-[color-mix(in_oklab,var(--accent-hex)_50%,transparent)] bg-[color-mix(in_oklab,var(--accent-hex)_15%,transparent)] text-white"
+                    ? "border-[#40C9A9]/50 bg-[#40C9A9]/15 text-white"
                     : "border-white/10 bg-white/5 text-white/80 hover:bg-white/10 hover:text-white"
                 }`}
                 onClick={() => {
@@ -819,6 +769,26 @@ export default function OnboardingPage() {
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="referralCode" className="text-white">
+                Código de invitación (opcional)
+              </Label>
+              <Input
+                id="referralCode"
+                type="text"
+                value={referralCodeInput}
+                onChange={(e) => setReferralCodeInput(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))}
+                placeholder="Ej: AB12CD34"
+                disabled={isLoading}
+                className="border-2 border-mygreen/30 bg-white/10 text-white placeholder:text-white/40"
+                maxLength={16}
+                autoComplete="off"
+              />
+              <p className="text-xs text-white/55">
+                Si un amigo te invitó, ingresa su código. Al terminar, ambos pueden disfrutar de IA completa (24 h).
+              </p>
+            </div>
           </div>
         );
       case 'materias-actuales':
@@ -905,8 +875,6 @@ export default function OnboardingPage() {
         return <MapPin className="h-6 w-6" />;
       case 'materias-actuales':
         return <BookOpen className="h-6 w-6" />;
-      case "email-verification":
-        return <Mail className="h-6 w-6" />;
     }
   };
 
@@ -920,8 +888,6 @@ export default function OnboardingPage() {
         return "Información de Contacto";
       case 'materias-actuales':
         return "Materias Actuales";
-      case "email-verification":
-        return "Verificación de correo";
     }
   };
 
@@ -967,15 +933,15 @@ export default function OnboardingPage() {
             {currentStep === 'carnet-semestre' && "Sube tu carnet universitario y selecciona tu semestre actual"}
             {currentStep === 'direccion' && "Ingresa tu información de contacto"}
             {currentStep === 'materias-actuales' && "Selecciona las materias que estás cursando actualmente"}
-            {currentStep === "email-verification" &&
-              "Verifica tu correo con el código de 6 dígitos; después podrás completar tu perfil."}
           </CardDescription>
           
-          {currentStep === "email-verification" && (
+          {currentStep === 'materias-actuales' && (
             <div className="mt-4 p-3 bg-mygreen/20 border border-mygreen/30 rounded-lg">
-              <p className="text-sm text-mygreen font-medium">Último paso: verificación de correo</p>
+              <p className="text-sm text-mygreen font-medium">
+                ✅ Último paso - Revisa tu información antes de completar
+              </p>
               <p className="text-xs text-white/70 mt-1">
-                Tras verificar, pulsa &quot;Completar perfil&quot;. Puedes usar &quot;Atrás&quot; para corregir datos.
+                Puedes usar el botón &quot;Atrás&quot; para modificar cualquier dato si es necesario
               </p>
             </div>
           )}
@@ -1002,25 +968,19 @@ export default function OnboardingPage() {
                 </Button>
               )}
               <Button 
-                type={currentStep === "email-verification" && isEmailVerified ? "submit" : "button"}
-                onClick={
-                  currentStep === "email-verification" || currentStep === "materias-actuales"
-                    ? currentStep === "materias-actuales"
-                      ? () => void handleNext()
-                      : undefined
-                    : () => void handleNext()
-                }
-                disabled={Boolean(
-                  isLoading ||
-                  validatingMaterias ||
-                  (currentStep === "company-selection" &&
-                    (!userType || (userType === "allied" && !universidad))) ||
-                  (currentStep === "carnet-semestre" &&
-                    (!semestreActual || !carnetData || !carreraSeleccionada)) ||
-                  (currentStep === "direccion" && (!telefono || !ciudad)) ||
-                  (currentStep === "materias-actuales" && materiasActuales.length === 0) ||
-                  (currentStep === "email-verification" && !isEmailVerified),
-                )}
+                type={currentStep === 'materias-actuales' ? "submit" : "button"}
+                onClick={currentStep !== 'materias-actuales' ? handleNext : undefined}
+                disabled={Boolean(isLoading || 
+                  (currentStep === 'company-selection' && (
+                    !userType || 
+                    (userType === 'allied' && !universidad)
+                  )) ||
+                  (currentStep === 'carnet-semestre' && (!semestreActual || !carnetData || !carreraSeleccionada)) ||
+                  (currentStep === 'direccion' && (
+                    !telefono || 
+                    !ciudad
+                  )) ||
+                  (currentStep === 'materias-actuales' && materiasActuales.length === 0))}
                 className="bg-mygreen hover:bg-mygreen-light text-white font-special"
               >
                 {isLoading ? (
@@ -1028,17 +988,8 @@ export default function OnboardingPage() {
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Procesando...
                   </>
-                ) : validatingMaterias ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Validando…
-                  </>
-                ) : currentStep === "email-verification" ? (
-                  isEmailVerified ? (
-                    "Completar perfil"
-                  ) : (
-                    "Verifica tu correo arriba"
-                  )
+                ) : currentStep === 'materias-actuales' ? (
+                  "Completar Perfil"
                 ) : (
                   "Siguiente"
                 )}

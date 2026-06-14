@@ -5,6 +5,7 @@ import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
 import { absoluteUrl } from "@/lib/utils";
+import { isWalletConsumptionPlan } from "@/lib/subscription-billing";
 
 const returnUrl = absoluteUrl("/suscripcion"); // URL de retorno
 
@@ -24,6 +25,16 @@ export async function createStripeUrl(subscriptionTypeId: string) {
 
     if (!subscriptionType) {
       throw new Error("Tipo de suscripción no encontrado");
+    }
+
+    if (isWalletConsumptionPlan(subscriptionType)) {
+      throw new Error(
+        "WALLET_ONLY_PLAN: CALETA BASICS es solo billetera (consumo unificado). Recarga al menos $1 USD en Billetera o por los canales que indique soporte. No uses pago recurrente con tarjeta para este plan.",
+      );
+    }
+
+    if (subscriptionType.period !== "month" && subscriptionType.period !== "year" && subscriptionType.period !== "day") {
+      throw new Error("Periodo de suscripción no compatible con Stripe Checkout.");
     }
 
     // Si ya tiene una suscripción activa, manda al portal de Stripe
@@ -82,7 +93,6 @@ export async function createStripeUrl(subscriptionTypeId: string) {
               description: subscriptionType.description || "Suscripción",
             },
             recurring: {
-              // Stripe soporta day|week|month|year. Nosotros usaremos "day" (BASICS) y "month" (PRO).
               interval: subscriptionType.period as "day" | "month" | "year",
             },
             unit_amount: subscriptionType.price,
@@ -100,6 +110,7 @@ export async function createStripeUrl(subscriptionTypeId: string) {
     return session.url; // Retorna la URL de Stripe Checkout
   } catch (error) {
     console.error("[CREATE_STRIPE_URL_ERROR]", error);
-    throw new Error("Error interno"); // Lanza un error manejable por el endpoint
+    if (error instanceof Error) throw error;
+    throw new Error("Error interno");
   }
 }

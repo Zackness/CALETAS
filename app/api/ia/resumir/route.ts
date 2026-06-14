@@ -1,15 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import OpenAI from "openai";
 import { getActiveSubscriptionForUser } from "@/lib/subscription";
 import { logAiUsage } from "@/lib/ai-usage";
-import { assertAiTrialAllowed } from "@/lib/ai-trial";
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+import { assertTrialReferralOrWalletForIa } from "@/lib/ai-trial";
+import { debitWalletForIa } from "@/lib/ia-wallet";
+import { withIaGatewayRatesForRequest } from "@/lib/ia-gateway-rates-request";
+import { computeWalletChargeFromTokenUsage } from "@/lib/ia-usage-pricing";
+import {
+  assertSubscriptionIaTokenGate,
+  settleSubscribedIaAfterCall,
+} from "@/lib/ia-subscription-meter";
+import { resolveUserOrDefaultModel } from "@/lib/ia-user-model";
+import { createOpenAIForStudentIa, hasStudentIaLlmCredentials, STUDENT_IA_GATEWAY_KEY_HELP } from "@/lib/vercel-ia-gateway";
 
 export async function POST(request: NextRequest) {
+  return withIaGatewayRatesForRequest(async () => {
   try {
     const session = await auth.api.getSession({
       headers: request.headers,
@@ -19,17 +24,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
+    if (!hasStudentIaLlmCredentials()) {
+      return NextResponse.json(
+        { error: STUDENT_IA_GATEWAY_KEY_HELP },
+        { status: 500 },
+      );
+    }
+
     const sub = await getActiveSubscriptionForUser(session.user.id);
     const hasSubscription = !!sub;
+    let subscriptionIaGate: Awaited<ReturnType<typeof assertSubscriptionIaTokenGate>> | null = null;
+    let nonSubIaAccess: Awaited<ReturnType<typeof assertTrialReferralOrWalletForIa>> | null = null;
     if (!hasSubscription) {
-      const gate = await assertAiTrialAllowed({ userId: session.user.id, endpoint: "ia/resumir" });
-      if (!gate.ok) {
+      nonSubIaAccess = await assertTrialReferralOrWalletForIa({ userId: session.user.id, endpoint: "ia/resumir" });
+      if (!nonSubIaAccess.ok) {
         return NextResponse.json(
           {
-            error: gate.error,
-            code: "FREE_LIMIT_REACHED",
+            error: nonSubIaAccess.error,
+            code: nonSubIaAccess.code ?? "FREE_LIMIT_REACHED",
             endpoint: "ia/resumir",
-            limit: gate.info.limit,
+            limit: nonSubIaAccess.limit,
           },
           { status: 402 },
         );
@@ -111,9 +125,27 @@ Estructura JSON esperada:
 El resumen debe ser claro, educativo y útil para estudiantes universitarios.
 `;
 
-    // Generar resumen con OpenAI
+    const model = await resolveUserOrDefaultModel(session.user.id, "heavy");
+    if (hasSubscription && sub) {
+      const gate = await assertSubscriptionIaTokenGate({
+        userId: session.user.id,
+        userSubId: sub.id,
+        plan: sub.subscriptionType,
+        endpoint: "ia/resumir",
+        modelId: model,
+      });
+      if (!gate.ok) {
+        return NextResponse.json(
+          { error: gate.error, code: gate.code, endpoint: "ia/resumir" },
+          { status: 402 },
+        );
+      }
+      subscriptionIaGate = gate;
+    }
+
+    const openai = createOpenAIForStudentIa();
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model,
       messages: [
         {
           role: "system",
@@ -135,6 +167,18 @@ El resumen debe ser claro, educativo y útil para estudiantes universitarios.
     }
 
     logAiUsage({ userId: session.user.id, endpoint: "ia/resumir", usage: response.usage ?? null });
+
+    if (hasSubscription && sub && subscriptionIaGate) {
+      await settleSubscribedIaAfterCall({
+        userSubId: sub.id,
+        userId: session.user.id,
+        model,
+        endpoint: "ia/resumir",
+        reason: "ia/resumir",
+        gate: subscriptionIaGate,
+        usage: response.usage ?? null,
+      });
+    }
 
     // Parsear la respuesta JSON
     let resumenGenerado;
@@ -169,9 +213,27 @@ El resumen debe ser claro, educativo y útil para estudiantes universitarios.
       }
     }
 
-    return NextResponse.json({ 
+    if (!hasSubscription && nonSubIaAccess?.ok && nonSubIaAccess.mode === "wallet") {
+      const chargeCents = computeWalletChargeFromTokenUsage({
+        model,
+        usage: response.usage,
+        discountPercent: nonSubIaAccess.walletDiscountPercent ?? 0,
+      });
+      try {
+        await debitWalletForIa({
+          userId: session.user.id,
+          chargeCents,
+          reason: "ia/resumir",
+          meta: { model, usage: response.usage },
+        });
+      } catch (e) {
+        console.error("[ia/resumir] wallet debit", e);
+      }
+    }
+
+    return NextResponse.json({
       resumen: resumenGenerado,
-      fuente: file ? `PDF: ${file.name}` : "Texto proporcionado"
+      fuente: file ? `PDF: ${file.name}` : "Texto proporcionado",
     });
 
   } catch (error) {
@@ -181,4 +243,5 @@ El resumen debe ser claro, educativo y útil para estudiantes universitarios.
       { status: 500 }
     );
   }
+  });
 } 

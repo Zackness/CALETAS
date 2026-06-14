@@ -3,7 +3,7 @@ import '@fontsource-variable/montserrat';
 import "../globals.css";
 import { ProtectedAppShell } from "./components/protected-app-shell";
 import { getSession } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { db, isDatabaseUnreachableError } from "@/lib/db";
 import { redirect } from "next/navigation";
 import { ThemeProvider } from "@/components/theme-provider";
 
@@ -33,6 +33,7 @@ export default async function ProtectedLayout({
   }
 
   let showVerificationBanner = false;
+  let dbConnectionMessage: string | null = null;
   try {
     const user = await db.user.findUnique({
       where: { id: session.user.id },
@@ -42,6 +43,9 @@ export default async function ProtectedLayout({
   } catch (error) {
     console.error("[protected-layout] user lookup failed:", error);
     showVerificationBanner = false;
+    dbConnectionMessage = isDatabaseUnreachableError(error)
+      ? "No hay conexión con la base de datos (Neon). Revisa que el proyecto esté activo, tu DATABASE_URL y la red (VPN/firewall)."
+      : "No pudimos comprobar el estado de tu cuenta. Algunas funciones pueden fallar hasta que vuelva la base de datos.";
   }
   const userEmail = session.user.email ?? "";
 
@@ -53,6 +57,7 @@ export default async function ProtectedLayout({
             session={session}
             showVerificationBanner={showVerificationBanner}
             userEmail={userEmail}
+            dbConnectionMessage={dbConnectionMessage}
           >
             {children}
           </ProtectedAppShell>

@@ -6,13 +6,18 @@ import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 
+import { renderLatexToMarkdown } from "@/lib/latex";
+
 type MarkdownMathProps = {
   children: string;
   className?: string;
   style?: React.CSSProperties;
+  disableLatexTransform?: boolean;
 };
 
-export function MarkdownMath({ children, className, style }: MarkdownMathProps) {
+export function MarkdownMath({ children, className, style, disableLatexTransform = false }: MarkdownMathProps) {
+  const content = disableLatexTransform ? children : renderLatexToMarkdown(children).markdown;
+
   return (
     <div
       style={style}
@@ -31,9 +36,8 @@ export function MarkdownMath({ children, className, style }: MarkdownMathProps) 
       }
     >
       <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
-        {children}
+        {content}
       </ReactMarkdown>
     </div>
   );
 }
-

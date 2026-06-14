@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import { useSubscriptionRequired } from "@/hooks/use-subscription-required";
 import { IATrialBanner } from "@/components/ia-trial-banner";
+import { IaModelPicker } from "@/components/ia-model-picker";
 
 interface Recurso {
   id: string;
@@ -151,6 +152,10 @@ export default function FichasIA() {
             <IATrialBanner toolLabel="Fichas" endpoint="ia/fichas" />
           </div>
         ) : null}
+
+        <div className="mb-6 max-w-md mx-auto">
+          <IaModelPicker role="heavy" label="Modelo IA (fichas)" disabled={subLoading} />
+        </div>
 
         {!fichas ? (
           /* Selección de Recurso */

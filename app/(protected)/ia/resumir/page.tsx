@@ -8,6 +8,7 @@ import { FileText, Upload, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { useSubscriptionRequired } from "@/hooks/use-subscription-required";
 import { IATrialBanner } from "@/components/ia-trial-banner";
+import { IaModelPicker } from "@/components/ia-model-picker";
 
 export default function ResumirPage() {
   const { loading: subLoading, isActive } = useSubscriptionRequired({ allowTrial: true });
@@ -86,6 +87,10 @@ export default function ResumirPage() {
             <IATrialBanner toolLabel="Resumir" endpoint="ia/resumir" />
           </div>
         ) : null}
+
+        <div className="mb-6 max-w-md">
+          <IaModelPicker role="heavy" label="Modelo IA (resumen y explicación)" disabled={subLoading} />
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Panel de Entrada */}

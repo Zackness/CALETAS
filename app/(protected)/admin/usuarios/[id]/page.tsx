@@ -79,6 +79,8 @@ export default function AdminUsuarioEditPage() {
     universidadId: "none",
     carreraId: "none",
     semestreActual: "",
+    adminPassword: "",
+    adminPasswordConfirm: "",
   });
   const [materiasEdit, setMateriasEdit] = useState<MateriaEdit[]>([]);
 
@@ -116,6 +118,8 @@ export default function AdminUsuarioEditPage() {
       universidadId: u?.universidadId ?? "none",
       carreraId: u?.carreraId ?? "none",
       semestreActual: u?.semestreActual ?? "",
+      adminPassword: "",
+      adminPasswordConfirm: "",
     });
 
     const materias = Array.isArray(u?.materiasEstudiante) ? u.materiasEstudiante : [];
@@ -171,31 +175,46 @@ export default function AdminUsuarioEditPage() {
       toast.error("Nombre y correo son obligatorios");
       return;
     }
+    if (form.adminPassword || form.adminPasswordConfirm) {
+      if (form.adminPassword !== form.adminPasswordConfirm) {
+        toast.error("Las contraseñas no coinciden");
+        return;
+      }
+      if (form.adminPassword.length < 8) {
+        toast.error("La contraseña debe tener al menos 8 caracteres");
+        return;
+      }
+    }
     setSaving(true);
     try {
+      const payload: Record<string, unknown> = {
+        name: form.name.trim(),
+        email: form.email.trim(),
+        role: form.role,
+        telefono: form.telefono.trim() ? form.telefono.trim() : null,
+        universidadId: form.universidadId === "none" ? null : form.universidadId,
+        carreraId: form.carreraId === "none" ? null : form.carreraId,
+        semestreActual: form.semestreActual.trim() ? form.semestreActual.trim() : null,
+        materias: materiasEdit.map((m) => ({
+          materiaId: m.materiaId,
+          estado: m.estado,
+          nota: m.nota ? Number(m.nota) : null,
+        })),
+        replaceMaterias: true,
+      };
+      if (form.adminPassword) {
+        payload.password = form.adminPassword;
+      }
       const res = await fetch(`/api/admin/users/${userId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: form.name.trim(),
-          email: form.email.trim(),
-          role: form.role,
-          telefono: form.telefono.trim() ? form.telefono.trim() : null,
-          universidadId: form.universidadId === "none" ? null : form.universidadId,
-          carreraId: form.carreraId === "none" ? null : form.carreraId,
-          semestreActual: form.semestreActual.trim() ? form.semestreActual.trim() : null,
-          materias: materiasEdit.map((m) => ({
-            materiaId: m.materiaId,
-            estado: m.estado,
-            nota: m.nota ? Number(m.nota) : null,
-          })),
-          replaceMaterias: true,
-        }),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Error guardando");
       toast.success("Usuario actualizado");
       setUser((prev) => (prev ? { ...prev, ...data.user } : prev));
+      setForm((f) => ({ ...f, adminPassword: "", adminPasswordConfirm: "" }));
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Error guardando usuario");
     } finally {
@@ -298,6 +317,38 @@ export default function AdminUsuarioEditPage() {
                         </SelectContent>
                       </Select>
                     </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-[var(--mygreen-light)] border-white/10">
+                <CardHeader>
+                  <CardTitle className="text-white">Contraseña</CardTitle>
+                  <CardDescription className="text-white/70">
+                    Cambio manual (solo administradores). Deja vacío para no modificar la contraseña actual.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div>
+                    <Label className="text-white/80">Nueva contraseña</Label>
+                    <Input
+                      type="password"
+                      autoComplete="new-password"
+                      className="bg-[var(--mygreen-dark)] border-white/20 text-white"
+                      value={form.adminPassword}
+                      onChange={(e) => setForm((f) => ({ ...f, adminPassword: e.target.value }))}
+                      placeholder="Mínimo 8 caracteres"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-white/80">Confirmar contraseña</Label>
+                    <Input
+                      type="password"
+                      autoComplete="new-password"
+                      className="bg-[var(--mygreen-dark)] border-white/20 text-white"
+                      value={form.adminPasswordConfirm}
+                      onChange={(e) => setForm((f) => ({ ...f, adminPasswordConfirm: e.target.value }))}
+                    />
                   </div>
                 </CardContent>
               </Card>

@@ -5,7 +5,7 @@ import { CaletasSidebarNav } from "./caletas-sidebar-nav";
 import { DashboardHeader } from "./app-header";
 import { EmailVerificationBanner } from "./email-verification-banner";
 import { MobileBottomNav } from "./mobile-bottom-nav";
-import { CaletaShareFab } from "@/components/caletas/caleta-share-fab";
+import { StudentComposeFab } from "@/components/caletas/caleta-share-fab";
 
 type SessionLike = {
   user?: {
@@ -22,11 +22,14 @@ export function ProtectedAppShell({
   session,
   showVerificationBanner,
   userEmail,
+  dbConnectionMessage,
 }: {
   children: React.ReactNode;
   session: SessionLike;
   showVerificationBanner: boolean;
   userEmail: string;
+  /** Aviso cuando el layout no pudo consultar la BD (p. ej. Neon dormido o red). */
+  dbConnectionMessage?: string | null;
 }) {
   return (
     <SidebarProvider
@@ -42,6 +45,14 @@ export function ProtectedAppShell({
       </Sidebar>
       <SidebarInset className="flex min-h-0 min-w-0 flex-1 flex-col border-l border-white/10 bg-transparent">
         <DashboardHeader session={session} />
+        {dbConnectionMessage ? (
+          <div
+            role="alert"
+            className="border-b border-amber-500/40 bg-amber-950/90 px-3 py-2 text-center text-sm text-amber-100 sm:px-4"
+          >
+            {dbConnectionMessage}
+          </div>
+        ) : null}
         {showVerificationBanner && userEmail ? (
           <EmailVerificationBanner email={userEmail} />
         ) : null}
@@ -50,7 +61,7 @@ export function ProtectedAppShell({
         </main>
       </SidebarInset>
       <MobileBottomNav />
-      <CaletaShareFab />
+      <StudentComposeFab />
     </SidebarProvider>
   );
 }

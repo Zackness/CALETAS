@@ -651,7 +651,7 @@ export default function CaracteristicasPage() {
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/70">
                     <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
-                    <span>Integración con OpenAI para IA</span>
+                    <span>IA con Vercel AI Gateway (múltiples modelos)</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/70">
                     <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />

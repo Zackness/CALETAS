@@ -46,6 +46,8 @@ export async function GET(request: NextRequest) {
                   name: sub.subscriptionType.name,
                   price: sub.subscriptionType.price,
                   period: sub.subscriptionType.period,
+                  includedIaTokensPerPeriod: sub.subscriptionType.includedIaTokensPerPeriod,
+                  iaTokenOverflowPolicy: sub.subscriptionType.iaTokenOverflowPolicy,
                 }
               : null,
             currentPeriodEnd: sub.stripeCurrentPeriodEnd,

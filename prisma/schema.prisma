@@ -67,9 +67,104 @@ model User {
   profileGalleryUrls     Json?                // array de URLs (strings), p. ej. ["https://..."]
   historias                Historia[]
   calendarEvents           CalendarEvent[]
+  referralCode             String?                @unique
+  referredByUserId         String?
+  referredBy               User?                  @relation("UserReferrals", fields: [referredByUserId], references: [id], onDelete: SetNull)
+  referredUsers            User[]                 @relation("UserReferrals")
+  referralBoosts           ReferralBoost[]
+  walletBalanceCents      Int                    @default(0)
+  /** 0–30: descuento en consumo de IA (p. ej. 30 si usó código del admin). */
+  iaConsumptionDiscountPercent Int                @default(0)
+  /** Modelo IA elegido para chat (ID Gateway o OpenAI); null = default del servidor. */
+  iaModelChat             String?
+  /** Modelo para resumir, fichas, cuestionario (rol “heavy”). */
+  iaModelHeavy            String?
+  /** Modelo para interpretar cronograma desde texto. */
+  iaModelCronograma       String?
+  /** `auto` = elige modelo según la petición y cuenta; `manual` = usa el `iaModel*` de ese rol (o default). */
+  iaLlmModeChat           String                 @default("manual")
+  iaLlmModeHeavy          String                 @default("manual")
+  iaLlmModeCronograma     String                 @default("manual")
+  walletLedger             WalletLedger[]
+  caletaTasks              CaletaTask[]
 
   @@index([role])
   @@index([universidadId])
+  @@index([referredByUserId])
+}
+
+enum CaletaTaskStatus {
+  BACKLOG
+  PENDIENTE
+  EN_PROGRESO
+  EN_PAUSA
+  HECHO
+  CANCELADA
+}
+
+enum CaletaTaskPriority {
+  BAJA
+  MEDIA
+  ALTA
+}
+
+model CaletaTask {
+  id          String             @id @default(cuid())
+  userId      String
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  description String?            @db.Text
+  status      CaletaTaskStatus   @default(PENDIENTE)
+  priority    CaletaTaskPriority @default(MEDIA)
+  dueAt       DateTime?
+  icon        String?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  @@index([userId, status])
+  @@index([userId, dueAt])
+  @@index([userId, createdAt])
+}
+
+enum ReferralBoostKind {
+  REFEREE_WELCOME
+  REFERRER_REWARD
+}
+
+enum ReferralBoostStatus {
+  PENDING
+  ACTIVE
+}
+
+/** Día(s) de IA sin límites de prueba: bienvenida por referido o recompensa pendiente al referidor. */
+model ReferralBoost {
+  id                String              @id @default(cuid())
+  userId            String
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind              ReferralBoostKind
+  status            ReferralBoostStatus @default(PENDING)
+  startsAt          DateTime?
+  endsAt            DateTime?
+  /** Usuario que se registró con tu código (solo recompensa al referidor). */
+  triggeredByUserId String?
+  createdAt         DateTime            @default(now())
+
+  @@index([userId, status])
+  @@index([kind, status])
+}
+
+model WalletLedger {
+  id                 String   @id @default(cuid())
+  userId             String
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /** Negativo = cargo por IA; positivo = recarga/crédito admin. */
+  deltaCents         Int
+  balanceAfterCents  Int
+  reason             String   @db.VarChar(64)
+  meta               Json?
+  createdAt          DateTime @default(now())
+
+  @@index([userId, createdAt])
 }
 
 model CalendarEvent {
@@ -274,6 +369,10 @@ model UserSubscription {
   stripeSubscriptionId String?
   stripePriceId String?
   stripeCurrentPeriodEnd DateTime?
+  /** Tokens (prompt+completion) consumidos del cupo incluido en el periodo actual de facturación. */
+  iaIncludedTokensUsed Int @default(0)
+  /** Copia de stripeCurrentPeriodEnd cuando se reinició el contador de tokens incluidos. */
+  iaMeterPeriodEnd DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -289,12 +388,56 @@ model SubscriptionType {
   description String?  @db.Text
   price       Int
   period      String
+  /** stripe_recurring | wallet_consumption (CALETA BASICS: misma billetera, sin Stripe). */
+  billingKind String   @default("stripe_recurring")
+  /** Recarga mínima en centavos USD para planes solo billetera (p. ej. 100 = $1). */
+  minWalletTopUpCents Int @default(0)
+  /** Cupo mensual de tokens (prompt+completion) incluidos con la suscripción; null = sin tope (legacy). */
+  includedIaTokensPerPeriod Int?
+  /** Tras agotar el cupo: wallet = cobrar billetera; block = no más IA de consumo hasta el próximo ciclo. */
+  iaTokenOverflowPolicy String @default("wallet")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   subscriptions UserSubscription[]
   manualPayments ManualPayment[]
   paymentRecords PaymentRecord[]
+  iaAccessRules SubscriptionTypeIaAccess[]
+}
+
+/// Catálogo de funciones IA (referencia a precios listos tipo Vercel AI Gateway).
+model IaFeatureCatalog {
+  id                  String   @id @default(cuid())
+  featureKey          String   @unique
+  displayNameEs       String
+  descriptionEs       String?  @db.Text
+  vercelPricingUrl    String   @db.Text
+  listInputUsdPer1M   Float?
+  listOutputUsdPer1M  Float?
+  referenceModelIds   String?  @db.Text
+  /** Gratis solo dentro del cupo de prueba (sin suscripción ni saldo en billetera). */
+  freeInTrial         Boolean  @default(false)
+  /** Tras la prueba o con saldo: se cobra por consumo (tokens + margen). */
+  meteredAfterTrial   Boolean  @default(true)
+  sortOrder           Int      @default(0)
+
+  planAccess SubscriptionTypeIaAccess[]
+}
+
+/// Qué significa cada función IA dentro de un plan (para la página de suscripción).
+model SubscriptionTypeIaAccess {
+  id                   String   @id @default(cuid())
+  subscriptionTypeId String
+  iaFeatureCatalogId  String
+  /** consumption | included | blocked */
+  accessKind           String   @default("consumption")
+  notesEs              String?  @db.Text
+
+  subscriptionType SubscriptionType @relation(fields: [subscriptionTypeId], references: [id], onDelete: Cascade)
+  catalog          IaFeatureCatalog @relation(fields: [iaFeatureCatalogId], references: [id], onDelete: Cascade)
+
+  @@unique([subscriptionTypeId, iaFeatureCatalogId])
+  @@index([subscriptionTypeId])
 }
 
 

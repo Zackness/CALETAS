@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import { useSubscriptionRequired } from "@/hooks/use-subscription-required";
 import { IATrialBanner } from "@/components/ia-trial-banner";
+import { IaModelPicker } from "@/components/ia-model-picker";
 
 interface Recurso {
   id: string;
@@ -207,6 +208,10 @@ export default function CuestionarioPage() {
             <IATrialBanner toolLabel="Cuestionario" endpoint="ia/cuestionario" />
           </div>
         ) : null}
+
+        <div className="mb-6 max-w-md mx-auto">
+          <IaModelPicker role="heavy" label="Modelo IA (cuestionario)" disabled={subLoading} />
+        </div>
 
         {!cuestionario ? (
           /* Selección de Recurso */

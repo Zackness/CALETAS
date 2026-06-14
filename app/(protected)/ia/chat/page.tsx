@@ -12,6 +12,7 @@ import { Bot, Edit3, Plus, Send, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useSubscriptionRequired } from "@/hooks/use-subscription-required";
 import { IATrialBanner } from "@/components/ia-trial-banner";
+import { IaModelPicker } from "@/components/ia-model-picker";
 import {
   createThread,
   IAChatMessage,
@@ -409,10 +410,16 @@ export default function ChatIA() {
                 disabled={sending}
               />
 
-              <div className="flex justify-end">
+              <div className="flex flex-wrap items-end gap-2 justify-end w-full">
+                <IaModelPicker
+                  role="chat"
+                  label="Modelo"
+                  className="flex-1 min-w-[200px] max-w-[min(100%,28rem)]"
+                  disabled={subLoading}
+                />
                 <Button
                   type="button"
-                  className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
+                  className="shrink-0 bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
                   disabled={!canSend}
                   onClick={() => void onSend()}
                 >

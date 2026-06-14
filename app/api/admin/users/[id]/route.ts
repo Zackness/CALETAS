@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 
 import { auth } from "@/lib/auth";
@@ -59,9 +60,18 @@ export async function PATCH(
       data.isTwoFactorEnabled = body.isTwoFactorEnabled;
     }
 
-    if (body.password) {
+    let credentialPasswordHash: string | null = null;
+    if (body.password != null && String(body.password).length > 0) {
+      const plain = String(body.password);
+      if (plain.length < 8) {
+        return NextResponse.json(
+          { error: "La contraseña debe tener al menos 8 caracteres" },
+          { status: 400 },
+        );
+      }
       const bcrypt = await import("bcryptjs");
-      data.password = await bcrypt.hash(body.password, 10);
+      credentialPasswordHash = await bcrypt.hash(plain, 10);
+      data.password = credentialPasswordHash;
     }
 
     if (body.universidadId !== undefined) data.universidadId = body.universidadId;
@@ -71,7 +81,8 @@ export async function PATCH(
     const materiasUpdates = Array.isArray(body.materias) ? body.materias : [];
     const replaceMaterias = body.replaceMaterias === true;
 
-    const user = await db.$transaction(async (tx) => {
+    const user = await db.$transaction(
+      async (tx) => {
       const updatedUser = await tx.user.update({
         where: { id },
         data,
@@ -91,39 +102,84 @@ export async function PATCH(
         },
       });
 
-      if (materiasUpdates.length > 0 || replaceMaterias) {
-        if (replaceMaterias) {
-          await tx.materiaEstudiante.deleteMany({
-            where: { userId: id },
+      if (credentialPasswordHash) {
+        const cred = await tx.authAccount.findFirst({
+          where: { userId: id, providerId: "credential" },
+          select: { id: true },
+        });
+        if (cred) {
+          await tx.authAccount.update({
+            where: { id: cred.id },
+            data: { password: credentialPasswordHash },
           });
-        }
-
-        for (const m of materiasUpdates) {
-          if (!m?.materiaId) continue;
-          await tx.materiaEstudiante.upsert({
-            where: {
-              userId_materiaId: { userId: id, materiaId: m.materiaId },
-            },
-            create: {
+        } else {
+          await tx.authAccount.create({
+            data: {
+              id: randomUUID(),
+              providerId: "credential",
+              accountId: id,
               userId: id,
-              materiaId: m.materiaId,
-              estado: (m.estado as any) ?? "EN_CURSO",
-              nota: m.nota ?? null,
-              semestreCursado: m.semestreCursado ?? null,
-              observaciones: m.observaciones ?? null,
-            },
-            update: {
-              estado: (m.estado as any) ?? undefined,
-              nota: m.nota ?? null,
-              semestreCursado: m.semestreCursado ?? null,
-              observaciones: m.observaciones ?? null,
+              password: credentialPasswordHash,
             },
           });
         }
       }
 
+      if (materiasUpdates.length > 0 || replaceMaterias) {
+        if (replaceMaterias) {
+          await tx.materiaEstudiante.deleteMany({
+            where: { userId: id },
+          });
+          const byMateria = new Map<string, (typeof materiasUpdates)[0]>();
+          for (const m of materiasUpdates) {
+            if (m?.materiaId) byMateria.set(m.materiaId, m);
+          }
+          const toCreate = [...byMateria.values()];
+          if (toCreate.length > 0) {
+            await tx.materiaEstudiante.createMany({
+              data: toCreate.map((m) => ({
+                userId: id,
+                materiaId: m.materiaId,
+                estado: (m.estado as any) ?? "EN_CURSO",
+                nota: m.nota ?? null,
+                semestreCursado: m.semestreCursado ?? null,
+                observaciones: m.observaciones ?? null,
+              })),
+            });
+          }
+        } else {
+          for (const m of materiasUpdates) {
+            if (!m?.materiaId) continue;
+            await tx.materiaEstudiante.upsert({
+              where: {
+                userId_materiaId: { userId: id, materiaId: m.materiaId },
+              },
+              create: {
+                userId: id,
+                materiaId: m.materiaId,
+                estado: (m.estado as any) ?? "EN_CURSO",
+                nota: m.nota ?? null,
+                semestreCursado: m.semestreCursado ?? null,
+                observaciones: m.observaciones ?? null,
+              },
+              update: {
+                estado: (m.estado as any) ?? undefined,
+                nota: m.nota ?? null,
+                semestreCursado: m.semestreCursado ?? null,
+                observaciones: m.observaciones ?? null,
+              },
+            });
+          }
+        }
+      }
+
       return updatedUser;
-    });
+    },
+      {
+        maxWait: 15_000,
+        timeout: 60_000,
+      },
+    );
 
     return NextResponse.json({ user });
   } catch (error) {

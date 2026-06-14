@@ -33,6 +33,15 @@ async function requireAdmin(headers: Headers) {
   return { ok: true as const, userId: session.user.id };
 }
 
+function parseIncomingId(raw: string) {
+  const id = (raw || "").trim();
+  if (!id) return { kind: "invalid" as const };
+  if (id.startsWith("legacy-")) {
+    return { kind: "legacyManualPayment" as const, id: id.slice("legacy-".length) };
+  }
+  return { kind: "paymentRecord" as const, id };
+}
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -60,25 +69,55 @@ export async function PATCH(
       );
     }
 
-    const paymentRecord = await dbAny.paymentRecord.findUnique({
-      where: { id },
-      include: {
-        subscriptionType: true,
-        user: {
-          select: { email: true, name: true },
-        },
-        manualPayment: true,
-      },
-    });
-    if (!paymentRecord) {
-      return NextResponse.json({ error: "Pago no encontrado" }, { status: 404 });
+    const parsed = parseIncomingId(id);
+    if (parsed.kind === "invalid") {
+      return NextResponse.json({ error: "ID inválido" }, { status: 400 });
     }
-    if (paymentRecord.source !== "MOBILE_BS" || !paymentRecord.manualPaymentId || !paymentRecord.manualPayment) {
-      return NextResponse.json({ error: "Este pago no se gestiona manualmente" }, { status: 400 });
-    }
-    const payment = paymentRecord.manualPayment;
-    if (paymentRecord.status !== "PENDING") {
-      return NextResponse.json({ error: "Este pago ya fue procesado" }, { status: 400 });
+
+    const paymentRecord =
+      parsed.kind === "paymentRecord"
+        ? await dbAny.paymentRecord.findUnique({
+            where: { id: parsed.id },
+            include: {
+              subscriptionType: true,
+              user: { select: { email: true, name: true } },
+              manualPayment: true,
+            },
+          })
+        : null;
+
+    const legacyManual =
+      parsed.kind === "legacyManualPayment"
+        ? await db.manualPayment.findUnique({
+            where: { id: parsed.id },
+            include: {
+              subscriptionType: true,
+              user: { select: { id: true, email: true, name: true } },
+            },
+          })
+        : null;
+
+    if (parsed.kind === "paymentRecord") {
+      if (!paymentRecord) {
+        return NextResponse.json({ error: "Pago no encontrado" }, { status: 404 });
+      }
+      if (
+        paymentRecord.source !== "MOBILE_BS" ||
+        !paymentRecord.manualPaymentId ||
+        !paymentRecord.manualPayment
+      ) {
+        return NextResponse.json({ error: "Este pago no se gestiona manualmente" }, { status: 400 });
+      }
+      if (paymentRecord.status !== "PENDING") {
+        return NextResponse.json({ error: "Este pago ya fue procesado" }, { status: 400 });
+      }
+    } else {
+      if (!legacyManual) {
+        return NextResponse.json({ error: "Pago no encontrado" }, { status: 404 });
+      }
+      if (legacyManual.status !== "PENDING") {
+        return NextResponse.json({ error: "Este pago ya fue procesado" }, { status: 400 });
+      }
     }
 
     if (body.action === "reject") {
@@ -91,8 +130,10 @@ export async function PATCH(
       }
 
       const updated = await db.$transaction(async (tx) => {
+        const manualPaymentId =
+          parsed.kind === "paymentRecord" ? paymentRecord!.manualPaymentId : legacyManual!.id;
         const manual = await tx.manualPayment.update({
-          where: { id },
+          where: { id: manualPaymentId },
           data: {
             status: "REJECTED",
             reviewedAt: new Date(),
@@ -102,17 +143,23 @@ export async function PATCH(
 
         const txAny = tx as any;
         await txAny.paymentRecord.upsert({
-          where: { manualPaymentId: id },
+          where: { manualPaymentId },
           create: {
-            userId: paymentRecord.userId,
-            subscriptionTypeId: paymentRecord.subscriptionTypeId,
+            userId: parsed.kind === "paymentRecord" ? paymentRecord!.userId : legacyManual!.userId,
+            subscriptionTypeId:
+              parsed.kind === "paymentRecord"
+                ? (paymentRecord!.subscriptionTypeId ?? null)
+                : legacyManual!.subscriptionTypeId,
             source: "MOBILE_BS",
             status: "REJECTED",
-            amountBs: payment.amountBs,
-            amountUsdCents: paymentRecord.subscriptionType?.price ?? null,
-            reference: payment.reference,
+            amountBs: manual.amountBs,
+            amountUsdCents:
+              parsed.kind === "paymentRecord"
+                ? (paymentRecord!.subscriptionType?.price ?? null)
+                : legacyManual!.subscriptionType?.price ?? null,
+            reference: manual.reference,
             rejectionReason: reason,
-            manualPaymentId: payment.id,
+            manualPaymentId,
           },
           update: {
             status: "REJECTED",
@@ -124,10 +171,20 @@ export async function PATCH(
       });
 
       try {
+        const toEmail =
+          parsed.kind === "paymentRecord" ? paymentRecord!.user.email : legacyManual!.user.email;
+        const toName =
+          parsed.kind === "paymentRecord"
+            ? paymentRecord!.user.name || "estudiante"
+            : legacyManual!.user.name || "estudiante";
+        const planName =
+          parsed.kind === "paymentRecord"
+            ? paymentRecord!.subscriptionType?.name || "tu plan"
+            : legacyManual!.subscriptionType?.name || "tu plan";
         await sendManualPaymentRejectedEmail(
-          paymentRecord.user.email,
-          paymentRecord.user.name || "estudiante",
-          paymentRecord.subscriptionType?.name || "tu plan",
+          toEmail,
+          toName,
+          planName,
           reason,
         );
       } catch (mailError) {
@@ -139,16 +196,28 @@ export async function PATCH(
 
     // approve
     const now = new Date();
-    const newEnd = addPeriod(payment.subscriptionType.period, now);
+    const planPeriod =
+      parsed.kind === "paymentRecord"
+        ? paymentRecord!.subscriptionType?.period
+        : legacyManual!.subscriptionType?.period;
+    const newEnd = addPeriod(planPeriod || "month", now);
+
+    const targetUserId = parsed.kind === "paymentRecord" ? paymentRecord!.userId : legacyManual!.userId;
+    const targetSubscriptionTypeId =
+      parsed.kind === "paymentRecord"
+        ? (paymentRecord!.subscriptionTypeId ?? null)
+        : legacyManual!.subscriptionTypeId;
 
     const existingSub = await db.userSubscription.findFirst({
-      where: { userId: paymentRecord.userId },
+      where: { userId: targetUserId },
       select: { id: true },
     });
 
     const [updatedPayment, updatedSub] = await db.$transaction(async (tx) => {
+      const manualPaymentId =
+        parsed.kind === "paymentRecord" ? paymentRecord!.manualPaymentId : legacyManual!.id;
       const manual = await tx.manualPayment.update({
-        where: { id },
+        where: { id: manualPaymentId },
         data: {
           status: "APPROVED",
           reviewedAt: new Date(),
@@ -160,15 +229,15 @@ export async function PATCH(
         ? await tx.userSubscription.update({
             where: { id: existingSub.id },
             data: {
-              subscriptionTypeId: payment.subscriptionTypeId,
+              subscriptionTypeId: targetSubscriptionTypeId,
               stripeCurrentPeriodEnd: newEnd,
               stripePriceId: "manual",
             },
           })
         : await tx.userSubscription.create({
             data: {
-              userId: paymentRecord.userId,
-              subscriptionTypeId: payment.subscriptionTypeId,
+              userId: targetUserId,
+              subscriptionTypeId: targetSubscriptionTypeId,
               stripeCurrentPeriodEnd: newEnd,
               stripePriceId: "manual",
             },
@@ -176,19 +245,22 @@ export async function PATCH(
 
       const txAny = tx as any;
       await txAny.paymentRecord.upsert({
-        where: { manualPaymentId: id },
+        where: { manualPaymentId },
         create: {
-          userId: paymentRecord.userId,
-          subscriptionTypeId: payment.subscriptionTypeId,
+          userId: targetUserId,
+          subscriptionTypeId: targetSubscriptionTypeId,
           source: "MOBILE_BS",
           status: "APPROVED",
-          amountBs: payment.amountBs,
-          amountUsdCents: paymentRecord.subscriptionType?.price ?? null,
-          reference: payment.reference,
+          amountBs: manual.amountBs,
+          amountUsdCents:
+            parsed.kind === "paymentRecord"
+              ? (paymentRecord!.subscriptionType?.price ?? null)
+              : legacyManual!.subscriptionType?.price ?? null,
+          reference: manual.reference,
           periodStart: now,
           periodEnd: newEnd,
           paidAt: now,
-          manualPaymentId: payment.id,
+          manualPaymentId,
         },
         update: {
           status: "APPROVED",
@@ -228,8 +300,18 @@ export async function DELETE(
       );
     }
 
+    const parsed = parseIncomingId(id);
+    if (parsed.kind === "invalid") {
+      return NextResponse.json({ error: "ID inválido" }, { status: 400 });
+    }
+
+    if (parsed.kind === "legacyManualPayment") {
+      await db.manualPayment.delete({ where: { id: parsed.id } });
+      return NextResponse.json({ ok: true });
+    }
+
     const paymentRecord = await dbAny.paymentRecord.findUnique({
-      where: { id },
+      where: { id: parsed.id },
       select: { id: true, manualPaymentId: true },
     });
     if (!paymentRecord) {
@@ -241,7 +323,7 @@ export async function DELETE(
         await tx.manualPayment.delete({ where: { id: paymentRecord.manualPaymentId } });
       }
       const txAny = tx as any;
-      await txAny.paymentRecord.delete({ where: { id } });
+      await txAny.paymentRecord.delete({ where: { id: paymentRecord.id } });
     });
     return NextResponse.json({ ok: true });
   } catch (error) {

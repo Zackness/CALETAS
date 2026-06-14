@@ -233,10 +233,13 @@ export default async function HomePage() {
     favoritosCount: r._count.favoritos,
   }));
 
-  const toFeedCaletaClient = (r: (typeof recursosRecientesMasked)[number]): FeedCaleta => ({
+  const toFeedCaletaClient = (
+    r: (typeof recursosRecientesMasked)[number] | (typeof recursosPopularesMasked)[number],
+  ): FeedCaleta => ({
     id: r.id,
     archivoUrl: r.archivoUrl,
     titulo: r.titulo,
+    descripcion: r.descripcion,
     tipo: r.tipo,
     createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : String(r.createdAt),
     numVistas: r.numVistas,

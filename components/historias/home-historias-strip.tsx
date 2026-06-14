@@ -198,7 +198,7 @@ export function HomeHistoriasStrip() {
   const myLatest = myBucket ? latestItem(myBucket.items) : undefined;
 
   return (
-    <section className="mb-5 border-b border-white/10 pb-4">
+    <section id="historias" className="mb-5 scroll-mt-24 border-b border-white/10 pb-4">
       <input
         ref={fileRef}
         type="file"

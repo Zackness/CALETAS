@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 
 import { auth } from "@/lib/auth";
@@ -118,6 +119,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const name = body.name.trim();
     const email = body.email.toLowerCase().trim();
 
     const existing = await db.user.findUnique({
@@ -133,29 +135,52 @@ export async function POST(request: NextRequest) {
     }
 
     let hashedPassword: string | null = null;
-    if (body.password) {
+    if (body.password != null && String(body.password).length > 0) {
+      const plain = String(body.password);
+      if (plain.length < 8) {
+        return NextResponse.json(
+          { error: "La contraseña debe tener al menos 8 caracteres" },
+          { status: 400 },
+        );
+      }
       const bcrypt = await import("bcryptjs");
-      hashedPassword = await bcrypt.hash(body.password, 10);
+      hashedPassword = await bcrypt.hash(plain, 10);
     }
 
-    const user = await db.user.create({
-      data: {
-        name: body.name,
-        email,
-        password: hashedPassword,
-        role: (body.role as any) || "CLIENT",
-        telefono: body.telefono || null,
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        createdAt: true,
-        isEmailVerified: true,
-        isTwoFactorEnabled: true,
-        telefono: true,
-      },
+    const user = await db.$transaction(async (tx) => {
+      const created = await tx.user.create({
+        data: {
+          name,
+          email,
+          ...(hashedPassword ? { password: hashedPassword } : {}),
+          role: (body.role as any) || "CLIENT",
+          telefono: body.telefono || null,
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          createdAt: true,
+          isEmailVerified: true,
+          isTwoFactorEnabled: true,
+          telefono: true,
+        },
+      });
+
+      if (hashedPassword) {
+        await tx.authAccount.create({
+          data: {
+            id: randomUUID(),
+            providerId: "credential",
+            accountId: created.id,
+            userId: created.id,
+            password: hashedPassword,
+          },
+        });
+      }
+
+      return created;
     });
 
     return NextResponse.json({ user }, { status: 201 });

@@ -17,6 +17,7 @@ import {
   Target,
   Users,
   Upload,
+  Wallet,
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -563,6 +564,19 @@ export function CaletasSidebarNav({ userRole }: { userRole?: string | null }) {
             <SidebarMenuItem>
               <SidebarMenuButton
                 asChild
+                isActive={currentPath.startsWith("/tareas")}
+                className="text-white hover:bg-white/10 data-[active=true]:bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)] data-[active=true]:text-white"
+              >
+                <Link href="/tareas" onClick={closeMobile} className="flex min-w-0 items-center gap-2">
+                  <Target className="h-4 w-4 shrink-0 text-[var(--accent-hex)]" />
+                  <span className="truncate">Tareas y notas</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
                 isActive={currentPath.startsWith("/biblioteca")}
                 className="text-white hover:bg-white/10 data-[active=true]:bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)] data-[active=true]:text-white"
               >
@@ -658,6 +672,21 @@ export function CaletasSidebarNav({ userRole }: { userRole?: string | null }) {
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                      <SidebarMenuButton asChild isActive={currentPath.startsWith("/academico/calendario")}>
+                        <Link
+                          href="/academico/calendario"
+                          onClick={closeMobile}
+                          className={cn(
+                            subLink,
+                            currentPath.startsWith("/academico/calendario") &&
+                              "bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)] text-white",
+                          )}
+                        >
+                          <span className="truncate">Calendario</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuSubItem>
                   </SidebarMenuSub>
                 </CollapsibleContent>
               </SidebarMenuItem>
@@ -714,6 +743,19 @@ export function CaletasSidebarNav({ userRole }: { userRole?: string | null }) {
                 </CollapsibleContent>
               </SidebarMenuItem>
             </Collapsible>
+
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                isActive={currentPath.startsWith("/billetera")}
+                className="text-white hover:bg-white/10 data-[active=true]:bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)] data-[active=true]:text-white"
+              >
+                <Link href="/billetera" onClick={closeMobile} className="flex min-w-0 items-center gap-2">
+                  <Wallet className="h-4 w-4 shrink-0 text-[var(--accent-hex)]" />
+                  <span className="truncate">Billetera IA</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
 
             <SidebarMenuItem>
               <SidebarMenuButton

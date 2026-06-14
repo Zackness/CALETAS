@@ -20,7 +20,7 @@ export default function PublicLayout({
     <html lang="es" suppressHydrationWarning>
       <body>
         <ThemeProvider>
-          <section className="bg-gradient-to-t from-mygreen to-mygreen-light min-h-screen w-full m-0 relative text-white">
+          <section className="chalkboard-shell min-h-screen w-full m-0 relative text-white">
             {children}
           </section>
         </ThemeProvider>

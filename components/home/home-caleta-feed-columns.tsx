@@ -64,19 +64,19 @@ export function HomeCaletaFeedColumns({ nuevas, populares }: Props) {
 
       {/* Siempre Nuevas arriba, Populares abajo (feed social) */}
       <div className="flex flex-col gap-5">
-        <Card className="border-white/10 bg-[var(--mygreen-light)]">
+        <Card className="overflow-hidden rounded-3xl border-white/10 bg-[var(--mygreen-light)] shadow-[0_8px_40px_-20px_rgba(0,0,0,0.35)]">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base text-white sm:text-lg">
               <Clock3 className="h-4 w-4 shrink-0 text-[var(--accent-hex)] sm:h-5 sm:w-5" />
-              Nuevas caletas
+              Tu feed — recién publicado
             </CardTitle>
             <CardDescription className="text-white/70">
-              Lo último que la comunidad subió.
+              Publicaciones de la comunidad, como en una red social: autor, materia y reacciones.
             </CardDescription>
           </CardHeader>
           <CardContent
             className={cn(
-              viewMode === "list" ? "space-y-3" : "grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3",
+              viewMode === "list" ? "space-y-4" : "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4",
             )}
           >
             {nuevas.map((r) => (
@@ -102,18 +102,18 @@ export function HomeCaletaFeedColumns({ nuevas, populares }: Props) {
           </CardContent>
         </Card>
 
-        <Card className="border-white/10 bg-[var(--mygreen-light)]">
+        <Card className="overflow-hidden rounded-3xl border-white/10 bg-[var(--mygreen-light)] shadow-[0_8px_40px_-20px_rgba(0,0,0,0.35)]">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base text-white sm:text-lg">
               <TrendingUp className="h-4 w-4 shrink-0 text-[var(--accent-hex)] sm:h-5 sm:w-5" />
-              Populares
+              Tendencias
             </CardTitle>
             <CardDescription className="text-white/70">
-              Las caletas más vistas ahora mismo.
+              Lo que más está resonando: vistas y actividad reciente.
             </CardDescription>
           </CardHeader>
           <CardContent
-            className={cn(viewMode === "list" ? "space-y-3" : "grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3")}
+            className={cn(viewMode === "list" ? "space-y-4" : "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4")}
           >
             {populares.map((r) => (
               <HomeCaletaFeedCard key={r.id} item={r} layout={viewMode} />

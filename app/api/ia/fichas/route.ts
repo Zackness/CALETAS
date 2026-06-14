@@ -2,21 +2,26 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getCorsHeaders } from "@/lib/cors";
-import OpenAI from "openai";
 import { canAccessFullCaletasPlan, getActiveSubscriptionForUser } from "@/lib/subscription";
 import { logAiUsage } from "@/lib/ai-usage";
-import { assertAiTrialAllowed } from "@/lib/ai-trial";
+import { assertTrialReferralOrWalletForIa } from "@/lib/ai-trial";
+import { debitWalletForIa } from "@/lib/ia-wallet";
+import { withIaGatewayRatesForRequest } from "@/lib/ia-gateway-rates-request";
+import { computeWalletChargeFromTokenUsage } from "@/lib/ia-usage-pricing";
+import {
+  assertSubscriptionIaTokenGate,
+  settleSubscribedIaAfterCall,
+} from "@/lib/ia-subscription-meter";
+import { resolveUserOrDefaultModel } from "@/lib/ia-user-model";
+import { createOpenAIForStudentIa, hasStudentIaLlmCredentials, STUDENT_IA_GATEWAY_KEY_HELP } from "@/lib/vercel-ia-gateway";
 
 function withCors(res: NextResponse, req: NextRequest) {
   Object.entries(getCorsHeaders(req)).forEach(([k, v]) => res.headers.set(k, v));
   return res;
 }
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 export async function POST(request: NextRequest) {
+  return withIaGatewayRatesForRequest(async () => {
   try {
     const session = await auth.api.getSession({
       headers: request.headers,
@@ -25,18 +30,27 @@ export async function POST(request: NextRequest) {
     if (!session?.user?.id) {
       return withCors(NextResponse.json({ error: "No autorizado" }, { status: 401 }), request);
     }
+
+    if (!hasStudentIaLlmCredentials()) {
+      return withCors(
+        NextResponse.json({ error: STUDENT_IA_GATEWAY_KEY_HELP }, { status: 500 }),
+        request,
+      );
+    }
     const sub = await getActiveSubscriptionForUser(session.user.id);
     const hasSubscription = !!sub;
+    let subscriptionIaGate: Awaited<ReturnType<typeof assertSubscriptionIaTokenGate>> | null = null;
+    let nonSubIaAccess: Awaited<ReturnType<typeof assertTrialReferralOrWalletForIa>> | null = null;
     if (!hasSubscription) {
-      const gate = await assertAiTrialAllowed({ userId: session.user.id, endpoint: "ia/fichas" });
-      if (!gate.ok) {
+      nonSubIaAccess = await assertTrialReferralOrWalletForIa({ userId: session.user.id, endpoint: "ia/fichas" });
+      if (!nonSubIaAccess.ok) {
         return withCors(
           NextResponse.json(
             {
-              error: gate.error,
-              code: "FREE_LIMIT_REACHED",
+              error: nonSubIaAccess.error,
+              code: nonSubIaAccess.code ?? "FREE_LIMIT_REACHED",
               endpoint: "ia/fichas",
-              limit: gate.info.limit,
+              limit: nonSubIaAccess.limit,
             },
             { status: 402 },
           ),
@@ -134,9 +148,30 @@ Estructura JSON esperada:
 }
 `;
 
-    // Generar fichas con OpenAI
+    const model = await resolveUserOrDefaultModel(session.user.id, "heavy");
+    if (hasSubscription && sub) {
+      const gate = await assertSubscriptionIaTokenGate({
+        userId: session.user.id,
+        userSubId: sub.id,
+        plan: sub.subscriptionType,
+        endpoint: "ia/fichas",
+        modelId: model,
+      });
+      if (!gate.ok) {
+        return withCors(
+          NextResponse.json(
+            { error: gate.error, code: gate.code, endpoint: "ia/fichas" },
+            { status: 402 },
+          ),
+          request,
+        );
+      }
+      subscriptionIaGate = gate;
+    }
+
+    const openai = createOpenAIForStudentIa();
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model,
       messages: [
         {
           role: "system",
@@ -158,6 +193,18 @@ Estructura JSON esperada:
     }
 
     logAiUsage({ userId: session.user.id, endpoint: "ia/fichas", usage: response.usage ?? null });
+
+    if (hasSubscription && sub && subscriptionIaGate) {
+      await settleSubscribedIaAfterCall({
+        userSubId: sub.id,
+        userId: session.user.id,
+        model,
+        endpoint: "ia/fichas",
+        reason: "ia/fichas",
+        gate: subscriptionIaGate,
+        usage: response.usage ?? null,
+      });
+    }
 
     // Parsear la respuesta JSON
     let fichasGeneradas;
@@ -193,8 +240,30 @@ Estructura JSON esperada:
     const fichasConIds = fichasGeneradas.fichas.map((ficha: any, index: number) => ({
       id: (index + 1).toString(),
       ...ficha,
-      recursoId: recursoId
+      recursoId: recursoId,
     }));
+
+    if (
+      !hasSubscription &&
+      nonSubIaAccess?.ok &&
+      nonSubIaAccess.mode === "wallet"
+    ) {
+      const chargeCents = computeWalletChargeFromTokenUsage({
+        model,
+        usage: response.usage,
+        discountPercent: nonSubIaAccess.walletDiscountPercent ?? 0,
+      });
+      try {
+        await debitWalletForIa({
+          userId: session.user.id,
+          chargeCents,
+          reason: "ia/fichas",
+          meta: { model, usage: response.usage },
+        });
+      } catch (e) {
+        console.error("[ia/fichas] wallet debit", e);
+      }
+    }
 
     return withCors(NextResponse.json({
       fichas: fichasConIds,
@@ -207,4 +276,5 @@ Estructura JSON esperada:
     console.error("Error generating fichas:", error);
     return withCors(NextResponse.json({ error: "Error interno del servidor" }, { status: 500 }), request);
   }
+  });
 } 

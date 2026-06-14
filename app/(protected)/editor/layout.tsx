@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "@fontsource-variable/montserrat";
-import "../globals.css";
+import "@/app/globals.css";
 import { redirect } from "next/navigation";
 
 import { getSession } from "@/lib/auth";
@@ -27,7 +27,7 @@ export default async function EditorLayout({
   if (!user) return redirect("/login");
 
   return (
-    <html lang="es" suppressHydrationWarning>
+    <html lang="es">
       <body>
         <div className="min-h-screen bg-gradient-to-t from-mygreen to-mygreen-light">{children}</div>
       </body>

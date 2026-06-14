@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { OnboardingStatus, EstadoMateria } from "@prisma/client";
+import {
+  applyOnboardingReferralRewards,
+  normalizeReferralCodeInput,
+} from "@/lib/referral-boost";
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,6 +31,8 @@ export async function POST(request: NextRequest) {
     const materiasActuales = formData.get("materiasActuales") as string;
     const carnetData = formData.get("carnetData") as string;
     const emailVerificationCode = formData.get("emailVerificationCode") as string;
+    const referralCodeRaw = formData.get("referralCode") as string | null;
+    const normalizedReferral = normalizeReferralCodeInput(referralCodeRaw ?? undefined);
 
     // Validaciones básicas
     if (!userType) {
@@ -100,7 +106,7 @@ export async function POST(request: NextRequest) {
     // Exigir correo verificado antes de persistir perfil / marcar onboarding finalizado.
     const current = await db.user.findUnique({
       where: { id: session.user.id },
-      select: { id: true, isEmailVerified: true },
+      select: { id: true, isEmailVerified: true, referredByUserId: true, role: true },
     });
     if (!current?.isEmailVerified) {
       return NextResponse.json(
@@ -111,6 +117,28 @@ export async function POST(request: NextRequest) {
         },
         { status: 403 },
       );
+    }
+
+    if (normalizedReferral) {
+      if (current.role !== "CLIENT") {
+        return NextResponse.json(
+          { error: "Los códigos de referido solo aplican a cuentas de estudiante." },
+          { status: 400 },
+        );
+      }
+      if (current.referredByUserId) {
+        return NextResponse.json(
+          { error: "Tu cuenta ya tiene un código de referido aplicado." },
+          { status: 400 },
+        );
+      }
+      const referrer = await db.user.findFirst({
+        where: { referralCode: normalizedReferral, NOT: { id: session.user.id } },
+        select: { id: true, role: true, email: true },
+      });
+      if (!referrer || (referrer.role !== "CLIENT" && referrer.role !== "ADMIN")) {
+        return NextResponse.json({ error: "El código de referido no es válido." }, { status: 400 });
+      }
     }
 
     // Actualizar el perfil del usuario (solo tras verificación de correo)
@@ -261,6 +289,16 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    const roleRow = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: { role: true },
+    });
+    await applyOnboardingReferralRewards({
+      userId: session.user.id,
+      role: roleRow?.role ?? "CLIENT",
+      normalizedReferralCode: normalizedReferral,
+    });
+
     return NextResponse.json({
       message: "Onboarding completado exitosamente",
       user: {
@@ -274,6 +312,7 @@ export async function POST(request: NextRequest) {
         userType: userType,
         carreraId: carrera,
       },
+      referralApplied: !!normalizedReferral,
     });
 
   } catch (error) {

@@ -11,6 +11,10 @@ export async function GET() {
         description: true,
         price: true,
         period: true,
+        billingKind: true,
+        minWalletTopUpCents: true,
+        includedIaTokensPerPeriod: true,
+        iaTokenOverflowPolicy: true,
       },
     });
 

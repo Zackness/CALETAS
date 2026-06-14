@@ -1,25 +1,62 @@
 import { NextRequest, NextResponse } from "next/server";
-import OpenAI from "openai";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getCorsHeaders } from "@/lib/cors";
 import { canUseIAChat, getActiveSubscriptionForUser } from "@/lib/subscription";
 import { logAiUsage } from "@/lib/ai-usage";
-import { assertAiTrialAllowed } from "@/lib/ai-trial";
+import { assertTrialReferralOrWalletForIa } from "@/lib/ai-trial";
+import { debitWalletForIa } from "@/lib/ia-wallet";
+import { withIaGatewayRatesForRequest } from "@/lib/ia-gateway-rates-request";
+import { getActiveReferralBoostForUser } from "@/lib/referral-boost";
+import { computeWalletChargeFromTokenUsage } from "@/lib/ia-usage-pricing";
+import {
+  assertSubscriptionIaTokenGate,
+  settleSubscribedIaAfterCall,
+} from "@/lib/ia-subscription-meter";
+import { resolveUserOrDefaultModel } from "@/lib/ia-user-model";
+import { createOpenAIForStudentIa, hasStudentIaLlmCredentials, STUDENT_IA_GATEWAY_KEY_HELP } from "@/lib/vercel-ia-gateway";
 
 function withCors(res: NextResponse, req: NextRequest) {
   Object.entries(getCorsHeaders(req)).forEach(([k, v]) => res.headers.set(k, v));
   return res;
 }
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 type ChatMessage = {
   role: "user" | "assistant";
   content: string;
 };
+
+function parseTaskIntent(text: string): { title: string; description?: string } | null {
+  const raw = text.trim();
+  const lowered = raw.toLowerCase();
+  const wantsTask =
+    lowered.startsWith("crear tarea") ||
+    lowered.startsWith("crea tarea") ||
+    lowered.startsWith("agrega tarea") ||
+    lowered.startsWith("anota tarea") ||
+    lowered.includes(" crear tarea ") ||
+    lowered.includes(" agrega tarea ");
+
+  if (!wantsTask) return null;
+
+  const explicit = raw.match(/(?:crear|crea|agrega|anota)\s+tarea\s*:\s*(.+)$/i);
+  if (explicit?.[1]?.trim()) {
+    return { title: explicit[1].trim() };
+  }
+
+  const quoted = raw.match(/"([^"]+)"/);
+  if (quoted?.[1]?.trim()) {
+    return { title: quoted[1].trim() };
+  }
+
+  const fallback = raw
+    .replace(/^(crear|crea|agrega|anota)\s+tarea\s*/i, "")
+    .replace(/^[:\-]\s*/, "")
+    .trim();
+  if (fallback.length >= 3) return { title: fallback };
+
+  return null;
+}
 
 const normalizeCareer = (name?: string | null) => (name || "").trim();
 
@@ -95,9 +132,18 @@ const buildSystemPrompt = (careerName: string) => {
 };
 
 export async function POST(request: NextRequest) {
+  return withIaGatewayRatesForRequest(async () => {
   try {
-    if (!process.env.OPENAI_API_KEY) {
-      return withCors(NextResponse.json({ error: "OPENAI_API_KEY no está configurada" }, { status: 500 }), request);
+    if (!hasStudentIaLlmCredentials()) {
+      return withCors(
+        NextResponse.json(
+          {
+            error: STUDENT_IA_GATEWAY_KEY_HELP,
+          },
+          { status: 500 },
+        ),
+        request,
+      );
     }
 
     const session = await auth.api.getSession({ headers: request.headers });
@@ -105,19 +151,25 @@ export async function POST(request: NextRequest) {
       return withCors(NextResponse.json({ error: "No autorizado" }, { status: 401 }), request);
     }
     const sub = await getActiveSubscriptionForUser(session.user.id);
+    const referralBoost = await getActiveReferralBoostForUser(session.user.id);
+    const hasReferralIaDay = !!referralBoost;
     const hasSubscription = !!sub;
-    const isFreeTrial = !hasSubscription;
+    let subscriptionIaGate: Awaited<ReturnType<typeof assertSubscriptionIaTokenGate>> | null = null;
 
-    if (isFreeTrial) {
-      const gate = await assertAiTrialAllowed({ userId: session.user.id, endpoint: "ia/chat" });
-      if (!gate.ok) {
+    let nonSubIaAccess: Awaited<ReturnType<typeof assertTrialReferralOrWalletForIa>> | null = null;
+
+    if (hasReferralIaDay) {
+      // Día de IA completo (referidos): chat incluido con límites amplios.
+    } else if (!hasSubscription) {
+      nonSubIaAccess = await assertTrialReferralOrWalletForIa({ userId: session.user.id, endpoint: "ia/chat" });
+      if (!nonSubIaAccess.ok) {
         return withCors(
           NextResponse.json(
             {
-              error: gate.error,
-              code: "FREE_LIMIT_REACHED",
+              error: nonSubIaAccess.error,
+              code: nonSubIaAccess.code ?? "FREE_LIMIT_REACHED",
               endpoint: "ia/chat",
-              limit: gate.info.limit,
+              limit: nonSubIaAccess.limit,
             },
             { status: 402 },
           ),
@@ -153,6 +205,30 @@ export async function POST(request: NextRequest) {
       return withCors(NextResponse.json({ error: "Envía al menos un mensaje de usuario" }, { status: 400 }), request);
     }
 
+    const lastUserContent = messages.filter((m) => m.role === "user").pop()?.content;
+    const model = await resolveUserOrDefaultModel(session.user.id, "chat", {
+      chatLastUserText: typeof lastUserContent === "string" ? lastUserContent : undefined,
+    });
+    if (hasSubscription && sub) {
+      const gate = await assertSubscriptionIaTokenGate({
+        userId: session.user.id,
+        userSubId: sub.id,
+        plan: sub.subscriptionType,
+        endpoint: "ia/chat",
+        modelId: model,
+      });
+      if (!gate.ok) {
+        return withCors(
+          NextResponse.json(
+            { error: gate.error, code: gate.code, endpoint: "ia/chat" },
+            { status: 402 },
+          ),
+          request,
+        );
+      }
+      subscriptionIaGate = gate;
+    }
+
     const user = await db.user.findUnique({
       where: { id: session.user.id },
       select: {
@@ -168,14 +244,36 @@ export async function POST(request: NextRequest) {
       ? `${system}\n\nContexto adicional del proyecto (archivos subidos por el estudiante):\n${projectContext}\n\nUsa este contexto cuando sea relevante y cita el nombre del archivo si te basas en él.`
       : system;
 
+    const taskIntent = parseTaskIntent(lastUserContent || "");
+    if (taskIntent) {
+      const created = await db.caletaTask.create({
+        data: {
+          userId: session.user.id,
+          title: taskIntent.title,
+          description: taskIntent.description?.trim() || null,
+          status: "PENDIENTE",
+          priority: "MEDIA",
+        },
+      });
+      return withCors(
+        NextResponse.json({
+          message: `Listo. Cree la tarea \"${created.title}\" en tu tablero de Tareas y notas. Puedes verla en /tareas.`,
+          careerName: careerName || null,
+          action: { type: "task_created", taskId: created.id, link: "/tareas" },
+        }),
+        request,
+      );
+    }
+
+    const openai = createOpenAIForStudentIa();
     const resp = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model,
       messages: [
         { role: "system", content: systemWithContext },
         ...messages.map((m) => ({ role: m.role, content: m.content })),
       ],
       temperature: 0.4,
-      max_tokens: isFreeTrial ? 450 : 1200,
+      max_tokens: !hasSubscription && !hasReferralIaDay ? 450 : 1200,
     });
 
     const answer = resp.choices[0]?.message?.content?.trim();
@@ -183,10 +281,38 @@ export async function POST(request: NextRequest) {
       return withCors(NextResponse.json({ error: "No se pudo generar respuesta" }, { status: 500 }), request);
     }
     logAiUsage({ userId: session.user.id, endpoint: "ia/chat", usage: resp.usage ?? null });
+    if (hasSubscription && sub && subscriptionIaGate) {
+      await settleSubscribedIaAfterCall({
+        userSubId: sub.id,
+        userId: session.user.id,
+        model,
+        endpoint: "ia/chat",
+        reason: "ia/chat",
+        gate: subscriptionIaGate,
+        usage: resp.usage ?? null,
+      });
+    } else if (!hasSubscription && nonSubIaAccess?.ok && nonSubIaAccess.mode === "wallet") {
+      const d = nonSubIaAccess.walletDiscountPercent ?? 0;
+      const chargeCents = computeWalletChargeFromTokenUsage({
+        model,
+        usage: resp.usage,
+        discountPercent: d,
+      });
+      try {
+        await debitWalletForIa({
+          userId: session.user.id,
+          chargeCents,
+          reason: "ia/chat",
+          meta: { model, usage: resp.usage },
+        });
+      } catch (e) {
+        console.error("[ia/chat] wallet debit", e);
+      }
+    }
     return withCors(NextResponse.json({ message: answer, careerName: careerName || null }), request);
   } catch (error) {
     console.error("Error in /api/ia/chat:", error);
     return withCors(NextResponse.json({ error: "Error interno del servidor" }, { status: 500 }), request);
   }
+  });
 }
-

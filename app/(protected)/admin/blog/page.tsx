@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { FileText, Pencil, PlusCircle, ShieldCheck, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -26,6 +27,7 @@ type BlogPost = {
 };
 
 export default function AdminBlogPage() {
+  const router = useRouter();
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -188,7 +190,7 @@ export default function AdminBlogPage() {
               Sube portadas en <span className="text-[var(--accent-hex)]">Admin &gt; Biblioteca de medios</span> para reutilizarlas.
             </p>
           </div>
-          <Button className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white" onClick={openCreate}>
+          <Button className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white" onClick={() => router.push("/admin/blog/nuevo")}>
             <PlusCircle className="w-4 h-4 mr-2" />
             Nuevo artículo
           </Button>
@@ -251,7 +253,7 @@ export default function AdminBlogPage() {
                               size="sm"
                               variant="outline"
                               className="border-white/20 text-white hover:bg-white/10"
-                              onClick={() => openEdit(post)}
+                              onClick={() => router.push(`/admin/blog/${post.id}/editar`)}
                             >
                               <Pencil className="w-4 h-4" />
                             </Button>

@@ -7,10 +7,10 @@ export type SubscriptionForPriceCheck = {
 
 const DAY_IN_MS = 86_400_000;
 const CHAT_DISABLED_PLAN_NAMES = new Set(["CALETA IA TOOLS"]);
-/** Plan completo de caletas (cross-universidad): CALETA PRO $7/mes */
+/** Plan completo de caletas (cross-universidad): CALETA PRO (precio mínimo en centavos). */
 const FULL_CALETAS_MIN_PRICE_CENTS = 700;
-/** Biblioteca digital: planes mensuales $3 (IA Tools) y $7 (Pro) */
-const BIBLIOTECA_MIN_PRICE_CENTS = 300;
+/** Biblioteca digital: planes con IA Tools o superior. */
+const BIBLIOTECA_MIN_PRICE_CENTS = 399;
 
 export async function getActiveSubscriptionForUser(userId: string) {
   const sub = await db.userSubscription.findFirst({
@@ -42,7 +42,7 @@ export function canAccessBiblioteca(subscription: SubscriptionForPriceCheck) {
   return price >= BIBLIOTECA_MIN_PRICE_CENTS;
 }
 
-/** Ver caletas de otras universidades (plan completo, típicamente $7/mes). */
+/** Ver caletas de otras universidades (plan completo, típicamente CALETA PRO ~$7/mes estudiantil). */
 export function canAccessFullCaletasPlan(subscription: SubscriptionForPriceCheck) {
   const price = subscription?.subscriptionType?.price;
   if (typeof price !== "number") return false;

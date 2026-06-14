@@ -40,6 +40,8 @@ export type DualMarkdownEditorHandle = {
    insertSummation: () => void;
    insertFraction: () => void;
    insertSymbol: (latex: string) => void;
+   insertLatexEnvironment: (environment: string) => void;
+   insertLatexTemplate: () => void;
   getSelectedText: () => string;
   replaceSelection: (text: string) => void;
   insertAtCursor: (text: string) => void;
@@ -132,6 +134,16 @@ export const DualMarkdownEditor = forwardRef<DualMarkdownEditorHandle, DualMarkd
       { label: "\\mathbb{R}", type: "keyword", detail: "ℝ" },
       { label: "\\mathbb{N}", type: "keyword", detail: "ℕ" },
       { label: "\\mathbb{Z}", type: "keyword", detail: "ℤ" },
+      { label: "\\documentclass{article}", type: "keyword", detail: "Documento" },
+      { label: "\\begin{document}", type: "keyword", detail: "Inicio documento" },
+      { label: "\\end{document}", type: "keyword", detail: "Fin documento" },
+      { label: "\\section{}", type: "function", detail: "Sección" },
+      { label: "\\subsection{}", type: "function", detail: "Subsección" },
+      { label: "\\begin{equation}", type: "function", detail: "Ecuación" },
+      { label: "\\begin{align}", type: "function", detail: "Alineación" },
+      { label: "\\begin{itemize}", type: "function", detail: "Lista" },
+      { label: "\\begin{enumerate}", type: "function", detail: "Lista numerada" },
+      { label: "\\begin{tabular}", type: "function", detail: "Tabla" },
     ],
     [],
   );
@@ -250,6 +262,28 @@ export const DualMarkdownEditor = forwardRef<DualMarkdownEditorHandle, DualMarkd
       insertSummation: () => insertToken("$\\sum_{i=1}^{n} a_i$"),
       insertFraction: () => insertToken("$\\frac{a}{b}$"),
       insertSymbol: (latex: string) => insertToken(`$${latex}$`),
+      insertLatexEnvironment: (environment: string) =>
+        insertToken(`\n\\begin{${environment}}\n\n\\end{${environment}}\n`),
+      insertLatexTemplate: () =>
+        insertToken(
+          String.raw`\documentclass[12pt]{article}
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath, amssymb}
+
+\title{Título del documento}
+\author{Caletas}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Introducción}
+Escribe aquí el contenido.
+
+\end{document}
+` + "\n",
+        ),
       getSelectedText,
       replaceSelection,
       insertAtCursor: (text: string) => insertToken(text),
@@ -395,4 +429,3 @@ export const DualMarkdownEditor = forwardRef<DualMarkdownEditorHandle, DualMarkd
 );
 
 DualMarkdownEditor.displayName = "DualMarkdownEditor";
-

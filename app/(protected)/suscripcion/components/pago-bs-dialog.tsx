@@ -13,6 +13,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Banknote, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { studentToPublicPriceCents } from "@/lib/subscription-display-pricing";
 
 type SubscriptionType = {
   id: string;
@@ -20,6 +22,8 @@ type SubscriptionType = {
   description?: string | null;
   price: number;
   period: string;
+  billingKind?: string;
+  minWalletTopUpCents?: number;
 };
 
 type PagoBsDialogProps = {
@@ -45,10 +49,15 @@ export function PagoBsDialog({
   const [bcvError, setBcvError] = useState(false);
 
   const selectedPlan = types.find((t) => t.id === initialPlanId) ?? null;
+  const walletOnly = selectedPlan?.billingKind === "wallet_consumption";
+  const studentCents = walletOnly
+    ? selectedPlan?.minWalletTopUpCents ?? 100
+    : selectedPlan?.price ?? 0;
 
-  // Precio en USD: en BD está en centavos (100 = $1, 700 = $7)
-  const priceUsd = selectedPlan ? selectedPlan.price / 100 : 0;
-  const montoBs = bcvRate != null && selectedPlan ? Math.round(priceUsd * bcvRate) : null;
+  // Precio estudiantil en USD: en BD está en centavos
+  const priceUsd = selectedPlan ? studentCents / 100 : 0;
+  const publicUsd = selectedPlan != null ? studentToPublicPriceCents(studentCents) / 100 : 0;
+  const montoBs = !walletOnly && bcvRate != null && selectedPlan ? Math.round(priceUsd * bcvRate) : null;
 
   useEffect(() => {
     if (open && initialPlanId) {
@@ -72,6 +81,10 @@ export function PagoBsDialog({
   }, [open, initialPlanId]);
 
   const submit = async () => {
+    if (walletOnly) {
+      toast.error("CALETA BASICS es solo billetera. Recarga en Billetera (mín. $1 USD) o por soporte.");
+      return;
+    }
     const last4 = referenceLast4.trim().replace(/\D/g, "").slice(-4);
     if (last4.length !== 4) {
       toast.error("Indica los últimos 4 dígitos de la referencia");
@@ -133,6 +146,18 @@ export function PagoBsDialog({
             Si necesitas validación más rápida, comunícate con soporte al 0414-5005456.
           </div>
 
+          {walletOnly && selectedPlan ? (
+            <div className="rounded-lg border border-amber-400/30 bg-amber-950/40 px-3 py-3 text-sm text-amber-100">
+              Este plan no se paga por pago móvil como suscripción mensual: usa la{" "}
+              <Link href="/billetera" className="font-medium text-[var(--accent-hex)] underline underline-offset-2">
+                billetera IA
+              </Link>{" "}
+              (recarga mínima ${((selectedPlan.minWalletTopUpCents ?? 100) / 100).toFixed(2)} USD).
+            </div>
+          ) : null}
+
+          {!walletOnly ? (
+            <>
           <div className="space-y-2">
             <Label className="text-white/80">Plan</Label>
             <Input
@@ -142,6 +167,22 @@ export function PagoBsDialog({
               className="bg-[var(--mygreen-dark)] border-white/10 text-white/90 cursor-not-allowed"
             />
           </div>
+
+          {selectedPlan ? (
+            <div className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-xs text-white/70">
+              <div>
+                Tarifa estudiantil:{" "}
+                <span className="text-white/90 font-medium">
+                  ${priceUsd.toFixed(2)} USD
+                </span>{" "}
+                / {selectedPlan.period === "day" ? "día" : selectedPlan.period === "month" ? "mes" : selectedPlan.period === "consumption" ? "consumo" : selectedPlan.period}
+              </div>
+              <div className="mt-1 text-white/55">
+                Precio de referencia general (la tarifa estudiantil es ~40% menor; referencia ≈ estudiante ÷ 0,6): $
+                {publicUsd.toFixed(2)} USD — el monto en Bs abajo corresponde a la tarifa estudiantil.
+              </div>
+            </div>
+          ) : null}
 
           <div className="space-y-2">
             <Label className="text-white/80">Monto en Bs</Label>
@@ -190,11 +231,21 @@ export function PagoBsDialog({
           <Button
             type="button"
             className="w-full bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
-            disabled={submitting || !selectedPlan || montoBs == null || montoBs <= 0 || bcvLoading || bcvError}
+            disabled={
+              submitting ||
+              walletOnly ||
+              !selectedPlan ||
+              montoBs == null ||
+              montoBs <= 0 ||
+              bcvLoading ||
+              bcvError
+            }
             onClick={() => void submit()}
           >
             {submitting ? "Enviando..." : "Enviar"}
           </Button>
+            </>
+          ) : null}
         </div>
       </DialogContent>
     </Dialog>

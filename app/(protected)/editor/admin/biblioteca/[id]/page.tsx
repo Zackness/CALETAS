@@ -3,6 +3,7 @@
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent, type TouchEvent, type WheelEvent } from "react";
 import {
+  AlertTriangle,
   ArrowLeft,
   BookMarked,
   Bold,
@@ -13,6 +14,7 @@ import {
   Heading2,
   Heading3,
   Italic,
+  FileCode2,
   List,
   Minus,
   Plus,
@@ -41,6 +43,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { DEFAULT_LIBRARY_LATEX_TEMPLATE, renderLatexToMarkdown } from "@/lib/latex";
 
 type Obra = {
   id: string;
@@ -58,7 +61,7 @@ const AI_PANEL_W = 360;
 const AI_PANEL_H = 460;
 
 export default function AdminBibliotecaEditorPage() {
-  const params = useParams();
+  const params = useParams<{ id?: string }>();
   const router = useRouter();
   const id = typeof params?.id === "string" ? params.id : "";
 
@@ -103,10 +106,12 @@ export default function AdminBibliotecaEditorPage() {
     );
   }, [obra, form]);
 
-  // Simulación de paginado para preview (sin compilar PDF):
-  // divide por bloques de párrafos para evitar cortes bruscos.
+  const latexPreview = useMemo(() => renderLatexToMarkdown(form.cuerpo), [form.cuerpo]);
+
+  // Simulación de paginado para preview tipo PDF:
+  // transforma LaTeX a Markdown + KaTeX y divide por bloques para evitar cortes bruscos.
   const previewPages = useMemo(() => {
-    const source = form.cuerpo?.trim() || "";
+    const source = latexPreview.markdown?.trim() || "";
     if (!source) return ["Escribe el cuerpo para ver el preview…"];
 
     const blocks = source.split(/\n\s*\n/);
@@ -141,7 +146,7 @@ export default function AdminBibliotecaEditorPage() {
     }
     if (current) pages.push(current);
     return pages.length ? pages : [source];
-  }, [form.cuerpo]);
+  }, [latexPreview.markdown]);
 
   const clampAiPos = useCallback((x: number, y: number) => {
     if (typeof window === "undefined") return { x, y };
@@ -425,7 +430,7 @@ export default function AdminBibliotecaEditorPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-t from-mygreen to-mygreen-light">
-      <div className="sticky top-0 z-50 border-b border-white/10 bg-[color-mix(in_oklab,var(--mygreen)_95%,transparent)] backdrop-blur supports-[backdrop-filter]:bg-[color-mix(in_oklab,var(--mygreen)_85%,transparent)]">
+      <div className="sticky top-0 z-50 border-b border-white/10 bg-[#203324]/95 backdrop-blur supports-[backdrop-filter]:bg-[#203324]/85">
         <div className="mx-auto max-w-[1680px] px-4 py-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <Button
@@ -439,17 +444,17 @@ export default function AdminBibliotecaEditorPage() {
             </Button>
             <div className="min-w-0">
               <div className="flex items-center gap-2 min-w-0">
-                <BookMarked className="w-5 h-5 text-[var(--accent-hex)] shrink-0" />
+                <BookMarked className="w-5 h-5 text-[#40C9A9] shrink-0" />
                 <input
                   value={form.titulo}
                   onChange={(e) => setForm((f) => ({ ...f, titulo: e.target.value }))}
-                  className="font-special text-white text-lg md:text-xl truncate bg-transparent border border-transparent rounded px-2 py-0.5 focus:border-[color-mix(in_oklab,var(--accent-hex)_40%,transparent)] focus:bg-white/5 outline-none min-w-[220px]"
+                  className="font-special text-white text-lg md:text-xl truncate bg-transparent border border-transparent rounded px-2 py-0.5 focus:border-[#40C9A9]/40 focus:bg-white/5 outline-none min-w-[220px]"
                   placeholder="Título del libro"
                 />
                 <Badge
                   className={
                     form.isPublished
-                      ? "bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)] text-[var(--accent-hex)] border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)]"
+                      ? "bg-[#40C9A9]/20 text-[#40C9A9] border-[#40C9A9]/30"
                       : "bg-white/10 text-white/80 border-white/20"
                   }
                 >
@@ -463,7 +468,7 @@ export default function AdminBibliotecaEditorPage() {
 
           <Button
             type="button"
-            className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
+            className="bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white"
             onClick={() => void save()}
             disabled={saving || loading || !obra}
           >
@@ -474,7 +479,7 @@ export default function AdminBibliotecaEditorPage() {
       </div>
 
       {/* Toolbar principal estilo Overleaf debajo del header */}
-      <div className="sticky top-14 z-40 border-b border-white/10 bg-[color-mix(in_oklab,var(--mygreen-dark)_95%,transparent)] backdrop-blur supports-[backdrop-filter]:bg-[color-mix(in_oklab,var(--mygreen-dark)_85%,transparent)]">
+      <div className="sticky top-14 z-40 border-b border-white/10 bg-[#1C2D20]/95 backdrop-blur supports-[backdrop-filter]:bg-[#1C2D20]/85">
         <div className="mx-auto max-w-[1680px] px-4 py-2 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <Button
@@ -483,8 +488,8 @@ export default function AdminBibliotecaEditorPage() {
               variant="outline"
               className={
                 editorMode === "codemirror"
-                  ? "h-7 border-[color-mix(in_oklab,var(--accent-hex)_50%,transparent)] bg-[color-mix(in_oklab,var(--accent-hex)_15%,transparent)] text-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)]"
-                  : "h-7 border-white/10 bg-[var(--mygreen-dark)] text-white/80 hover:bg-white/10"
+                  ? "h-7 border-[#40C9A9]/50 bg-[#40C9A9]/15 text-[#40C9A9] hover:bg-[#40C9A9]/20"
+                  : "h-7 border-white/10 bg-[#1C2D20] text-white/80 hover:bg-white/10"
               }
               onClick={() => editorRef.current?.setMode("codemirror")}
             >
@@ -496,8 +501,8 @@ export default function AdminBibliotecaEditorPage() {
               variant="outline"
               className={
                 editorMode === "tiptap"
-                  ? "h-7 border-[color-mix(in_oklab,var(--accent-hex)_50%,transparent)] bg-[color-mix(in_oklab,var(--accent-hex)_15%,transparent)] text-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)]"
-                  : "h-7 border-white/10 bg-[var(--mygreen-dark)] text-white/80 hover:bg-white/10"
+                  ? "h-7 border-[#40C9A9]/50 bg-[#40C9A9]/15 text-[#40C9A9] hover:bg-[#40C9A9]/20"
+                  : "h-7 border-white/10 bg-[#1C2D20] text-white/80 hover:bg-white/10"
               }
               onClick={() => editorRef.current?.setMode("tiptap")}
             >
@@ -510,36 +515,36 @@ export default function AdminBibliotecaEditorPage() {
                   type="button"
                   size="sm"
                   variant="outline"
-                  className="h-7 border-white/10 bg-[var(--mygreen)] text-white/85 hover:bg-white/10 px-2"
+                  className="h-7 border-white/10 bg-[#203324] text-white/85 hover:bg-white/10 px-2"
                   title="Ajustes de documento (preview)"
                 >
-                  <SlidersHorizontal className="h-4 w-4 mr-2 text-[var(--accent-hex)]" />
+                  <SlidersHorizontal className="h-4 w-4 mr-2 text-[#40C9A9]" />
                   Documento
                 </Button>
               </PopoverTrigger>
               <PopoverContent
                 align="start"
                 sideOffset={8}
-                className="w-[360px] bg-[var(--mygreen-light)] text-white border border-white/10 p-2.5 rounded-xl shadow-[0_16px_48px_rgba(0,0,0,0.45)]"
+                className="w-[360px] bg-[#354B3A] text-white border border-white/10 p-2.5 rounded-xl shadow-[0_16px_48px_rgba(0,0,0,0.45)]"
               >
                 <Tabs defaultValue="vista">
-                  <TabsList className="w-full h-8 bg-[var(--mygreen)] rounded-full p-1 border border-white/10">
+                  <TabsList className="w-full h-8 bg-[#203324] rounded-full p-1 border border-white/10">
                     <TabsTrigger
                       value="vista"
-                      className="w-full !rounded-full !bg-transparent h-6 text-[12px] text-white/70 hover:text-white data-[state=active]:!bg-[var(--mygreen-dark)] data-[state=active]:text-[var(--accent-hex)]"
+                      className="w-full !rounded-full !bg-transparent h-6 text-[12px] text-white/70 hover:text-white data-[state=active]:!bg-[#1C2D20] data-[state=active]:text-[#40C9A9]"
                     >
                       Vista
                     </TabsTrigger>
                     <TabsTrigger
                       value="hf"
-                      className="w-full !rounded-full !bg-transparent h-6 text-[12px] text-white/70 hover:text-white data-[state=active]:!bg-[var(--mygreen-dark)] data-[state=active]:text-[var(--accent-hex)]"
+                      className="w-full !rounded-full !bg-transparent h-6 text-[12px] text-white/70 hover:text-white data-[state=active]:!bg-[#1C2D20] data-[state=active]:text-[#40C9A9]"
                     >
                       Cabecera/Pie
                     </TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="vista" className="mt-2.5 space-y-2.5">
-                    <div className="rounded-lg border border-white/10 bg-[var(--mygreen-dark)] p-2.5">
+                    <div className="rounded-lg border border-white/10 bg-[#1C2D20] p-2.5">
                       <div className="text-[11px] text-white/70 mb-2">Tamaño de hoja</div>
                       <div className="flex gap-1.5">
                         <Button
@@ -548,8 +553,8 @@ export default function AdminBibliotecaEditorPage() {
                           variant="outline"
                           className={
                             previewPaperSize === "a4"
-                              ? "h-7 flex-1 border-[color-mix(in_oklab,var(--accent-hex)_40%,transparent)] bg-[var(--mygreen)] text-[var(--accent-hex)] rounded-full text-[11px]"
-                              : "h-7 flex-1 border-white/10 bg-[var(--mygreen)] text-white/80 hover:bg-white/10 rounded-full text-[11px]"
+                              ? "h-7 flex-1 border-[#40C9A9]/40 bg-[#203324] text-[#40C9A9] rounded-full text-[11px]"
+                              : "h-7 flex-1 border-white/10 bg-[#203324] text-white/80 hover:bg-white/10 rounded-full text-[11px]"
                           }
                           onClick={() => setPreviewPaperSize("a4")}
                         >
@@ -561,8 +566,8 @@ export default function AdminBibliotecaEditorPage() {
                           variant="outline"
                           className={
                             previewPaperSize === "letter"
-                              ? "h-7 flex-1 border-[color-mix(in_oklab,var(--accent-hex)_40%,transparent)] bg-[var(--mygreen)] text-[var(--accent-hex)] rounded-full text-[11px]"
-                              : "h-7 flex-1 border-white/10 bg-[var(--mygreen)] text-white/80 hover:bg-white/10 rounded-full text-[11px]"
+                              ? "h-7 flex-1 border-[#40C9A9]/40 bg-[#203324] text-[#40C9A9] rounded-full text-[11px]"
+                              : "h-7 flex-1 border-white/10 bg-[#203324] text-white/80 hover:bg-white/10 rounded-full text-[11px]"
                           }
                           onClick={() => setPreviewPaperSize("letter")}
                         >
@@ -574,8 +579,8 @@ export default function AdminBibliotecaEditorPage() {
                           variant="outline"
                           className={
                             previewPaperSize === "tabloid"
-                              ? "h-7 flex-1 border-[color-mix(in_oklab,var(--accent-hex)_40%,transparent)] bg-[var(--mygreen)] text-[var(--accent-hex)] rounded-full text-[11px]"
-                              : "h-7 flex-1 border-white/10 bg-[var(--mygreen)] text-white/80 hover:bg-white/10 rounded-full text-[11px]"
+                              ? "h-7 flex-1 border-[#40C9A9]/40 bg-[#203324] text-[#40C9A9] rounded-full text-[11px]"
+                              : "h-7 flex-1 border-white/10 bg-[#203324] text-white/80 hover:bg-white/10 rounded-full text-[11px]"
                           }
                           onClick={() => setPreviewPaperSize("tabloid")}
                         >
@@ -587,14 +592,14 @@ export default function AdminBibliotecaEditorPage() {
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="rounded-lg border border-white/10 bg-[var(--mygreen-dark)] p-2.5">
+                      <div className="rounded-lg border border-white/10 bg-[#1C2D20] p-2.5">
                         <div className="text-[11px] text-white/70 mb-2">Zoom</div>
                         <div className="flex items-center justify-between gap-2">
                           <Button
                             type="button"
                             size="icon"
                             variant="outline"
-                            className="h-7 w-7 border-white/10 bg-[var(--mygreen)] text-white/80 hover:bg-white/10"
+                            className="h-7 w-7 border-white/10 bg-[#203324] text-white/80 hover:bg-white/10"
                             onClick={() => setPreviewZoom((z) => Math.max(70, z - 5))}
                             aria-label="Reducir zoom"
                           >
@@ -605,7 +610,7 @@ export default function AdminBibliotecaEditorPage() {
                             type="button"
                             size="icon"
                             variant="outline"
-                            className="h-7 w-7 border-white/10 bg-[var(--mygreen)] text-white/80 hover:bg-white/10"
+                            className="h-7 w-7 border-white/10 bg-[#203324] text-white/80 hover:bg-white/10"
                             onClick={() => setPreviewZoom((z) => Math.min(130, z + 5))}
                             aria-label="Aumentar zoom"
                           >
@@ -617,7 +622,7 @@ export default function AdminBibliotecaEditorPage() {
                             type="button"
                             size="sm"
                             variant="outline"
-                            className="h-7 flex-1 border-white/10 bg-[var(--mygreen)] text-white/80 hover:bg-white/10 px-2 text-[11px] rounded-full"
+                            className="h-7 flex-1 border-white/10 bg-[#203324] text-white/80 hover:bg-white/10 px-2 text-[11px] rounded-full"
                             onClick={() => setPreviewZoom(90)}
                           >
                             90%
@@ -626,7 +631,7 @@ export default function AdminBibliotecaEditorPage() {
                             type="button"
                             size="sm"
                             variant="outline"
-                            className="h-7 flex-1 border-white/10 bg-[var(--mygreen)] text-white/80 hover:bg-white/10 px-2 text-[11px] rounded-full"
+                            className="h-7 flex-1 border-white/10 bg-[#203324] text-white/80 hover:bg-white/10 px-2 text-[11px] rounded-full"
                             onClick={() => setPreviewZoom(100)}
                           >
                             100%
@@ -635,7 +640,7 @@ export default function AdminBibliotecaEditorPage() {
                             type="button"
                             size="sm"
                             variant="outline"
-                            className="h-7 flex-1 border-white/10 bg-[var(--mygreen)] text-white/80 hover:bg-white/10 px-2 text-[11px] rounded-full"
+                            className="h-7 flex-1 border-white/10 bg-[#203324] text-white/80 hover:bg-white/10 px-2 text-[11px] rounded-full"
                             onClick={() => setPreviewZoom(110)}
                           >
                             110%
@@ -643,14 +648,14 @@ export default function AdminBibliotecaEditorPage() {
                         </div>
                       </div>
 
-                      <div className="rounded-lg border border-white/10 bg-[var(--mygreen-dark)] p-2.5">
+                      <div className="rounded-lg border border-white/10 bg-[#1C2D20] p-2.5">
                         <div className="text-[11px] text-white/70 mb-2">Texto</div>
                         <div className="flex items-center justify-between gap-2">
                           <Button
                             type="button"
                             size="icon"
                             variant="outline"
-                            className="h-7 w-7 border-white/10 bg-[var(--mygreen)] text-white/80 hover:bg-white/10"
+                            className="h-7 w-7 border-white/10 bg-[#203324] text-white/80 hover:bg-white/10"
                             onClick={() => setPreviewFontScale((s) => Math.max(0.82, Number((s - 0.03).toFixed(2))))}
                             aria-label="Reducir tamaño"
                           >
@@ -661,7 +666,7 @@ export default function AdminBibliotecaEditorPage() {
                             type="button"
                             size="icon"
                             variant="outline"
-                            className="h-7 w-7 border-white/10 bg-[var(--mygreen)] text-white/80 hover:bg-white/10"
+                            className="h-7 w-7 border-white/10 bg-[#203324] text-white/80 hover:bg-white/10"
                             onClick={() => setPreviewFontScale((s) => Math.min(1.08, Number((s + 0.03).toFixed(2))))}
                             aria-label="Aumentar tamaño"
                           >
@@ -673,7 +678,7 @@ export default function AdminBibliotecaEditorPage() {
                             type="button"
                             size="sm"
                             variant="outline"
-                            className="h-7 flex-1 border-white/10 bg-[var(--mygreen)] text-white/80 hover:bg-white/10 px-2 text-[11px] rounded-full"
+                            className="h-7 flex-1 border-white/10 bg-[#203324] text-white/80 hover:bg-white/10 px-2 text-[11px] rounded-full"
                             onClick={() => setPreviewFontScale(0.88)}
                           >
                             Compacto
@@ -682,7 +687,7 @@ export default function AdminBibliotecaEditorPage() {
                             type="button"
                             size="sm"
                             variant="outline"
-                            className="h-7 flex-1 border-white/10 bg-[var(--mygreen)] text-white/80 hover:bg-white/10 px-2 text-[11px] rounded-full"
+                            className="h-7 flex-1 border-white/10 bg-[#203324] text-white/80 hover:bg-white/10 px-2 text-[11px] rounded-full"
                             onClick={() => setPreviewFontScale(0.92)}
                           >
                             Normal
@@ -691,7 +696,7 @@ export default function AdminBibliotecaEditorPage() {
                             type="button"
                             size="sm"
                             variant="outline"
-                            className="h-7 flex-1 border-white/10 bg-[var(--mygreen)] text-white/80 hover:bg-white/10 px-2 text-[11px] rounded-full"
+                            className="h-7 flex-1 border-white/10 bg-[#203324] text-white/80 hover:bg-white/10 px-2 text-[11px] rounded-full"
                             onClick={() => setPreviewFontScale(0.98)}
                           >
                             Grande
@@ -699,7 +704,7 @@ export default function AdminBibliotecaEditorPage() {
                         </div>
                       </div>
                     </div>
-                    <div className="rounded-lg border border-white/10 bg-[var(--mygreen-dark)] p-2.5">
+                    <div className="rounded-lg border border-white/10 bg-[#1C2D20] p-2.5">
                       <div className="text-[11px] text-white/70 mb-2">Hoja</div>
                       <div className="flex items-center justify-between gap-3">
                         <div className="text-[11px] text-white/55 leading-snug">
@@ -711,8 +716,8 @@ export default function AdminBibliotecaEditorPage() {
                           variant="outline"
                           className={
                             previewPaperMode === "dim"
-                              ? "h-7 border-[color-mix(in_oklab,var(--accent-hex)_40%,transparent)] bg-[var(--mygreen)] text-[var(--accent-hex)] hover:bg-[var(--mygreen)] rounded-full px-3 text-[11px]"
-                              : "h-7 border-white/10 bg-[var(--mygreen)] text-white/80 hover:bg-white/10 rounded-full px-3 text-[11px]"
+                              ? "h-7 border-[#40C9A9]/40 bg-[#203324] text-[#40C9A9] hover:bg-[#203324] rounded-full px-3 text-[11px]"
+                              : "h-7 border-white/10 bg-[#203324] text-white/80 hover:bg-white/10 rounded-full px-3 text-[11px]"
                           }
                           onClick={() => setPreviewPaperMode((m) => (m === "light" ? "dim" : "light"))}
                         >
@@ -739,7 +744,7 @@ export default function AdminBibliotecaEditorPage() {
                         value={previewHeaderTpl}
                         onChange={(e) => setPreviewHeaderTpl(e.target.value)}
                         placeholder="{{title}} || {{page}}/{{pages}}"
-                        className="min-h-[64px] bg-[var(--mygreen-dark)] border-white/10 text-white text-sm"
+                        className="min-h-[64px] bg-[#1C2D20] border-white/10 text-white text-sm"
                       />
                     </div>
 
@@ -749,7 +754,7 @@ export default function AdminBibliotecaEditorPage() {
                         value={previewFooterTpl}
                         onChange={(e) => setPreviewFooterTpl(e.target.value)}
                         placeholder="Página {{page}} de {{pages}}"
-                        className="min-h-[64px] bg-[var(--mygreen-dark)] border-white/10 text-white text-sm"
+                        className="min-h-[64px] bg-[#1C2D20] border-white/10 text-white text-sm"
                       />
                     </div>
                   </TabsContent>
@@ -764,7 +769,7 @@ export default function AdminBibliotecaEditorPage() {
                 type="button"
                 size="icon"
                 variant="outline"
-                className="h-7 w-7 border-white/10 bg-[var(--mygreen)] text-white/85 hover:bg-white/10"
+                className="h-7 w-7 border-white/10 bg-[#203324] text-white/85 hover:bg-white/10"
                 onClick={() => editorRef.current?.insertHeading(1)}
                 title="Título 1"
                 aria-label="Título 1"
@@ -775,7 +780,7 @@ export default function AdminBibliotecaEditorPage() {
                 type="button"
                 size="icon"
                 variant="outline"
-                className="h-7 w-7 border-white/10 bg-[var(--mygreen)] text-white/85 hover:bg-white/10"
+                className="h-7 w-7 border-white/10 bg-[#203324] text-white/85 hover:bg-white/10"
                 onClick={() => editorRef.current?.insertHeading(2)}
                 title="Título 2"
                 aria-label="Título 2"
@@ -786,7 +791,7 @@ export default function AdminBibliotecaEditorPage() {
                 type="button"
                 size="icon"
                 variant="outline"
-                className="h-7 w-7 border-white/10 bg-[var(--mygreen)] text-white/85 hover:bg-white/10"
+                className="h-7 w-7 border-white/10 bg-[#203324] text-white/85 hover:bg-white/10"
                 onClick={() => editorRef.current?.insertHeading(3)}
                 title="Título 3"
                 aria-label="Título 3"
@@ -802,7 +807,7 @@ export default function AdminBibliotecaEditorPage() {
                 type="button"
                 size="icon"
                 variant="outline"
-                className="h-7 w-7 border-white/10 bg-[var(--mygreen)] text-white/90 hover:bg-white/10"
+                className="h-7 w-7 border-white/10 bg-[#203324] text-white/90 hover:bg-white/10"
                 onClick={() => editorRef.current?.applyBold()}
                 title="Negrita"
                 aria-label="Negrita"
@@ -813,7 +818,7 @@ export default function AdminBibliotecaEditorPage() {
                 type="button"
                 size="icon"
                 variant="outline"
-                className="h-7 w-7 border-white/10 bg-[var(--mygreen)] text-white/90 hover:bg-white/10"
+                className="h-7 w-7 border-white/10 bg-[#203324] text-white/90 hover:bg-white/10"
                 onClick={() => editorRef.current?.applyItalic()}
                 title="Cursiva"
                 aria-label="Cursiva"
@@ -824,7 +829,7 @@ export default function AdminBibliotecaEditorPage() {
                 type="button"
                 size="icon"
                 variant="outline"
-                className="h-7 w-7 border-white/10 bg-[var(--mygreen)] text-white/90 hover:bg-white/10"
+                className="h-7 w-7 border-white/10 bg-[#203324] text-white/90 hover:bg-white/10"
                 onClick={() => editorRef.current?.insertList()}
                 title="Lista"
                 aria-label="Lista"
@@ -835,7 +840,7 @@ export default function AdminBibliotecaEditorPage() {
                 type="button"
                 size="icon"
                 variant="outline"
-                className="h-7 w-7 border-white/10 bg-[var(--mygreen)] text-white/90 hover:bg-white/10"
+                className="h-7 w-7 border-white/10 bg-[#203324] text-white/90 hover:bg-white/10"
                 onClick={() => editorRef.current?.insertFormulaBlock()}
                 title="Bloque de fórmula"
                 aria-label="Bloque de fórmula"
@@ -849,10 +854,10 @@ export default function AdminBibliotecaEditorPage() {
                     type="button"
                     size="sm"
                     variant="outline"
-                    className="h-7 border-white/10 bg-[var(--mygreen)] text-white/90 hover:bg-white/10 px-2"
+                    className="h-7 border-white/10 bg-[#203324] text-white/90 hover:bg-white/10 px-2"
                     title="Símbolos y atajos matemáticos"
                   >
-                    <Sigma className="h-4 w-4 mr-1 text-[var(--accent-hex)]" />
+                    <Sigma className="h-4 w-4 mr-1 text-[#40C9A9]" />
                     <ChevronDown className="h-4 w-4 text-white/70" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -946,6 +951,79 @@ export default function AdminBibliotecaEditorPage() {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="h-7 border-white/10 bg-[#203324] text-white/90 hover:bg-white/10 px-2"
+                    title="Plantillas y entornos LaTeX"
+                  >
+                    <FileCode2 className="h-4 w-4 mr-1 text-[#40C9A9]" />
+                    LaTeX
+                    <ChevronDown className="h-4 w-4 ml-1 text-white/70" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="min-w-[300px] max-h-[70vh]">
+                  <DropdownMenuLabel className="text-white/80">Documento</DropdownMenuLabel>
+                  <DropdownMenuItem
+                    className="focus:bg-white/10"
+                    onSelect={() => {
+                      if (form.cuerpo.trim()) {
+                        editorRef.current?.insertAtCursor(`\n\n${DEFAULT_LIBRARY_LATEX_TEMPLATE}`);
+                      } else {
+                        setForm((f) => ({ ...f, cuerpo: DEFAULT_LIBRARY_LATEX_TEMPLATE }));
+                      }
+                    }}
+                  >
+                    Plantilla artículo <span className="ml-auto text-white/60">.tex</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="focus:bg-white/10"
+                    onSelect={() => editorRef.current?.insertAtCursor("\\section{Nueva sección}\n")}
+                  >
+                    Sección <span className="ml-auto text-white/60">\\section</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="focus:bg-white/10"
+                    onSelect={() => editorRef.current?.insertAtCursor("\\subsection{Subsección}\n")}
+                  >
+                    Subsección <span className="ml-auto text-white/60">\\subsection</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-white/10" />
+                  <DropdownMenuLabel className="text-white/80">Entornos</DropdownMenuLabel>
+                  <DropdownMenuItem
+                    className="focus:bg-white/10"
+                    onSelect={() => editorRef.current?.insertLatexEnvironment("equation")}
+                  >
+                    Ecuación <span className="ml-auto text-white/60">equation</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="focus:bg-white/10"
+                    onSelect={() => editorRef.current?.insertLatexEnvironment("align")}
+                  >
+                    Alineación <span className="ml-auto text-white/60">align</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="focus:bg-white/10"
+                    onSelect={() => editorRef.current?.insertAtCursor("\n\\begin{itemize}\n  \\item Punto\n\\end{itemize}\n")}
+                  >
+                    Lista <span className="ml-auto text-white/60">itemize</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="focus:bg-white/10"
+                    onSelect={() =>
+                      editorRef.current?.insertAtCursor(
+                        "\n\\begin{tabular}{|c|c|}\n\\hline\nConcepto & Valor \\\\\n\\hline\nA & B \\\\\n\\hline\n\\end{tabular}\n",
+                      )
+                    }
+                  >
+                    Tabla simple <span className="ml-auto text-white/60">tabular</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
 
             <span className="mx-1 h-6 w-px bg-white/15" />
@@ -955,7 +1033,7 @@ export default function AdminBibliotecaEditorPage() {
                 type="button"
                 size="icon"
                 variant="outline"
-                className="h-7 w-7 border-white/10 bg-[var(--mygreen)] text-white/80 hover:bg-white/10"
+                className="h-7 w-7 border-white/10 bg-[#203324] text-white/80 hover:bg-white/10"
                 onClick={() => editorRef.current?.undo()}
                 title="Deshacer"
                 aria-label="Deshacer"
@@ -966,7 +1044,7 @@ export default function AdminBibliotecaEditorPage() {
                 type="button"
                 size="icon"
                 variant="outline"
-                className="h-7 w-7 border-white/10 bg-[var(--mygreen)] text-white/80 hover:bg-white/10"
+                className="h-7 w-7 border-white/10 bg-[#203324] text-white/80 hover:bg-white/10"
                 onClick={() => editorRef.current?.redo()}
                 title="Rehacer"
                 aria-label="Rehacer"
@@ -983,8 +1061,8 @@ export default function AdminBibliotecaEditorPage() {
               variant="outline"
               className={
                 aiWidget === "expanded"
-                  ? "h-7 border-[color-mix(in_oklab,var(--accent-hex)_60%,transparent)] bg-[color-mix(in_oklab,var(--accent-hex)_15%,transparent)] text-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)]"
-                  : "h-7 border-[color-mix(in_oklab,var(--accent-hex)_40%,transparent)] bg-[var(--mygreen)] text-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)]"
+                  ? "h-7 border-[#40C9A9]/60 bg-[#40C9A9]/15 text-[#40C9A9] hover:bg-[#40C9A9]/20"
+                  : "h-7 border-[#40C9A9]/40 bg-[#203324] text-[#40C9A9] hover:bg-[#40C9A9]/10"
               }
               onClick={() => {
                 if (aiWidget === "hidden") openAiAssistant();
@@ -1017,7 +1095,7 @@ export default function AdminBibliotecaEditorPage() {
           </div>
         ) : (
           <div className="h-[calc(100vh-146px)] grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div className="rounded-xl border border-white/10 bg-[var(--mygreen-light)] overflow-hidden flex flex-col shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
+            <div className="rounded-xl border border-white/10 bg-[#354B3A] overflow-hidden flex flex-col shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
               <div className="p-4 flex-1 overflow-auto">
                 <DualMarkdownEditor
                   ref={editorRef}
@@ -1033,20 +1111,46 @@ export default function AdminBibliotecaEditorPage() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-white/10 bg-[var(--mygreen-light)] overflow-hidden flex flex-col shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
-              <div className="border-b border-white/10 bg-[var(--mygreen-dark)] px-4 py-3">
+            <div className="rounded-xl border border-white/10 bg-[#354B3A] overflow-hidden flex flex-col shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
+              <div className="border-b border-white/10 bg-[#1C2D20] px-4 py-3">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <div className="text-white font-medium">Preview PDF-like</div>
-                    <div className="text-xs text-white/60">Renderizado Markdown + KaTeX</div>
+                    <div className="text-white font-medium">Preview tipo PDF</div>
+                    <div className="text-xs text-white/60">
+                      {latexPreview.hasLatexDocument ? "LaTeX convertido a Markdown + KaTeX" : "Markdown + KaTeX"}
+                    </div>
                   </div>
-                  <div className="text-xs text-white/70">{`Páginas ${previewPages.length} · Zoom ${previewZoom}% · Texto ${Math.round(
-                    previewFontScale * 100,
-                  )}%`}</div>
+                  <div className="flex flex-wrap items-center justify-end gap-2 text-xs text-white/70">
+                    {latexPreview.issues.length ? (
+                      <span className="inline-flex items-center gap-1 rounded-full border border-amber-300/25 bg-amber-400/10 px-2 py-1 text-amber-100">
+                        <AlertTriangle className="h-3.5 w-3.5" />
+                        {latexPreview.issues.length} aviso{latexPreview.issues.length === 1 ? "" : "s"}
+                      </span>
+                    ) : (
+                      <span className="rounded-full border border-[#40C9A9]/25 bg-[#40C9A9]/10 px-2 py-1 text-[#9FE9D6]">
+                        Compilación limpia
+                      </span>
+                    )}
+                    <span>{`Páginas ${previewPages.length} · Zoom ${previewZoom}% · Texto ${Math.round(
+                      previewFontScale * 100,
+                    )}%`}</span>
+                  </div>
                 </div>
+                {latexPreview.issues.length ? (
+                  <div className="mt-3 grid gap-1.5">
+                    {latexPreview.issues.slice(0, 4).map((issue, index) => (
+                      <div
+                        key={`${issue.line}-${index}`}
+                        className="rounded-md border border-amber-300/15 bg-amber-400/10 px-2.5 py-1.5 text-xs text-amber-50"
+                      >
+                        Línea {issue.line}: {issue.message}
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
               </div>
               <div
-                className="p-4 flex-1 overflow-auto bg-[var(--mygreen)]"
+                className="p-4 flex-1 overflow-auto bg-[#203324]"
                 onWheel={onPreviewWheel}
                 onTouchStart={onPreviewTouchStart}
                 onTouchMove={onPreviewTouchMove}
@@ -1108,8 +1212,8 @@ export default function AdminBibliotecaEditorPage() {
                             previewPaperMode === "dim"
                               ? [
                                   "text-white/90 prose-headings:text-white prose-strong:text-white",
-                                  "prose-a:text-[var(--accent-hex)] prose-code:text-[var(--prose-code-text)]",
-                                  "prose-pre:bg-[var(--prose-pre-bg)] prose-pre:text-white prose-pre:border prose-pre:border-white/10",
+                                  "prose-a:text-[#40C9A9] prose-code:text-[#9FE9D6]",
+                                  "prose-pre:bg-[#0B1210] prose-pre:text-white prose-pre:border prose-pre:border-white/10",
                                   "prose-blockquote:text-white/75 prose-blockquote:border-white/20",
                                   "prose-hr:border-white/15",
                                 ].join(" ")
@@ -1181,13 +1285,13 @@ export default function AdminBibliotecaEditorPage() {
 
       {aiWidget === "expanded" ? (
         <div
-          className="fixed z-[200] flex h-[min(520px,72vh)] w-[360px] flex-col overflow-hidden rounded-xl border border-white/10 bg-[var(--mygreen-light)] shadow-[0_16px_48px_rgba(0,0,0,0.45)]"
+          className="fixed z-[200] flex h-[min(520px,72vh)] w-[360px] flex-col overflow-hidden rounded-xl border border-white/10 bg-[#354B3A] shadow-[0_16px_48px_rgba(0,0,0,0.45)]"
           style={{ left: aiPos.x, top: aiPos.y }}
           role="complementary"
           aria-label="Asistente IA del editor"
         >
           <div
-            className="flex cursor-grab items-center justify-between gap-2 border-b border-white/10 bg-[var(--mygreen)] px-3 py-2.5 active:cursor-grabbing touch-none select-none"
+            className="flex cursor-grab items-center justify-between gap-2 border-b border-white/10 bg-[#203324] px-3 py-2.5 active:cursor-grabbing touch-none select-none"
             onPointerDown={onAiHeaderPointerDown}
             onPointerMove={onAiHeaderPointerMove}
             onPointerUp={onAiHeaderPointerUp}
@@ -1195,7 +1299,7 @@ export default function AdminBibliotecaEditorPage() {
           >
             <div className="flex min-w-0 items-center gap-2 text-white">
               <GripVertical className="h-4 w-4 shrink-0 text-white/45" aria-hidden />
-              <Bot className="h-4 w-4 shrink-0 text-[var(--accent-hex)]" aria-hidden />
+              <Bot className="h-4 w-4 shrink-0 text-[#40C9A9]" aria-hidden />
               <span className="truncate text-sm font-medium">Asistente</span>
             </div>
             <div className="flex shrink-0 items-center gap-1">
@@ -1237,7 +1341,7 @@ export default function AdminBibliotecaEditorPage() {
                     key={`${m.role}-${i}`}
                     className={
                       m.role === "user"
-                        ? "ml-4 rounded-lg bg-[var(--mygreen-dark)] px-2.5 py-2 text-xs text-white/90"
+                        ? "ml-4 rounded-lg bg-[#1C2D20] px-2.5 py-2 text-xs text-white/90"
                         : "mr-4 rounded-lg bg-[#283d32] px-2.5 py-2 text-xs text-white/85 border border-white/5"
                     }
                   >
@@ -1252,13 +1356,13 @@ export default function AdminBibliotecaEditorPage() {
             )}
           </div>
 
-          <div className="border-t border-white/10 bg-[color-mix(in_oklab,var(--mygreen-dark)_90%,transparent)] px-3 py-2">
+          <div className="border-t border-white/10 bg-[#1C2D20]/90 px-3 py-2">
             <div className="mb-2 flex flex-wrap gap-1.5">
               <Button
                 type="button"
                 size="sm"
                 variant="outline"
-                className="h-7 border-white/10 bg-[var(--mygreen)] text-[11px] text-white/85 hover:bg-white/10"
+                className="h-7 border-white/10 bg-[#203324] text-[11px] text-white/85 hover:bg-white/10"
                 onClick={() => setAiPrompt("Mejora la redacción, claridad y estructura, manteniendo el significado.")}
               >
                 Mejorar redacción
@@ -1267,7 +1371,7 @@ export default function AdminBibliotecaEditorPage() {
                 type="button"
                 size="sm"
                 variant="outline"
-                className="h-7 border-white/10 bg-[var(--mygreen)] text-[11px] text-white/85 hover:bg-white/10"
+                className="h-7 border-white/10 bg-[#203324] text-[11px] text-white/85 hover:bg-white/10"
                 onClick={() => setAiPrompt("Crea una estructura con secciones (##) y puntos clave (bullets).")}
               >
                 Estructurar
@@ -1276,7 +1380,7 @@ export default function AdminBibliotecaEditorPage() {
                 type="button"
                 size="sm"
                 variant="outline"
-                className="h-7 border-white/10 bg-[var(--mygreen)] text-[11px] text-white/85 hover:bg-white/10"
+                className="h-7 border-white/10 bg-[#203324] text-[11px] text-white/85 hover:bg-white/10"
                 onClick={() =>
                   setAiPrompt("Explica este contenido con ejemplos y agrega 5 preguntas de práctica al final.")
                 }
@@ -1293,8 +1397,8 @@ export default function AdminBibliotecaEditorPage() {
                 variant="outline"
                 className={
                   aiScope === "selection"
-                    ? "h-7 border-[color-mix(in_oklab,var(--accent-hex)_40%,transparent)] bg-[var(--mygreen)] text-[11px] text-[var(--accent-hex)]"
-                    : "h-7 border-white/10 bg-[var(--mygreen)] text-[11px] text-white/80 hover:bg-white/10"
+                    ? "h-7 border-[#40C9A9]/40 bg-[#203324] text-[11px] text-[#40C9A9]"
+                    : "h-7 border-white/10 bg-[#203324] text-[11px] text-white/80 hover:bg-white/10"
                 }
                 onClick={() => setAiScope("selection")}
               >
@@ -1306,8 +1410,8 @@ export default function AdminBibliotecaEditorPage() {
                 variant="outline"
                 className={
                   aiScope === "document"
-                    ? "h-7 border-[color-mix(in_oklab,var(--accent-hex)_40%,transparent)] bg-[var(--mygreen)] text-[11px] text-[var(--accent-hex)]"
-                    : "h-7 border-white/10 bg-[var(--mygreen)] text-[11px] text-white/80 hover:bg-white/10"
+                    ? "h-7 border-[#40C9A9]/40 bg-[#203324] text-[11px] text-[#40C9A9]"
+                    : "h-7 border-white/10 bg-[#203324] text-[11px] text-white/80 hover:bg-white/10"
                 }
                 onClick={() => setAiScope("document")}
               >
@@ -1320,8 +1424,8 @@ export default function AdminBibliotecaEditorPage() {
                 variant="outline"
                 className={
                   aiApplyMode === "insert"
-                    ? "h-7 border-[color-mix(in_oklab,var(--accent-hex)_40%,transparent)] bg-[var(--mygreen)] text-[11px] text-[var(--accent-hex)]"
-                    : "h-7 border-white/10 bg-[var(--mygreen)] text-[11px] text-white/80 hover:bg-white/10"
+                    ? "h-7 border-[#40C9A9]/40 bg-[#203324] text-[11px] text-[#40C9A9]"
+                    : "h-7 border-white/10 bg-[#203324] text-[11px] text-white/80 hover:bg-white/10"
                 }
                 onClick={() => setAiApplyMode("insert")}
               >
@@ -1333,8 +1437,8 @@ export default function AdminBibliotecaEditorPage() {
                 variant="outline"
                 className={
                   aiApplyMode === "replace"
-                    ? "h-7 border-[color-mix(in_oklab,var(--accent-hex)_40%,transparent)] bg-[var(--mygreen)] text-[11px] text-[var(--accent-hex)]"
-                    : "h-7 border-white/10 bg-[var(--mygreen)] text-[11px] text-white/80 hover:bg-white/10"
+                    ? "h-7 border-[#40C9A9]/40 bg-[#203324] text-[11px] text-[#40C9A9]"
+                    : "h-7 border-white/10 bg-[#203324] text-[11px] text-white/80 hover:bg-white/10"
                 }
                 onClick={() => setAiApplyMode("replace")}
               >
@@ -1359,12 +1463,12 @@ export default function AdminBibliotecaEditorPage() {
                   }
                 }}
                 placeholder="Escribe… (Ctrl+Enter)"
-                className="min-h-[44px] max-h-[120px] resize-none bg-[var(--mygreen)] border-white/10 text-white text-sm rounded-2xl px-3 py-2 leading-5"
+                className="min-h-[44px] max-h-[120px] resize-none bg-[#203324] border-white/10 text-white text-sm rounded-2xl px-3 py-2 leading-5"
               />
               <Button
                 type="button"
                 size="icon"
-                className="h-10 w-10 rounded-2xl bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white disabled:opacity-60"
+                className="h-10 w-10 rounded-2xl bg-[#40C9A9] hover:bg-[#40C9A9]/80 text-white disabled:opacity-60"
                 onClick={() => void runAi()}
                 disabled={aiRunning || !aiPrompt.trim()}
                 title="Enviar"
@@ -1384,7 +1488,7 @@ export default function AdminBibliotecaEditorPage() {
         >
           <button
             type="button"
-            className="flex h-11 w-11 items-center justify-center rounded-xl bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)] text-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)]"
+            className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#40C9A9]/20 text-[#40C9A9] hover:bg-[#40C9A9]/30"
             onClick={() => setAiWidget("expanded")}
             title="Abrir asistente"
             aria-label="Abrir asistente IA"
@@ -1405,4 +1509,3 @@ export default function AdminBibliotecaEditorPage() {
     </div>
   );
 }
-

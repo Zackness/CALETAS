@@ -34,11 +34,11 @@ export function Whyus() {
 
   return (
     <section className="content-center items-center px-4 sm:px-6 md:px-12 pt-12 sm:pt-16 md:pt-[65px]">
-        <div className="flex flex-col text-center">
+        <div className="flex flex-col px-4 py-8 text-center sm:px-8">
             <p className="font-semibold text-sm sm:text-base">
                 Esta es una iniciativa de Zackness
             </p>
-            <h2 className="text-[1.75rem] sm:text-[2rem] md:text-[3rem] lg:text-[40px] font-special pt-3 sm:pt-[15px]">
+            <h2 className="chalk-title text-[1.75rem] sm:text-[2rem] md:text-[3rem] lg:text-[40px] font-special pt-3 sm:pt-[15px]">
                 ¿POR QUE CALETA?
             </h2>
             <p className="font-semibold text-base sm:text-lg md:text-xl lg:text-2xl leading-relaxed sm:leading-relaxed md:leading-relaxed lg:leading-[36px] pt-4 sm:pt-6 md:pt-[27px] px-2 sm:px-4 md:px-12 lg:px-42">

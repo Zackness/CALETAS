@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { DEFAULT_LIBRARY_LATEX_TEMPLATE } from "@/lib/latex";
 
 type Obra = {
   id: string;
@@ -49,7 +50,7 @@ export default function AdminBibliotecaPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           titulo: "Nuevo libro",
-          cuerpo: "## Nuevo libro\n\nEscribe aquí. Puedes usar fórmulas: $E=mc^2$ y bloques:\n\n$$\\int_0^1 x^2\\,dx$$\n",
+          cuerpo: DEFAULT_LIBRARY_LATEX_TEMPLATE,
           isPublished: false,
           orden: 0,
         }),

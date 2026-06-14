@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import '@fontsource-variable/montserrat';
 import "@/app/globals.css";
 import { getSession } from "@/lib/auth";
-import { ThemeProvider } from "@/components/theme-provider";
 
 export const metadata: Metadata = {
   title: "Onboarding - Caletas",
@@ -24,11 +23,9 @@ export default async function OnboardingLayout ({
     const session = await getSession();
 
   return (
-    <html lang="es" suppressHydrationWarning>
+    <html lang="es">
       <body className="flex flex-col h-full bg-gradient-to-br from-mygreen-dark via-mygreen to-mygreen-light text-white">
-        <ThemeProvider>
-          <main className="flex flex-col h-full w-full">{children}</main>
-        </ThemeProvider>
+        <main className="flex flex-col h-full w-full">{children}</main>
       </body>
     </html>
   );
