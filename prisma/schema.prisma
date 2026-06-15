@@ -87,6 +87,7 @@ model User {
   iaLlmModeCronograma     String                 @default("manual")
   walletLedger             WalletLedger[]
   caletaTasks              CaletaTask[]
+  aprendePic18Progress     AprendePic18Progress?
 
   @@index([role])
   @@index([universidadId])
@@ -944,4 +945,14 @@ model ZenoWorkspace {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("zeno_workspaces")
+}
+
+model AprendePic18Progress {
+  userId    String   @id @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payload   Json     @default("{}")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([updatedAt])
+  @@map("aprende_pic18_progress")
 }

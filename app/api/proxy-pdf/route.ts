@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
   } catch (error: unknown) {
     console.error('PDF proxy error:', error);
     const message = axios.isAxiosError(error)
-      ? error.message + (error.response ?  (HTTP ) : '')
+      ? error.message + (error.response ? ` (HTTP ${error.response.status})` : '')
       : error instanceof Error
         ? error.message
         : 'Unknown error';

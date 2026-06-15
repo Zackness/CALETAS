@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { resolveAuthenticatedUserId } from "@/lib/resolve-authenticated-user";
 import { db } from "@/lib/db";
 
 // GET - Obtener materias de la carrera del usuario
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
+    const userId = await resolveAuthenticatedUserId(request);
 
-    if (!session?.user?.id) {
+    if (!userId) {
       return NextResponse.json(
         { error: "No autorizado" },
         { status: 401 }
@@ -18,7 +16,7 @@ export async function GET(request: NextRequest) {
 
     // Obtener el usuario con su carrera y materias
     const user = await db.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: userId },
       include: {
         carrera: {
           include: {

@@ -142,11 +142,9 @@ export async function GET(request: NextRequest) {
 // POST - Crear nuevo recurso (JSON; subidas con archivo usan /api/caletas/upload-cpanel)
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
+    const userId = await resolveAuthenticatedUserId(request);
 
-    if (!session?.user?.id) {
+    if (!userId) {
       return withCors(NextResponse.json({ error: "No autorizado" }, { status: 401 }), request);
     }
 
@@ -245,4 +243,8 @@ export async function POST(request: NextRequest) {
     console.error("Error creating recurso:", error);
     return withCors(NextResponse.json({ error: "Error interno del servidor" }, { status: 500 }), request);
   }
+}
+
+export async function OPTIONS(request: NextRequest) {
+  return withCors(new NextResponse(null, { status: 204 }), request);
 }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { resolveAuthenticatedUserId } from "@/lib/resolve-authenticated-user";
 import { uploadToBunny } from "@/lib/bunny";
 import { validateFile } from "@/lib/file-utils";
 import { db } from "@/lib/db";
@@ -7,11 +8,9 @@ import { TipoRecurso } from "@prisma/client";
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
+    const userId = await resolveAuthenticatedUserId(request);
 
-    if (!session?.user?.id) {
+    if (!userId) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
@@ -33,7 +32,7 @@ export async function POST(request: NextRequest) {
     }
 
     const user = await db.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: userId },
       select: { universidadId: true, carreraId: true },
     });
 
@@ -91,7 +90,7 @@ export async function POST(request: NextRequest) {
           contenido: `Archivo: ${file.name} (${file.type}, ${file.size} bytes)`,
           materiaId: materiaIdToUse,
           universidadId: universidadIdToUse,
-          autorId: session.user.id,
+          autorId: userId,
         },
         include: {
           materia: {

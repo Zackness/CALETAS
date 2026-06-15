@@ -29,7 +29,8 @@
     "backup:mysql": "npx tsx scripts/backup-mysql.ts",
     "import:neon": "npx tsx scripts/import-mysql-json-to-neon.ts",
     "sync:semestres": "npx tsx scripts/sync-semestre-all-users.ts",
-    "zeno:migrate": "prisma db execute --schema prisma/schema.prisma --file prisma/migrations/zeno_workspaces.sql"
+    "zeno:migrate": "prisma db execute --schema prisma/schema.prisma --file prisma/migrations/zeno_workspaces.sql",
+    "pic18:migrate": "prisma db execute --schema prisma/schema.prisma --file prisma/migrations/aprende_pic18_progress.sql"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.3.16",
