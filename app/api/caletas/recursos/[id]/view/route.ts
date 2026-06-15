@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { resolveAuthenticatedUserId } from "@/lib/resolve-authenticated-user";
 import { db } from "@/lib/db";
 import { canViewerAccessRecurso } from "@/lib/caletas-visibility";
 import { getActiveSubscriptionForUser } from "@/lib/subscription";
@@ -10,11 +10,9 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
+    const userId = await resolveAuthenticatedUserId(request);
 
-    if (!session?.user?.id) {
+    if (!userId) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
@@ -40,12 +38,12 @@ export async function POST(
     }
 
     const viewer = await db.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: userId },
       select: { universidadId: true },
     });
-    const sub = await getActiveSubscriptionForUser(session.user.id);
+    const sub = await getActiveSubscriptionForUser(userId);
     const allowed = canViewerAccessRecurso(
-      session.user.id,
+      userId,
       viewer?.universidadId,
       sub,
       {
@@ -68,7 +66,7 @@ export async function POST(
       db.vistaRecurso.create({
         data: {
           recursoId: id,
-          usuarioId: session.user.id,
+          usuarioId: userId,
           ipAddress,
           userAgent,
         },

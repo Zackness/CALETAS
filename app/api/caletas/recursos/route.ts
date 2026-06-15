@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { resolveAuthenticatedUserId } from "@/lib/resolve-authenticated-user";
 import { db } from "@/lib/db";
 import { getCorsHeaders } from "@/lib/cors";
 import { canAccessFullCaletasPlan, getActiveSubscriptionForUser } from "@/lib/subscription";
@@ -30,11 +31,9 @@ const maskAutorIfAnon = <T extends { esAnonimo?: boolean; autorId?: string; auto
 // GET - Obtener recursos de Caletas
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
+    const userId = await resolveAuthenticatedUserId(request);
 
-    if (!session?.user?.id) {
+    if (!userId) {
       return withCors(NextResponse.json({ error: "No autorizado" }, { status: 401 }), request);
     }
 
@@ -42,27 +41,27 @@ export async function GET(request: NextRequest) {
     const misRecursos = searchParams.get("misRecursos") === "true";
 
     const user = await db.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: userId },
       select: { universidadId: true },
     });
-    const subscription = await getActiveSubscriptionForUser(session.user.id);
+    const subscription = await getActiveSubscriptionForUser(userId);
     const hasFullCaletasPlan = canAccessFullCaletasPlan(subscription);
 
     let whereClause: object;
     if (misRecursos) {
-      whereClause = { autorId: session.user.id };
+      whereClause = { autorId: userId };
     } else if (hasFullCaletasPlan) {
       whereClause = {};
     } else if (!user?.universidadId) {
       whereClause = {
-        OR: [{ universidadId: null }, { autorId: session.user.id }],
+        OR: [{ universidadId: null }, { autorId: userId }],
       };
     } else {
       whereClause = {
         OR: [
           { universidadId: null },
           { universidadId: user.universidadId },
-          { autorId: session.user.id },
+          { autorId: userId },
         ],
       };
     }
@@ -93,7 +92,7 @@ export async function GET(request: NextRequest) {
         },
         calificaciones: {
           where: {
-            usuarioId: session.user.id,
+            usuarioId: userId,
           },
           select: {
             calificacion: true,
@@ -101,7 +100,7 @@ export async function GET(request: NextRequest) {
         },
         favoritos: {
           where: {
-            usuarioId: session.user.id,
+            usuarioId: userId,
           },
           select: {
             id: true,
@@ -117,7 +116,7 @@ export async function GET(request: NextRequest) {
     });
 
     const recursosConFavorito = recursos.map(({ favoritos, _count, ...r }) => {
-      const masked = maskAutorIfAnon(r as any, session.user.id);
+      const masked = maskAutorIfAnon(r as any, userId);
       return {
         ...masked,
         isFavorito: favoritos.length > 0,
@@ -170,7 +169,7 @@ export async function POST(request: NextRequest) {
     }
 
     const user = await db.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: userId },
       select: { universidadId: true, carreraId: true },
     });
 
@@ -211,7 +210,7 @@ export async function POST(request: NextRequest) {
         archivoSizeBytes: typeof archivoSizeBytes === "number" ? archivoSizeBytes : undefined,
         materiaId: finalMateriaId,
         universidadId: finalUniversidadId,
-        autorId: session.user.id,
+        autorId: userId,
         esPublico: esPublico !== false,
         esAnonimo: !!esAnonimo,
         tags: tags || "",
@@ -238,7 +237,7 @@ export async function POST(request: NextRequest) {
     return withCors(
       NextResponse.json({
         message: "Recurso creado exitosamente",
-        recurso: maskAutorIfAnon(recurso as any, session.user.id),
+        recurso: maskAutorIfAnon(recurso as any, userId),
       }),
       request,
     );
