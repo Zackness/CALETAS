@@ -15,6 +15,11 @@ const CORS = {
 /** Archivos permitidos (slug → nombre en disco). */
 const DOWNLOADS: Record<string, string> = {
   "practica-1-operaciones": "practica-1-operaciones.asm",
+  "practica-2-teclado-lcd": "practica-2-teclado-lcd.asm",
+  "practica-3-frecuencimetro": "practica-3-frecuencimetro.asm",
+  "practica-6-motor-paso-a-paso": "practica-6-motor-paso-a-paso.asm",
+  "practica-7-convertidor-ad": "practica-7-convertidor-ad.asm",
+  "practica-8-comunicacion-serial": "practica-8-comunicacion-serial.asm",
 };
 
 export async function OPTIONS() {

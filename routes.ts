@@ -17,6 +17,8 @@ export const publicRoutes = [
   "/zeno-notes/connect",
   "/api/zeno-notes/workspace",
   "/api/zeno-notes/workspace/local/.*",
+  "/api/aprende-pic18/.*",
+  "/aprende-pic18/connect",
   "/api/stripe/webhook",
   "/api/stripe-url",
   "/new-verification",

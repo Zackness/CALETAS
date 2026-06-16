@@ -56,6 +56,12 @@ export function middleware(request: NextRequest) {
     return nextUrl.pathname.startsWith("/api") ? withCors(request, res) : res;
   }
 
+  // AprendePIC18 (pic18.caleta.top): auth con JWT Bearer en cada ruta, no cookie de sesión
+  if (nextUrl.pathname.startsWith("/api/aprende-pic18/")) {
+    const res = NextResponse.next();
+    return withCors(request, res);
+  }
+
   const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
   const isAuthRoute = authRoutes.includes(nextUrl.pathname);
   const isPublic = isPublicRoute(nextUrl.pathname);
