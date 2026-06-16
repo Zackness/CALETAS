@@ -8,7 +8,7 @@ import {
   X, 
   Download, 
   FileText, 
-  Image, 
+  Image as ImageIcon, 
   Video, 
   Music, 
   Archive,
@@ -51,7 +51,7 @@ export default function FileViewerModal({ isOpen, onClose, file }: FileViewerMod
       case 'png':
       case 'gif':
       case 'webp':
-        return <Image className="h-8 w-8 text-blue-500" />;
+        return <ImageIcon className="h-8 w-8 text-blue-500" />;
       case 'mp4':
       case 'avi':
       case 'mov':

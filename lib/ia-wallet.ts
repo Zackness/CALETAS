@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 /** Mismos endpoints que el trial gratis (consumo por billetera). */
 export type IaWalletBillableEndpoint =
   | "ia/chat"
+  | "aprende-pic18/tutor/chat"
   | "ia/resumir"
   | "ia/fichas"
   | "ia/cuestionario"

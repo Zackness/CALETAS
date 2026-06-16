@@ -14,7 +14,7 @@ export type ResolveModelHint = {
 };
 
 export function endpointToStudentIaRole(endpoint: IaWalletBillableEndpoint): StudentIaModelRole {
-  if (endpoint === "ia/chat") return "chat";
+  if (endpoint === "ia/chat" || endpoint === "aprende-pic18/tutor/chat") return "chat";
   if (endpoint === "academico/cronograma/ai") return "cronograma";
   return "heavy";
 }

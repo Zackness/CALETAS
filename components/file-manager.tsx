@@ -14,7 +14,7 @@ import {
   FolderOpen,
   ExternalLink,
   FileText,
-  Image,
+  Image as ImageIcon,
   Video,
   Music,
   Archive
@@ -93,7 +93,7 @@ export default function FileManager() {
       case 'png':
       case 'gif':
       case 'webp':
-        return <Image className="h-5 w-5 text-blue-500" />;
+        return <ImageIcon className="h-5 w-5 text-blue-500" />;
       case 'mp4':
       case 'avi':
       case 'mov':

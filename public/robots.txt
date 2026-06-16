@@ -1,9 +1,14 @@
 # *
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /academico/
+Disallow: /editor/
+Disallow: /onboarding/
 
 # Host
-Host: https://globalegal.org
+Host: https://caleta.top
 
 # Sitemaps
-Sitemap: https://globalegal.org/sitemap.xml
+Sitemap: https://caleta.top/sitemap.xml

@@ -166,7 +166,6 @@ export default function AdminUsuarioEditPage() {
       setMateriasOptions([]);
       setMateriasEdit([]);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.carreraId]);
 
   const handleSave = async () => {
@@ -579,4 +578,3 @@ export default function AdminUsuarioEditPage() {
     </div>
   );
 }
-

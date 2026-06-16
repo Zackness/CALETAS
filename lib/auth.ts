@@ -5,6 +5,7 @@ import { twoFactor } from "better-auth/plugins";
 import { passkey } from "@better-auth/passkey";
 import { expo } from "@better-auth/expo";
 import { headers } from "next/headers";
+import { unstable_rethrow } from "next/navigation";
 import bcrypt from "bcryptjs";
 import { createAuthMiddleware } from "better-auth/api";
 import { verifyPassword as scryptVerifyPassword } from "better-auth/crypto";
@@ -222,6 +223,7 @@ export const getSession = async () => {
       headers: await headers(),
     });
   } catch (error) {
+    unstable_rethrow(error);
     // Si la DB no está accesible (por ejemplo Neon caído), no debemos tumbar SSR con 500.
     // En esos casos tratamos como "sin sesión" y dejamos que el layout redirija a /login.
     console.error("[auth] getSession failed:", error);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Copy, Image as ImageIcon, RefreshCw, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 
@@ -23,7 +23,7 @@ export default function AdminMediaPage() {
   const [uploading, setUploading] = useState(false);
   const [subfolder, setSubfolder] = useState("media");
 
-  const loadFiles = async () => {
+  const loadFiles = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch(`/api/admin/media?subfolder=${encodeURIComponent(subfolder)}`);
@@ -35,11 +35,11 @@ export default function AdminMediaPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [subfolder]);
 
   useEffect(() => {
     void loadFiles();
-  }, []);
+  }, [loadFiles]);
 
   const handleUpload = async (file: File) => {
     setUploading(true);

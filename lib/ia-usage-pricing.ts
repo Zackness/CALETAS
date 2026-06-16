@@ -83,6 +83,7 @@ export function computeWalletChargeFromTokenUsage(params: {
 /** Límite superior de tokens asumidos por request (reserva de billetera antes de conocer uso real). */
 const WALLET_HOLD_TOKENS: Record<IaWalletBillableEndpoint, { prompt: number; completion: number }> = {
   "ia/chat": { prompt: 36_000, completion: 1_500 },
+  "aprende-pic18/tutor/chat": { prompt: 16_000, completion: 1_500 },
   "ia/resumir": { prompt: 130_000, completion: 4_500 },
   "ia/fichas": { prompt: 130_000, completion: 4_500 },
   "ia/cuestionario": { prompt: 130_000, completion: 4_500 },
@@ -99,7 +100,7 @@ export function estimateMaxTotalTokensForHold(endpoint: IaWalletBillableEndpoint
 const CRONOGRAMA_MAX_AUDIO_BYTES = 24 * 1024 * 1024;
 
 function endpointToModelRole(endpoint: IaWalletBillableEndpoint): StudentIaModelRole {
-  if (endpoint === "ia/chat") return "chat";
+  if (endpoint === "ia/chat" || endpoint === "aprende-pic18/tutor/chat") return "chat";
   if (endpoint === "academico/cronograma/ai") return "cronograma";
   return "heavy";
 }

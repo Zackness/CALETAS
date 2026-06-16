@@ -7,7 +7,7 @@ import { TipoRecursoIcon } from "@/components/caletas/recurso-tipo";
 import { tipoEtiquetaCorta } from "@/components/caletas/recurso-tipo-utils";
 import { recursoToExploreHref } from "@/lib/recurso-view-href";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Eye, Settings2 } from "lucide-react";
+import { Cpu, Eye, Settings2 } from "lucide-react";
 import { getSession } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
@@ -17,6 +17,60 @@ function iniciales(nombre: string) {
   if (p.length === 0) return "?";
   if (p.length === 1) return p[0]!.slice(0, 2).toUpperCase();
   return (p[0]![0] + p[1]![0]).toUpperCase();
+}
+
+type Pic18ProgressSummary = {
+  percent: number;
+  lessonsCompleted: number;
+  lessonsTracked: number;
+  quizzesPassed: number;
+  quizzesTracked: number;
+  averageScore: number | null;
+  checklistDone: number;
+  checklistTotal: number;
+};
+
+function countDoneDeep(value: unknown): { done: number; total: number } {
+  if (typeof value === "boolean") return { done: value ? 1 : 0, total: 1 };
+  if (!value || typeof value !== "object") return { done: 0, total: 0 };
+  return Object.values(value as Record<string, unknown>).reduce<{ done: number; total: number }>(
+    (acc, item) => {
+      const next = countDoneDeep(item);
+      return { done: acc.done + next.done, total: acc.total + next.total };
+    },
+    { done: 0, total: 0 },
+  );
+}
+
+function summarizePic18Progress(payload: unknown): Pic18ProgressSummary | null {
+  if (!payload || typeof payload !== "object") return null;
+  const data = payload as Record<string, unknown>;
+  const studyPath = data.studyPath && typeof data.studyPath === "object" ? data.studyPath as Record<string, unknown> : {};
+  const quizzes = data.quizzes && typeof data.quizzes === "object" ? data.quizzes as Record<string, unknown> : {};
+  const checklists = data.checklists && typeof data.checklists === "object" ? data.checklists : {};
+
+  const lessons = Object.values(studyPath).filter((v) => typeof v === "boolean");
+  const lessonsCompleted = lessons.filter(Boolean).length;
+  const quizRows = Object.values(quizzes).filter((v): v is Record<string, unknown> => !!v && typeof v === "object");
+  const quizzesPassed = quizRows.filter((q) => q.passed === true).length;
+  const scores = quizRows.map((q) => Number(q.score)).filter((n) => Number.isFinite(n));
+  const averageScore = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null;
+  const checklist = countDoneDeep(checklists);
+
+  const doneSignals = lessonsCompleted + quizzesPassed + checklist.done;
+  const totalSignals = lessons.length + quizRows.length + checklist.total;
+  if (totalSignals === 0) return null;
+
+  return {
+    percent: Math.round((doneSignals / totalSignals) * 100),
+    lessonsCompleted,
+    lessonsTracked: lessons.length,
+    quizzesPassed,
+    quizzesTracked: quizRows.length,
+    averageScore,
+    checklistDone: checklist.done,
+    checklistTotal: checklist.total,
+  };
 }
 
 export default async function PerfilPublicoPage({ params }: { params: Promise<{ username: string }> }) {
@@ -43,7 +97,7 @@ export default async function PerfilPublicoPage({ params }: { params: Promise<{ 
 
   const isOwnProfile = !!viewerId && viewerId === user.id;
 
-  const [followersCount, followingCount, caletasCount, followRow, recursos] = await Promise.all([
+  const [followersCount, followingCount, caletasCount, followRow, recursos, pic18Progress] = await Promise.all([
     db.userFollow.count({ where: { followingId: user.id } }),
     db.userFollow.count({ where: { followerId: user.id } }),
     db.recurso.count({
@@ -71,17 +125,21 @@ export default async function PerfilPublicoPage({ params }: { params: Promise<{ 
         materia: { select: { nombre: true } },
       },
     }),
+    db.aprendePic18Progress.findUnique({
+      where: { userId: user.id },
+      select: { payload: true, updatedAt: true },
+    }),
   ]);
 
   const gallery = parseProfileGalleryUrls(user.profileGalleryUrls);
   const isFollowing = !!viewerId && !isOwnProfile && !!followRow;
+  const pic18Summary = summarizePic18Progress(pic18Progress?.payload);
 
   return (
     <div className="min-h-[calc(100dvh-6rem)] p-4 sm:p-6">
       <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#354B3A] shadow-lg">
         <div className="relative h-36 sm:h-44">
           {user.profileBannerUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
             <img src={user.profileBannerUrl} alt="" className="h-full w-full object-cover" />
           ) : (
             <div className="h-full w-full bg-gradient-to-r from-[#1C2D20] via-[#2a3d32] to-[color-mix(in_oklab,var(--accent-hex)_25%,#1C2D20)]" />
@@ -141,11 +199,67 @@ export default async function PerfilPublicoPage({ params }: { params: Promise<{ 
           <h2 className="mb-3 font-special text-lg text-white">Fotos</h2>
           <div className="grid grid-cols-3 gap-1 sm:grid-cols-4 sm:gap-2 md:gap-3">
             {gallery.map((src, i) => (
-              // eslint-disable-next-line @next/next/no-img-element
               <div key={`${src}-${i}`} className="aspect-square overflow-hidden rounded-xl border border-white/10 bg-[#1C2D20]">
                 <img src={src} alt="" className="h-full w-full object-cover" />
               </div>
             ))}
+          </div>
+        </section>
+      ) : null}
+
+      {pic18Summary ? (
+        <section className="mt-8 overflow-hidden rounded-2xl border border-[color-mix(in_oklab,var(--accent-hex)_35%,transparent)] bg-[#1C2D20] shadow-lg">
+          <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+            <div className="flex items-start gap-3">
+              <div className="rounded-2xl bg-[color-mix(in_oklab,var(--accent-hex)_18%,transparent)] p-3 text-[var(--accent-hex)]">
+                <Cpu className="h-6 w-6" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--accent-hex)]">Curso activo</p>
+                <h2 className="mt-1 font-special text-xl text-white">Aprende PIC18</h2>
+                <p className="mt-1 text-sm text-white/60">Microcontroladores PIC18F4550 · progreso sincronizado con CALETAS</p>
+              </div>
+            </div>
+            <Link
+              href="https://pic18.caleta.top"
+              className="inline-flex items-center justify-center rounded-lg border border-white/10 bg-white/10 px-4 py-2 text-sm text-white transition hover:bg-white/15"
+            >
+              Ver curso
+            </Link>
+          </div>
+          <div className="border-t border-white/10 p-4 sm:p-5">
+            <div className="flex items-end justify-between gap-3">
+              <div>
+                <div className="text-3xl font-bold text-white">{pic18Summary.percent}%</div>
+                <div className="text-xs text-white/55">avance estimado</div>
+              </div>
+              {pic18Progress?.updatedAt ? (
+                <div className="text-right text-xs text-white/45">
+                  Actualizado {pic18Progress.updatedAt.toLocaleDateString("es-VE")}
+                </div>
+              ) : null}
+            </div>
+            <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/10">
+              <div className="h-full rounded-full bg-[var(--accent-hex)]" style={{ width: `${Math.min(100, Math.max(0, pic18Summary.percent))}%` }} />
+            </div>
+            <div className="mt-4 grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
+              <div className="rounded-xl bg-white/5 p-3">
+                <div className="font-semibold text-white">{pic18Summary.lessonsCompleted}/{pic18Summary.lessonsTracked}</div>
+                <div className="text-xs text-white/55">lecciones</div>
+              </div>
+              <div className="rounded-xl bg-white/5 p-3">
+                <div className="font-semibold text-white">{pic18Summary.quizzesPassed}/{pic18Summary.quizzesTracked}</div>
+                <div className="text-xs text-white/55">quizzes aprobados</div>
+              </div>
+              <div className="rounded-xl bg-white/5 p-3">
+                <div className="font-semibold text-white">{pic18Summary.averageScore ?? "--"}{pic18Summary.averageScore === null ? "" : "%"}</div>
+                <div className="text-xs text-white/55">promedio</div>
+              </div>
+              <div className="rounded-xl bg-white/5 p-3">
+                <div className="font-semibold text-white">{pic18Summary.checklistDone}/{pic18Summary.checklistTotal}</div>
+                <div className="text-xs text-white/55">checklist</div>
+              </div>
+            </div>
           </div>
         </section>
       ) : null}
@@ -188,4 +302,3 @@ export default async function PerfilPublicoPage({ params }: { params: Promise<{ 
     </div>
   );
 }
-
