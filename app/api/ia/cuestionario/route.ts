@@ -5,14 +5,13 @@ import { getCorsHeaders } from "@/lib/cors";
 import { getActiveSubscriptionForUser } from "@/lib/subscription";
 import { logAiUsage } from "@/lib/ai-usage";
 import { assertTrialReferralOrWalletForIa } from "@/lib/ai-trial";
-import { debitWalletForIa } from "@/lib/ia-wallet";
 import { withIaGatewayRatesForRequest } from "@/lib/ia-gateway-rates-request";
-import { computeWalletChargeFromTokenUsage } from "@/lib/ia-usage-pricing";
 import {
   assertSubscriptionIaTokenGate,
   settleSubscribedIaAfterCall,
 } from "@/lib/ia-subscription-meter";
-import { resolveUserOrDefaultModel } from "@/lib/ia-user-model";
+import { settleNonSubscriptionIaAfterCall } from "@/lib/ia-non-sub-settle";
+import { resolveModelForIaCall } from "@/lib/ia-user-model";
 import { createOpenAIForStudentIa, hasStudentIaLlmCredentials, STUDENT_IA_GATEWAY_KEY_HELP } from "@/lib/vercel-ia-gateway";
 
 function withCors(res: NextResponse, req: NextRequest) {
@@ -51,6 +50,8 @@ export async function POST(request: NextRequest) {
               code: nonSubIaAccess.code ?? "FREE_LIMIT_REACHED",
               endpoint: "ia/cuestionario",
               limit: nonSubIaAccess.limit,
+              resetsAt: nonSubIaAccess.resetsAt,
+              resetsAtLabel: nonSubIaAccess.resetsAtLabel,
             },
             { status: 402 },
           ),
@@ -128,7 +129,12 @@ Estructura JSON esperada:
 Las preguntas deben ser variadas y cubrir diferentes aspectos del contenido, desde conceptos básicos hasta aplicaciones prácticas.
 `;
 
-    const model = await resolveUserOrDefaultModel(session.user.id, "heavy");
+    const nonSubMode = !hasSubscription && nonSubIaAccess?.ok ? nonSubIaAccess.mode : null;
+    const model = await resolveModelForIaCall({
+      userId: session.user.id,
+      role: "heavy",
+      nonSubMode: nonSubMode === "free_tier" ? "free_tier" : nonSubMode === "wallet" ? "wallet" : null,
+    });
     if (hasSubscription && sub) {
       const gate = await assertSubscriptionIaTokenGate({
         userId: session.user.id,
@@ -153,7 +159,7 @@ Las preguntas deben ser variadas y cubrir diferentes aspectos del contenido, des
       subscriptionIaGate = gate;
     }
 
-    const openai = createOpenAIForStudentIa();
+    const openai = createOpenAIForStudentIa(model);
     const response = await openai.chat.completions.create({
       model,
       messages: [
@@ -225,26 +231,14 @@ Las preguntas deben ser variadas y cubrir diferentes aspectos del contenido, des
       recursoId: recursoId,
     }));
 
-    if (
-      !hasSubscription &&
-      nonSubIaAccess?.ok &&
-      nonSubIaAccess.mode === "wallet"
-    ) {
-      const chargeCents = computeWalletChargeFromTokenUsage({
+    if (!hasSubscription && nonSubIaAccess?.ok) {
+      await settleNonSubscriptionIaAfterCall({
+        userId: session.user.id,
+        endpoint: "ia/cuestionario",
         model,
-        usage: response.usage,
-        discountPercent: nonSubIaAccess.walletDiscountPercent ?? 0,
+        nonSubAccess: nonSubIaAccess,
+        usage: response.usage ?? null,
       });
-      try {
-        await debitWalletForIa({
-          userId: session.user.id,
-          chargeCents,
-          reason: "ia/cuestionario",
-          meta: { model, usage: response.usage },
-        });
-      } catch (e) {
-        console.error("[ia/cuestionario] wallet debit", e);
-      }
     }
 
     return withCors(NextResponse.json({

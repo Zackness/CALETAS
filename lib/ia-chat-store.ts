@@ -3,6 +3,9 @@
 export type IAChatMessage = {
   role: "user" | "assistant";
   content: string;
+  /** Marca respuestas fallidas para mostrar reintentar en la UI. */
+  error?: boolean;
+  errorDetail?: string;
 };
 
 export type IAProject = {
@@ -27,6 +30,8 @@ export type IAChatThread = {
   id: string;
   title: string;
   projectId: string | null;
+  /** Recursos de Caletas adjuntos al chat para contexto de la IA. */
+  caletaRecursoIds?: string[];
   updatedAt: string;
   messages: IAChatMessage[];
 };

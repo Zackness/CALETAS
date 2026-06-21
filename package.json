@@ -5,12 +5,12 @@
   "scripts": {
     "postinstall": "prisma generate",
     "dev": "NODE_OPTIONS=--dns-result-order=ipv4first next dev",
-    "build": "rm -rf .next && prisma generate && NEXT_PRIVATE_WORKER_THREADS=false NODE_OPTIONS=--dns-result-order=ipv4first next build",
+    "build": "rm -rf .next-build && prisma generate && NEXT_DIST_DIR=.next-build NEXT_PRIVATE_WORKER_THREADS=false NODE_OPTIONS=--dns-result-order=ipv4first next build",
     "vercel-build": "prisma db push --accept-data-loss && prisma generate && NEXT_PRIVATE_WORKER_THREADS=false NODE_OPTIONS=--dns-result-order=ipv4first next build",
     "export": "next build && next export",
     "start": "NODE_OPTIONS=--dns-result-order=ipv4first next start",
     "lint": "next lint",
-    "typecheck": "rm -rf .next && tsc --noEmit",
+    "typecheck": "tsc --noEmit",
     "prisma:validate": "prisma validate",
     "test": "npm run typecheck && npm run lint && npm run prisma:validate",
     "ci": "npm run test && npm run build",
@@ -45,6 +45,7 @@
     "@codemirror/lang-markdown": "^6.5.0",
     "@fontsource-variable/montserrat": "^5.2.6",
     "@hookform/resolvers": "^3.10.0",
+    "@napi-rs/canvas": "^1.0.0",
     "@prisma/client": "^6.6.0",
     "@radix-ui/react-accordion": "^1.2.3",
     "@radix-ui/react-checkbox": "^1.1.5",
@@ -117,9 +118,6 @@
     "zustand": "^5.0.3"
   },
   "devDependencies": {
-    "dotenv": "^16.4.7",
-    "mysql2": "^3.12.0",
-    "tsx": "^4.19.3",
     "@eslint/eslintrc": "^3",
     "@tailwindcss/typography": "^0.5.16",
     "@types/bcrypt": "^5.0.2",
@@ -131,12 +129,15 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/uuid": "^10.0.0",
+    "dotenv": "^16.4.7",
     "eslint": "^9",
     "eslint-config-next": "15.3.6",
+    "mysql2": "^3.12.0",
     "postcss": "^8.5.2",
     "prisma": "^6.6.0",
     "tailwindcss": "^4.1.11",
     "ts-node": "^10.9.2",
+    "tsx": "^4.19.3",
     "typescript": "^5"
   }
 }

@@ -46,9 +46,14 @@ import {
   addProjectFile,
   createProject,
   createThread,
+  deleteThread,
   loadIAStore,
   saveIAStore,
+  updateThread,
+  type IAChatThread,
 } from "@/lib/ia-chat-store";
+import { ChatThreadRow } from "@/components/ia/chat-thread-row";
+import { toast } from "sonner";
 
 const sectionTint =
   "border-[color-mix(in_oklab,var(--accent-hex)_40%,transparent)] bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] shadow-[0_0_0_1px_rgba(64,201,169,0.12)]";
@@ -61,6 +66,12 @@ export function CaletasSidebarNav({ userRole }: { userRole?: string | null }) {
   const [projectName, setProjectName] = useState("");
   const [projectIcon, setProjectIcon] = useState("📁");
   const [projectColor, setProjectColor] = useState("var(--accent-hex)");
+  const [threadRenameOpen, setThreadRenameOpen] = useState(false);
+  const [threadRenameId, setThreadRenameId] = useState<string | null>(null);
+  const [threadRenameValue, setThreadRenameValue] = useState("");
+  const [threadDeleteOpen, setThreadDeleteOpen] = useState(false);
+  const [threadDeleteId, setThreadDeleteId] = useState<string | null>(null);
+  const [threadDeleteTitle, setThreadDeleteTitle] = useState("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [courseCategories, setCourseCategories] = useState<string[]>([]);
   const pathname = usePathname();
@@ -190,9 +201,50 @@ export function CaletasSidebarNav({ userRole }: { userRole?: string | null }) {
     closeMobile();
   };
 
+  const openThreadRename = (thread: IAChatThread) => {
+    setThreadRenameId(thread.id);
+    setThreadRenameValue(thread.title);
+    setThreadRenameOpen(true);
+  };
+
+  const confirmThreadRename = () => {
+    if (!threadRenameId) return;
+    const value = threadRenameValue.trim();
+    if (!value) return;
+    const thread = chatStore.threads.find((t) => t.id === threadRenameId);
+    if (!thread) return;
+    const nextThread = { ...thread, title: value, updatedAt: new Date().toISOString() };
+    const next = updateThread(chatStore, nextThread);
+    saveIAStore(next);
+    setChatStore(next);
+    setThreadRenameOpen(false);
+    setThreadRenameId(null);
+    toast.success("Chat renombrado");
+  };
+
+  const openThreadDelete = (thread: IAChatThread) => {
+    setThreadDeleteId(thread.id);
+    setThreadDeleteTitle(thread.title);
+    setThreadDeleteOpen(true);
+  };
+
+  const confirmThreadDelete = () => {
+    if (!threadDeleteId) return;
+    const next = deleteThread(chatStore, threadDeleteId);
+    saveIAStore(next);
+    setChatStore(next);
+    setThreadDeleteOpen(false);
+    setThreadDeleteId(null);
+    toast.success("Chat eliminado");
+    if (isIAChatMode) router.push("/ia/chat");
+  };
+
   const renderIAMenu = () => {
-    const subLink =
-      "flex min-w-0 items-center gap-2 rounded-xl px-2 py-1.5 text-sm text-white/90 transition-colors hover:bg-white/10";
+    const itemBase =
+      "flex w-full min-w-0 items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors";
+    const itemIdle = "text-white/75 hover:bg-white/10 hover:text-white";
+    const itemActive =
+      "border-l-2 border-[var(--accent-hex)] bg-[color-mix(in_oklab,var(--accent-hex)_14%,transparent)] pl-[calc(0.625rem-2px)] text-white";
 
     return (
       <div className="flex flex-col gap-3 px-1">
@@ -202,112 +254,115 @@ export function CaletasSidebarNav({ userRole }: { userRole?: string | null }) {
             router.push("/home");
             closeMobile();
           }}
-          className="w-full flex items-center gap-2 text-white/90 hover:text-white hover:bg-[var(--mygreen-light)] rounded-lg px-3 py-2 transition-colors"
+          className="flex w-full items-center gap-2 rounded-lg border border-white/10 bg-[#354B3A] px-3 py-2 text-sm text-white/80 transition-colors hover:bg-white/10 hover:text-white"
         >
-          <ArrowLeft className="h-4 w-4 text-[var(--accent-hex)]" />
+          <ArrowLeft className="h-4 w-4 shrink-0 text-[var(--accent-hex)]" />
           <span>Volver al menú general</span>
         </button>
 
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem className={cn("rounded-2xl border border-transparent", sectionTint)}>
-                <div className="flex items-center justify-between gap-2 px-2 py-2">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-white">
-                    <FolderKanban className="h-4 w-4 shrink-0 text-[var(--accent-hex)]" />
-                    <span className="truncate">Proyectos IA</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={createNewProject}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-white/10 text-white transition-colors hover:bg-white/20"
-                    aria-label="Crear proyecto"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </button>
-                </div>
+        <button
+          type="button"
+          onClick={createNewChat}
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--accent-hex)] px-3 py-2.5 text-sm font-medium text-[#1C2D20] shadow-sm transition-opacity hover:opacity-90"
+        >
+          <Plus className="h-4 w-4" />
+          Nuevo chat
+        </button>
 
-                <SidebarMenuSub className="pb-2">
-                  <SidebarMenuSubItem>
-                    <button
-                      type="button"
-                      onClick={() => selectProject(null)}
-                      className={cn(
-                        subLink,
-                        "w-full justify-start",
-                        chatStore.activeProjectId === null && "bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)] text-white",
-                      )}
-                    >
-                      Todos los chats
-                    </button>
-                  </SidebarMenuSubItem>
-                  {chatStore.projects.map((project) => (
-                    <SidebarMenuSubItem key={project.id}>
-                      <button
-                        type="button"
-                        onClick={() => selectProject(project.id)}
-                        className={cn(
-                          subLink,
-                          "w-full justify-start",
-                          chatStore.activeProjectId === project.id && "bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)] text-white",
-                        )}
-                      >
-                        <span
-                          className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded"
-                          style={{ backgroundColor: project.color }}
-                        >
-                          {project.icon}
-                        </span>
-                        <span className="truncate">{project.name}</span>
-                      </button>
-                    </SidebarMenuSubItem>
-                  ))}
-                </SidebarMenuSub>
-              </SidebarMenuItem>
+        <div className="overflow-hidden rounded-xl border border-white/10 bg-[#354B3A]">
+          <div className="flex items-center justify-between gap-2 border-b border-white/10 px-3 py-2.5">
+            <div className="flex min-w-0 items-center gap-2">
+              <FolderKanban className="h-4 w-4 shrink-0 text-[var(--accent-hex)]" />
+              <span className="truncate text-sm font-semibold text-white">Proyectos</span>
+            </div>
+            <button
+              type="button"
+              onClick={createNewProject}
+              className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-white/15 bg-[#1C2D20] text-[var(--accent-hex)] transition-colors hover:bg-white/10"
+              aria-label="Crear proyecto"
+            >
+              <Plus className="h-3.5 w-3.5" />
+            </button>
+          </div>
 
-              <SidebarMenuItem className={cn("rounded-2xl border border-transparent", sectionTint)}>
-                <div className="flex items-center justify-between gap-2 px-2 py-2">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-white">
-                    <MessageCircle className="h-4 w-4 shrink-0 text-[var(--accent-hex)]" />
-                    <span className="truncate">Chats</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={createNewChat}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-white/10 text-white transition-colors hover:bg-white/20"
-                    aria-label="Nuevo chat"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </button>
-                </div>
+          <div className="space-y-0.5 p-2">
+            <button
+              type="button"
+              onClick={() => selectProject(null)}
+              className={cn(
+                itemBase,
+                chatStore.activeProjectId === null ? itemActive : itemIdle,
+              )}
+            >
+              <MessageCircle className="h-3.5 w-3.5 shrink-0 text-[var(--accent-hex)]" />
+              <span className="truncate">Todos los chats</span>
+            </button>
+            {chatStore.projects.map((project) => (
+              <button
+                key={project.id}
+                type="button"
+                onClick={() => selectProject(project.id)}
+                className={cn(
+                  itemBase,
+                  chatStore.activeProjectId === project.id ? itemActive : itemIdle,
+                )}
+              >
+                <span
+                  className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded text-[11px]"
+                  style={{ backgroundColor: project.color }}
+                >
+                  {project.icon}
+                </span>
+                <span className="truncate">{project.name}</span>
+              </button>
+            ))}
+            {!chatStore.projects.length ? (
+              <p className="px-2 py-1.5 text-xs text-white/45">Sin proyectos. Usa + para crear uno.</p>
+            ) : null}
+          </div>
+        </div>
 
-                <SidebarMenuSub className="pb-2">
-                  <div className="max-h-[45vh] overflow-y-auto pr-1">
-                    {visibleThreads.map((thread) => (
-                      <SidebarMenuSubItem key={thread.id}>
-                        <button
-                          type="button"
-                          onClick={() => selectThread(thread.id)}
-                          className={cn(
-                            subLink,
-                            "w-full justify-start",
-                            chatStore.activeThreadId === thread.id && "bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)] text-white",
-                          )}
-                          title={thread.title}
-                        >
-                          <span className="truncate">{thread.title}</span>
-                        </button>
-                      </SidebarMenuSubItem>
-                    ))}
-                    {!visibleThreads.length ? (
-                      <div className="px-2 py-2 text-xs text-white/60">No hay chats en este proyecto.</div>
-                    ) : null}
-                  </div>
-                </SidebarMenuSub>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        <div className="overflow-hidden rounded-xl border border-white/10 bg-[#354B3A]">
+          <div className="border-b border-white/10 px-3 py-2.5">
+            <div className="flex items-center gap-2">
+              <MessageCircle className="h-4 w-4 shrink-0 text-[var(--accent-hex)]" />
+              <span className="text-sm font-semibold text-white">Conversaciones</span>
+              {visibleThreads.length > 0 ? (
+                <span className="ml-auto rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-medium text-white/70">
+                  {visibleThreads.length}
+                </span>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="max-h-[42vh] overflow-y-auto p-2">
+            {visibleThreads.length > 0 ? (
+              <div className="space-y-0.5">
+                {visibleThreads.map((thread) => (
+                  <ChatThreadRow
+                    key={thread.id}
+                    title={thread.title}
+                    active={chatStore.activeThreadId === thread.id}
+                    onSelect={() => selectThread(thread.id)}
+                    onRename={() => openThreadRename(thread)}
+                    onDelete={() => openThreadDelete(thread)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="px-2 py-4 text-center">
+                <p className="text-xs text-white/50">No hay chats en este proyecto.</p>
+                <button
+                  type="button"
+                  onClick={createNewChat}
+                  className="mt-2 text-xs font-medium text-[var(--accent-hex)] hover:underline"
+                >
+                  Crear el primero
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     );
   };
@@ -907,6 +962,74 @@ export function CaletasSidebarNav({ userRole }: { userRole?: string | null }) {
             </Button>
             <Button type="button" className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white" onClick={saveNewProject}>
               Crear proyecto
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={threadRenameOpen} onOpenChange={setThreadRenameOpen}>
+        <DialogContent className="border-white/10 bg-[var(--mygreen)] text-white">
+          <DialogHeader>
+            <DialogTitle>Renombrar chat</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label className="text-white/80" htmlFor="sidebar-rename-chat">
+              Nombre
+            </Label>
+            <Input
+              id="sidebar-rename-chat"
+              value={threadRenameValue}
+              onChange={(e) => setThreadRenameValue(e.target.value)}
+              className="border-white/20 bg-[var(--mygreen-dark)] text-white"
+              placeholder="Ej: Ejercicios de Control I"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  confirmThreadRename();
+                }
+              }}
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              className="border-white/20 text-white hover:bg-white/10"
+              onClick={() => setThreadRenameOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              className="bg-[var(--accent-hex)] text-[#1C2D20] hover:opacity-90"
+              onClick={confirmThreadRename}
+            >
+              Guardar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={threadDeleteOpen} onOpenChange={setThreadDeleteOpen}>
+        <DialogContent className="border-white/10 bg-[var(--mygreen)] text-white">
+          <DialogHeader>
+            <DialogTitle>Eliminar chat</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-white/80">
+            ¿Eliminar <span className="font-medium text-white">{threadDeleteTitle}</span>? Esta acción no se puede
+            deshacer.
+          </p>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              className="border-white/20 text-white hover:bg-white/10"
+              onClick={() => setThreadDeleteOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button type="button" className="bg-red-600 text-white hover:bg-red-500" onClick={confirmThreadDelete}>
+              Eliminar
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,4 +1,8 @@
-import { db } from "@/lib/db";
+import {
+  assertFreeTierAccess,
+  getFreeTierStatusForUser,
+  type IaFreeTierStatus,
+} from "@/lib/ia-free-tier";
 import { estimateWalletHoldCents } from "@/lib/ia-usage-pricing";
 import { getUserWalletSnapshot, type IaWalletBillableEndpoint } from "@/lib/ia-wallet";
 import { resolveUserOrDefaultModelForEndpoint } from "@/lib/ia-user-model";
@@ -11,53 +15,43 @@ export type AiTrialEndpoint =
   | "ia/chat"
   | "academico/cronograma/ai";
 
-const FREE_REQUEST_LIMITS: Record<Exclude<AiTrialEndpoint, "ia/chat">, number> = {
-  "ia/resumir": 3,
-  "ia/fichas": 3,
-  "ia/cuestionario": 3,
-  "academico/cronograma/ai": 3,
-};
-
-const FREE_CHAT_MESSAGES_LIMIT = 3;
-
 const UNLIMITED_TRIAL_PLACEHOLDER = 999_999;
 
-export const AI_TRIAL_LIMITS: Record<AiTrialEndpoint, number> = {
-  "ia/resumir": FREE_REQUEST_LIMITS["ia/resumir"],
-  "ia/fichas": FREE_REQUEST_LIMITS["ia/fichas"],
-  "ia/cuestionario": FREE_REQUEST_LIMITS["ia/cuestionario"],
-  "ia/chat": FREE_CHAT_MESSAGES_LIMIT,
-  "academico/cronograma/ai": FREE_REQUEST_LIMITS["academico/cronograma/ai"],
+export type AiTrialInfo = {
+  used: number;
+  limit: number;
+  remaining: number;
+  resetsAt?: string;
+  resetsAtLabel?: string;
 };
 
-export async function getAiTrialRemaining(params: { userId: string; endpoint: AiTrialEndpoint }) {
-  const { userId, endpoint } = params;
+function freeTierToTrialInfo(status: IaFreeTierStatus): AiTrialInfo {
+  return {
+    used: status.tokensUsed,
+    limit: status.tokensLimit,
+    remaining: status.tokensRemaining,
+    resetsAt: status.resetsAt,
+    resetsAtLabel: status.resetsAtLabel,
+  };
+}
 
-  if (await userHasReferralFullDayIa(userId)) {
+/** Cupo diario compartido entre todos los servicios de IA (por usuario). */
+export async function getAiTrialRemaining(params: { userId: string; endpoint: AiTrialEndpoint }) {
+  void params.endpoint;
+  if (await userHasReferralFullDayIa(params.userId)) {
     return {
       used: 0,
       limit: UNLIMITED_TRIAL_PLACEHOLDER,
       remaining: UNLIMITED_TRIAL_PLACEHOLDER,
     };
   }
-
-  const used = await db.aiUsageLog.count({
-    where: {
-      userId,
-      endpoint,
-    },
-  });
-
-  const limit =
-    endpoint === "ia/chat"
-      ? FREE_CHAT_MESSAGES_LIMIT
-      : FREE_REQUEST_LIMITS[endpoint as Exclude<AiTrialEndpoint, "ia/chat">];
-
-  const remaining = Math.max(0, limit - used);
-  return { used, limit, remaining };
+  const status = await getFreeTierStatusForUser(params.userId);
+  return freeTierToTrialInfo(status);
 }
 
 export async function getAiTrialStatusForUser(userId: string) {
+  const status = await getFreeTierStatusForUser(userId);
+  const row = freeTierToTrialInfo(status);
   const endpoints: AiTrialEndpoint[] = [
     "ia/resumir",
     "ia/fichas",
@@ -65,58 +59,54 @@ export async function getAiTrialStatusForUser(userId: string) {
     "ia/chat",
     "academico/cronograma/ai",
   ];
-  const rows = await Promise.all(endpoints.map((endpoint) => getAiTrialRemaining({ userId, endpoint })));
-
   return endpoints.reduce(
-    (acc, endpoint, i) => {
-      acc[endpoint] = rows[i]!;
+    (acc, endpoint) => {
+      acc[endpoint] = row;
       return acc;
     },
-    {} as Record<AiTrialEndpoint, { used: number; limit: number; remaining: number }>,
+    {} as Record<AiTrialEndpoint, AiTrialInfo>,
   );
 }
 
-export async function assertAiTrialAllowed(params: { userId: string; endpoint: AiTrialEndpoint }) {
+export async function assertAiTrialAllowed(params: {
+  userId: string;
+  endpoint: AiTrialEndpoint;
+  tokenEstimateOverride?: number;
+}) {
+  const gate = await assertFreeTierAccess({
+    userId: params.userId,
+    endpoint: params.endpoint as IaWalletBillableEndpoint,
+    tokenEstimate: params.tokenEstimateOverride,
+  });
   const info = await getAiTrialRemaining(params);
-  if (info.remaining <= 0) {
-    const label =
-      params.endpoint === "ia/chat"
-        ? "Chat IA (3 mensajes)"
-        : params.endpoint === "ia/resumir"
-          ? "Resumir"
-          : params.endpoint === "ia/fichas"
-            ? "Fichas"
-            : params.endpoint === "ia/cuestionario"
-              ? "Cuestionario"
-              : "Cronograma IA";
-    return {
-      ok: false as const,
-      info,
-      error: `Límite gratis alcanzado para ${label}. Para seguir usando IA necesitas suscribirte.`,
-    };
+  if (!gate.ok) {
+    return { ok: false as const, info, error: gate.error };
   }
   return { ok: true as const, info };
 }
 
-/** Sin suscripción: día referido, trial gratis, o cargo a billetera (consumo). */
+/** Sin suscripción: día referido, cupo free diario (modelos Gateway $0), o billetera. */
 export async function assertTrialReferralOrWalletForIa(params: {
   userId: string;
   endpoint: AiTrialEndpoint;
+  tokenEstimateOverride?: number;
 }): Promise<
   | {
       ok: true;
-      mode: "trial" | "referral" | "wallet";
-      info: { used: number; limit: number; remaining: number };
-      /** Reserva conservadora comprobada contra el saldo (coste máx. estimado con margen). */
+      mode: "free_tier" | "referral" | "wallet";
+      info: AiTrialInfo;
       walletChargeCents?: number;
       walletDiscountPercent?: number;
+      freeTierModelForced?: true;
     }
   | {
       ok: false;
       error: string;
       code?: string;
       limit?: number;
-      info: { used: number; limit: number; remaining: number };
+      info: AiTrialInfo;
+      resetsAt?: string;
+      resetsAtLabel?: string;
     }
 > {
   if (await userHasReferralFullDayIa(params.userId)) {
@@ -143,7 +133,6 @@ export async function assertTrialReferralOrWalletForIa(params: {
             ? "Cuestionario"
             : "Cronograma IA";
 
-  /** Con saldo en billetera no hay usos gratuitos de prueba: solo consumo o suscripción. */
   if (snap.balanceCents > 0) {
     const info = await getAiTrialRemaining(params);
     if (snap.balanceCents >= charge) {
@@ -165,20 +154,29 @@ export async function assertTrialReferralOrWalletForIa(params: {
     };
   }
 
+  const gate = await assertFreeTierAccess({
+    userId: params.userId,
+    endpoint: params.endpoint as IaWalletBillableEndpoint,
+    tokenEstimate: params.tokenEstimateOverride,
+  });
   const info = await getAiTrialRemaining(params);
-  if (info.remaining > 0) {
-    return { ok: true, mode: "trial", info };
-  }
 
-  const bal0 = (snap.balanceCents / 100).toFixed(2);
-  const need0 = (charge / 100).toFixed(2);
+  if (gate.ok) {
+    return {
+      ok: true,
+      mode: "free_tier",
+      info,
+      freeTierModelForced: true,
+    };
+  }
 
   return {
     ok: false,
-    code: "WALLET_OR_SUBSCRIPTION_REQUIRED",
-    limit: info.limit,
+    code: gate.code,
+    error: gate.error,
     info,
-    error: `Límite gratis de ${label} agotado. Saldo en billetera: $${bal0} USD (se requieren $${need0} USD por este uso). Recarga en Billetera o suscríbete.`,
+    resetsAt: gate.resetsAt,
+    resetsAtLabel: gate.resetsAtLabel,
+    limit: gate.tokensLimit,
   };
 }
-

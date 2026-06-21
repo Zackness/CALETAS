@@ -20,10 +20,11 @@ export async function GET(request: NextRequest) {
         recursos: [],
         materias: [],
         universidades: [],
+        estudiantes: [],
       });
     }
 
-    const [recursos, materias, universidades] = await Promise.all([
+    const [recursos, materias, universidades, estudiantes] = await Promise.all([
       db.recurso.findMany({
         where: {
           OR: [
@@ -88,12 +89,32 @@ export async function GET(request: NextRequest) {
         },
         take: LIMIT,
       }),
+      db.user.findMany({
+        where: {
+          username: { not: null },
+          OR: [
+            { name: { contains: q, mode: "insensitive" } },
+            { username: { contains: q.toLowerCase(), mode: "insensitive" } },
+          ],
+        },
+        select: {
+          id: true,
+          name: true,
+          username: true,
+          image: true,
+          carrera: { select: { nombre: true } },
+          universidad: { select: { siglas: true } },
+        },
+        orderBy: [{ name: "asc" }],
+        take: LIMIT,
+      }),
     ]);
 
     return NextResponse.json({
       recursos,
       materias,
       universidades,
+      estudiantes,
     });
   } catch (error) {
     console.error("Error search suggestions:", error);

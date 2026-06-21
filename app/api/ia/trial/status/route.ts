@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getActiveSubscriptionForUser } from "@/lib/subscription";
 import { getAiTrialStatusForUser } from "@/lib/ai-trial";
+import { getFreeTierStatusForUser } from "@/lib/ia-free-tier";
 import { getUserWalletSnapshot } from "@/lib/ia-wallet";
 import { getSubscriptionIaTokenSummary } from "@/lib/ia-subscription-meter";
 import { countPendingReferrerRewards, getActiveReferralBoostForUser } from "@/lib/referral-boost";
@@ -22,6 +23,7 @@ export async function GET(request: NextRequest) {
       !hasSubscription && wallet.balanceCents <= 0 && !referralDay;
 
     const status = await getAiTrialStatusForUser(session.user.id);
+    const freeTier = await getFreeTierStatusForUser(session.user.id);
     const pendingReferrerRewards = await countPendingReferrerRewards(session.user.id);
     const subscriptionIaTokens = await getSubscriptionIaTokenSummary(session.user.id);
     return NextResponse.json({
@@ -39,6 +41,7 @@ export async function GET(request: NextRequest) {
         discountPercent: wallet.discountPercent,
       },
       subscriptionIaTokens,
+      freeTier,
     });
   } catch (e) {
     console.error("Error in /api/ia/trial/status:", e);

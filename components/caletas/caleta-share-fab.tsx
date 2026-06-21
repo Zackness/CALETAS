@@ -32,7 +32,7 @@ const ACTIONS: ActionItem[] = [
   {
     key: "calendario",
     label: "Calendario",
-    href: "/academico/calendario",
+    href: "/academico/calendario?capture=voice",
     icon: CalendarDays,
     accent: "from-[#40C9A9]/35 to-[#1C2D20]",
   },

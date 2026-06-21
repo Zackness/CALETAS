@@ -1,18 +1,15 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Bot, Edit3, Plus, Send, Sparkles, Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { Send, Sparkles, Square } from "lucide-react";
 import { useSubscriptionRequired } from "@/hooks/use-subscription-required";
 import { IATrialBanner } from "@/components/ia-trial-banner";
 import { IaModelPicker } from "@/components/ia-model-picker";
+import { ChatMessageBubble } from "@/components/ia/chat-message";
+import { CaletaContextPicker } from "@/components/ia/caleta-context-picker";
+import { readIaChatStream, isAbortError, IaChatStreamAbortedError } from "@/lib/ia-chat-stream";
 import {
   createThread,
   IAChatMessage,
@@ -20,19 +17,15 @@ import {
   IA_STORE_EVENT,
   loadIAStore,
   saveIAStore,
-  deleteThread,
   threadTitleFromText,
   updateThread,
 } from "@/lib/ia-chat-store";
 
 type ChatMessage = IAChatMessage;
 
-type ProfileResponse = {
-  user: {
-    id: string;
-    carrera?: { nombre: string } | null;
-  };
-};
+function apiMessages(messages: ChatMessage[]): ChatMessage[] {
+  return messages.filter((m) => !m.error).map(({ role, content }) => ({ role, content }));
+}
 
 export default function ChatIA() {
   const { loading: subLoading, isActive, canUseChat } = useSubscriptionRequired({
@@ -42,17 +35,18 @@ export default function ChatIA() {
   const [activeThread, setActiveThread] = useState<IAChatThread | null>(null);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
-  const [careerName, setCareerName] = useState<string | null>(null);
-  const [activeProjectName, setActiveProjectName] = useState<string | null>(null);
-  const [renameDialogOpen, setRenameDialogOpen] = useState(false);
-  const [renameValue, setRenameValue] = useState("");
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editDraft, setEditDraft] = useState("");
+  const [streamDraft, setStreamDraft] = useState<string | null>(null);
 
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+  const streamDraftRef = useRef("");
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, sending]);
+  }, [messages, sending, editingIndex, streamDraft]);
 
   useEffect(() => {
     const sync = () => {
@@ -66,8 +60,9 @@ export default function ChatIA() {
       if (!thread) return;
       setActiveThread(thread);
       setMessages(thread.messages);
-      const project = thread.projectId ? store.projects.find((p) => p.id === thread.projectId) : null;
-      setActiveProjectName(project?.name || null);
+      setEditingIndex(null);
+      setEditDraft("");
+      setStreamDraft(null);
     };
 
     sync();
@@ -75,38 +70,188 @@ export default function ChatIA() {
     return () => window.removeEventListener(IA_STORE_EVENT, sync as EventListener);
   }, []);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch("/api/user");
-        if (!res.ok) return;
-        const data = (await res.json()) as ProfileResponse;
-        setCareerName(data.user?.carrera?.nombre || null);
-      } catch {
-        // silencioso
-      }
-    })();
+  const canSend = useMemo(() => input.trim().length > 0 && !sending, [input, sending]);
+  const isWelcomeOnly =
+    messages.length <= 1 && messages[0]?.role === "assistant" && !messages[0]?.error;
+
+  const persistThreadMessages = useCallback(
+    (nextMessages: ChatMessage[], threadOverride?: IAChatThread | null) => {
+      const thread = threadOverride ?? activeThread;
+      if (!thread) return;
+      const store = loadIAStore();
+      const firstUser = nextMessages.find((m) => m.role === "user" && !m.error);
+      const candidateTitle =
+        thread.title === "Nuevo chat" && firstUser
+          ? threadTitleFromText(firstUser.content)
+          : thread.title;
+      const nextThread: IAChatThread = {
+        ...thread,
+        title: candidateTitle,
+        messages: nextMessages,
+        updatedAt: new Date().toISOString(),
+      };
+      const next = updateThread(store, nextThread);
+      saveIAStore(next);
+      setActiveThread(nextThread);
+    },
+    [activeThread],
+  );
+
+  const persistThreadCaletas = useCallback(
+    (ids: string[]) => {
+      if (!activeThread) return;
+      const store = loadIAStore();
+      const nextThread: IAChatThread = {
+        ...activeThread,
+        caletaRecursoIds: ids,
+        updatedAt: new Date().toISOString(),
+      };
+      const next = updateThread(store, nextThread);
+      saveIAStore(next);
+      setActiveThread(nextThread);
+    },
+    [activeThread],
+  );
+
+  const getProjectContext = useCallback((thread: IAChatThread) => {
+    const store = loadIAStore();
+    const projectId = thread.projectId;
+    if (!projectId) return "";
+    const files = store.projectFiles.filter((f) => f.projectId === projectId);
+    if (!files.length) return "";
+    return files.map((f, i) => `[Archivo ${i + 1}: ${f.name}]\n${f.textContent.slice(0, 4000)}`).join("\n\n");
   }, []);
 
-  const canSend = useMemo(() => input.trim().length > 0 && !sending, [input, sending]);
+  const requestCompletion = useCallback(
+    async (
+      history: ChatMessage[],
+      thread: IAChatThread,
+      signal: AbortSignal,
+      onDelta: (accumulated: string) => void,
+    ): Promise<{ text: string; careerName: string | null }> => {
+      const payload = apiMessages(history);
+      if (!payload.some((m) => m.role === "user")) {
+        throw new Error("No hay mensaje de usuario para enviar");
+      }
 
-  const persistThreadMessages = (nextMessages: ChatMessage[]) => {
-    if (!activeThread) return;
-    const store = loadIAStore();
-    const candidateTitle =
-      activeThread.title === "Nuevo chat" && nextMessages.length > 1
-        ? threadTitleFromText(nextMessages.find((m) => m.role === "user")?.content || "")
-        : activeThread.title;
-    const nextThread: IAChatThread = {
-      ...activeThread,
-      title: candidateTitle,
-      messages: nextMessages,
-      updatedAt: new Date().toISOString(),
-    };
-    const next = updateThread(store, nextThread);
-    saveIAStore(next);
-    setActiveThread(nextThread);
-  };
+      const res = await fetch("/api/ia/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        signal,
+        body: JSON.stringify({
+          messages: payload,
+          projectContext: getProjectContext(thread),
+          caletaRecursoIds: thread.caletaRecursoIds ?? [],
+          stream: true,
+        }),
+      });
+
+      const contentType = res.headers.get("content-type") ?? "";
+      if (!res.ok) {
+        if (contentType.includes("application/json")) {
+          const data = await res.json();
+          if (res.status === 402 && data?.code === "FREE_LIMIT_REACHED") {
+            throw new Error(data?.error || "Límite gratis alcanzado. Suscríbete para continuar.");
+          }
+          throw new Error(data?.error || "No se pudo obtener respuesta");
+        }
+        throw new Error("No se pudo obtener respuesta");
+      }
+
+      if (!res.body) {
+        throw new Error("El servidor no devolvió stream");
+      }
+
+      return readIaChatStream(
+        res.body,
+        (accumulated) => {
+          streamDraftRef.current = accumulated;
+          onDelta(accumulated);
+        },
+        signal,
+      );
+    },
+    [getProjectContext],
+  );
+
+  const onStop = useCallback(() => {
+    abortRef.current?.abort();
+  }, []);
+
+  const completeFromHistory = useCallback(
+    async (history: ChatMessage[]) => {
+      if (!activeThread) return;
+      const chatAllowed = isActive ? canUseChat : true;
+      if (subLoading || !chatAllowed) return;
+
+      abortRef.current?.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
+
+      setSending(true);
+      setMessages(history);
+      setStreamDraft("");
+      streamDraftRef.current = "";
+
+      try {
+        const { text: answer } = await requestCompletion(
+          history,
+          activeThread,
+          controller.signal,
+          (accumulated) => {
+            setStreamDraft(accumulated);
+          },
+        );
+        const finalMessages: ChatMessage[] = [...history, { role: "assistant", content: answer }];
+        setStreamDraft(null);
+        streamDraftRef.current = "";
+        setMessages(finalMessages);
+        persistThreadMessages(finalMessages);
+      } catch (e) {
+        if (isAbortError(e)) {
+          const partial =
+            e instanceof IaChatStreamAbortedError
+              ? e.partialText.trim()
+              : streamDraftRef.current.trim();
+          setStreamDraft(null);
+          streamDraftRef.current = "";
+          if (partial) {
+            const finalMessages: ChatMessage[] = [
+              ...history,
+              { role: "assistant", content: partial },
+            ];
+            setMessages(finalMessages);
+            persistThreadMessages(finalMessages);
+          } else {
+            setMessages(history);
+          }
+          return;
+        }
+
+        const detail = e instanceof Error ? e.message : "Error al contactar la IA";
+        setStreamDraft(null);
+        streamDraftRef.current = "";
+        const withError: ChatMessage[] = [
+          ...history,
+          {
+            role: "assistant",
+            content: "No pude completar la respuesta.",
+            error: true,
+            errorDetail: detail,
+          },
+        ];
+        setMessages(withError);
+        persistThreadMessages(withError);
+      } finally {
+        if (abortRef.current === controller) {
+          abortRef.current = null;
+        }
+        setSending(false);
+        textareaRef.current?.focus();
+      }
+    },
+    [activeThread, canUseChat, isActive, persistThreadMessages, requestCompletion, subLoading],
+  );
 
   const onSend = async () => {
     const text = input.trim();
@@ -114,324 +259,186 @@ export default function ChatIA() {
     if (!text || sending || subLoading || !chatAllowed || !activeThread) return;
 
     setInput("");
-    setSending(true);
+    setEditingIndex(null);
 
-    const nextMessages: ChatMessage[] = [...messages, { role: "user", content: text }];
-    setMessages(nextMessages);
-    persistThreadMessages(nextMessages);
-
-    try {
-      const res = await fetch("/api/ia/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: nextMessages,
-          projectContext: (() => {
-            const store = loadIAStore();
-            const projectId = activeThread.projectId;
-            if (!projectId) return "";
-            const files = store.projectFiles.filter((f) => f.projectId === projectId);
-            if (!files.length) return "";
-            return files
-              .map(
-                (f, i) =>
-                  `[Archivo ${i + 1}: ${f.name}]\n${f.textContent.slice(0, 4000)}`,
-              )
-              .join("\n\n");
-          })(),
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        if (res.status === 402 && data?.code === "FREE_LIMIT_REACHED") {
-          throw new Error(data?.error || "Límite gratis alcanzado. Suscríbete para continuar.");
-        }
-        throw new Error(data?.error || "No se pudo responder");
-      }
-
-      if (typeof data?.careerName === "string" || data?.careerName === null) {
-        setCareerName(data.careerName);
-      }
-
-      const finalMessages = [...nextMessages, { role: "assistant" as const, content: data.message }];
-      setMessages(finalMessages);
-      persistThreadMessages(finalMessages);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Error al enviar el mensaje");
-      const fallbackMessages = [
-        ...nextMessages,
-        {
-          role: "assistant" as const,
-          content: "Se me complicó responder. Intenta de nuevo o reformula la pregunta.",
-        },
-      ];
-      setMessages(fallbackMessages);
-      persistThreadMessages(fallbackMessages);
-    } finally {
-      setSending(false);
-    }
+    const history: ChatMessage[] = [...messages.filter((m) => !m.error), { role: "user", content: text }];
+    persistThreadMessages(history);
+    await completeFromHistory(history);
   };
 
-  const createNewChat = () => {
-    const store = loadIAStore();
-    const next = createThread(store, store.activeProjectId);
-    saveIAStore(next);
+  const onRetry = async (errorIndex: number) => {
+    if (sending || !activeThread) return;
+    const history = messages.slice(0, errorIndex).filter((m) => !m.error);
+    if (!history.some((m) => m.role === "user")) return;
+    await completeFromHistory(history);
   };
 
-  const renameChat = () => {
-    if (!activeThread) return;
-    setRenameValue(activeThread.title);
-    setRenameDialogOpen(true);
+  const onStartEdit = (index: number) => {
+    if (sending || messages[index]?.role !== "user") return;
+    setEditingIndex(index);
+    setEditDraft(messages[index].content);
   };
 
-  const confirmRenameChat = () => {
-    if (!activeThread) return;
-    const value = renameValue.trim();
-    if (!value) return;
-    const store = loadIAStore();
-    const nextThread = { ...activeThread, title: value, updatedAt: new Date().toISOString() };
-    const next = updateThread(store, nextThread);
-    saveIAStore(next);
-    setActiveThread(nextThread);
-    setRenameDialogOpen(false);
+  const onCancelEdit = () => {
+    setEditingIndex(null);
+    setEditDraft("");
   };
 
-  const requestDeleteChat = () => {
-    if (!activeThread) return;
-    setDeleteDialogOpen(true);
-  };
+  const onSaveEdit = async () => {
+    if (editingIndex === null || sending || !activeThread) return;
+    const text = editDraft.trim();
+    if (!text) return;
 
-  const confirmDeleteChat = () => {
-    if (!activeThread) return;
-    const store = loadIAStore();
-    const next = deleteThread(store, activeThread.id);
-    saveIAStore(next);
-    setDeleteDialogOpen(false);
-    toast.success("Chat eliminado");
+    const history = [
+      ...messages.slice(0, editingIndex).filter((m) => !m.error),
+      { role: "user" as const, content: text },
+    ];
+    setEditingIndex(null);
+    setEditDraft("");
+    persistThreadMessages(history);
+    await completeFromHistory(history);
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="flex min-h-[calc(100dvh-5.25rem)] flex-col md:min-h-[calc(100dvh-4.75rem)]">
       {!subLoading && !isActive ? (
-        <div className="container mx-auto px-4 pt-6">
-          <IATrialBanner toolLabel="Chat IA" endpoint="ia/chat" />
+        <div className="shrink-0 border-b border-white/10 px-2 py-2 sm:px-4">
+          <IATrialBanner toolLabel="Chat" endpoint="ia/chat" />
         </div>
       ) : null}
 
-      <Dialog open={renameDialogOpen} onOpenChange={setRenameDialogOpen}>
-        <DialogContent className="bg-[var(--mygreen)] border-white/10 text-white">
-          <DialogHeader>
-            <DialogTitle>Renombrar chat</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-2">
-            <Label className="text-white/80" htmlFor="rename-chat-input">
-              Nuevo nombre
-            </Label>
-            <Input
-              id="rename-chat-input"
-              value={renameValue}
-              onChange={(e) => setRenameValue(e.target.value)}
-              className="bg-[var(--mygreen-dark)] border-white/20 text-white"
-              placeholder="Ej: Ejercicios de Control I"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  confirmRenameChat();
-                }
-              }}
-            />
-          </div>
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              className="border-white/20 text-white hover:bg-white/10"
-              onClick={() => setRenameDialogOpen(false)}
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="button"
-              className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
-              onClick={confirmRenameChat}
-            >
-              Guardar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent className="bg-[var(--mygreen)] border-white/10 text-white">
-          <DialogHeader>
-            <DialogTitle>Eliminar chat</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-white/80">
-            Esta acción eliminará este chat de forma permanente del proyecto.
-          </p>
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              className="border-white/20 text-white hover:bg-white/10"
-              onClick={() => setDeleteDialogOpen(false)}
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="button"
-              className="bg-red-500/90 hover:bg-red-500 text-white"
-              onClick={confirmDeleteChat}
-            >
-              Eliminar chat
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <div className="flex min-h-0 flex-1 flex-col">
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <div className="mx-auto w-full max-w-3xl px-3 py-6 sm:px-4">
+            {isWelcomeOnly ? (
+              <div className="flex flex-col items-center justify-center px-4 py-16 text-center sm:py-24">
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[color-mix(in_oklab,var(--accent-hex)_18%,transparent)] text-[var(--accent-hex)]">
+                  <Sparkles className="h-6 w-6" />
+                </div>
+                <h2 className="font-special text-xl text-white sm:text-2xl">
+                  {activeThread?.title === "Nuevo chat" ? "¿En qué te ayudo hoy?" : activeThread?.title}
+                </h2>
+                <p className="mt-2 max-w-md text-sm leading-relaxed text-white/60">
+                  Pregunta sobre tus materias, pide explicaciones paso a paso o adjunta caletas para consultar tus archivos.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {messages.map((m, idx) => (
+                  <ChatMessageBubble
+                    key={idx}
+                    message={m}
+                    isUser={m.role === "user"}
+                    isEditing={editingIndex === idx}
+                    editDraft={editDraft}
+                    onEditDraftChange={setEditDraft}
+                    onStartEdit={() => onStartEdit(idx)}
+                    onCancelEdit={onCancelEdit}
+                    onSaveEdit={() => void onSaveEdit()}
+                    onRetry={() => void onRetry(idx)}
+                    sending={sending}
+                    canEdit={m.role === "user" && (editingIndex === null || editingIndex === idx)}
+                  />
+                ))}
 
-      <div className="w-full px-2 md:px-4 py-4 md:py-6">
-        <div className="mb-4">
-          <div className="flex items-start justify-between gap-3 flex-col lg:flex-row">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-special text-white mb-2 flex items-center gap-2">
-                <Sparkles className="w-6 h-6 text-[var(--accent-hex)]" />
-                Chat IA
-              </h1>
-              <p className="text-white/70">
-                Espacio de conversación moderno con chats por proyecto y contexto académico.
-              </p>
-            </div>
+                {streamDraft !== null ? (
+                  <ChatMessageBubble
+                    message={{ role: "assistant", content: streamDraft }}
+                    isUser={false}
+                    isEditing={false}
+                    editDraft=""
+                    onEditDraftChange={() => {}}
+                    onStartEdit={() => {}}
+                    onCancelEdit={() => {}}
+                    onSaveEdit={() => {}}
+                    onRetry={() => {}}
+                    sending={sending}
+                    canEdit={false}
+                    isStreaming
+                  />
+                ) : null}
 
-            <div className="flex items-center gap-2 flex-wrap">
-              <Badge className="bg-[var(--mygreen-light)] text-white border border-white/10">
-                {activeThread?.title || "Cargando chat..."}
-              </Badge>
-              {careerName ? (
-                <Badge className="bg-[var(--mygreen-light)] text-white border border-white/10">
-                  Carrera: {careerName}
-                </Badge>
-              ) : (
-                <Badge className="bg-[var(--mygreen-light)] text-white/80 border border-white/10">
-                  Carrera: no configurada
-                </Badge>
-              )}
-              {activeProjectName ? (
-                <Badge className="bg-[var(--mygreen-light)] text-white border border-white/10">
-                  Proyecto: {activeProjectName}
-                </Badge>
-              ) : null}
+                {sending && streamDraft === null ? (
+                  <div className="flex gap-3">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/10 text-white/70">
+                      <Sparkles className="h-4 w-4 animate-pulse text-[var(--accent-hex)]" />
+                    </div>
+                    <div className="flex items-center gap-1.5 py-2 text-sm text-white/50">
+                      <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--accent-hex)]" />
+                      <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--accent-hex)] [animation-delay:150ms]" />
+                      <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--accent-hex)] [animation-delay:300ms]" />
+                    </div>
+                  </div>
+                ) : null}
 
-              <Button
-                type="button"
-                variant="outline"
-                className="border-[color-mix(in_oklab,var(--accent-hex)_60%,transparent)] bg-[var(--mygreen)] text-white hover:bg-[var(--mygreen-light)]"
-                onClick={renameChat}
-              >
-                <Edit3 className="w-4 h-4 mr-2" />
-                Renombrar
-              </Button>
-              <Button
-                type="button"
-                className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
-                onClick={createNewChat}
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Nuevo chat
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className="border-red-400/40 bg-[var(--mygreen)] text-white hover:bg-red-500/20"
-                onClick={requestDeleteChat}
-              >
-                <Trash2 className="w-4 h-4 mr-2" />
-                Eliminar chat
-              </Button>
-            </div>
+                <div ref={bottomRef} />
+              </div>
+            )}
           </div>
         </div>
 
-        <Card className="bg-[var(--mygreen-light)] border-white/10 shadow-2xl shadow-black/20">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <Bot className="w-5 h-5 text-[var(--accent-hex)]" />
-              Conversación
-            </CardTitle>
-            <CardDescription className="text-white/70">
-              Tip: incluye semestre, materia y objetivo para respuestas más precisas.
-            </CardDescription>
-          </CardHeader>
-
-          <CardContent className="space-y-4">
-            <div className="h-[60vh] overflow-y-auto rounded-xl bg-[var(--mygreen-dark)] border border-white/10 p-4 space-y-3">
-              {messages.map((m, idx) => {
-                const isUser = m.role === "user";
-                return (
-                  <div
-                    key={idx}
-                    className={`flex ${isUser ? "justify-end" : "justify-start"}`}
-                  >
-                    <div
-                      className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed border ${
-                        isUser
-                          ? "bg-[color-mix(in_oklab,var(--accent-hex)_25%,transparent)] text-white border-[color-mix(in_oklab,var(--accent-hex)_40%,transparent)]"
-                          : "bg-[var(--mygreen-light)] text-white/90 border-white/10"
-                      }`}
-                    >
-                      <div className="whitespace-pre-wrap">{m.content}</div>
-                    </div>
-                  </div>
-                );
-              })}
-
-              {sending ? (
-                <div className="flex justify-start">
-                  <div className="max-w-[85%] rounded-2xl px-4 py-3 text-sm border bg-white/10 text-white/80 border-white/10">
-                    Escribiendo...
-                  </div>
-                </div>
-              ) : null}
-
-              <div ref={bottomRef} />
-            </div>
-
-            <div className="space-y-2">
-              <Textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Escribe tu pregunta… (Enter para enviar, Shift+Enter para salto de línea)"
-                className="bg-[var(--mygreen-dark)] border-white/10 text-white placeholder:text-white/50 min-h-[90px] rounded-xl"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    void onSend();
-                  }
-                }}
-                disabled={sending}
-              />
-
-              <div className="flex flex-wrap items-end gap-2 justify-end w-full">
+        <div className="shrink-0 border-t border-white/10 bg-[color-mix(in_oklab,var(--mygreen)_88%,transparent)] px-2 py-3 backdrop-blur-md sm:px-4">
+          <div className="mx-auto w-full max-w-3xl">
+            <div className="overflow-hidden rounded-2xl border border-white/15 bg-[var(--mygreen-dark)] shadow-[0_8px_32px_rgba(0,0,0,0.22)]">
+              <div className="flex flex-wrap items-center gap-1.5 border-b border-white/10 px-2 py-1.5">
+                <CaletaContextPicker
+                  selectedIds={activeThread?.caletaRecursoIds ?? []}
+                  onChange={persistThreadCaletas}
+                  disabled={subLoading || sending}
+                  compact
+                />
                 <IaModelPicker
                   role="chat"
-                  label="Modelo"
-                  className="flex-1 min-w-[200px] max-w-[min(100%,28rem)]"
-                  disabled={subLoading}
+                  compact
+                  disabled={subLoading || sending}
                 />
-                <Button
-                  type="button"
-                  className="shrink-0 bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white"
-                  disabled={!canSend}
-                  onClick={() => void onSend()}
-                >
-                  <Send className="w-4 h-4 mr-2" />
-                  Enviar
-                </Button>
+              </div>
+              <div className="flex items-end gap-2 px-2 py-2">
+                <Textarea
+                  ref={textareaRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Escribe un mensaje…"
+                  rows={1}
+                  className="max-h-40 min-h-[44px] flex-1 resize-none border-0 bg-transparent px-2 py-2.5 text-sm text-white placeholder:text-white/45 focus-visible:ring-0 focus-visible:ring-offset-0"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      if (sending) return;
+                      void onSend();
+                    }
+                  }}
+                />
+                {sending ? (
+                  <Button
+                    type="button"
+                    size="icon"
+                    aria-label="Detener respuesta"
+                    className="mb-0.5 h-9 w-9 shrink-0 rounded-xl bg-white text-[#1C2D20] hover:bg-white/90"
+                    onClick={onStop}
+                  >
+                    <Square className="h-3.5 w-3.5 fill-current" />
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    size="icon"
+                    aria-label="Enviar mensaje"
+                    className="mb-0.5 h-9 w-9 shrink-0 rounded-xl bg-[var(--accent-hex)] text-[#1C2D20] hover:opacity-90 disabled:opacity-35"
+                    disabled={!canSend}
+                    onClick={() => void onSend()}
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
             </div>
-          </CardContent>
-        </Card>
+            <p className="mt-2 text-center text-[10px] text-white/40">
+              La IA puede equivocarse. Verifica información importante.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
 }
-

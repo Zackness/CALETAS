@@ -70,7 +70,7 @@ export function Header() {
         </button>
         {/* Botón Iniciar Sesión para escritorio */}
         <a
-          href="/auth/login"
+          href="/login"
           className="font-special hidden md:block ml-2"
         >
           <Button
@@ -114,7 +114,7 @@ export function Header() {
               >
                 Blog
               </button>
-              <a href="/auth/login" className="mt-2 mb-1 block">
+              <a href="/login" className="mt-2 mb-1 block">
                 <Button
                   size="sm"
                   className="w-full text-sm font-special text-white rounded-xl px-4 py-2 shadow"

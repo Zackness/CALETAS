@@ -5,20 +5,28 @@ import { getCorsHeaders } from "@/lib/cors";
 import { canUseIAChat, getActiveSubscriptionForUser } from "@/lib/subscription";
 import { logAiUsage } from "@/lib/ai-usage";
 import { assertTrialReferralOrWalletForIa } from "@/lib/ai-trial";
-import { debitWalletForIa } from "@/lib/ia-wallet";
 import { withIaGatewayRatesForRequest } from "@/lib/ia-gateway-rates-request";
 import { getActiveReferralBoostForUser } from "@/lib/referral-boost";
-import { computeWalletChargeFromTokenUsage } from "@/lib/ia-usage-pricing";
 import {
   assertSubscriptionIaTokenGate,
   settleSubscribedIaAfterCall,
 } from "@/lib/ia-subscription-meter";
-import { resolveUserOrDefaultModel } from "@/lib/ia-user-model";
+import { freeTierMaxOutputTokens } from "@/lib/ia-free-tier";
+import { settleNonSubscriptionIaAfterCall } from "@/lib/ia-non-sub-settle";
+import { resolveModelForIaCall } from "@/lib/ia-user-model";
 import { createOpenAIForStudentIa, hasStudentIaLlmCredentials, STUDENT_IA_GATEWAY_KEY_HELP } from "@/lib/vercel-ia-gateway";
+import { encodeIaChatStreamEvent } from "@/lib/ia-chat-stream";
+import { buildCaletaContextForChat } from "@/lib/ia-caleta-context-build";
 
 function withCors(res: NextResponse, req: NextRequest) {
   Object.entries(getCorsHeaders(req)).forEach(([k, v]) => res.headers.set(k, v));
   return res;
+}
+
+function withCorsStream(res: Response, req: NextRequest) {
+  const headers = new Headers(res.headers);
+  Object.entries(getCorsHeaders(req)).forEach(([k, v]) => headers.set(k, v));
+  return new Response(res.body, { status: res.status, headers });
 }
 
 type ChatMessage = {
@@ -126,6 +134,7 @@ const buildSystemPrompt = (careerName: string) => {
     "- Da respuestas estructuradas: explicación breve, pasos, ejemplo(s), y 3-5 preguntas de práctica cuando aplique.",
     "- Si el usuario pega un enunciado largo, resume y verifica supuestos antes de resolver.",
     "- No inventes datos del pensum del usuario; si falta contexto, pregunta.",
+    "- Formato: responde en Markdown (encabezados, listas, **negrita**, tablas, bloques de código con lenguaje). Para fórmulas usa LaTeX entre $...$ o $$...$$.",
     "",
     careerPrompt(careerName),
   ].join("\n");
@@ -170,6 +179,8 @@ export async function POST(request: NextRequest) {
               code: nonSubIaAccess.code ?? "FREE_LIMIT_REACHED",
               endpoint: "ia/chat",
               limit: nonSubIaAccess.limit,
+              resetsAt: nonSubIaAccess.resetsAt,
+              resetsAtLabel: nonSubIaAccess.resetsAtLabel,
             },
             { status: 402 },
           ),
@@ -186,7 +197,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = (await request.json()) as { messages?: ChatMessage[]; projectContext?: string };
+    const body = (await request.json()) as {
+      messages?: ChatMessage[];
+      projectContext?: string;
+      caletaRecursoIds?: string[];
+      stream?: boolean;
+    };
     const incoming = Array.isArray(body.messages) ? body.messages : [];
 
     const messages = incoming
@@ -200,14 +216,28 @@ export async function POST(request: NextRequest) {
       .slice(-20);
     const projectContext =
       typeof body.projectContext === "string" ? body.projectContext.slice(0, 20000) : "";
+    const caletaIds = Array.isArray(body.caletaRecursoIds)
+      ? body.caletaRecursoIds.filter((id): id is string => typeof id === "string").slice(0, 3)
+      : [];
+    const caletaContext = caletaIds.length
+      ? await buildCaletaContextForChat(session.user.id, caletaIds)
+      : "";
 
     if (!messages.length || messages[messages.length - 1]?.role !== "user") {
       return withCors(NextResponse.json({ error: "Envía al menos un mensaje de usuario" }, { status: 400 }), request);
     }
 
     const lastUserContent = messages.filter((m) => m.role === "user").pop()?.content;
-    const model = await resolveUserOrDefaultModel(session.user.id, "chat", {
-      chatLastUserText: typeof lastUserContent === "string" ? lastUserContent : undefined,
+    const nonSubMode =
+      !hasSubscription && !hasReferralIaDay && nonSubIaAccess?.ok ? nonSubIaAccess.mode : null;
+    const model = await resolveModelForIaCall({
+      userId: session.user.id,
+      role: "chat",
+      nonSubMode: nonSubMode === "free_tier" ? "free_tier" : nonSubMode === "wallet" ? "wallet" : null,
+      hint: {
+        chatLastUserText: typeof lastUserContent === "string" ? lastUserContent : undefined,
+        hasCaletaAttachments: caletaIds.length > 0,
+      },
     });
     if (hasSubscription && sub) {
       const gate = await assertSubscriptionIaTokenGate({
@@ -240,8 +270,17 @@ export async function POST(request: NextRequest) {
 
     const careerName = normalizeCareer(user?.carrera?.nombre);
     const system = buildSystemPrompt(careerName);
-    const systemWithContext = projectContext
-      ? `${system}\n\nContexto adicional del proyecto (archivos subidos por el estudiante):\n${projectContext}\n\nUsa este contexto cuando sea relevante y cita el nombre del archivo si te basas en él.`
+    const contextParts: string[] = [];
+    if (projectContext) {
+      contextParts.push(
+        `Contexto adicional del proyecto (archivos subidos por el estudiante):\n${projectContext}\n\nUsa este contexto cuando sea relevante y cita el nombre del archivo si te basas en él.`,
+      );
+    }
+    if (caletaContext) {
+      contextParts.push(caletaContext);
+    }
+    const systemWithContext = contextParts.length
+      ? `${system}\n\n${contextParts.join("\n\n")}`
       : system;
 
     const taskIntent = parseTaskIntent(lastUserContent || "");
@@ -265,15 +304,106 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const openai = createOpenAIForStudentIa();
+    const useStream = body.stream !== false;
+    const maxTokens =
+      nonSubMode === "free_tier"
+        ? freeTierMaxOutputTokens()
+        : !hasSubscription && !hasReferralIaDay
+          ? 450
+          : 1200;
+
+    const openai = createOpenAIForStudentIa(model);
+    const chatMessages = [
+      { role: "system" as const, content: systemWithContext },
+      ...messages.map((m) => ({ role: m.role as "user" | "assistant", content: m.content })),
+    ];
+
+    if (useStream) {
+      const completion = await openai.chat.completions.create({
+        model,
+        messages: chatMessages,
+        temperature: 0.4,
+        max_tokens: maxTokens,
+        stream: true,
+        stream_options: { include_usage: true },
+      });
+
+      const stream = new ReadableStream({
+        async start(controller) {
+          let full = "";
+          let usage: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number } | null =
+            null;
+          try {
+            for await (const chunk of completion) {
+              const delta = chunk.choices[0]?.delta?.content ?? "";
+              if (delta) {
+                full += delta;
+                controller.enqueue(encodeIaChatStreamEvent({ t: "d", v: delta }));
+              }
+              if (chunk.usage) {
+                usage = chunk.usage;
+              }
+            }
+
+            const answer = full.trim();
+            if (!answer) {
+              controller.enqueue(
+                encodeIaChatStreamEvent({ t: "err", v: "No se pudo generar respuesta" }),
+              );
+              controller.close();
+              return;
+            }
+
+            logAiUsage({ userId: session.user.id, endpoint: "ia/chat", usage });
+            if (hasSubscription && sub && subscriptionIaGate) {
+              await settleSubscribedIaAfterCall({
+                userSubId: sub.id,
+                userId: session.user.id,
+                model,
+                endpoint: "ia/chat",
+                reason: "ia/chat",
+                gate: subscriptionIaGate,
+                usage,
+              });
+            } else if (!hasSubscription && nonSubIaAccess?.ok) {
+              await settleNonSubscriptionIaAfterCall({
+                userId: session.user.id,
+                endpoint: "ia/chat",
+                model,
+                nonSubAccess: nonSubIaAccess,
+                usage,
+              });
+            }
+
+            controller.enqueue(
+              encodeIaChatStreamEvent({ t: "done", careerName: careerName || null }),
+            );
+          } catch (e) {
+            console.error("Error in /api/ia/chat stream:", e);
+            const msg = e instanceof Error ? e.message : "Error interno del servidor";
+            controller.enqueue(encodeIaChatStreamEvent({ t: "err", v: msg }));
+          } finally {
+            controller.close();
+          }
+        },
+      });
+
+      return withCorsStream(
+        new Response(stream, {
+          headers: {
+            "Content-Type": "application/x-ndjson; charset=utf-8",
+            "Cache-Control": "no-cache, no-transform",
+          },
+        }),
+        request,
+      );
+    }
+
     const resp = await openai.chat.completions.create({
       model,
-      messages: [
-        { role: "system", content: systemWithContext },
-        ...messages.map((m) => ({ role: m.role, content: m.content })),
-      ],
+      messages: chatMessages,
       temperature: 0.4,
-      max_tokens: !hasSubscription && !hasReferralIaDay ? 450 : 1200,
+      max_tokens: maxTokens,
     });
 
     const answer = resp.choices[0]?.message?.content?.trim();
@@ -291,23 +421,14 @@ export async function POST(request: NextRequest) {
         gate: subscriptionIaGate,
         usage: resp.usage ?? null,
       });
-    } else if (!hasSubscription && nonSubIaAccess?.ok && nonSubIaAccess.mode === "wallet") {
-      const d = nonSubIaAccess.walletDiscountPercent ?? 0;
-      const chargeCents = computeWalletChargeFromTokenUsage({
+    } else if (!hasSubscription && nonSubIaAccess?.ok) {
+      await settleNonSubscriptionIaAfterCall({
+        userId: session.user.id,
+        endpoint: "ia/chat",
         model,
-        usage: resp.usage,
-        discountPercent: d,
+        nonSubAccess: nonSubIaAccess,
+        usage: resp.usage ?? null,
       });
-      try {
-        await debitWalletForIa({
-          userId: session.user.id,
-          chargeCents,
-          reason: "ia/chat",
-          meta: { model, usage: resp.usage },
-        });
-      } catch (e) {
-        console.error("[ia/chat] wallet debit", e);
-      }
     }
     return withCors(NextResponse.json({ message: answer, careerName: careerName || null }), request);
   } catch (error) {

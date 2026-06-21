@@ -329,3 +329,36 @@ export const sendManualPaymentRejectedEmail = async (
         html: baseTemplate(content),
     });
 };
+
+export const sendCalendarReminderEmail = async (params: {
+  email: string;
+  userName?: string | null;
+  title: string;
+  description?: string | null;
+  location?: string | null;
+  startLabel: string;
+  reminderLabel: string;
+}) => {
+  const calendarLink = `${domain}/academico/calendario`;
+  const content = `
+      <h2>Tu evento se acerca</h2>
+      <p>Hola ${params.userName?.trim() || "estudiante"},</p>
+      <p>Te recordamos que tu evento <strong>${params.title}</strong> empieza ${params.reminderLabel}.</p>
+      <div class="highlight">
+          <p>Fecha: ${params.startLabel}</p>
+          ${params.location ? `<p style="margin-top:8px;">Lugar: ${params.location}</p>` : ""}
+      </div>
+      ${params.description ? `<p>${params.description}</p>` : ""}
+      <p style="text-align: center;">
+          <a href="${calendarLink}" class="button">Abrir mi calendario</a>
+      </p>
+      <p>Si cambias la fecha del evento, el próximo recordatorio se ajustará automáticamente.</p>
+  `;
+
+  await resend.emails.send({
+    from: "Caletas <bienvenido@caleta.top>",
+    to: params.email,
+    subject: `Recordatorio: ${params.title}`,
+    html: baseTemplate(content),
+  });
+};

@@ -21,6 +21,19 @@ export function getIaGatewayApiKey(): string | undefined {
 export const STUDENT_IA_GATEWAY_KEY_HELP =
   "Configura AI_GATEWAY_API_KEY, GATEWAY_API_KEY o VERCEL_AI_GATEWAY_API_KEY (Vercel AI Gateway) u OPENAI_API_KEY (OpenAI directo).";
 
+/** Modelos multi-proveedor (`openai/gpt-5`, `anthropic/claude-*`) solo funcionan vía AI Gateway. */
+export function modelIdRequiresGateway(modelId: string): boolean {
+  return modelId.includes("/");
+}
+
+export function assertGatewayConfiguredForModel(modelId: string): void {
+  if (modelIdRequiresGateway(modelId) && !isIaGatewayEnabled()) {
+    throw new Error(
+      `${modelId} requiere Vercel AI Gateway. Configura AI_GATEWAY_API_KEY en el servidor (los modelos GPT-5 y Claude no funcionan solo con OPENAI_API_KEY).`,
+    );
+  }
+}
+
 export function isIaGatewayEnabled(): boolean {
   return !!getIaGatewayApiKey();
 }
@@ -33,8 +46,10 @@ export function hasStudentIaLlmCredentials(): boolean {
 /**
  * Cliente OpenAI SDK apuntando al AI Gateway cuando hay clave de Gateway;
  * si no, al API oficial de OpenAI.
+ * @param modelId Si se indica un id `proveedor/modelo`, exige clave de Gateway.
  */
-export function createOpenAIForStudentIa(): OpenAI {
+export function createOpenAIForStudentIa(modelId?: string): OpenAI {
+  if (modelId) assertGatewayConfiguredForModel(modelId);
   const gatewayKey = getIaGatewayApiKey();
   if (gatewayKey) {
     return new OpenAI({
@@ -45,6 +60,14 @@ export function createOpenAIForStudentIa(): OpenAI {
   const key = process.env.OPENAI_API_KEY;
   if (!key) {
     throw new Error(STUDENT_IA_GATEWAY_KEY_HELP);
+  }
+  return new OpenAI({ apiKey: key });
+}
+
+export function createDirectOpenAIForStudentIa(): OpenAI {
+  const key = process.env.OPENAI_API_KEY?.trim();
+  if (!key) {
+    throw new Error("Configura OPENAI_API_KEY para usar tu API de ChatGPT.");
   }
   return new OpenAI({ apiKey: key });
 }

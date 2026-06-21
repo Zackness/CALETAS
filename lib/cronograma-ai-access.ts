@@ -18,11 +18,13 @@ export type CronogramaAiAccessOk = {
   /** Sin suscripción: reserva comprobada en saldo antes de la llamada (modo billetera). */
   walletChargeCents?: number;
   walletDiscountPercent?: number;
+  /** Sin suscripción: modo de cobro (cupo free diario o billetera). */
+  nonSubMode?: "free_tier" | "wallet" | "referral";
 };
 
 export type CronogramaAiAccessResult =
   | CronogramaAiAccessOk
-  | { ok: false; status: 401 | 402; error: string; code?: string; userId?: string };
+  | { ok: false; status: 401 | 402; error: string; code?: string; userId?: string; resetsAt?: string; resetsAtLabel?: string };
 
 /**
  * Suscripción activa, o día referido / trial / billetera (cronograma IA + transcripción).
@@ -64,9 +66,14 @@ export async function assertCronogramaAiAccess(
     }
     return { ok: true, userId: session.user.id, subscription: sub, subscriptionIaGate: gate };
   }
+  const tokenOverrideNonSub =
+    typeof opts?.transcribeAudioBytes === "number"
+      ? estimateCronogramaTranscribeTokenEquivalent(opts.transcribeAudioBytes)
+      : undefined;
   const gate = await assertTrialReferralOrWalletForIa({
     userId: session.user.id,
     endpoint: "academico/cronograma/ai",
+    tokenEstimateOverride: tokenOverrideNonSub,
   });
   if (!gate.ok) {
     return {
@@ -75,6 +82,8 @@ export async function assertCronogramaAiAccess(
       error: gate.error,
       code: gate.code,
       userId: session.user.id,
+      resetsAt: gate.resetsAt,
+      resetsAtLabel: gate.resetsAtLabel,
     };
   }
   const walletChargeCents = gate.mode === "wallet" && gate.walletChargeCents ? gate.walletChargeCents : undefined;
@@ -82,5 +91,11 @@ export async function assertCronogramaAiAccess(
     gate.mode === "wallet" && typeof gate.walletDiscountPercent === "number"
       ? gate.walletDiscountPercent
       : undefined;
-  return { ok: true, userId: session.user.id, walletChargeCents, walletDiscountPercent };
+  return {
+    ok: true,
+    userId: session.user.id,
+    walletChargeCents,
+    walletDiscountPercent,
+    nonSubMode: gate.mode,
+  };
 }

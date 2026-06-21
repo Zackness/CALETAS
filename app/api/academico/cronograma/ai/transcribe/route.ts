@@ -3,21 +3,21 @@ import { toFile } from "openai/uploads";
 
 import { assertCronogramaAiAccess } from "@/lib/cronograma-ai-access";
 import { logAiUsage } from "@/lib/ai-usage";
-import { debitWalletForIa } from "@/lib/ia-wallet";
-import { computeWalletChargeTranscribe } from "@/lib/ia-usage-pricing";
+import { coerceToDirectOpenAiModel } from "@/lib/ia-models";
 import {
   estimateCronogramaTranscribeTokenEquivalent,
   settleSubscribedIaAfterCall,
 } from "@/lib/ia-subscription-meter";
+import { settleNonSubscriptionIaAfterCall } from "@/lib/ia-non-sub-settle";
 import { resolveWhisperModelId } from "@/lib/ia-models";
-import { createOpenAIForStudentIa, hasStudentIaLlmCredentials, STUDENT_IA_GATEWAY_KEY_HELP } from "@/lib/vercel-ia-gateway";
+import { createDirectOpenAIForStudentIa } from "@/lib/vercel-ia-gateway";
 
 const MAX_BYTES = 24 * 1024 * 1024; // Whisper límite práctico ~25MB
 
 export async function POST(request: NextRequest) {
   try {
-    if (!hasStudentIaLlmCredentials()) {
-      return NextResponse.json({ error: STUDENT_IA_GATEWAY_KEY_HELP }, { status: 500 });
+    if (!process.env.OPENAI_API_KEY?.trim()) {
+      return NextResponse.json({ error: "Configura OPENAI_API_KEY para usar tu API de ChatGPT." }, { status: 500 });
     }
 
     const formData = await request.formData();
@@ -40,6 +40,8 @@ export async function POST(request: NextRequest) {
             error: access.error,
             code: access.code ?? "FREE_LIMIT_REACHED",
             endpoint: "academico/cronograma/ai",
+            resetsAt: access.resetsAt,
+            resetsAtLabel: access.resetsAtLabel,
           },
           { status: 402 },
         );
@@ -52,8 +54,11 @@ export async function POST(request: NextRequest) {
     const ext = mime.includes("webm") ? "webm" : mime.includes("mp4") ? "m4a" : "webm";
     const file = await toFile(buf, `grabacion.${ext}`, { type: mime });
 
-    const openai = createOpenAIForStudentIa();
-    const whisperModel = resolveWhisperModelId();
+    const whisperModel = coerceToDirectOpenAiModel(
+      resolveWhisperModelId(),
+      process.env.IA_OPENAI_MODEL_WHISPER?.trim() || "whisper-1",
+    );
+    const openai = createDirectOpenAIForStudentIa();
 
     const transcription = await openai.audio.transcriptions.create({
       file,
@@ -86,21 +91,20 @@ export async function POST(request: NextRequest) {
         billableTokensOverride: tokenEq,
         transcribeAudioBytes: audio.size,
       });
-    } else if (!access.subscription && typeof access.walletDiscountPercent === "number") {
-      const chargeCents = computeWalletChargeTranscribe({
-        audioBytes: audio.size,
-        discountPercent: access.walletDiscountPercent,
+    } else if (!access.subscription && access.nonSubMode) {
+      await settleNonSubscriptionIaAfterCall({
+        userId: access.userId,
+        endpoint: "academico/cronograma/ai",
+        model: whisperModel,
+        nonSubAccess: {
+          ok: true,
+          mode: access.nonSubMode,
+          info: { used: 0, limit: 0, remaining: 0 },
+          walletDiscountPercent: access.walletDiscountPercent,
+        },
+        usage: null,
+        fallbackTokens: tokenEq,
       });
-      try {
-        await debitWalletForIa({
-          userId: access.userId,
-          chargeCents,
-          reason: "academico/cronograma/ai",
-          meta: { op: "transcribe", audioBytes: audio.size, model: whisperModel },
-        });
-      } catch (e) {
-        console.error("[cronograma-ai-transcribe] wallet debit", e);
-      }
     }
 
     return NextResponse.json({ text });

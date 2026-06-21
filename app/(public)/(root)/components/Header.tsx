@@ -130,7 +130,7 @@ export function Header() {
               >
                 Agregar Universidad
               </a>
-              <a href="/auth/login" className="mt-2 mb-1 block">
+              <a href="/login" className="mt-2 mb-1 block">
                 <Button
                   size="sm"
                   className="w-full text-sm font-special text-white rounded-xl px-4 py-2 shadow"

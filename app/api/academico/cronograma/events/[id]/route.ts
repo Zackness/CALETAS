@@ -8,6 +8,14 @@ function parseDate(v: string | null) {
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
+function parseReminderMinutes(v: unknown) {
+  if (v === null) return null;
+  if (v === undefined) return undefined;
+  const n = typeof v === "number" ? v : Number(v);
+  if (!Number.isInteger(n) || n < 0) return Number.NaN;
+  return n;
+}
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -25,6 +33,7 @@ export async function PATCH(
           startAt?: string;
           endAt?: string;
           allDay?: boolean;
+          reminderMinutes?: number | null;
           color?: string | null;
         }
       | null;
@@ -45,11 +54,20 @@ export async function PATCH(
     if (body?.location !== undefined) data.location = body.location?.trim() || null;
     if (body?.color !== undefined) data.color = body.color?.trim() || null;
     if (body?.allDay !== undefined) data.allDay = !!body.allDay;
+    if (body?.reminderMinutes !== undefined) {
+      const reminderMinutes = parseReminderMinutes(body.reminderMinutes);
+      if (Number.isNaN(reminderMinutes)) {
+        return NextResponse.json({ error: "Recordatorio inválido" }, { status: 400 });
+      }
+      data.reminderMinutes = reminderMinutes;
+      data.reminderSentAt = null;
+    }
 
     if (body?.startAt !== undefined) {
       const d = parseDate(body.startAt ?? null);
       if (!d) return NextResponse.json({ error: "Fecha inicio inválida" }, { status: 400 });
       data.startAt = d;
+      data.reminderSentAt = null;
     }
     if (body?.endAt !== undefined) {
       const d = parseDate(body.endAt ?? null);
@@ -84,6 +102,8 @@ export async function PATCH(
         startAt: true,
         endAt: true,
         allDay: true,
+        reminderMinutes: true,
+        reminderSentAt: true,
         color: true,
       },
     });
@@ -117,4 +137,3 @@ export async function DELETE(
     return NextResponse.json({ error: "Error interno" }, { status: 500 });
   }
 }
-

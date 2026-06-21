@@ -105,7 +105,7 @@ export async function POST(request: Request) {
       }
 
       const system = buildPic18TutorSystemPrompt(pageContext);
-      const openai = createOpenAIForStudentIa();
+      const openai = createOpenAIForStudentIa(model);
       const resp = await openai.chat.completions.create({
         model,
         messages: [

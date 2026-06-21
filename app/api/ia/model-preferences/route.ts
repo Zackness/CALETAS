@@ -3,12 +3,17 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { IA_LLM_MODE, parseIaLlmMode, type IaLlmMode } from "@/lib/ia-llm-mode";
 import { buildModelChoiceAccessRows } from "@/lib/ia-model-access";
+import { getFreeTierStatusForUser, listGatewayFreeModelIds } from "@/lib/ia-free-tier";
 import {
   getSelectableModelsForRoleAsync,
   sanitizeModelForRoleAsync,
   type StudentIaModelRole,
 } from "@/lib/ia-models";
 import { resolveUserOrDefaultModel } from "@/lib/ia-user-model";
+import { getActiveReferralBoostForUser } from "@/lib/referral-boost";
+import { getActiveSubscriptionForUser } from "@/lib/subscription";
+import { getUserWalletSnapshot } from "@/lib/ia-wallet";
+import { isIaGatewayEnabled } from "@/lib/vercel-ia-gateway";
 
 function roleFromKey(key: string): StudentIaModelRole | null {
   if (key === "chat" || key === "heavy" || key === "cronograma") return key;
@@ -44,9 +49,19 @@ export async function GET(request: NextRequest) {
     });
 
     const roles: StudentIaModelRole[] = ["chat", "heavy", "cronograma"];
-    const choices = Object.fromEntries(
+    const allChoices = Object.fromEntries(
       await Promise.all(roles.map(async (r) => [r, await getSelectableModelsForRoleAsync(r)] as const)),
     ) as Record<StudentIaModelRole, string[]>;
+
+    const sub = await getActiveSubscriptionForUser(session.user.id);
+    const wallet = await getUserWalletSnapshot(session.user.id);
+    const referralDay = await getActiveReferralBoostForUser(session.user.id);
+    const freeTier = await getFreeTierStatusForUser(session.user.id);
+    const gatewayConfigured = isIaGatewayEnabled();
+    const freeModelIds = await listGatewayFreeModelIds();
+    const useFreeDailyPicker = !sub && wallet.balanceCents <= 0 && !referralDay;
+
+    const choices = allChoices;
 
     const modes = {
       chat: parseIaLlmMode(u?.iaLlmModeChat),
@@ -61,6 +76,7 @@ export async function GET(request: NextRequest) {
             userId: session.user.id,
             role: r,
             choiceIds: choices[r],
+            lockNonFreeModels: useFreeDailyPicker,
           });
           return [r, rows] as const;
         }),
@@ -82,7 +98,12 @@ export async function GET(request: NextRequest) {
       modes,
       resolved,
       choices,
+      allChoices,
       choiceAccess,
+      freeTier,
+      freeModelIds,
+      gatewayConfigured,
+      useFreeDailyPicker,
     });
   } catch (e) {
     console.error("GET /api/ia/model-preferences:", e);
@@ -105,6 +126,12 @@ export async function PATCH(request: NextRequest) {
       heavyMode?: unknown;
       cronogramaMode?: unknown;
     };
+
+    const sub = await getActiveSubscriptionForUser(session.user.id);
+    const wallet = await getUserWalletSnapshot(session.user.id);
+    const referralDay = await getActiveReferralBoostForUser(session.user.id);
+    const useFreeDailyPicker = !sub && wallet.balanceCents <= 0 && !referralDay;
+    const freeSet = new Set(await listGatewayFreeModelIds());
 
     const data: {
       iaModelChat?: string | null;
@@ -129,6 +156,12 @@ export async function PATCH(request: NextRequest) {
       const sanitized = await sanitizeModelForRoleAsync(role, typeof raw === "string" ? raw : null);
       if (!sanitized) {
         return NextResponse.json({ error: `Modelo no permitido para ${key}` }, { status: 400 });
+      }
+      if (useFreeDailyPicker && !freeSet.has(sanitized)) {
+        return NextResponse.json(
+          { error: "Este modelo requiere suscripción activa o saldo en wallet." },
+          { status: 403 },
+        );
       }
       if (key === "chat") data.iaModelChat = sanitized;
       if (key === "heavy") data.iaModelHeavy = sanitized;

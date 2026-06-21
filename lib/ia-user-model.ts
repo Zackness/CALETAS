@@ -1,8 +1,10 @@
 import type { IaWalletBillableEndpoint } from "@/lib/ia-wallet";
 import { db } from "@/lib/db";
-import { resolveAutoModelForRole } from "@/lib/ia-auto-model";
+import { resolveAutoModelForRole, resolveFreeTierAutoModelForRole } from "@/lib/ia-auto-model";
 import { IA_LLM_MODE, parseIaLlmMode } from "@/lib/ia-llm-mode";
+import { resolveFreeTierModelForRole } from "@/lib/ia-free-tier";
 import {
+  coalesceToKnownGatewayModel,
   resolveStudentIaModel,
   sanitizeModelForRoleAsync,
   type StudentIaModelRole,
@@ -11,6 +13,8 @@ import {
 export type ResolveModelHint = {
   chatLastUserText?: string;
   cronogramaText?: string;
+  /** Chat con caletas adjuntas (PDF/imagen) → priorizar modelos multimodales. */
+  hasCaletaAttachments?: boolean;
 };
 
 export function endpointToStudentIaRole(endpoint: IaWalletBillableEndpoint): StudentIaModelRole {
@@ -48,6 +52,7 @@ export async function resolveUserOrDefaultModel(
       role,
       chatLastUserText: hint?.chatLastUserText,
       cronogramaText: hint?.cronogramaText,
+      hasCaletaAttachments: hint?.hasCaletaAttachments,
     });
   }
 
@@ -61,4 +66,52 @@ export async function resolveUserOrDefaultModelForEndpoint(
   hint?: ResolveModelHint,
 ): Promise<string> {
   return resolveUserOrDefaultModel(userId, endpointToStudentIaRole(endpoint), hint);
+}
+
+export async function resolveModelForIaCall(params: {
+  userId: string;
+  role: StudentIaModelRole;
+  nonSubMode?: "free_tier" | "wallet" | "referral" | null;
+  hint?: ResolveModelHint;
+}): Promise<string> {
+  let model: string;
+  if (params.nonSubMode === "free_tier") {
+    const u = await db.user.findUnique({
+      where: { id: params.userId },
+      select: {
+        iaLlmModeChat: true,
+        iaLlmModeHeavy: true,
+        iaLlmModeCronograma: true,
+        iaModelChat: true,
+        iaModelHeavy: true,
+        iaModelCronograma: true,
+      },
+    });
+    const mode =
+      params.role === "chat"
+        ? parseIaLlmMode(u?.iaLlmModeChat)
+        : params.role === "heavy"
+          ? parseIaLlmMode(u?.iaLlmModeHeavy)
+          : parseIaLlmMode(u?.iaLlmModeCronograma);
+
+    if (mode === IA_LLM_MODE.AUTO) {
+      model = await resolveFreeTierAutoModelForRole({
+        role: params.role,
+        chatLastUserText: params.hint?.chatLastUserText,
+        cronogramaText: params.hint?.cronogramaText,
+        hasCaletaAttachments: params.hint?.hasCaletaAttachments,
+      });
+    } else {
+      const raw =
+        params.role === "chat"
+          ? u?.iaModelChat
+          : params.role === "heavy"
+            ? u?.iaModelHeavy
+            : u?.iaModelCronograma;
+      model = (await sanitizeModelForRoleAsync(params.role, raw)) ?? (await resolveFreeTierModelForRole(params.role));
+    }
+  } else {
+    model = await resolveUserOrDefaultModel(params.userId, params.role, params.hint);
+  }
+  return coalesceToKnownGatewayModel(model, params.role);
 }

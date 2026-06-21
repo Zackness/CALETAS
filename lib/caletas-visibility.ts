@@ -28,3 +28,18 @@ export function canViewerAccessRecurso(
   if (!viewerUniversidadId) return false;
   return viewerUniversidadId === eff;
 }
+
+/** Filtro Prisma para recursos visibles en exploración / IA (misma lógica que GET /api/caletas/recursos). */
+export function buildRecursosListVisibilityWhere(
+  userId: string,
+  universidadId: string | null | undefined,
+  hasFullCaletasPlan: boolean,
+): Record<string, unknown> {
+  if (hasFullCaletasPlan) return {};
+  if (!universidadId) {
+    return { OR: [{ universidadId: null }, { autorId: userId }] };
+  }
+  return {
+    OR: [{ universidadId: null }, { universidadId }, { autorId: userId }],
+  };
+}

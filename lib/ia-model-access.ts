@@ -4,6 +4,7 @@ import type { StudentIaModelRole } from "@/lib/ia-models";
 import { getActiveSubscriptionForUser } from "@/lib/subscription";
 import { getUserWalletSnapshot, type IaWalletBillableEndpoint } from "@/lib/ia-wallet";
 import { getCachedGatewayCatalog } from "@/lib/vercel-ai-gateway-catalog";
+import { listGatewayFreeModelIds } from "@/lib/ia-free-tier";
 
 export type ModelCostTier = "gratis" | "sin_precio" | "economico" | "medio" | "alto";
 
@@ -50,6 +51,8 @@ export type ModelChoiceAccessRow = {
   inputUsdPer1M: number | null;
   canAffordWithWalletHold: boolean;
   hasActiveSubscription: boolean;
+  /** Si el usuario puede elegir este modelo en el picker. */
+  selectable: boolean;
 };
 
 /**
@@ -59,22 +62,30 @@ export async function buildModelChoiceAccessRows(params: {
   userId: string;
   role: StudentIaModelRole;
   choiceIds: string[];
+  /** En cupo gratuito diario: solo modelos gratis son seleccionables. */
+  lockNonFreeModels?: boolean;
 }): Promise<ModelChoiceAccessRow[]> {
   const wallet = await getUserWalletSnapshot(params.userId);
   const sub = await getActiveSubscriptionForUser(params.userId);
   const catalog = await getCachedGatewayCatalog();
   const priceById = new Map(catalog.priceRows.map((r) => [r.modelId, r]));
+  const freeIds = new Set(await listGatewayFreeModelIds());
+  const lockNonFree = params.lockNonFreeModels === true;
 
   return params.choiceIds.map((id) => {
     const row = priceById.get(id);
     const inputUsdPer1M = row?.inputUsdPer1M ?? null;
     const hold = holdForRole(params.role, wallet.discountPercent, id);
+    const tier: ModelCostTier = freeIds.has(id) ? "gratis" : tierFromGatewayCatalogRow(row);
+    const isFree = tier === "gratis";
+    const selectable = !lockNonFree || isFree;
     return {
       id,
-      tier: tierFromGatewayCatalogRow(row),
+      tier,
       inputUsdPer1M,
       canAffordWithWalletHold: wallet.balanceCents >= hold,
       hasActiveSubscription: !!sub,
+      selectable,
     };
   });
 }

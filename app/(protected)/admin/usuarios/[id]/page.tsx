@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Save, ShieldCheck, User as UserIcon } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, KeyRound, Save, ShieldCheck, User as UserIcon } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -66,6 +66,8 @@ export default function AdminUsuarioEditPage() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingPassword, setSavingPassword] = useState(false);
+  const [showAdminPassword, setShowAdminPassword] = useState(false);
 
   const [pensumUniversidades, setPensumUniversidades] = useState<UniversidadOption[]>([]);
   const [materiasOptions, setMateriasOptions] = useState<MateriaOption[]>([]);
@@ -79,8 +81,10 @@ export default function AdminUsuarioEditPage() {
     universidadId: "none",
     carreraId: "none",
     semestreActual: "",
-    adminPassword: "",
-    adminPasswordConfirm: "",
+  });
+  const [passwordForm, setPasswordForm] = useState({
+    newPassword: "",
+    confirmPassword: "",
   });
   const [materiasEdit, setMateriasEdit] = useState<MateriaEdit[]>([]);
 
@@ -118,9 +122,9 @@ export default function AdminUsuarioEditPage() {
       universidadId: u?.universidadId ?? "none",
       carreraId: u?.carreraId ?? "none",
       semestreActual: u?.semestreActual ?? "",
-      adminPassword: "",
-      adminPasswordConfirm: "",
     });
+    setPasswordForm({ newPassword: "", confirmPassword: "" });
+    setShowAdminPassword(false);
 
     const materias = Array.isArray(u?.materiasEstudiante) ? u.materiasEstudiante : [];
     setMateriasEdit(
@@ -174,16 +178,6 @@ export default function AdminUsuarioEditPage() {
       toast.error("Nombre y correo son obligatorios");
       return;
     }
-    if (form.adminPassword || form.adminPasswordConfirm) {
-      if (form.adminPassword !== form.adminPasswordConfirm) {
-        toast.error("Las contraseñas no coinciden");
-        return;
-      }
-      if (form.adminPassword.length < 8) {
-        toast.error("La contraseña debe tener al menos 8 caracteres");
-        return;
-      }
-    }
     setSaving(true);
     try {
       const payload: Record<string, unknown> = {
@@ -201,9 +195,6 @@ export default function AdminUsuarioEditPage() {
         })),
         replaceMaterias: true,
       };
-      if (form.adminPassword) {
-        payload.password = form.adminPassword;
-      }
       const res = await fetch(`/api/admin/users/${userId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -213,11 +204,44 @@ export default function AdminUsuarioEditPage() {
       if (!res.ok) throw new Error(data?.error || "Error guardando");
       toast.success("Usuario actualizado");
       setUser((prev) => (prev ? { ...prev, ...data.user } : prev));
-      setForm((f) => ({ ...f, adminPassword: "", adminPasswordConfirm: "" }));
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Error guardando usuario");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (!userId) return;
+    const { newPassword, confirmPassword } = passwordForm;
+    if (!newPassword.trim()) {
+      toast.error("Indica la nueva contraseña");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error("Las contraseñas no coinciden");
+      return;
+    }
+    if (newPassword.length < 8) {
+      toast.error("La contraseña debe tener al menos 8 caracteres");
+      return;
+    }
+    setSavingPassword(true);
+    try {
+      const res = await fetch(`/api/admin/users/${userId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: newPassword }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "Error cambiando contraseña");
+      toast.success("Contraseña actualizada");
+      setPasswordForm({ newPassword: "", confirmPassword: "" });
+      setShowAdminPassword(false);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Error cambiando contraseña");
+    } finally {
+      setSavingPassword(false);
     }
   };
 
@@ -322,32 +346,83 @@ export default function AdminUsuarioEditPage() {
 
               <Card className="bg-[var(--mygreen-light)] border-white/10">
                 <CardHeader>
-                  <CardTitle className="text-white">Contraseña</CardTitle>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <KeyRound className="h-5 w-5 text-[var(--accent-hex)]" />
+                    Contraseña
+                  </CardTitle>
                   <CardDescription className="text-white/70">
-                    Cambio manual (solo administradores). Deja vacío para no modificar la contraseña actual.
+                    Establece una nueva contraseña para este usuario. Este cambio es independiente del resto de datos.
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="space-y-4">
                   <div>
                     <Label className="text-white/80">Nueva contraseña</Label>
-                    <Input
-                      type="password"
-                      autoComplete="new-password"
-                      className="bg-[var(--mygreen-dark)] border-white/20 text-white"
-                      value={form.adminPassword}
-                      onChange={(e) => setForm((f) => ({ ...f, adminPassword: e.target.value }))}
-                      placeholder="Mínimo 8 caracteres"
-                    />
+                    <div className="relative">
+                      <Input
+                        type={showAdminPassword ? "text" : "password"}
+                        autoComplete="new-password"
+                        className="bg-[var(--mygreen-dark)] border-white/20 text-white pr-10"
+                        value={passwordForm.newPassword}
+                        onChange={(e) =>
+                          setPasswordForm((f) => ({ ...f, newPassword: e.target.value }))
+                        }
+                        placeholder="Mínimo 8 caracteres"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowAdminPassword((v) => !v)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white/80 focus:outline-none"
+                        aria-label={showAdminPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                      >
+                        {showAdminPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
                   </div>
                   <div>
                     <Label className="text-white/80">Confirmar contraseña</Label>
-                    <Input
-                      type="password"
-                      autoComplete="new-password"
-                      className="bg-[var(--mygreen-dark)] border-white/20 text-white"
-                      value={form.adminPasswordConfirm}
-                      onChange={(e) => setForm((f) => ({ ...f, adminPasswordConfirm: e.target.value }))}
-                    />
+                    <div className="relative">
+                      <Input
+                        type={showAdminPassword ? "text" : "password"}
+                        autoComplete="new-password"
+                        className="bg-[var(--mygreen-dark)] border-white/20 text-white pr-10"
+                        value={passwordForm.confirmPassword}
+                        onChange={(e) =>
+                          setPasswordForm((f) => ({ ...f, confirmPassword: e.target.value }))
+                        }
+                        placeholder="Repite la contraseña"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowAdminPassword((v) => !v)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white/80 focus:outline-none"
+                        aria-label={showAdminPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                      >
+                        {showAdminPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-xs text-white/50">
+                      Usa el botón de ojo para ver u ocultar la contraseña mientras la escribes.
+                    </p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="border-[var(--accent-hex)]/40 bg-[#1C2D20] text-[var(--accent-hex)] hover:bg-white/10 shrink-0"
+                      onClick={() => void handleChangePassword()}
+                      disabled={savingPassword || loading || !passwordForm.newPassword.trim()}
+                    >
+                      <KeyRound className="mr-2 h-4 w-4" />
+                      {savingPassword ? "Cambiando..." : "Cambiar contraseña"}
+                    </Button>
                   </div>
                 </CardContent>
               </Card>

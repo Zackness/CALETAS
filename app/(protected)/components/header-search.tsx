@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { Search as SearchIcon, FileText, BookOpen, Building2, Loader2 } from "lucide-react";
+import { Search as SearchIcon, FileText, BookOpen, Building2, Loader2, Users } from "lucide-react";
 import { recursoToExploreHref } from "@/lib/recurso-view-href";
 
 type RecursoItem = {
@@ -30,10 +30,20 @@ type UniversidadItem = {
   siglas: string;
 };
 
+type EstudianteItem = {
+  id: string;
+  name: string;
+  username: string;
+  image?: string | null;
+  carrera?: { nombre: string } | null;
+  universidad?: { siglas: string } | null;
+};
+
 type Suggestions = {
   recursos: RecursoItem[];
   materias: MateriaItem[];
   universidades: UniversidadItem[];
+  estudiantes: EstudianteItem[];
 };
 
 type PanelRect = {
@@ -72,6 +82,7 @@ export function HeaderSearch() {
     recursos: [],
     materias: [],
     universidades: [],
+    estudiantes: [],
   });
   const [highlight, setHighlight] = useState(0);
   const [panelRect, setPanelRect] = useState<PanelRect | null>(null);
@@ -82,7 +93,11 @@ export function HeaderSearch() {
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const totalItems = suggestions.recursos.length + suggestions.materias.length + suggestions.universidades.length;
+  const totalItems =
+    suggestions.recursos.length +
+    suggestions.materias.length +
+    suggestions.universidades.length +
+    suggestions.estudiantes.length;
   const hasAny = totalItems > 0;
   const showDropdown =
     open &&
@@ -128,7 +143,7 @@ export function HeaderSearch() {
 
   const fetchSuggestions = useCallback(async (q: string) => {
     if (q.length < 2) {
-      setSuggestions({ recursos: [], materias: [], universidades: [] });
+      setSuggestions({ recursos: [], materias: [], universidades: [], estudiantes: [] });
       return;
     }
     setLoading(true);
@@ -142,13 +157,14 @@ export function HeaderSearch() {
           recursos: data.recursos ?? [],
           materias: data.materias ?? [],
           universidades: data.universidades ?? [],
+          estudiantes: data.estudiantes ?? [],
         });
         setHighlight(0);
       } else {
-        setSuggestions({ recursos: [], materias: [], universidades: [] });
+        setSuggestions({ recursos: [], materias: [], universidades: [], estudiantes: [] });
       }
     } catch {
-      setSuggestions({ recursos: [], materias: [], universidades: [] });
+      setSuggestions({ recursos: [], materias: [], universidades: [], estudiantes: [] });
     } finally {
       setLoading(false);
     }
@@ -157,7 +173,7 @@ export function HeaderSearch() {
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     if (query.trim().length < 2) {
-      setSuggestions({ recursos: [], materias: [], universidades: [] });
+      setSuggestions({ recursos: [], materias: [], universidades: [], estudiantes: [] });
       setOpen(!!query.trim());
       return;
     }
@@ -211,8 +227,14 @@ export function HeaderSearch() {
     setOpen(false);
   };
 
+  const selectEstudiante = (username: string) => {
+    router.push(`/u/${encodeURIComponent(username)}`);
+    setQuery("");
+    setOpen(false);
+  };
+
   const items: {
-    type: "recurso" | "materia" | "universidad";
+    type: "recurso" | "materia" | "universidad" | "estudiante";
     id: string;
     label: string;
     sub?: string;
@@ -243,6 +265,15 @@ export function HeaderSearch() {
       label: u.nombre,
       sub: u.siglas,
       onClick: selectUniversidad,
+    }),
+  );
+  suggestions.estudiantes.forEach((u) =>
+    items.push({
+      type: "estudiante",
+      id: u.id,
+      label: u.name,
+      sub: `@${u.username}`,
+      onClick: () => selectEstudiante(u.username),
     }),
   );
 
@@ -376,6 +407,42 @@ export function HeaderSearch() {
               })}
             </div>
           )}
+          {suggestions.estudiantes.length > 0 && (
+            <div className="py-1 border-t border-white/5">
+              <div className="px-3 py-1.5 text-xs font-semibold text-[var(--accent-hex)] uppercase tracking-wider">
+                Estudiantes
+              </div>
+              {suggestions.estudiantes.map((u) => {
+                const idx = items.findIndex((x) => x.type === "estudiante" && x.id === u.id);
+                const isHighlight = idx === highlight;
+                const secondary = [u.carrera?.nombre, u.universidad?.siglas].filter(Boolean).join(" · ");
+                return (
+                  <button
+                    key={`student-${u.id}`}
+                    type="button"
+                    role="option"
+                    aria-selected={isHighlight}
+                    onMouseEnter={() => setHighlight(idx)}
+                    onClick={() => selectEstudiante(u.username)}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 text-left rounded-none hover:bg-white/10 ${isHighlight ? "bg-white/10" : ""} text-white`}
+                  >
+                    {u.image ? (
+                      <img src={u.image} alt="" className="h-9 w-9 rounded-full border border-white/10 object-cover flex-shrink-0" />
+                    ) : (
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-[var(--accent-hex)] flex-shrink-0">
+                        <Users className="h-4 w-4" />
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium truncate">{u.name}</div>
+                      <div className="text-xs text-white/60 truncate">@{u.username}</div>
+                      {secondary ? <div className="text-xs text-white/45 truncate">{secondary}</div> : null}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
           {!loading && query.trim().length >= 2 && totalItems === 0 && (
             <div className="px-3 py-4 text-center text-white/60 text-sm">
               No hay resultados para &quot;{query}&quot;
@@ -395,7 +462,7 @@ export function HeaderSearch() {
       <input
         ref={inputRef}
         type="text"
-        placeholder="Buscar caletas, materias… (Ctrl+K o ⌘+K)"
+        placeholder="Buscar caletas, materias o estudiantes… (Ctrl+K o ⌘+K)"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         onFocus={() => query.trim().length >= 2 && setOpen(true)}

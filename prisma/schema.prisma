@@ -87,6 +87,7 @@ model User {
   iaLlmModeCronograma     String                 @default("manual")
   walletLedger             WalletLedger[]
   caletaTasks              CaletaTask[]
+  iaFreeTierDaily          IaFreeTierDaily[]
   aprendePic18Progress     AprendePic18Progress?
 
   @@index([role])
@@ -180,6 +181,8 @@ model CalendarEvent {
   startAt     DateTime
   endAt       DateTime
   allDay      Boolean  @default(false)
+  reminderMinutes Int? @default(30)
+  reminderSentAt DateTime?
 
   color       String?  // hex o token UI (p.ej. "#AABBCC")
   createdAt   DateTime @default(now())
@@ -187,6 +190,7 @@ model CalendarEvent {
 
   @@index([userId, startAt])
   @@index([userId, endAt])
+  @@index([reminderSentAt, startAt])
 }
 
 model UserFollow {
@@ -937,6 +941,22 @@ model AiUsageLog {
 
   @@index([createdAt])
   @@index([endpoint])
+}
+
+
+/** Cupo diario de IA gratuita por usuario (modelos Gateway con precio $0). */
+model IaFreeTierDaily {
+  userId       String   @map("user_id")
+  periodKey    String   @map("period_key")
+  tokensUsed   Int      @default(0) @map("tokens_used")
+  requestsUsed Int      @default(0) @map("requests_used")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, periodKey])
+  @@index([periodKey])
+  @@map("ia_free_tier_daily")
 }
 
 model ZenoWorkspace {

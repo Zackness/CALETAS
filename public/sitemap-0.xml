@@ -1,13 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:mobile="http://www.google.com/schemas/sitemap-mobile/1.0" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
-<url><loc>https://caleta.top</loc><lastmod>2026-06-16T03:01:12.973Z</lastmod><changefreq>weekly</changefreq><priority>1</priority></url>
-<url><loc>https://caleta.top/aliados</loc><lastmod>2026-06-16T03:01:12.973Z</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
-<url><loc>https://caleta.top/agregar-universidad</loc><lastmod>2026-06-16T03:01:12.973Z</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
-<url><loc>https://caleta.top/blog</loc><lastmod>2026-06-16T03:01:12.973Z</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
-<url><loc>https://caleta.top/caracteristicas</loc><lastmod>2026-06-16T03:01:12.973Z</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
-<url><loc>https://caleta.top/terminos-y-condiciones</loc><lastmod>2026-06-16T03:01:12.973Z</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
-<url><loc>https://caleta.top/testimonios</loc><lastmod>2026-06-16T03:01:12.973Z</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://caleta.top/u/zackness</loc><lastmod>2026-06-20T17:16:43.572Z</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>
 <url><loc>https://caleta.top/u/alecsero</loc><lastmod>2026-06-08T20:50:25.822Z</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>
-<url><loc>https://caleta.top/u/zackness</loc><lastmod>2026-05-15T03:45:43.203Z</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>
 <url><loc>https://caleta.top/u/diana_lpez</loc><lastmod>2026-05-02T22:38:36.141Z</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>
 </urlset>
