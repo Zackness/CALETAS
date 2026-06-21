@@ -131,8 +131,10 @@ function createPrismaClient() {
   }) as unknown as PrismaClient;
 }
 
-export const db = globalForPrisma.prisma ?? createPrismaClient();
+const prismaDevFresh = process.env.NODE_ENV === "development";
 
-if (!globalForPrisma.prisma) {
+export const db = prismaDevFresh ? createPrismaClient() : globalForPrisma.prisma ?? createPrismaClient();
+
+if (!prismaDevFresh && !globalForPrisma.prisma) {
   globalForPrisma.prisma = db;
 }

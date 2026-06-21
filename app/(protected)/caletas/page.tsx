@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { BookOpen, Download, Eye, Search, Star, LayoutGrid, List } from "lucide-react";
+import { BookOpen, Eye, Heart, Search, Star, LayoutGrid, List } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
@@ -36,9 +36,11 @@ interface Recurso {
   numVistas: number;
   numDescargas: number;
   numFavoritos?: number;
+  numLikes?: number;
   tags: string;
   createdAt: string;
   isFavorito?: boolean;
+  isLiked?: boolean;
   materia: {
     id: string;
     codigo: string;
@@ -188,6 +190,36 @@ export default function CaletasPage() {
     } catch (error) {
       console.error("Error toggling favorito:", error);
       toast.error("Error al actualizar favoritos");
+    }
+  };
+
+  const toggleLike = async (recursoId: string) => {
+    try {
+      const recurso = recursos.find((r) => r.id === recursoId);
+      if (!recurso) return;
+
+      if (recurso.isLiked) {
+        await axios.delete(`/api/caletas/likes?recursoId=${recursoId}`);
+        toast.success("Like quitado");
+      } else {
+        await axios.post("/api/caletas/likes", { recursoId });
+        toast.success("Te gustó la caleta");
+      }
+
+      setRecursos((prev) =>
+        prev.map((r) =>
+          r.id === recursoId
+            ? {
+                ...r,
+                isLiked: !r.isLiked,
+                numLikes: Math.max(0, (r.numLikes ?? 0) + (r.isLiked ? -1 : 1)),
+              }
+            : r,
+        ),
+      );
+    } catch (error) {
+      console.error("Error toggling like:", error);
+      toast.error("Error al actualizar likes");
     }
   };
 
@@ -344,16 +376,16 @@ export default function CaletasPage() {
           <Card className="bg-[var(--mygreen-light)] border-white/10">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-white/70">
-                Total Descargas
+                Total Likes
               </CardTitle>
-              <Download className="h-4 w-4 text-[var(--accent-hex)]" />
+              <Heart className="h-4 w-4 text-[var(--accent-hex)]" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-white">
-                {recursos.reduce((sum, r) => sum + r.numDescargas, 0)}
+                {recursos.reduce((sum, r) => sum + (r.numLikes ?? 0), 0)}
               </div>
               <p className="text-xs text-white/70 mt-1">
-                Descargas realizadas
+                Likes recibidos
               </p>
             </CardContent>
           </Card>
@@ -534,13 +566,16 @@ export default function CaletasPage() {
                   numVistas: recurso.numVistas,
                   numDescargas: recurso.numDescargas,
                   numFavoritos: recurso.numFavoritos,
+                  numLikes: recurso.numLikes,
                   isFavorito: recurso.isFavorito,
+                  isLiked: recurso.isLiked,
                   materia: recurso.materia,
                   autor: { id: recurso.autor.id, username: recurso.autor.username, name: recurso.autor.name },
                 }}
                 href={recursoToExploreHref(recurso)}
                 onOpen={() => void registrarVista(recurso.id)}
                 onToggleFavorito={() => void toggleFavorito(recurso.id)}
+                onToggleLike={() => void toggleLike(recurso.id)}
                 onShare={() => void shareRecurso(recurso)}
               />
             ) : (
@@ -554,13 +589,16 @@ export default function CaletasPage() {
                   numVistas: recurso.numVistas,
                   numDescargas: recurso.numDescargas,
                   numFavoritos: recurso.numFavoritos,
+                  numLikes: recurso.numLikes,
                   isFavorito: recurso.isFavorito,
+                  isLiked: recurso.isLiked,
                   materia: recurso.materia,
                   autor: { id: recurso.autor.id, username: recurso.autor.username, name: recurso.autor.name },
                 }}
                 href={recursoToExploreHref(recurso)}
                 onRegistrarVista={() => void registrarVista(recurso.id)}
                 onToggleFavorito={() => void toggleFavorito(recurso.id)}
+                onToggleLike={() => void toggleLike(recurso.id)}
                 onShare={() => void shareRecurso(recurso)}
               />
             )

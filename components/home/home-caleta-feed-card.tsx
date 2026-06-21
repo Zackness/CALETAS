@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Download, Eye, MessageCircle, Share2, Star } from "lucide-react";
+import { Eye, Heart, MessageCircle, Share2, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TipoRecursoIcon, tipoEtiquetaCorta } from "@/components/caletas/recurso-tipo";
 import { RecursoFeedFilePreview } from "@/components/home/recurso-feed-file-preview";
@@ -19,6 +19,8 @@ export type FeedCaleta = {
   tipo?: string;
   numVistas: number;
   numDescargas: number;
+  numLikes?: number;
+  isLiked?: boolean;
   autor: { name: string };
   materia: null | { codigo: string; nombre: string };
   isFavorito: boolean;
@@ -70,6 +72,8 @@ export function HomeCaletaFeedCard({
   const [busy, setBusy] = useState(false);
   const [isFavorito, setIsFavorito] = useState(item.isFavorito);
   const [favoritosCount, setFavoritosCount] = useState(item.favoritosCount);
+  const [isLiked, setIsLiked] = useState(!!item.isLiked);
+  const [likesCount, setLikesCount] = useState(item.numLikes ?? 0);
 
   const href = useMemo(
     () => recursoToExploreHref({ id: item.id, archivoUrl: item.archivoUrl }),
@@ -132,6 +136,35 @@ export function HomeCaletaFeedCard({
     }
   };
 
+  const toggleLike = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (busy) return;
+    setBusy(true);
+    const next = !isLiked;
+    setIsLiked(next);
+    setLikesCount((c) => Math.max(0, c + (next ? 1 : -1)));
+    try {
+      if (next) {
+        const res = await fetch("/api/caletas/likes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ recursoId: item.id }),
+        });
+        if (!res.ok) throw new Error("No se pudo dar like");
+      } else {
+        const res = await fetch(`/api/caletas/likes?recursoId=${encodeURIComponent(item.id)}`, { method: "DELETE" });
+        if (!res.ok) throw new Error("No se pudo quitar el like");
+      }
+    } catch (err) {
+      setIsLiked(!next);
+      setLikesCount((c) => Math.max(0, c + (next ? -1 : 1)));
+      toast.error(err instanceof Error ? err.message : "Error actualizando likes");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const avatarStyle = {
     background: `linear-gradient(135deg, hsl(${avatarHue}, 52%, 42%), hsl(${(avatarHue + 48) % 360}, 48%, 30%))`,
   };
@@ -180,9 +213,9 @@ export function HomeCaletaFeedCard({
               <Eye className="h-3.5 w-3.5 shrink-0 text-[var(--accent-hex)]/90" />
               {item.numVistas}
             </span>
-            <span className="inline-flex items-center gap-1" title="Descargas">
-              <Download className="h-3.5 w-3.5 shrink-0 text-[var(--accent-hex)]/90" />
-              {item.numDescargas}
+            <span className="inline-flex items-center gap-1" title="Likes">
+              <Heart className={cn("h-3.5 w-3.5 shrink-0", isLiked ? "fill-rose-400 text-rose-400" : "text-white/45")} />
+              {likesCount}
             </span>
             <span className="inline-flex items-center gap-1" title="Guardados">
               <Star
@@ -208,6 +241,20 @@ export function HomeCaletaFeedCard({
               title={isFavorito ? "Quitar de favoritos" : "Guardar"}
             >
               <Star className={cn("h-4 w-4", isFavorito ? "fill-current" : "")} />
+            </button>
+            <button
+              type="button"
+              onClick={toggleLike}
+              disabled={busy}
+              className={cn(
+                "inline-flex h-8 w-8 items-center justify-center rounded-full border border-transparent bg-white/5 text-white/85 transition-colors hover:bg-white/12",
+                isLiked && "bg-rose-400/15 text-rose-400",
+                busy && "opacity-60",
+              )}
+              aria-label={isLiked ? "Quitar like" : "Dar like"}
+              title={isLiked ? "Quitar like" : "Dar like"}
+            >
+              <Heart className={cn("h-4 w-4", isLiked ? "fill-current" : "")} />
             </button>
             <button
               type="button"
@@ -283,9 +330,9 @@ export function HomeCaletaFeedCard({
               <Eye className="h-4 w-4 text-[var(--accent-hex)]/90" />
               <span className="text-white/80">{item.numVistas}</span> vistas
             </span>
-            <span className="inline-flex items-center gap-1.5" title="Descargas">
-              <Download className="h-4 w-4 text-[var(--accent-hex)]/90" />
-              <span className="text-white/80">{item.numDescargas}</span> descargas
+            <span className="inline-flex items-center gap-1.5" title="Likes">
+              <Heart className={cn("h-4 w-4", isLiked ? "fill-rose-400 text-rose-400" : "text-white/45")} />
+              <span className="text-white/80">{likesCount}</span> likes
             </span>
             <span className="inline-flex items-center gap-1.5" title="Guardados por la comunidad">
               <Star className={cn("h-4 w-4", isFavorito ? "fill-[var(--accent-hex)] text-[var(--accent-hex)]" : "text-white/45")} />
@@ -293,6 +340,19 @@ export function HomeCaletaFeedCard({
             </span>
           </div>
           <div className="flex items-center justify-end gap-1.5 sm:shrink-0">
+            <button
+              type="button"
+              onClick={toggleLike}
+              disabled={busy}
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/90 transition-colors hover:bg-white/10",
+                isLiked && "border-rose-400/35 bg-rose-400/15 text-rose-300",
+                busy && "opacity-60",
+              )}
+            >
+              <Heart className={cn("h-3.5 w-3.5", isLiked ? "fill-current" : "")} />
+              {isLiked ? "Te gusta" : "Me gusta"}
+            </button>
             <button
               type="button"
               onClick={toggleFavorito}

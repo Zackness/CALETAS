@@ -187,7 +187,8 @@ export default async function HomePage() {
         },
       },
       favoritos: { where: { usuarioId: session.user.id }, select: { id: true } },
-      _count: { select: { favoritos: true } },
+      likes: { where: { usuarioId: session.user.id }, select: { id: true } },
+      _count: { select: { favoritos: true, likes: true } },
     },
     orderBy: [
       { numVistas: 'desc' },
@@ -201,6 +202,8 @@ export default async function HomePage() {
     autor: r.esAnonimo && r.autorId !== session.user.id ? { name: "Anónimo" } : r.autor,
     isFavorito: Array.isArray((r as any).favoritos) && (r as any).favoritos.length > 0,
     favoritosCount: (r as any)._count?.favoritos ?? 0,
+    isLiked: Array.isArray((r as any).likes) && (r as any).likes.length > 0,
+    likesCount: (r as any)._count?.likes ?? 0,
   }));
 
   // Feed: caletas recientes (tipo red social)
@@ -220,7 +223,8 @@ export default async function HomePage() {
       materia: { select: { codigo: true, nombre: true } },
       autor: { select: { name: true } },
       favoritos: { where: { usuarioId: session.user.id }, select: { id: true } },
-      _count: { select: { favoritos: true } },
+      likes: { where: { usuarioId: session.user.id }, select: { id: true } },
+      _count: { select: { favoritos: true, likes: true } },
     },
     orderBy: { createdAt: "desc" },
     take: 6,
@@ -231,6 +235,8 @@ export default async function HomePage() {
     autor: r.esAnonimo && r.autorId !== session.user.id ? { name: "Anónimo" } : r.autor,
     isFavorito: r.favoritos.length > 0,
     favoritosCount: r._count.favoritos,
+    isLiked: r.likes.length > 0,
+    likesCount: r._count.likes,
   }));
 
   const toFeedCaletaClient = (
@@ -244,9 +250,11 @@ export default async function HomePage() {
     createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : String(r.createdAt),
     numVistas: r.numVistas,
     numDescargas: r.numDescargas,
+    numLikes: (r as any).likesCount ?? 0,
     autor: { name: r.autor.name ?? "Estudiante" },
     materia: r.materia,
     isFavorito: r.isFavorito,
+    isLiked: (r as any).isLiked ?? false,
     favoritosCount: r.favoritosCount,
   });
 

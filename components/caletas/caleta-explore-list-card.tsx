@@ -3,7 +3,6 @@
 import Link from "next/link";
 import {
   Clock,
-  Download,
   Eye,
   Heart,
   Share2,
@@ -26,6 +25,8 @@ export type CaletaListRecurso = {
   numDescargas: number;
   numFavoritos?: number;
   isFavorito?: boolean;
+  numLikes?: number;
+  isLiked?: boolean;
   materia: { id: string; codigo: string; nombre: string } | null;
   autor: { id: string; username?: string | null; name: string };
 };
@@ -42,6 +43,7 @@ type Props = {
   href: string;
   onOpen: () => void;
   onToggleFavorito: () => void;
+  onToggleLike: () => void;
   onShare: () => void;
 };
 
@@ -49,7 +51,7 @@ type Props = {
  * Lista estilo “feed social”: cabecera visual alineada al grid (gradiente + icono de tipo),
  * contenido legible y misma barra de acciones que antes.
  */
-export function CaletaExploreListCard({ recurso, href, onOpen, onToggleFavorito, onShare }: Props) {
+export function CaletaExploreListCard({ recurso, href, onOpen, onToggleFavorito, onToggleLike, onShare }: Props) {
   const tags = (recurso.tags ?? "")
     .split(",")
     .map((t) => t.trim())
@@ -98,9 +100,9 @@ export function CaletaExploreListCard({ recurso, href, onOpen, onToggleFavorito,
             <Eye className="h-4 w-4 shrink-0 text-[var(--accent-hex)]" />
             {recurso.numVistas}
           </span>
-          <span className="inline-flex items-center gap-1.5 text-sm text-white/55">
-            <Download className="h-3.5 w-3.5 shrink-0 text-[color-mix(in_oklab,var(--accent-hex)_85%,transparent)]" />
-            {recurso.numDescargas}
+          <span className={cn("inline-flex items-center gap-1.5 text-sm", recurso.isLiked ? "text-white/85" : "text-white/55")}>
+            <Heart className={cn("h-4 w-4 shrink-0", recurso.isLiked ? "fill-rose-400 text-rose-400" : "text-white/45")} />
+            <span className="font-medium text-white/85">{recurso.numLikes ?? 0}</span>
           </span>
         </div>
 
@@ -161,6 +163,20 @@ export function CaletaExploreListCard({ recurso, href, onOpen, onToggleFavorito,
             </Link>
           </Button>
           <div className="flex w-full gap-2 sm:w-auto">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onToggleLike}
+              className={cn(
+                "h-9 flex-1 text-sm font-medium shadow-none sm:flex-none sm:min-w-[8rem]",
+                recurso.isLiked
+                  ? "border-rose-400/40 bg-rose-400/15 text-white hover:bg-rose-400/20 hover:text-white"
+                  : "border-white/15 bg-[var(--mygreen-dark)] text-white/85 hover:bg-white/10 hover:text-white",
+              )}
+            >
+              <Heart className={cn("mr-1.5 h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4", recurso.isLiked ? "fill-rose-400 text-rose-400" : "")} />
+              <span>{recurso.isLiked ? "Te gusta" : "Me gusta"}</span>
+            </Button>
             <Button
               type="button"
               variant="outline"

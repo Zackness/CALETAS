@@ -106,21 +106,32 @@ export async function GET(request: NextRequest) {
             id: true,
           },
         },
+        likes: {
+          where: {
+            usuarioId: userId,
+          },
+          select: {
+            id: true,
+          },
+        },
         _count: {
           select: {
             favoritos: true,
+            likes: true,
           },
         },
       },
       orderBy: [{ createdAt: "desc" }],
     });
 
-    const recursosConFavorito = recursos.map(({ favoritos, _count, ...r }) => {
+    const recursosConFavorito = recursos.map(({ favoritos, likes, _count, ...r }) => {
       const masked = maskAutorIfAnon(r as any, userId);
       return {
         ...masked,
         isFavorito: favoritos.length > 0,
         numFavoritos: _count?.favoritos ?? 0,
+        isLiked: likes.length > 0,
+        numLikes: _count?.likes ?? 0,
       };
     });
 

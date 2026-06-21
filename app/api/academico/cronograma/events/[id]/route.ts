@@ -28,6 +28,7 @@ export async function PATCH(
     const body = (await request.json().catch(() => null)) as
       | {
           title?: string;
+          activityType?: string | null;
           description?: string | null;
           location?: string | null;
           startAt?: string;
@@ -50,6 +51,7 @@ export async function PATCH(
       if (!t) return NextResponse.json({ error: "Título requerido" }, { status: 400 });
       data.title = t;
     }
+    if (body?.activityType !== undefined) data.activityType = body.activityType?.trim() || null;
     if (body?.description !== undefined) data.description = body.description?.trim() || null;
     if (body?.location !== undefined) data.location = body.location?.trim() || null;
     if (body?.color !== undefined) data.color = body.color?.trim() || null;
@@ -97,6 +99,7 @@ export async function PATCH(
       select: {
         id: true,
         title: true,
+        activityType: true,
         description: true,
         location: true,
         startAt: true,

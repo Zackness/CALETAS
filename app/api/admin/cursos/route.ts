@@ -2,6 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 
+type CursoTipo = "video" | "web";
+
+function normalizeUrl(url?: string) {
+  const raw = url?.trim();
+  if (!raw) return null;
+  return /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+}
+
 async function requireAdmin(headers: Headers) {
   const session = await auth.api.getSession({ headers });
   if (!session?.user?.id) return { ok: false as const, status: 401 as const };
@@ -35,9 +43,11 @@ export async function POST(request: NextRequest) {
     const body = (await request.json()) as {
       titulo?: string;
       slug?: string;
+      tipo?: CursoTipo;
       descripcion?: string;
       contenido?: string;
       urlVideo?: string;
+      externalUrl?: string;
       imagenUrl?: string;
       tema?: string;
       orden?: number;
@@ -48,13 +58,16 @@ export async function POST(request: NextRequest) {
     const slug =
       body.slug?.trim() ||
       body.titulo.trim().toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+    const tipo: CursoTipo = body.tipo === "web" ? "web" : "video";
     const curso = await db.curso.create({
       data: {
         titulo: body.titulo.trim(),
         slug: slug || undefined,
+        tipo,
         descripcion: (body.descripcion ?? "").trim(),
         contenido: (body.contenido ?? "").trim(),
-        urlVideo: body.urlVideo?.trim() || null,
+        urlVideo: tipo === "video" ? normalizeUrl(body.urlVideo) : null,
+        externalUrl: tipo === "web" ? normalizeUrl(body.externalUrl) : null,
         imagenUrl: body.imagenUrl?.trim() || null,
         tema: body.tema?.trim() || null,
         orden: typeof body.orden === "number" ? body.orden : 0,

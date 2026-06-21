@@ -52,6 +52,7 @@ model User {
   comentarios            ComentarioRecurso[]
   vistas                  VistaRecurso[]
   descargas              DescargaRecurso[]
+  likes                  LikeRecurso[]
   metas                  MetaAcademica[]
   favoritos              Favorito[]
   manualPayments         ManualPayment[]
@@ -66,6 +67,7 @@ model User {
   profileBannerUrl       String?
   profileGalleryUrls     Json?                // array de URLs (strings), p. ej. ["https://..."]
   historias                Historia[]
+  historiaLikes            HistoriaLike[]
   calendarEvents           CalendarEvent[]
   referralCode             String?                @unique
   referredByUserId         String?
@@ -175,6 +177,7 @@ model CalendarEvent {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   title       String
+  activityType String?
   description String?  @db.Text
   location    String?
 
@@ -215,9 +218,23 @@ model Historia {
   mediaType HistoriaMediaType
   expiresAt DateTime
   createdAt DateTime          @default(now())
+  likes     HistoriaLike[]
 
   @@index([expiresAt])
   @@index([autorId, expiresAt])
+}
+
+model HistoriaLike {
+  id         String   @id @default(cuid())
+  historiaId String
+  historia   Historia @relation(fields: [historiaId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([historiaId, userId])
+  @@index([historiaId])
+  @@index([userId])
 }
 
 enum HistoriaMediaType {
@@ -604,9 +621,11 @@ model Curso {
   id          String   @id @default(cuid())
   titulo      String
   slug        String?  @unique
+  tipo        String   @default("video")
   descripcion String   @db.Text
   contenido   String   @db.Text
   urlVideo    String?
+  externalUrl String?
   imagenUrl   String?
   tema        String?  // Tema/categoría (ej. Programación, Matemáticas)
   orden       Int      @default(0)
@@ -658,6 +677,7 @@ model Recurso {
   vistas         VistaRecurso[]
   descargas      DescargaRecurso[]
   favoritos      Favorito[]
+  likes          LikeRecurso[]
 
   @@index([materiaId])
   @@index([universidadId])
@@ -916,6 +936,19 @@ model Favorito {
   createdAt   DateTime @default(now())
 
   @@unique([usuarioId, recursoId]) // Un usuario solo puede tener un recurso como favorito una vez
+  @@index([usuarioId])
+  @@index([recursoId])
+}
+
+model LikeRecurso {
+  id          String   @id @default(cuid())
+  usuarioId   String
+  usuario     User     @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  recursoId   String
+  recurso     Recurso  @relation(fields: [recursoId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@unique([usuarioId, recursoId])
   @@index([usuarioId])
   @@index([recursoId])
 }

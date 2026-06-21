@@ -29,6 +29,7 @@ import { cn } from "@/lib/utils";
 type CalEvent = {
   id: string;
   title: string;
+  activityType: string | null;
   description: string | null;
   location: string | null;
   startAt: string;
@@ -41,6 +42,7 @@ type CalEvent = {
 
 type ProposedEvent = {
   title: string;
+  activityType?: string | null;
   startAt: string;
   endAt: string;
   allDay?: boolean;
@@ -58,6 +60,20 @@ const REMINDER_OPTIONS = [
   { value: "180", label: "3 horas antes" },
   { value: "1440", label: "1 día antes" },
 ] as const;
+
+const ACTIVITY_TYPE_OPTIONS = [
+  { value: "", label: "Sin tipo" },
+  { value: "clase", label: "Clase" },
+  { value: "examen", label: "Examen" },
+  { value: "entrega", label: "Entrega" },
+  { value: "reunion", label: "Reunión" },
+  { value: "estudio", label: "Estudio" },
+  { value: "personal", label: "Personal" },
+] as const;
+
+function activityTypeLabel(value: string | null | undefined) {
+  return ACTIVITY_TYPE_OPTIONS.find((option) => option.value === (value ?? ""))?.label ?? value ?? "Sin tipo";
+}
 
 function toDatetimeLocalValue(d: Date) {
   const pad = (n: number) => String(n).padStart(2, "0");
@@ -90,6 +106,7 @@ export function StudentCalendar() {
 
   const [createOpen, setCreateOpen] = useState(false);
   const [newTitle, setNewTitle] = useState("");
+  const [newActivityType, setNewActivityType] = useState("");
   const [newStart, setNewStart] = useState("");
   const [newEnd, setNewEnd] = useState("");
   const [newAllDay, setNewAllDay] = useState(false);
@@ -104,6 +121,7 @@ export function StudentCalendar() {
 
   const [detailEvent, setDetailEvent] = useState<CalEvent | null>(null);
   const [detailTitle, setDetailTitle] = useState("");
+  const [detailActivityType, setDetailActivityType] = useState("");
   const [detailDescription, setDetailDescription] = useState("");
   const [detailLocation, setDetailLocation] = useState("");
   const [detailStart, setDetailStart] = useState("");
@@ -111,6 +129,7 @@ export function StudentCalendar() {
   const [detailAllDay, setDetailAllDay] = useState(false);
   const [detailReminderMinutes, setDetailReminderMinutes] = useState<string>("30");
   const [detailSaving, setDetailSaving] = useState(false);
+  const [activityFilter, setActivityFilter] = useState("all");
 
   const [recording, setRecording] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
@@ -125,11 +144,17 @@ export function StudentCalendar() {
   const autoCaptureStartedRef = useRef(false);
   const startRecordingRef = useRef<(() => Promise<void>) | null>(null);
 
-  const monthStart = startOfMonth(viewDate);
-  const monthEnd = endOfMonth(viewDate);
-  const gridStart = startOfWeek(monthStart, { weekStartsOn: 1 });
-  const gridEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
-  const days = eachDayOfInterval({ start: gridStart, end: gridEnd });
+  const { gridStart, gridEnd, days } = useMemo(() => {
+    const monthStart = startOfMonth(viewDate);
+    const monthEnd = endOfMonth(viewDate);
+    const start = startOfWeek(monthStart, { weekStartsOn: 1 });
+    const end = endOfWeek(monthEnd, { weekStartsOn: 1 });
+    return {
+      gridStart: start,
+      gridEnd: end,
+      days: eachDayOfInterval({ start, end }),
+    };
+  }, [viewDate]);
 
   const loadEvents = useCallback(async () => {
     setLoading(true);
@@ -188,6 +213,7 @@ export function StudentCalendar() {
 
   useEffect(() => {
     setDetailTitle(detailEvent?.title ?? "");
+    setDetailActivityType(detailEvent?.activityType ?? "");
     setDetailDescription(detailEvent?.description ?? "");
     setDetailLocation(detailEvent?.location ?? "");
     setDetailStart(
@@ -219,18 +245,29 @@ export function StudentCalendar() {
     return map;
   }, [events]);
 
+  const filteredEventsByDay = useMemo(() => {
+    if (activityFilter === "all") return eventsByDay;
+    const map = new Map<string, CalEvent[]>();
+    for (const [key, list] of eventsByDay.entries()) {
+      const filtered = list.filter((event) => (event.activityType ?? "") === activityFilter);
+      if (filtered.length) map.set(key, filtered);
+    }
+    return map;
+  }, [activityFilter, eventsByDay]);
+
   const dayEvents = useMemo(() => {
     if (!selectedDay) return [];
     const key = format(selectedDay, "yyyy-MM-dd");
-    return (eventsByDay.get(key) ?? []).sort(
+    return (filteredEventsByDay.get(key) ?? []).sort(
       (a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime(),
     );
-  }, [eventsByDay, selectedDay]);
+  }, [filteredEventsByDay, selectedDay]);
 
   const openNewDialog = (d?: Date) => {
     const base = d ?? new Date();
     const end = new Date(base.getTime() + 60 * 60 * 1000);
     setNewTitle("");
+    setNewActivityType("");
     setNewStart(toDatetimeLocalValue(base));
     setNewEnd(toDatetimeLocalValue(end));
     setNewAllDay(false);
@@ -320,6 +357,7 @@ export function StudentCalendar() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title,
+          activityType: newActivityType || null,
           startAt: startAt.toISOString(),
           endAt: endAt.toISOString(),
           allDay: newAllDay,
@@ -365,7 +403,13 @@ export function StudentCalendar() {
         setAiPreview([]);
         return;
       }
-      setAiPreview(list.map((event: ProposedEvent) => ({ ...event, reminderMinutes: event.reminderMinutes ?? 30 })));
+      setAiPreview(
+        list.map((event: ProposedEvent) => ({
+          ...event,
+          activityType: event.activityType ?? null,
+          reminderMinutes: event.reminderMinutes ?? 30,
+        })),
+      );
       toast.success(`${list.length} evento(s) listos para guardar`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Error con IA");
@@ -403,6 +447,7 @@ export function StudentCalendar() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             title: ev.title,
+            activityType: ev.activityType ?? null,
             startAt: ev.startAt,
             endAt: ev.endAt,
             allDay: !!ev.allDay,
@@ -472,6 +517,7 @@ export function StudentCalendar() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title,
+          activityType: detailActivityType || null,
           description: detailDescription.trim() || null,
           location: detailLocation.trim() || null,
           startAt: startAt.toISOString(),
@@ -704,6 +750,18 @@ export function StudentCalendar() {
             {format(viewDate, "MMMM yyyy", { locale: es })}
           </CardTitle>
           <div className="flex flex-wrap items-center gap-2">
+            <select
+              value={activityFilter}
+              onChange={(e) => setActivityFilter(e.target.value)}
+              className="h-10 rounded-md border border-white/20 bg-[#1C2D20] px-3 text-sm text-white outline-none"
+            >
+              <option value="all" className="bg-[#1C2D20] text-white">Todas las actividades</option>
+              {ACTIVITY_TYPE_OPTIONS.filter((option) => option.value).map((option) => (
+                <option key={option.value} value={option.value} className="bg-[#1C2D20] text-white">
+                  {option.label}
+                </option>
+              ))}
+            </select>
             <Button
               type="button"
               size="icon"
@@ -753,10 +811,10 @@ export function StudentCalendar() {
                   <div key={day}>{day}</div>
                 ))}
               </div>
-              <div className="grid grid-cols-7 gap-1">
+              <div className="grid auto-rows-fr grid-cols-7 gap-1 min-h-[32rem] sm:min-h-[38rem]">
                 {days.map((day) => {
                   const key = format(day, "yyyy-MM-dd");
-                  const list = eventsByDay.get(key) ?? [];
+                  const list = filteredEventsByDay.get(key) ?? [];
                   const selected = selectedDay && isSameDay(day, selectedDay);
 
                   return (
@@ -765,7 +823,7 @@ export function StudentCalendar() {
                       type="button"
                       onClick={() => setSelectedDay(day)}
                       className={cn(
-                        "flex min-h-[4.5rem] flex-col rounded-lg border p-1.5 text-left transition-colors",
+                        "flex min-h-[4.5rem] h-full flex-col rounded-lg border p-1.5 text-left transition-colors",
                         isSameMonth(day, viewDate)
                           ? "border-white/10 bg-[#1C2D20]/80 text-white"
                           : "border-white/5 bg-[#203324]/40 text-white/40",
@@ -818,6 +876,11 @@ export function StudentCalendar() {
                       className="w-full rounded-lg border border-white/10 bg-[#1C2D20] px-3 py-2 text-left text-sm text-white/90 hover:bg-white/5"
                     >
                       <div className="font-medium text-white">{ev.title}</div>
+                      {ev.activityType ? (
+                        <div className="mt-1 inline-flex items-center rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[11px] text-white/70">
+                          {activityTypeLabel(ev.activityType)}
+                        </div>
+                      ) : null}
                       <div className="text-xs text-white/55">
                         {ev.allDay
                           ? "Todo el día"

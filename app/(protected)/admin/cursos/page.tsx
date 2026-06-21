@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   Card,
@@ -19,16 +19,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Library, PlusCircle, Pencil, Trash2, ArrowLeft } from "lucide-react";
+import { Library, PlusCircle, Pencil, Trash2, ArrowLeft, Search } from "lucide-react";
 import { toast } from "sonner";
 
 type Curso = {
   id: string;
   titulo: string;
   slug: string | null;
+  tipo: "video" | "web";
   descripcion: string;
   contenido: string;
   urlVideo: string | null;
+  externalUrl: string | null;
   imagenUrl: string | null;
   tema: string | null;
   orden: number;
@@ -44,9 +46,11 @@ export default function AdminCursosPage() {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
     titulo: "",
+    tipo: "video" as "video" | "web",
     descripcion: "",
     contenido: "",
     urlVideo: "",
+    externalUrl: "",
     imagenUrl: "",
     tema: "",
     orden: 0,
@@ -57,6 +61,20 @@ export default function AdminCursosPage() {
     { name: string; url: string; type: string; size: number; lastModified: string }[]
   >([]);
   const [mediaSubfolder, setMediaSubfolder] = useState("media");
+  const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState<"all" | "video" | "web">("all");
+
+  const filteredCursos = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return cursos.filter((curso) => {
+      const matchesType = typeFilter === "all" || curso.tipo === typeFilter;
+      if (!matchesType) return false;
+      if (!q) return true;
+      return [curso.titulo, curso.slug, curso.tema, curso.descripcion]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(q));
+    });
+  }, [cursos, search, typeFilter]);
 
   const loadCursos = async () => {
     setLoading(true);
@@ -93,11 +111,13 @@ export default function AdminCursosPage() {
   const openCreate = () => {
     setEditing(null);
     setForm({
-      titulo: "",
-      descripcion: "",
-      contenido: "",
-      urlVideo: "",
-      imagenUrl: "",
+        titulo: "",
+        tipo: "video",
+        descripcion: "",
+        contenido: "",
+        urlVideo: "",
+        externalUrl: "",
+        imagenUrl: "",
       tema: "",
       orden: 0,
     });
@@ -108,9 +128,11 @@ export default function AdminCursosPage() {
     setEditing(c);
     setForm({
       titulo: c.titulo,
+      tipo: c.tipo,
       descripcion: c.descripcion || "",
       contenido: c.contenido || "",
       urlVideo: c.urlVideo || "",
+      externalUrl: c.externalUrl || "",
       imagenUrl: c.imagenUrl || "",
       tema: c.tema || "",
       orden: c.orden ?? 0,
@@ -129,9 +151,11 @@ export default function AdminCursosPage() {
       const method = editing ? "PATCH" : "POST";
       const body = {
         titulo: form.titulo.trim(),
+        tipo: form.tipo,
         descripcion: form.descripcion.trim(),
         contenido: form.contenido.trim(),
-        urlVideo: form.urlVideo.trim() || undefined,
+        urlVideo: form.tipo === "video" ? form.urlVideo.trim() || undefined : undefined,
+        externalUrl: form.tipo === "web" ? form.externalUrl.trim() || undefined : undefined,
         imagenUrl: form.imagenUrl.trim() || undefined,
         tema: form.tema.trim() || undefined,
         orden: form.orden,
@@ -205,48 +229,85 @@ export default function AdminCursosPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <div className="relative w-full md:max-w-sm">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/45" />
+                <Input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Buscar por título, slug o tema..."
+                  className="border-white/10 bg-[#1C2D20] pl-9 text-white placeholder:text-white/40"
+                />
+              </div>
+              <select
+                value={typeFilter}
+                onChange={(e) => setTypeFilter(e.target.value as "all" | "video" | "web")}
+                className="h-10 rounded-md border border-white/10 bg-[#1C2D20] px-3 text-sm text-white outline-none md:w-[11rem]"
+              >
+                <option value="all">Todos los tipos</option>
+                <option value="video">Solo video</option>
+                <option value="web">Solo web</option>
+              </select>
+            </div>
             {loading ? (
               <p className="text-white/70">Cargando...</p>
             ) : cursos.length === 0 ? (
               <p className="text-white/70">Aún no hay cursos. Crea uno con el botón superior.</p>
+            ) : filteredCursos.length === 0 ? (
+              <p className="text-white/70">No hay cursos que coincidan con ese filtro.</p>
             ) : (
-              <div className="overflow-auto">
+              <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#2C4032]">
                 <table className="w-full text-left">
                   <thead>
-                    <tr className="border-b border-white/10">
-                      <th className="px-3 py-2 text-white/70 font-medium">Título</th>
-                      <th className="px-3 py-2 text-white/70 font-medium">Tema</th>
-                      <th className="px-3 py-2 text-white/70 font-medium">Orden</th>
-                      <th className="px-3 py-2 text-white/70 font-medium">Creado</th>
-                      <th className="px-3 py-2 text-white/70 font-medium w-24">Acciones</th>
+                    <tr className="border-b border-white/10 bg-black/10">
+                      <th className="px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-white/55">Curso</th>
+                      <th className="px-3 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-white/55">Tema</th>
+                      <th className="px-3 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-white/55">Tipo</th>
+                      <th className="px-3 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-white/55">Orden</th>
+                      <th className="px-3 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-white/55">Creado</th>
+                      <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-[0.18em] text-white/55">Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {cursos.map((c) => (
-                      <tr key={c.id} className="border-b border-white/10">
-                        <td className="px-3 py-2 text-white">{c.titulo}</td>
-                        <td className="px-3 py-2 text-white/80">{c.tema || "—"}</td>
-                        <td className="px-3 py-2 text-white/80">{c.orden}</td>
-                        <td className="px-3 py-2 text-white/60 text-sm">
+                    {filteredCursos.map((c) => (
+                      <tr key={c.id} className="border-b border-white/10 last:border-0 hover:bg-white/[0.03]">
+                        <td className="px-4 py-3">
+                          <div className="min-w-[14rem]">
+                            <div className="font-medium text-white">{c.titulo}</div>
+                            {c.slug ? <div className="mt-1 text-xs text-white/45">/{c.slug}</div> : null}
+                          </div>
+                        </td>
+                        <td className="px-3 py-3 text-sm text-white/80">{c.tema || "—"}</td>
+                        <td className="px-3 py-3">
+                          <span className="inline-flex rounded-full border border-white/10 bg-black/15 px-2 py-1 text-xs capitalize text-white/80">
+                            {c.tipo}
+                          </span>
+                        </td>
+                        <td className="px-3 py-3 text-sm text-white/70">#{c.orden}</td>
+                        <td className="px-3 py-3 text-sm text-white/55">
                           {new Date(c.createdAt).toLocaleDateString()}
                         </td>
-                        <td className="px-3 py-2">
-                          <div className="flex items-center gap-2">
+                        <td className="px-4 py-3">
+                          <div className="flex items-center justify-end gap-1.5">
                             <Button
-                              size="sm"
+                              size="icon"
                               variant="outline"
-                              className="border-white/20 text-white hover:bg-white/10"
+                              className="h-8 w-8 border-white/15 bg-white/5 text-white/80 hover:bg-white/10 hover:text-white"
                               onClick={() => openEdit(c)}
+                              title="Editar curso"
+                              aria-label={`Editar ${c.titulo}`}
                             >
-                              <Pencil className="w-4 h-4" />
+                              <Pencil className="h-3.5 w-3.5" />
                             </Button>
                             <Button
-                              size="sm"
+                              size="icon"
                               variant="outline"
-                              className="border-red-500/30 text-red-300 hover:bg-red-500/10"
+                              className="h-8 w-8 border-red-500/25 bg-red-500/5 text-red-300 hover:bg-red-500/10"
                               onClick={() => remove(c)}
+                              title="Eliminar curso"
+                              aria-label={`Eliminar ${c.titulo}`}
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Trash2 className="h-3.5 w-3.5" />
                             </Button>
                           </div>
                         </td>
@@ -287,6 +348,17 @@ export default function AdminCursosPage() {
                 />
               </div>
               <div className="grid gap-2">
+                <Label className="text-white/80">Tipo de curso</Label>
+                <select
+                  value={form.tipo}
+                  onChange={(e) => setForm((f) => ({ ...f, tipo: e.target.value as "video" | "web" }))}
+                  className="h-10 rounded-md border border-white/10 bg-[var(--mygreen-dark)] px-3 text-white outline-none"
+                >
+                  <option value="video">Curso en video</option>
+                  <option value="web">Curso tipo web</option>
+                </select>
+              </div>
+              <div className="grid gap-2">
                 <Label className="text-white/80">Descripción</Label>
                 <Input
                   value={form.descripcion}
@@ -295,37 +367,67 @@ export default function AdminCursosPage() {
                   placeholder="Breve resumen"
                 />
               </div>
-              <div className="grid gap-2">
-                <Label className="text-white/80">URL de video (YouTube, etc.)</Label>
-                <Input
-                  value={form.urlVideo}
-                  onChange={(e) => setForm((f) => ({ ...f, urlVideo: e.target.value }))}
-                  className="bg-[var(--mygreen-dark)] border-white/10 text-white"
-                  placeholder="https://www.youtube.com/watch?v=..."
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label className="text-white/80">URL de imagen (opcional)</Label>
-                <div className="flex gap-2">
+              {form.tipo === "video" ? (
+                <div className="grid gap-2">
+                  <Label className="text-white/80">URL de video (YouTube, etc.)</Label>
                   <Input
-                    value={form.imagenUrl}
-                    onChange={(e) => setForm((f) => ({ ...f, imagenUrl: e.target.value }))}
+                    value={form.urlVideo}
+                    onChange={(e) => setForm((f) => ({ ...f, urlVideo: e.target.value }))}
                     className="bg-[var(--mygreen-dark)] border-white/10 text-white"
-                    placeholder="https://..."
+                    placeholder="https://www.youtube.com/watch?v=..."
                   />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="border-white/20 text-white hover:bg-white/10"
-                    onClick={() => {
-                      setMediaDialogOpen(true);
-                      void loadMediaFiles();
-                    }}
-                  >
-                    Biblioteca
-                  </Button>
                 </div>
-              </div>
+              ) : (
+                <div className="grid gap-2">
+                  <Label className="text-white/80">URL del curso web</Label>
+                  <Input
+                    value={form.externalUrl}
+                    onChange={(e) => setForm((f) => ({ ...f, externalUrl: e.target.value }))}
+                    className="bg-[var(--mygreen-dark)] border-white/10 text-white"
+                    placeholder="https://pic18.caleta.top"
+                  />
+                </div>
+              )}
+              {form.tipo === "video" ? (
+                <div className="grid gap-2">
+                  <Label className="text-white/80">URL de imagen (opcional)</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={form.imagenUrl}
+                      onChange={(e) => setForm((f) => ({ ...f, imagenUrl: e.target.value }))}
+                      className="bg-[var(--mygreen-dark)] border-white/10 text-white"
+                      placeholder="https://..."
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="border-white/20 text-white hover:bg-white/10"
+                      onClick={() => {
+                        setMediaDialogOpen(true);
+                        void loadMediaFiles();
+                      }}
+                    >
+                      Biblioteca
+                    </Button>
+                  </div>
+                </div>
+              ) : form.externalUrl.trim() ? (
+                <div className="grid gap-2">
+                  <Label className="text-white/80">Vista previa del sitio</Label>
+                  <div className="relative overflow-hidden rounded-xl border border-white/10 bg-[#1C2D20]">
+                    <iframe
+                      src={form.externalUrl.trim()}
+                      className="h-56 w-full scale-[1.03] pointer-events-none select-none"
+                      title="Preview del curso web"
+                      tabIndex={-1}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-black/10" />
+                    <div className="absolute bottom-3 right-3 rounded-full border border-white/10 bg-black/55 px-3 py-1 text-xs text-white/80 backdrop-blur-sm">
+                      Preview no interactivo
+                    </div>
+                  </div>
+                </div>
+              ) : null}
               <div className="grid gap-2">
                 <Label className="text-white/80">Orden (número para ordenar en la lista)</Label>
                 <Input

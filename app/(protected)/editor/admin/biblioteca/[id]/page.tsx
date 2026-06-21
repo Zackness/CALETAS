@@ -30,6 +30,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 import { DualMarkdownEditor, type DualMarkdownEditorHandle, type EditorMode } from "@/components/dual-markdown-editor";
 import { MarkdownMath } from "@/components/markdown-math";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -44,6 +45,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DEFAULT_LIBRARY_LATEX_TEMPLATE, renderLatexToMarkdown } from "@/lib/latex";
+import { cn } from "@/lib/utils";
 
 type Obra = {
   id: string;
@@ -429,8 +431,8 @@ export default function AdminBibliotecaEditorPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-t from-mygreen to-mygreen-light">
-      <div className="sticky top-0 z-50 border-b border-white/10 bg-[#203324]/95 backdrop-blur supports-[backdrop-filter]:bg-[#203324]/85">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(64,201,169,0.12),_transparent_28%),linear-gradient(180deg,#203324_0%,#16231B_55%,#122017_100%)]">
+      <div className="sticky top-0 z-50 border-b border-white/10 bg-[#15231B]/95 backdrop-blur supports-[backdrop-filter]:bg-[#15231B]/88">
         <div className="mx-auto max-w-[1680px] px-4 py-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <Button
@@ -448,7 +450,7 @@ export default function AdminBibliotecaEditorPage() {
                 <input
                   value={form.titulo}
                   onChange={(e) => setForm((f) => ({ ...f, titulo: e.target.value }))}
-                  className="font-special text-white text-lg md:text-xl truncate bg-transparent border border-transparent rounded px-2 py-0.5 focus:border-[#40C9A9]/40 focus:bg-white/5 outline-none min-w-[220px]"
+                  className="min-w-[220px] truncate rounded-lg border border-transparent bg-transparent px-2 py-1 font-special text-lg text-white outline-none focus:border-[#40C9A9]/40 focus:bg-white/5 md:text-xl"
                   placeholder="Título del libro"
                 />
                 <Badge
@@ -462,7 +464,7 @@ export default function AdminBibliotecaEditorPage() {
                 </Badge>
                 {isDirty ? <span className="text-xs text-white/60">Cambios sin guardar</span> : null}
               </div>
-              <div className="text-xs text-white/60">Caletas Editor · Markdown + LaTeX (KaTeX)</div>
+              <div className="text-xs text-white/60">Caletas Books Studio · Markdown + LaTeX (KaTeX)</div>
             </div>
           </div>
 
@@ -478,8 +480,7 @@ export default function AdminBibliotecaEditorPage() {
         </div>
       </div>
 
-      {/* Toolbar principal estilo Overleaf debajo del header */}
-      <div className="sticky top-14 z-40 border-b border-white/10 bg-[#1C2D20]/95 backdrop-blur supports-[backdrop-filter]:bg-[#1C2D20]/85">
+      <div className="sticky top-14 z-40 border-b border-white/10 bg-[#111C15]/95 backdrop-blur supports-[backdrop-filter]:bg-[#111C15]/85">
         <div className="mx-auto max-w-[1680px] px-4 py-2 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <Button
@@ -1094,9 +1095,88 @@ export default function AdminBibliotecaEditorPage() {
             <p className="text-white/80">No se pudo cargar la obra.</p>
           </div>
         ) : (
-          <div className="h-[calc(100vh-146px)] grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div className="rounded-xl border border-white/10 bg-[#354B3A] overflow-hidden flex flex-col shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
-              <div className="p-4 flex-1 overflow-auto">
+          <div className="grid min-h-[calc(100vh-146px)] grid-cols-1 gap-4 xl:grid-cols-[280px_minmax(0,1.1fr)_minmax(420px,0.9fr)]">
+            <aside className="overflow-hidden rounded-2xl border border-white/10 bg-[#23362B] shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
+              <div className="border-b border-white/10 px-4 py-3">
+                <div className="text-xs uppercase tracking-[0.22em] text-[#40C9A9]">Proyecto</div>
+                <div className="mt-1 text-lg font-semibold text-white">Estructura del libro</div>
+              </div>
+              <div className="space-y-4 p-4 text-sm text-white/80">
+                <div className="space-y-2">
+                  <Label className="text-xs text-white/55">Slug</Label>
+                  <input
+                    value={form.slug}
+                    onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
+                    className="h-10 w-full rounded-lg border border-white/10 bg-[#17251D] px-3 text-sm text-white outline-none focus:border-[#40C9A9]/35"
+                    placeholder="mi-libro"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-white/55">Descripción</Label>
+                  <Textarea
+                    value={form.descripcion}
+                    onChange={(e) => setForm((f) => ({ ...f, descripcion: e.target.value }))}
+                    className="min-h-[120px] border-white/10 bg-[#17251D] text-white placeholder:text-white/35"
+                    placeholder="Resumen breve de la obra"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label className="text-xs text-white/55">Orden</Label>
+                    <input
+                      type="number"
+                      value={form.orden}
+                      onChange={(e) => setForm((f) => ({ ...f, orden: parseInt(e.target.value, 10) || 0 }))}
+                      className="h-10 w-full rounded-lg border border-white/10 bg-[#17251D] px-3 text-sm text-white outline-none focus:border-[#40C9A9]/35"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs text-white/55">Estado</Label>
+                    <button
+                      type="button"
+                      onClick={() => setForm((f) => ({ ...f, isPublished: !f.isPublished }))}
+                      className={cn(
+                        "flex h-10 w-full items-center justify-center rounded-lg border text-sm transition-colors",
+                        form.isPublished
+                          ? "border-[#40C9A9]/35 bg-[#40C9A9]/12 text-[#9FE9D6]"
+                          : "border-white/10 bg-[#17251D] text-white/70",
+                      )}
+                    >
+                      {form.isPublished ? "Publicada" : "Borrador"}
+                    </button>
+                  </div>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-[#17251D] p-3">
+                  <div className="text-xs uppercase tracking-[0.18em] text-white/45">Resumen</div>
+                  <div className="mt-3 grid gap-2 text-xs text-white/65">
+                    <div className="flex items-center justify-between">
+                      <span>Páginas preview</span>
+                      <strong className="text-white">{previewPages.length}</strong>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Modo editor</span>
+                      <strong className="capitalize text-white">{editorMode}</strong>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Compilación</span>
+                      <strong className={latexPreview.issues.length ? "text-amber-200" : "text-[#9FE9D6]"}>
+                        {latexPreview.issues.length ? `${latexPreview.issues.length} avisos` : "Limpia"}
+                      </strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </aside>
+
+            <section className="overflow-hidden rounded-2xl border border-white/10 bg-[#23362B] shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
+              <div className="flex items-center justify-between border-b border-white/10 bg-[#17251D] px-4 py-3">
+                <div>
+                  <div className="text-xs uppercase tracking-[0.2em] text-[#40C9A9]">Fuente</div>
+                  <div className="text-sm font-medium text-white">Editor del manuscrito</div>
+                </div>
+                <div className="text-xs text-white/45">Estilo Overleaf, tema Caleta</div>
+              </div>
+              <div className="p-4 h-[calc(100vh-224px)] overflow-auto">
                 <DualMarkdownEditor
                   ref={editorRef}
                   value={form.cuerpo}
@@ -1109,12 +1189,13 @@ export default function AdminBibliotecaEditorPage() {
                   onModeChange={setEditorMode}
                 />
               </div>
-            </div>
+            </section>
 
-            <div className="rounded-xl border border-white/10 bg-[#354B3A] overflow-hidden flex flex-col shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
-              <div className="border-b border-white/10 bg-[#1C2D20] px-4 py-3">
+            <section className="overflow-hidden rounded-2xl border border-white/10 bg-[#23362B] shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
+              <div className="border-b border-white/10 bg-[#17251D] px-4 py-3">
                 <div className="flex items-center justify-between gap-3">
                   <div>
+                    <div className="text-xs uppercase tracking-[0.2em] text-[#40C9A9]">Salida</div>
                     <div className="text-white font-medium">Preview tipo PDF</div>
                     <div className="text-xs text-white/60">
                       {latexPreview.hasLatexDocument ? "LaTeX convertido a Markdown + KaTeX" : "Markdown + KaTeX"}
@@ -1150,7 +1231,7 @@ export default function AdminBibliotecaEditorPage() {
                 ) : null}
               </div>
               <div
-                className="p-4 flex-1 overflow-auto bg-[#203324]"
+                className="h-[calc(100vh-224px)] flex-1 overflow-auto bg-[#101A14]"
                 onWheel={onPreviewWheel}
                 onTouchStart={onPreviewTouchStart}
                 onTouchMove={onPreviewTouchMove}
@@ -1278,7 +1359,7 @@ export default function AdminBibliotecaEditorPage() {
                   ))}
                 </div>
               </div>
-            </div>
+            </section>
           </div>
         )}
       </div>

@@ -40,6 +40,7 @@ export async function GET(request: NextRequest) {
       select: {
         id: true,
         title: true,
+        activityType: true,
         description: true,
         location: true,
         startAt: true,
@@ -66,6 +67,7 @@ export async function POST(request: NextRequest) {
     const body = (await request.json().catch(() => null)) as
       | {
           title?: string;
+          activityType?: string | null;
           description?: string | null;
           location?: string | null;
           startAt?: string;
@@ -94,6 +96,7 @@ export async function POST(request: NextRequest) {
       data: {
         userId: session.user.id,
         title,
+        activityType: body?.activityType?.trim() || null,
         description: body?.description?.trim() || null,
         location: body?.location?.trim() || null,
         startAt,
@@ -105,6 +108,7 @@ export async function POST(request: NextRequest) {
       select: {
         id: true,
         title: true,
+        activityType: true,
         description: true,
         location: true,
         startAt: true,

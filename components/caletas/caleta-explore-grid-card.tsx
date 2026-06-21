@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Eye, Share2, Star } from "lucide-react";
+import { Eye, Heart, Share2, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TipoRecursoIcon, tipoEtiquetaCorta } from "@/components/caletas/recurso-tipo";
 
@@ -15,6 +15,8 @@ export type CaletaExploreRecurso = {
   numDescargas: number;
   numFavoritos?: number;
   isFavorito?: boolean;
+  numLikes?: number;
+  isLiked?: boolean;
   materia: { codigo: string; nombre: string } | null;
   autor: { id?: string; username?: string | null; name: string };
 };
@@ -24,6 +26,7 @@ type Props = {
   href: string;
   onRegistrarVista?: () => void;
   onToggleFavorito: () => void;
+  onToggleLike: () => void;
   onShare: () => void;
 };
 
@@ -35,9 +38,11 @@ export function CaletaExploreGridCard({
   href,
   onRegistrarVista,
   onToggleFavorito,
+  onToggleLike,
   onShare,
 }: Props) {
   const favoritosCount = recurso.numFavoritos ?? 0;
+  const likesCount = recurso.numLikes ?? 0;
 
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-xl border border-white/10 bg-[var(--mygreen-dark)] transition-colors hover:border-[color-mix(in_oklab,var(--accent-hex)_35%,transparent)] hover:bg-white/[0.04]">
@@ -85,6 +90,15 @@ export function CaletaExploreGridCard({
             {recurso.numVistas}
           </span>
           <span className="inline-flex items-center gap-0.5">
+            <Heart
+              className={cn(
+                "h-3 w-3 shrink-0",
+                recurso.isLiked ? "fill-rose-400 text-rose-400" : "text-white/55",
+              )}
+            />
+            {likesCount}
+          </span>
+          <span className="inline-flex items-center gap-0.5">
             <Star
               className={cn(
                 "h-3 w-3 shrink-0",
@@ -95,6 +109,27 @@ export function CaletaExploreGridCard({
           </span>
         </div>
         <div className="flex shrink-0 items-center gap-1">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onToggleLike();
+            }}
+            className={cn(
+              "inline-flex h-8 w-8 items-center justify-center rounded-lg border transition-colors",
+              "border-white/10 bg-white/5 hover:bg-white/10",
+            )}
+            aria-label={recurso.isLiked ? "Quitar like" : "Dar like"}
+            title={recurso.isLiked ? "Quitar like" : "Dar like"}
+          >
+            <Heart
+              className={cn(
+                "h-3.5 w-3.5",
+                recurso.isLiked ? "fill-rose-400 text-rose-400" : "text-white/80",
+              )}
+            />
+          </button>
           <button
             type="button"
             onClick={(e) => {

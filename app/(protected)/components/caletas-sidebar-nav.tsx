@@ -3,6 +3,7 @@ import {
   ArrowLeft,
   BarChart3,
   BookOpen,
+  CalendarDays,
   FileText,
   FolderKanban,
   HelpCircle,
@@ -727,21 +728,6 @@ export function CaletasSidebarNav({ userRole }: { userRole?: string | null }) {
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuSubItem>
-                    <SidebarMenuSubItem>
-                      <SidebarMenuButton asChild isActive={currentPath.startsWith("/academico/calendario")}>
-                        <Link
-                          href="/academico/calendario"
-                          onClick={closeMobile}
-                          className={cn(
-                            subLink,
-                            currentPath.startsWith("/academico/calendario") &&
-                              "bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)] text-white",
-                          )}
-                        >
-                          <span className="truncate">Calendario</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuSubItem>
                   </SidebarMenuSub>
                 </CollapsibleContent>
               </SidebarMenuItem>
@@ -798,6 +784,19 @@ export function CaletasSidebarNav({ userRole }: { userRole?: string | null }) {
                 </CollapsibleContent>
               </SidebarMenuItem>
             </Collapsible>
+
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                isActive={currentPath.startsWith("/academico/calendario")}
+                className="text-white hover:bg-white/10 data-[active=true]:bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)] data-[active=true]:text-white"
+              >
+                <Link href="/academico/calendario" onClick={closeMobile} className="flex min-w-0 items-center gap-2">
+                  <CalendarDays className="h-4 w-4 shrink-0 text-[var(--accent-hex)]" />
+                  <span className="truncate">Calendario</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
 
             <SidebarMenuItem>
               <SidebarMenuButton

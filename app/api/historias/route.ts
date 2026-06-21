@@ -35,10 +35,7 @@ export async function GET(request: NextRequest) {
       where: { followerId: session.user.id },
       select: { followingId: true },
     });
-    const allowedAutorIds = [
-      session.user.id,
-      ...followingRows.map((f) => f.followingId),
-    ];
+    const allowedAutorIds = [session.user.id, ...followingRows.map((f) => f.followingId)];
 
     const now = new Date();
     const rows = await db.historia.findMany({
@@ -54,6 +51,27 @@ export async function GET(request: NextRequest) {
         mediaType: true,
         expiresAt: true,
         createdAt: true,
+        likes: { where: { userId: session.user.id }, select: { id: true } },
+        _count: { select: { likes: true } },
+        autor: { select: { id: true, username: true, name: true, image: true } },
+      },
+    });
+
+    const discoveryRows = await db.historia.findMany({
+      where: {
+        expiresAt: { gt: now },
+        autorId: { notIn: allowedAutorIds },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 80,
+      select: {
+        id: true,
+        mediaUrl: true,
+        mediaType: true,
+        expiresAt: true,
+        createdAt: true,
+        likes: { where: { userId: session.user.id }, select: { id: true } },
+        _count: { select: { likes: true } },
         autor: { select: { id: true, username: true, name: true, image: true } },
       },
     });
@@ -62,20 +80,23 @@ export async function GET(request: NextRequest) {
       string,
       {
         autor: { id: string; username: string | null; name: string; image: string | null };
+        isDiscovery?: boolean;
         items: Array<{
           id: string;
           mediaUrl: string;
           mediaType: HistoriaMediaType;
           expiresAt: string;
           createdAt: string;
+          likesCount: number;
+          isLiked: boolean;
         }>;
       }
     >();
 
-    for (const r of rows) {
+    const pushRow = (r: (typeof rows)[number], isDiscovery = false) => {
       const aid = r.autor.id;
       if (!byAutor.has(aid)) {
-        byAutor.set(aid, { autor: r.autor, items: [] });
+        byAutor.set(aid, { autor: r.autor, items: [], isDiscovery });
       }
       byAutor.get(aid)!.items.push({
         id: r.id,
@@ -83,8 +104,19 @@ export async function GET(request: NextRequest) {
         mediaType: r.mediaType,
         expiresAt: r.expiresAt.toISOString(),
         createdAt: r.createdAt.toISOString(),
+        likesCount: r._count.likes,
+        isLiked: r.likes.length > 0,
       });
+    };
+
+    rows.forEach((row) => pushRow(row, false));
+
+    const discoveryByAutor = new Map<string, (typeof discoveryRows)[number]>();
+    for (const row of discoveryRows) {
+      if (!discoveryByAutor.has(row.autor.id)) discoveryByAutor.set(row.autor.id, row);
     }
+    const shuffledDiscovery = Array.from(discoveryByAutor.values()).sort(() => Math.random() - 0.5).slice(0, 10);
+    for (const row of shuffledDiscovery) pushRow(row, true);
 
     for (const b of byAutor.values()) {
       b.items.sort((a, c) => new Date(a.createdAt).getTime() - new Date(c.createdAt).getTime());
@@ -95,6 +127,7 @@ export async function GET(request: NextRequest) {
       const ownA = a.autor.id === viewerId;
       const ownB = b.autor.id === viewerId;
       if (ownA !== ownB) return ownA ? -1 : 1;
+      if (!!a.isDiscovery !== !!b.isDiscovery) return a.isDiscovery ? 1 : -1;
       const ta = Math.max(...a.items.map((i) => new Date(i.createdAt).getTime()), 0);
       const tb = Math.max(...b.items.map((i) => new Date(i.createdAt).getTime()), 0);
       return tb - ta;
