@@ -3,6 +3,7 @@
 import { Sidebar, SidebarInset, SidebarProvider, SidebarRail } from "@/components/ui/sidebar";
 import { CaletasSidebarNav } from "./caletas-sidebar-nav";
 import { DashboardHeader } from "./app-header";
+import { CalendarReminderHeartbeat } from "./calendar-reminder-heartbeat";
 import { EmailVerificationBanner } from "./email-verification-banner";
 import { MobileBottomNav } from "./mobile-bottom-nav";
 import { StudentComposeFab } from "@/components/caletas/caleta-share-fab";
@@ -44,6 +45,7 @@ export function ProtectedAppShell({
         <SidebarRail className="after:bg-white/20 hover:after:bg-[color-mix(in_oklab,var(--accent-hex)_50%,transparent)]" />
       </Sidebar>
       <SidebarInset className="flex min-h-0 min-w-0 flex-1 flex-col border-l border-white/10 bg-transparent">
+        <CalendarReminderHeartbeat />
         <DashboardHeader session={session} />
         {dbConnectionMessage ? (
           <div

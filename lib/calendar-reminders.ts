@@ -1,6 +1,5 @@
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { NextRequest, NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
 import { sendCalendarReminderEmail } from "@/lib/mail";
@@ -19,23 +18,13 @@ function reminderLabel(minutes: number) {
   return `en ${minutes} minutos`;
 }
 
-export async function GET(request: NextRequest) {
-  const expected = process.env.CRON_SECRET;
-  if (!expected) {
-    return NextResponse.json({ error: "CRON_SECRET no configurado" }, { status: 503 });
-  }
-
-  const header = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ?? "";
-  const q = request.nextUrl.searchParams.get("secret") ?? "";
-  if (header !== expected && q !== expected) {
-    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-  }
-
+export async function processCalendarRemindersForUser(userId: string) {
   const now = new Date();
   const horizon = new Date(now.getTime() + 48 * 60 * 60 * 1000);
 
   const events = await db.calendarEvent.findMany({
     where: {
+      userId,
       reminderMinutes: { not: null },
       reminderSentAt: null,
       startAt: { gt: now, lte: horizon },
@@ -52,16 +41,16 @@ export async function GET(request: NextRequest) {
       user: { select: { email: true, name: true } },
     },
     orderBy: { startAt: "asc" },
-    take: 200,
+    take: 40,
   });
 
   let sent = 0;
   const errors: string[] = [];
+
   for (const event of events) {
-    const reminderMinutes = event.reminderMinutes ?? 0;
-    const remindAt = new Date(event.startAt.getTime() - reminderMinutes * 60 * 1000);
-    const due = remindAt.getTime() <= now.getTime();
-    if (!due) continue;
+    const minutes = event.reminderMinutes ?? 0;
+    const remindAt = new Date(event.startAt.getTime() - minutes * 60 * 1000);
+    if (remindAt.getTime() > now.getTime()) continue;
 
     try {
       await sendCalendarReminderEmail({
@@ -73,7 +62,7 @@ export async function GET(request: NextRequest) {
         startLabel: event.allDay
           ? format(event.startAt, "PP", { locale: es })
           : format(event.startAt, "PPp", { locale: es }),
-        reminderLabel: reminderLabel(reminderMinutes),
+        reminderLabel: reminderLabel(minutes),
       });
 
       await db.calendarEvent.update({
@@ -82,10 +71,10 @@ export async function GET(request: NextRequest) {
       });
       sent += 1;
     } catch (error) {
-      console.error("[calendar-reminders:send]", event.id, error);
+      console.error("[calendar-reminders:user-send]", event.id, error);
       errors.push(event.id);
     }
   }
 
-  return NextResponse.json({ ok: true, scanned: events.length, sent, errors });
+  return { scanned: events.length, sent, errors };
 }
