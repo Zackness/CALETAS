@@ -32,7 +32,7 @@ const ACTIONS: ActionItem[] = [
   {
     key: "calendario",
     label: "Calendario",
-    href: "/academico/calendario?capture=voice",
+    href: "/academico/calendario/nuevo/voz",
     icon: CalendarDays,
     accent: "from-[#40C9A9]/35 to-[#1C2D20]",
   },
@@ -62,7 +62,7 @@ export function StudentComposeFab() {
     close();
   }, [pathname, close]);
 
-  if (pathname.startsWith("/login")) return null;
+  if (pathname.startsWith("/login") || pathname.startsWith("/academico/calendario/nuevo/voz")) return null;
 
   return (
     <>

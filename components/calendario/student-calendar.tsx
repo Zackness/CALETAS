@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   addMonths,
   eachDayOfInterval,
@@ -15,7 +15,7 @@ import {
   subMonths,
 } from "date-fns";
 import { es } from "date-fns/locale";
-import { CalendarDays, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Loader2, Mic, MicOff, Sparkles, Trash2, Wand2 } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, Loader2, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -38,17 +38,6 @@ type CalEvent = {
   reminderMinutes: number | null;
   reminderSentAt?: string | null;
   color: string | null;
-};
-
-type ProposedEvent = {
-  title: string;
-  activityType?: string | null;
-  startAt: string;
-  endAt: string;
-  allDay?: boolean;
-  description?: string | null;
-  location?: string | null;
-  reminderMinutes?: number | null;
 };
 
 const REMINDER_OPTIONS = [
@@ -96,8 +85,6 @@ function getDirectOpenAiModelLabel() {
 
 export function StudentCalendar() {
   const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
 
   const [viewDate, setViewDate] = useState(() => new Date());
   const [events, setEvents] = useState<CalEvent[]>([]);
@@ -113,12 +100,6 @@ export function StudentCalendar() {
   const [newReminderMinutes, setNewReminderMinutes] = useState<string>("30");
   const [saving, setSaving] = useState(false);
 
-  const [aiText, setAiText] = useState("");
-  const [aiBusy, setAiBusy] = useState(false);
-  const [aiPreview, setAiPreview] = useState<ProposedEvent[] | null>(null);
-  const [voiceAssistantOpen, setVoiceAssistantOpen] = useState(false);
-  const [micLevel, setMicLevel] = useState(0);
-
   const [detailEvent, setDetailEvent] = useState<CalEvent | null>(null);
   const [detailTitle, setDetailTitle] = useState("");
   const [detailActivityType, setDetailActivityType] = useState("");
@@ -130,19 +111,6 @@ export function StudentCalendar() {
   const [detailReminderMinutes, setDetailReminderMinutes] = useState<string>("30");
   const [detailSaving, setDetailSaving] = useState(false);
   const [activityFilter, setActivityFilter] = useState("all");
-
-  const [recording, setRecording] = useState(false);
-  const [transcribing, setTranscribing] = useState(false);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
-  const streamRef = useRef<MediaStream | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const analyserRef = useRef<AnalyserNode | null>(null);
-  const rafRef = useRef<number | null>(null);
-  const heardSpeechRef = useRef(false);
-  const silenceStartedAtRef = useRef<number | null>(null);
-  const autoCaptureStartedRef = useRef(false);
-  const startRecordingRef = useRef<(() => Promise<void>) | null>(null);
 
   const { gridStart, gridEnd, days } = useMemo(() => {
     const monthStart = startOfMonth(viewDate);
@@ -178,38 +146,6 @@ export function StudentCalendar() {
   useEffect(() => {
     void loadEvents();
   }, [loadEvents]);
-
-  useEffect(() => {
-    if (searchParams.get("capture") === "voice") {
-      setVoiceAssistantOpen(true);
-    } else {
-      autoCaptureStartedRef.current = false;
-    }
-  }, [searchParams]);
-
-  useEffect(() => {
-    if (
-      searchParams.get("capture") !== "voice" ||
-      autoCaptureStartedRef.current ||
-      !voiceAssistantOpen ||
-      recording ||
-      transcribing ||
-      aiBusy
-    ) {
-      return;
-    }
-
-    autoCaptureStartedRef.current = true;
-    void startRecordingRef.current?.();
-  }, [aiBusy, recording, searchParams, transcribing, voiceAssistantOpen]);
-
-  useEffect(() => {
-    return () => {
-      if (rafRef.current) window.cancelAnimationFrame(rafRef.current);
-      audioContextRef.current?.close().catch(() => undefined);
-      streamRef.current?.getTracks().forEach((t) => t.stop());
-    };
-  }, []);
 
   useEffect(() => {
     setDetailTitle(detailEvent?.title ?? "");
@@ -305,35 +241,6 @@ export function StudentCalendar() {
     }
   };
 
-  const resetAudioDetection = () => {
-    if (rafRef.current) {
-      window.cancelAnimationFrame(rafRef.current);
-      rafRef.current = null;
-    }
-    silenceStartedAtRef.current = null;
-    heardSpeechRef.current = false;
-    analyserRef.current = null;
-    audioContextRef.current?.close().catch(() => undefined);
-    audioContextRef.current = null;
-    setMicLevel(0);
-  };
-
-  const cancelRecording = () => {
-    const mr = mediaRecorderRef.current;
-    chunksRef.current = [];
-    mediaRecorderRef.current = null;
-    setRecording(false);
-    resetAudioDetection();
-    streamRef.current?.getTracks().forEach((track) => track.stop());
-    streamRef.current = null;
-
-    if (mr && mr.state !== "inactive") {
-      mr.ondataavailable = null;
-      mr.onstop = null;
-      mr.stop();
-    }
-  };
-
   const saveNewEvent = async () => {
     const title = newTitle.trim();
     if (!title) {
@@ -373,102 +280,6 @@ export function StudentCalendar() {
       toast.error(e instanceof Error ? e.message : "Error al guardar");
     } finally {
       setSaving(false);
-    }
-  };
-
-  const runAiParse = async (rawText?: string) => {
-    const text = (rawText ?? aiText).trim();
-    if (!text) {
-      toast.error("Escribe o dicta qué quieres agendar");
-      return;
-    }
-    if (rawText !== undefined) setAiText(text);
-    setAiBusy(true);
-    try {
-      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "America/Caracas";
-      const res = await fetch("/api/academico/cronograma/ai/parse", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, timezone: tz }),
-      });
-      const data = await res.json();
-      if (res.status === 402) {
-        toast.error(data?.error || "Límite de prueba alcanzado");
-        return;
-      }
-      if (!res.ok) throw new Error(data?.error || "IA no pudo interpretar el texto");
-      const list = Array.isArray(data.events) ? data.events : [];
-      if (!list.length) {
-        toast.message("No se detectaron eventos. Prueba siendo más específico con fechas.");
-        setAiPreview([]);
-        return;
-      }
-      setAiPreview(
-        list.map((event: ProposedEvent) => ({
-          ...event,
-          activityType: event.activityType ?? null,
-          reminderMinutes: event.reminderMinutes ?? 30,
-        })),
-      );
-      toast.success(`${list.length} evento(s) listos para guardar`);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Error con IA");
-    } finally {
-      setAiBusy(false);
-    }
-  };
-
-  const saveAiBatch = async () => {
-    if (!aiPreview?.length) return false;
-
-    for (const ev of aiPreview) {
-      const title = ev.title.trim();
-      const startAt = new Date(ev.startAt);
-      const endAt = new Date(ev.endAt);
-      if (!title) {
-        toast.error("Cada evento debe tener título");
-        return false;
-      }
-      if (Number.isNaN(startAt.getTime()) || Number.isNaN(endAt.getTime())) {
-        toast.error("Revisa las fechas de la vista previa");
-        return false;
-      }
-      if (endAt.getTime() < startAt.getTime()) {
-        toast.error("La fecha final no puede ser menor que la inicial");
-        return false;
-      }
-    }
-
-    setAiBusy(true);
-    try {
-      for (const ev of aiPreview) {
-        const res = await fetch("/api/academico/cronograma/events", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            title: ev.title,
-            activityType: ev.activityType ?? null,
-            startAt: ev.startAt,
-            endAt: ev.endAt,
-            allDay: !!ev.allDay,
-            description: ev.description ?? null,
-            location: ev.location ?? null,
-            reminderMinutes: ev.reminderMinutes === undefined ? 30 : ev.reminderMinutes,
-          }),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data?.error || "Error guardando un evento");
-      }
-      toast.success("Eventos guardados en tu calendario");
-      setAiPreview(null);
-      setAiText("");
-      await loadEvents();
-      return true;
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Error al guardar");
-      return false;
-    } finally {
-      setAiBusy(false);
     }
   };
 
@@ -538,191 +349,6 @@ export function StudentCalendar() {
     }
   };
 
-  const stopRecording = () => {
-    const mr = mediaRecorderRef.current;
-    if (!mr || mr.state === "inactive") {
-      setRecording(false);
-      resetAudioDetection();
-      return;
-    }
-
-    mr.onstop = async () => {
-      streamRef.current?.getTracks().forEach((t) => t.stop());
-      streamRef.current = null;
-      setRecording(false);
-      mediaRecorderRef.current = null;
-      resetAudioDetection();
-
-      const blob = new Blob(chunksRef.current, { type: mr.mimeType || "audio/webm" });
-      chunksRef.current = [];
-      if (blob.size < 512) {
-        toast.error("Grabación demasiado corta");
-        return;
-      }
-
-      setTranscribing(true);
-      try {
-        const formData = new FormData();
-        formData.append("audio", blob, "nota.webm");
-        const res = await fetch("/api/academico/cronograma/ai/transcribe", {
-          method: "POST",
-          body: formData,
-        });
-        const data = await res.json();
-        if (res.status === 402) {
-          toast.error(data?.error || "Límite de prueba");
-          return;
-        }
-        if (!res.ok) throw new Error(data?.error || "Transcripción fallida");
-
-        const text = String(data.text || "").trim();
-        if (!text) {
-          toast.error("No se entendió el audio");
-          return;
-        }
-
-        setAiText(text);
-        await runAiParse(text);
-      } catch (e) {
-        toast.error(e instanceof Error ? e.message : "Error de transcripción");
-      } finally {
-        setTranscribing(false);
-      }
-    };
-
-    mr.stop();
-  };
-
-  const startRecording = async () => {
-    if (recording || transcribing || aiBusy) return;
-    setVoiceAssistantOpen(true);
-    setAiPreview(null);
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      streamRef.current = stream;
-      chunksRef.current = [];
-      silenceStartedAtRef.current = null;
-      heardSpeechRef.current = false;
-
-      const mime = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
-        ? "audio/webm;codecs=opus"
-        : MediaRecorder.isTypeSupported("audio/webm")
-          ? "audio/webm"
-          : "";
-      const recorder = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
-
-      mediaRecorderRef.current = recorder;
-      recorder.ondataavailable = (event) => {
-        if (event.data.size > 0) chunksRef.current.push(event.data);
-      };
-      recorder.onstop = () => {
-        stream.getTracks().forEach((track) => track.stop());
-        streamRef.current = null;
-      };
-
-      const AudioContextCtor =
-        window.AudioContext ||
-        (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-      if (AudioContextCtor) {
-        const audioContext = new AudioContextCtor();
-        const source = audioContext.createMediaStreamSource(stream);
-        const analyser = audioContext.createAnalyser();
-        analyser.fftSize = 1024;
-        source.connect(analyser);
-        audioContextRef.current = audioContext;
-        analyserRef.current = analyser;
-
-        const data = new Uint8Array(analyser.frequencyBinCount);
-        const sample = () => {
-          if (!mediaRecorderRef.current || mediaRecorderRef.current.state === "inactive" || !analyserRef.current) {
-            return;
-          }
-
-          analyserRef.current.getByteTimeDomainData(data);
-          let total = 0;
-          for (let i = 0; i < data.length; i += 1) {
-            total += Math.abs(data[i] - 128);
-          }
-
-          const level = total / data.length / 24;
-          setMicLevel(Math.max(0, Math.min(1, level)));
-
-          const now = performance.now();
-          if (level > 0.09) {
-            heardSpeechRef.current = true;
-            silenceStartedAtRef.current = null;
-          } else if (heardSpeechRef.current) {
-            if (!silenceStartedAtRef.current) {
-              silenceStartedAtRef.current = now;
-            } else if (now - silenceStartedAtRef.current > 1700) {
-              stopRecording();
-              return;
-            }
-          }
-
-          rafRef.current = window.requestAnimationFrame(sample);
-        };
-
-        rafRef.current = window.requestAnimationFrame(sample);
-      }
-
-      recorder.start(200);
-      setRecording(true);
-    } catch {
-      resetAudioDetection();
-      toast.error("No se pudo acceder al micrófono");
-    }
-  };
-
-  startRecordingRef.current = startRecording;
-
-  const updatePreviewEvent = (index: number, patch: Partial<ProposedEvent>) => {
-    setAiPreview((current) => {
-      if (!current) return current;
-      return current.map((event, eventIndex) => (eventIndex === index ? { ...event, ...patch } : event));
-    });
-  };
-
-  const removePreviewEvent = (index: number) => {
-    setAiPreview((current) => {
-      if (!current) return current;
-      const next = current.filter((_, eventIndex) => eventIndex !== index);
-      return next;
-    });
-  };
-
-  const movePreviewEvent = (index: number, direction: -1 | 1) => {
-    setAiPreview((current) => {
-      if (!current) return current;
-      const targetIndex = index + direction;
-      if (targetIndex < 0 || targetIndex >= current.length) return current;
-      const next = [...current];
-      const [item] = next.splice(index, 1);
-      next.splice(targetIndex, 0, item);
-      return next;
-    });
-  };
-
-  const closeVoiceAssistant = () => {
-    if (recording) {
-      cancelRecording();
-    }
-    setVoiceAssistantOpen(false);
-    if (searchParams.get("capture") === "voice") {
-      router.replace(pathname, { scroll: false });
-    }
-  };
-
-  const voiceStatus = transcribing
-    ? "Transcribiendo tu instrucción"
-    : aiBusy
-      ? "Convirtiendo tu voz en eventos"
-      : recording
-        ? "Escuchando. Cuando detecte silencio termina sola"
-        : aiPreview?.length
-          ? `${aiPreview.length} evento(s) listos para guardar`
-          : "Pulsa el círculo y habla como si fuera Siri";
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
@@ -733,10 +359,7 @@ export function StudentCalendar() {
         <Button
           type="button"
           className="rounded-full bg-[var(--accent-hex)] px-5 text-[#1C2D20] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)]"
-          onClick={() => {
-            setVoiceAssistantOpen(true);
-            void startRecording();
-          }}
+          onClick={() => router.push("/academico/calendario/nuevo/voz")}
         >
           <Sparkles className="mr-2 h-4 w-4" />
           Crear con voz
@@ -899,305 +522,6 @@ export function StudentCalendar() {
           </CardContent>
         </Card>
       ) : null}
-
-      <Dialog open={voiceAssistantOpen} onOpenChange={(open) => (!open ? closeVoiceAssistant() : setVoiceAssistantOpen(true))}>
-        <DialogContent className="border-white/10 bg-[#203324] p-0 text-white sm:max-w-2xl">
-          <div className="overflow-hidden rounded-[inherit] border border-white/10 bg-[radial-gradient(circle_at_top,_rgba(64,201,169,0.18),_transparent_45%),linear-gradient(180deg,#24372A_0%,#18261C_100%)]">
-            <DialogHeader className="px-6 pb-2 pt-6 text-left">
-              <DialogTitle className="flex items-center gap-2 font-special text-2xl">
-                <Sparkles className="h-5 w-5 text-[var(--accent-hex)]" />
-                Calendario con voz
-              </DialogTitle>
-              <p className="text-sm text-white/65">Usa tu API de ChatGPT para escuchar, transcribir y convertir instrucciones en eventos.</p>
-            </DialogHeader>
-
-            <div className="space-y-5 px-6 pb-6">
-              <div className="rounded-2xl border border-white/10 bg-black/10 px-4 py-3 text-sm text-white/70">
-                Motor activo: <span className="font-medium text-white">{getDirectOpenAiModelLabel()}</span>
-              </div>
-
-              <div className="flex flex-col items-center justify-center gap-4 py-4 text-center">
-                <button
-                  type="button"
-                  onClick={() => void (recording ? stopRecording() : startRecording())}
-                  disabled={transcribing || aiBusy}
-                  className="relative flex h-40 w-40 items-center justify-center rounded-full border border-white/10 bg-[#102017] transition-transform hover:scale-[1.02] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
-                  aria-label={recording ? "Detener grabación" : "Iniciar grabación"}
-                >
-                  <span
-                    className="absolute inset-0 rounded-full bg-[var(--accent-hex)]/20 blur-xl transition-all duration-150"
-                    style={{ transform: `scale(${1 + micLevel * 0.35})`, opacity: recording ? 0.9 : 0.35 }}
-                  />
-                  <span
-                    className="absolute inset-3 rounded-full border border-[var(--accent-hex)]/25"
-                    style={{ transform: `scale(${1 + micLevel * 0.18})` }}
-                  />
-                  <span className="relative flex h-24 w-24 items-center justify-center rounded-full bg-[var(--accent-hex)] text-[#102017] shadow-[0_0_45px_rgba(64,201,169,0.35)]">
-                    {transcribing || aiBusy ? (
-                      <Loader2 className="h-9 w-9 animate-spin" />
-                    ) : recording ? (
-                      <MicOff className="h-9 w-9" />
-                    ) : (
-                      <Mic className="h-9 w-9" />
-                    )}
-                  </span>
-                </button>
-
-                <div className="space-y-2">
-                  <p className="text-lg font-medium text-white">{voiceStatus}</p>
-                  <p className="text-sm text-white/55">
-                    Ejemplo: &quot;Agéndame la exposición final el viernes a las 10 de la mañana en el aula 2&quot;.
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
-                <div className="rounded-2xl border border-white/10 bg-[#122017]/90 p-4">
-                  <div className="mb-2 flex items-center gap-2 text-sm font-medium text-white/80">
-                    <Wand2 className="h-4 w-4 text-[var(--accent-hex)]" />
-                    Instrucción detectada
-                  </div>
-                  <Textarea
-                    value={aiText}
-                    onChange={(e) => setAiText(e.target.value)}
-                    placeholder='Ej: "Pon reunión con Mariana mañana a las 4pm"'
-                    className="min-h-[180px] border-white/10 bg-[#0F1A13] text-white placeholder:text-white/35"
-                  />
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <Button
-                      type="button"
-                      className="bg-[var(--accent-hex)] text-[#1C2D20] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)]"
-                      disabled={aiBusy || transcribing || !aiText.trim()}
-                      onClick={() => void runAiParse()}
-                    >
-                      {aiBusy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                      Interpretar con IA
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="border-white/15 bg-transparent text-white hover:bg-white/10"
-                      disabled={recording || transcribing || aiBusy}
-                      onClick={() => void startRecording()}
-                    >
-                      <Mic className="mr-2 h-4 w-4" />
-                      Volver a grabar
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="rounded-2xl border border-white/10 bg-[#122017]/90 p-4">
-                  <div className="mb-3 flex items-center gap-2 text-sm font-medium text-white/80">
-                    <CalendarDays className="h-4 w-4 text-[var(--accent-hex)]" />
-                    Vista previa
-                  </div>
-                  {aiPreview && aiPreview.length > 0 ? (
-                    <ul className="space-y-3 text-sm text-white/85">
-                      {aiPreview.map((ev, i) => (
-                        <li key={`${ev.title}-${i}`} className="rounded-xl border border-white/8 bg-[#0F1A13] p-3">
-                          <div className="mb-3 flex items-start justify-between gap-2">
-                            <div>
-                              <div className="text-xs font-medium uppercase tracking-[0.18em] text-white/40">Evento {i + 1}</div>
-                              <div className="mt-1 text-xs text-white/60">
-                                {format(new Date(ev.startAt), "PPp", { locale: es })} → {format(new Date(ev.endAt), "PPp", { locale: es })}
-                                {ev.allDay ? " · día completo" : ""}
-                              </div>
-                            </div>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-white/45 hover:bg-white/10 hover:text-white"
-                              onClick={() => movePreviewEvent(i, -1)}
-                              disabled={i === 0}
-                              aria-label={`Subir evento ${i + 1}`}
-                            >
-                              <ChevronUp className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-white/45 hover:bg-white/10 hover:text-white"
-                              onClick={() => movePreviewEvent(i, 1)}
-                              disabled={i === aiPreview.length - 1}
-                              aria-label={`Bajar evento ${i + 1}`}
-                            >
-                              <ChevronDown className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-white/45 hover:bg-white/10 hover:text-red-300"
-                              onClick={() => removePreviewEvent(i)}
-                              aria-label={`Eliminar evento ${i + 1}`}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-
-                          <div className="space-y-3">
-                            <div>
-                              <Label className="text-xs text-white/65">Título</Label>
-                              <Input
-                                value={ev.title}
-                                onChange={(e) => updatePreviewEvent(i, { title: e.target.value })}
-                                className="mt-1 border-white/10 bg-[#132118] text-white"
-                              />
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                              <input
-                                id={`preview-all-day-${i}`}
-                                type="checkbox"
-                                checked={!!ev.allDay}
-                                onChange={(e) => {
-                                  const checked = e.target.checked;
-                                  if (checked) {
-                                    const day = toDateInputValue(ev.startAt);
-                                    updatePreviewEvent(i, {
-                                      allDay: true,
-                                      startAt: new Date(`${day}T00:00`).toISOString(),
-                                      endAt: new Date(`${day}T23:59`).toISOString(),
-                                    });
-                                    return;
-                                  }
-                                  const start = toDateTimeInputValue(ev.startAt);
-                                  const end = toDateTimeInputValue(ev.endAt);
-                                  updatePreviewEvent(i, {
-                                    allDay: false,
-                                    startAt: new Date(start).toISOString(),
-                                    endAt: new Date(end).toISOString(),
-                                  });
-                                }}
-                                className="rounded border-white/30"
-                              />
-                              <Label htmlFor={`preview-all-day-${i}`} className="text-xs text-white/70">
-                                Todo el día
-                              </Label>
-                            </div>
-
-                            <div className={cn("grid gap-3", ev.allDay ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2")}>
-                              <div>
-                                <Label className="text-xs text-white/65">Inicio</Label>
-                                <Input
-                                  type={ev.allDay ? "date" : "datetime-local"}
-                                  value={ev.allDay ? toDateInputValue(ev.startAt) : toDateTimeInputValue(ev.startAt)}
-                                  onChange={(e) => {
-                                    const value = e.target.value;
-                                    if (ev.allDay) {
-                                      updatePreviewEvent(i, {
-                                        startAt: new Date(`${value}T00:00`).toISOString(),
-                                        endAt: new Date(`${value}T23:59`).toISOString(),
-                                      });
-                                      return;
-                                    }
-                                    updatePreviewEvent(i, { startAt: new Date(value).toISOString() });
-                                  }}
-                                  className="mt-1 border-white/10 bg-[#132118] text-white"
-                                />
-                              </div>
-
-                              {!ev.allDay ? (
-                                <div>
-                                  <Label className="text-xs text-white/65">Fin</Label>
-                                  <Input
-                                    type="datetime-local"
-                                    value={toDateTimeInputValue(ev.endAt)}
-                                    onChange={(e) => updatePreviewEvent(i, { endAt: new Date(e.target.value).toISOString() })}
-                                    className="mt-1 border-white/10 bg-[#132118] text-white"
-                                  />
-                                </div>
-                              ) : null}
-                            </div>
-
-                            <div>
-                              <Label className="text-xs text-white/65">Ubicación</Label>
-                              <Input
-                                value={ev.location ?? ""}
-                                onChange={(e) => updatePreviewEvent(i, { location: e.target.value || null })}
-                                className="mt-1 border-white/10 bg-[#132118] text-white"
-                              />
-                            </div>
-
-                            <div>
-                              <Label className="text-xs text-white/65">Recordatorio por correo</Label>
-                              <select
-                                value={ev.reminderMinutes == null ? "" : String(ev.reminderMinutes)}
-                                onChange={(e) =>
-                                  updatePreviewEvent(i, {
-                                    reminderMinutes: e.target.value === "" ? null : Number(e.target.value),
-                                  })
-                                }
-                                className="mt-1 flex h-10 w-full rounded-md border border-white/10 bg-[#132118] px-3 py-2 text-sm text-white outline-none"
-                              >
-                                {REMINDER_OPTIONS.map((option) => (
-                                  <option key={option.value} value={option.value} className="bg-[#132118] text-white">
-                                    {option.label}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-
-                            <div>
-                              <Label className="text-xs text-white/65">Nota</Label>
-                              <Textarea
-                                value={ev.description ?? ""}
-                                onChange={(e) => updatePreviewEvent(i, { description: e.target.value || null })}
-                                className="mt-1 min-h-[90px] border-white/10 bg-[#132118] text-white"
-                              />
-                            </div>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <div className="rounded-xl border border-dashed border-white/10 bg-[#0F1A13] px-4 py-8 text-center text-sm text-white/45">
-                      Cuando termines de hablar aparecerán aquí los eventos que se van a guardar.
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <DialogFooter className="flex-col gap-2 border-t border-white/10 px-0 pt-1 sm:flex-row sm:justify-between">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="text-white/70 hover:bg-white/10 hover:text-white"
-                  onClick={() => {
-                    setAiPreview(null);
-                    setAiText("");
-                  }}
-                >
-                  Limpiar
-                </Button>
-                <div className="flex flex-wrap justify-end gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="border-white/20 bg-transparent text-white hover:bg-white/10"
-                    onClick={closeVoiceAssistant}
-                  >
-                    Cerrar
-                  </Button>
-                  <Button
-                    type="button"
-                    className="bg-[var(--accent-hex)] text-[#1C2D20] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)]"
-                    disabled={!aiPreview?.length || aiBusy}
-                    onClick={async () => {
-                      const saved = await saveAiBatch();
-                      if (saved) closeVoiceAssistant();
-                    }}
-                  >
-                    Guardar en calendario
-                  </Button>
-                </div>
-              </DialogFooter>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="border-white/10 bg-[#203324] text-white sm:max-w-md">
