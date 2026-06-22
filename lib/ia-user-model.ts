@@ -17,6 +17,27 @@ export type ResolveModelHint = {
   hasCaletaAttachments?: boolean;
 };
 
+export type IaNonSubBillingMode = "free_tier" | "wallet" | "referral";
+
+/** Modo de cobro sin suscripción (null = suscripción activa o día referido con modelos pro). */
+export function deriveNonSubModeFromAccess(
+  hasSubscription: boolean,
+  hasReferralIaDay: boolean,
+  access: { ok: true; mode: IaNonSubBillingMode } | { ok: false } | null | undefined,
+): IaNonSubBillingMode | null {
+  if (hasSubscription || hasReferralIaDay) return null;
+  return access?.ok ? access.mode : null;
+}
+
+/** Solo free_tier fuerza modelos $0; wallet y referral usan preferencias del usuario. */
+export function mapNonSubModeForModelResolve(
+  mode: IaNonSubBillingMode | null | undefined,
+): "free_tier" | "wallet" | null {
+  if (mode === "free_tier") return "free_tier";
+  if (mode === "wallet") return "wallet";
+  return null;
+}
+
 export function endpointToStudentIaRole(endpoint: IaWalletBillableEndpoint): StudentIaModelRole {
   if (endpoint === "ia/chat" || endpoint === "aprende-pic18/tutor/chat") return "chat";
   if (endpoint === "academico/cronograma/ai") return "cronograma";
@@ -82,9 +103,6 @@ export async function resolveModelForIaCall(params: {
         iaLlmModeChat: true,
         iaLlmModeHeavy: true,
         iaLlmModeCronograma: true,
-        iaModelChat: true,
-        iaModelHeavy: true,
-        iaModelCronograma: true,
       },
     });
     const mode =
@@ -102,13 +120,8 @@ export async function resolveModelForIaCall(params: {
         hasCaletaAttachments: params.hint?.hasCaletaAttachments,
       });
     } else {
-      const raw =
-        params.role === "chat"
-          ? u?.iaModelChat
-          : params.role === "heavy"
-            ? u?.iaModelHeavy
-            : u?.iaModelCronograma;
-      model = (await sanitizeModelForRoleAsync(params.role, raw)) ?? (await resolveFreeTierModelForRole(params.role));
+      // Cupo gratis: nunca usar modelos de pago aunque el usuario los tenga guardados.
+      model = await resolveFreeTierModelForRole(params.role);
     }
   } else {
     model = await resolveUserOrDefaultModel(params.userId, params.role, params.hint);

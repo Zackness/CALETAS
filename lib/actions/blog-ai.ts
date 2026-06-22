@@ -4,6 +4,8 @@ import { generateObject } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { z } from "zod";
 import { requireAdminUserId } from "@/lib/auth";
+import { buildAppContextForAi } from "@/lib/blog/ai-app-context";
+import { gatherProjectResearch } from "@/lib/blog/ai-project-research";
 import { BLOG_EDITOR_AI_SYSTEM_PROMPT } from "@/lib/blog/ai-system-prompt";
 import { BLOG_CATEGORY_IDS, getBlogCategoryLabel } from "@/lib/blog/categories";
 import type { BlogCategory } from "@prisma/client";
@@ -15,7 +17,11 @@ const blogCategoryEnum = z.enum(BLOG_CATEGORY_IDS);
 
 const articleSchema = z.object({
   title: z.string().describe("Título principal del artículo (H1)"),
-  content: z.string().describe("Cuerpo completo en Markdown, con H2/H3 y CTA final"),
+  content: z
+    .string()
+    .describe(
+      "Cuerpo completo en Markdown GFM: 2000-3500 palabras, mínimo 8 secciones H2, tablas si aplica, CTA final"
+    ),
   metaTitle: z.string().describe("Meta título SEO, ~60 caracteres"),
   metaDescription: z.string().describe("Meta descripción SEO, ~160 caracteres"),
   slug: z.string().describe("Slug URL en minúsculas con guiones"),
@@ -42,7 +48,7 @@ const fragmentSchema = z.object({
   content: z
     .string()
     .describe(
-      "Fragmento en Markdown para insertar en el artículo (##/###, listas, párrafos). Sin H1. Sin repetir el artículo entero."
+      "Fragmento en Markdown para insertar en el artículo (##/###, listas, tablas, párrafos). Sin H1. Sin repetir el artículo entero."
     ),
 });
 
@@ -50,6 +56,21 @@ export type BlogAiFragmentResult = z.infer<typeof fragmentSchema>;
 
 async function requireBlogAdmin() {
   return requireAdminUserId("Solo administradores pueden usar la IA del blog.");
+}
+
+async function buildSystemPrompt(instructions: string, mode: BlogAiMode): Promise<string> {
+  const appContext = await buildAppContextForAi();
+  const research =
+    mode === "generate" || mode === "improve"
+      ? await gatherProjectResearch(instructions)
+      : "";
+
+  return [
+    BLOG_EDITOR_AI_SYSTEM_PROMPT,
+    "\n\n---\n\n",
+    appContext,
+    research ? `\n\n---\n\n${research}` : "",
+  ].join("");
 }
 
 function buildUserPrompt(input: {
@@ -65,7 +86,7 @@ function buildUserPrompt(input: {
     `Categoría editorial asignada: ${categoryLabel} (ID: ${input.category})`,
     "",
     "Instrucciones del editor:",
-    input.instructions.trim() || "(Sin instrucciones adicionales; propón un tema estratégico acorde a la categoría.)",
+    input.instructions.trim() || "(Sin instrucciones adicionales; propón un tema útil para estudiantes de Caletas.)",
   ];
 
   if (input.mode !== "generate" && (input.currentTitle || input.currentContent)) {
@@ -73,19 +94,22 @@ function buildUserPrompt(input: {
     if (input.currentTitle) lines.push(`Título actual: ${input.currentTitle}`);
     if (input.currentContent) {
       lines.push("Contenido actual (Markdown):");
-      lines.push(input.currentContent.slice(0, 12000));
+      lines.push(input.currentContent.slice(0, 30_000));
     }
   }
 
   if (input.mode === "generate") {
     lines.push(
       "",
-      "Genera un artículo completo siguiendo la estructura recomendada (introducción, desarrollo, aplicación práctica, relación con STARTUPVEN, conclusión, CTA)."
+      "Genera un artículo COMPLETO y LARGO (2000-3500 palabras): introducción, desarrollo profundo con al menos 8 H2, tablas comparativas en Markdown si encajan, pasos prácticos, relación con Caletas/Aprende, conclusión y CTA.",
+      "Investiga mentalmente el contexto del proyecto que recibiste. No inventes features inexistentes."
     );
   } else if (input.mode === "improve") {
     lines.push(
       "",
-      "Mejora el borrador: más claridad, tono STVN, mejor estructura y valor estratégico. Mantén la intención del autor salvo que las instrucciones pidan otro enfoque."
+      "Mejora el borrador: amplía secciones cortas, más claridad, tono Caletas, mejor estructura y valor real para estudiantes.",
+      "Si el artículo es corto, expándelo hasta alcanzar profundidad similar a una guía larga (mínimo ~2000 palabras salvo que el borrador ya sea extenso).",
+      "Puedes añadir tablas GFM, FAQs y enlaces internos a /cursos, /register o artículos del blog."
     );
   } else {
     lines.push(
@@ -111,6 +135,7 @@ export async function generateBlogWithAi(input: {
   }
 
   const prompt = buildUserPrompt(input);
+  const system = await buildSystemPrompt(input.instructions, input.mode);
 
   if (input.mode === "seo") {
     if (!input.currentTitle?.trim() && !input.currentContent?.trim()) {
@@ -118,7 +143,7 @@ export async function generateBlogWithAi(input: {
     }
     const { object } = await generateObject({
       model: openai("gpt-4o-mini"),
-      system: BLOG_EDITOR_AI_SYSTEM_PROMPT,
+      system,
       prompt,
       schema: seoOnlySchema,
       temperature: 0.5,
@@ -130,11 +155,12 @@ export async function generateBlogWithAi(input: {
   }
 
   const { object } = await generateObject({
-    model: openai("gpt-4o-mini"),
-    system: BLOG_EDITOR_AI_SYSTEM_PROMPT,
+    model: openai("gpt-4o"),
+    system,
     prompt,
     schema: articleSchema,
     temperature: 0.65,
+    maxTokens: 16_000,
   });
 
   return {
@@ -164,6 +190,7 @@ export async function generateBlogFragmentWithAi(input: {
   const categoryLabel = getBlogCategoryLabel(input.category);
   const before = (input.contentBefore ?? "").trim().slice(-2000);
   const after = (input.contentAfter ?? "").trim().slice(0, 2000);
+  const system = await buildSystemPrompt(instructions, "improve");
 
   const prompt = [
     "Modo: FRAGMENTO para insertar en un artículo existente (no reescribas el artículo completo).",
@@ -179,17 +206,18 @@ export async function generateBlogFragmentWithAi(input: {
     "Instrucciones del editor para este fragmento:",
     instructions,
     "",
-    "Entrega solo el bloque nuevo en Markdown, coherente con el contexto. Usa ## o ### si necesitas subtítulo, nunca #. Incluye párrafos completos. Sin emojis salvo petición explícita.",
+    "Entrega solo el bloque nuevo en Markdown GFM, coherente con el contexto. Usa ## o ### si necesitas subtítulo, nunca #. Incluye párrafos completos; tablas si encajan. Sin emojis salvo petición explícita.",
   ]
     .filter(Boolean)
     .join("\n");
 
   const { object } = await generateObject({
     model: openai("gpt-4o-mini"),
-    system: BLOG_EDITOR_AI_SYSTEM_PROMPT,
+    system,
     prompt,
     schema: fragmentSchema,
     temperature: 0.6,
+    maxTokens: 4_000,
   });
 
   return object;

@@ -9,6 +9,7 @@ import {
   ImagePlus,
   Sparkles,
   Link2,
+  Table,
 } from "lucide-react";
 import type { SlashMenuItem } from "@/lib/editor/slash-types";
 
@@ -70,6 +71,14 @@ export const BLOG_SLASH_ITEMS: BlogSlashItem[] = [
     icon: Minus,
     keywords: ["linea", "hr", "divisor"],
     insert: "\n---\n\n",
+  },
+  {
+    id: "table",
+    label: "Tabla",
+    description: "Tabla comparativa (Markdown)",
+    icon: Table,
+    keywords: ["tabla", "table", "comparativa", "columnas"],
+    insert: "| Columna 1 | Columna 2 |\n|-----------|----------|\n| Celda 1   | Celda 2   |\n\n",
   },
   {
     id: "link",

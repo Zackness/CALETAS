@@ -1,5 +1,6 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { blogMarkdownTableComponents } from "@/lib/blog/markdown-table-components";
 import { cn } from "@/lib/utils";
 
 export function BlogPostContent({ content, className }: { content: string; className?: string }) {
@@ -14,7 +15,9 @@ export function BlogPostContent({ content, className }: { content: string; class
         className
       )}
     >
-      <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+      <ReactMarkdown remarkPlugins={[remarkGfm]} components={blogMarkdownTableComponents}>
+        {content}
+      </ReactMarkdown>
     </article>
   );
 }

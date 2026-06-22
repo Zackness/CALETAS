@@ -11,7 +11,12 @@ import {
   settleSubscribedIaAfterCall,
 } from "@/lib/ia-subscription-meter";
 import { settleNonSubscriptionIaAfterCall } from "@/lib/ia-non-sub-settle";
-import { resolveModelForIaCall } from "@/lib/ia-user-model";
+import {
+  deriveNonSubModeFromAccess,
+  mapNonSubModeForModelResolve,
+  resolveModelForIaCall,
+} from "@/lib/ia-user-model";
+import { getActiveReferralBoostForUser } from "@/lib/referral-boost";
 import { createOpenAIForStudentIa, hasStudentIaLlmCredentials, STUDENT_IA_GATEWAY_KEY_HELP } from "@/lib/vercel-ia-gateway";
 
 function withCors(res: NextResponse, req: NextRequest) {
@@ -34,10 +39,12 @@ export async function POST(request: NextRequest) {
       );
     }
     const sub = await getActiveSubscriptionForUser(session.user.id);
+    const referralBoost = await getActiveReferralBoostForUser(session.user.id);
+    const hasReferralIaDay = !!referralBoost;
     const hasSubscription = !!sub;
     let subscriptionIaGate: Awaited<ReturnType<typeof assertSubscriptionIaTokenGate>> | null = null;
     let nonSubIaAccess: Awaited<ReturnType<typeof assertTrialReferralOrWalletForIa>> | null = null;
-    if (!hasSubscription) {
+    if (!hasReferralIaDay && !hasSubscription) {
       nonSubIaAccess = await assertTrialReferralOrWalletForIa({
         userId: session.user.id,
         endpoint: "ia/cuestionario",
@@ -129,11 +136,11 @@ Estructura JSON esperada:
 Las preguntas deben ser variadas y cubrir diferentes aspectos del contenido, desde conceptos básicos hasta aplicaciones prácticas.
 `;
 
-    const nonSubMode = !hasSubscription && nonSubIaAccess?.ok ? nonSubIaAccess.mode : null;
+    const nonSubMode = deriveNonSubModeFromAccess(hasSubscription, hasReferralIaDay, nonSubIaAccess);
     const model = await resolveModelForIaCall({
       userId: session.user.id,
       role: "heavy",
-      nonSubMode: nonSubMode === "free_tier" ? "free_tier" : nonSubMode === "wallet" ? "wallet" : null,
+      nonSubMode: mapNonSubModeForModelResolve(nonSubMode),
     });
     if (hasSubscription && sub) {
       const gate = await assertSubscriptionIaTokenGate({

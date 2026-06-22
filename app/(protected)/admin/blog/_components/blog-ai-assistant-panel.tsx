@@ -80,7 +80,7 @@ export function BlogAiAssistantPanel({
         </p>
       </div>
       <p className="mt-1 text-[11px] leading-snug text-[var(--muted-foreground)]">
-        Redacción alineada con la marca STARTUPVEN. Describe el tema o qué necesitas.
+        Redacción para el blog de Caletas. Investiga el proyecto y describe el tema; genera artículos largos y útiles.
       </p>
 
       <textarea
@@ -88,7 +88,7 @@ export function BlogAiAssistantPanel({
         onChange={(e) => setInstructions(e.target.value)}
         rows={4}
         disabled={pending}
-        placeholder="Ej.: Artículo sobre por qué una pyme necesita infraestructura digital antes que más redes sociales…"
+        placeholder="Ej.: Artículo sobre el curso AprendeC++ POO, cómo sincroniza el progreso con Caletas y qué incluye el proyecto final…"
         className={cn(
           "mt-3 w-full resize-y rounded-lg border border-[var(--border)] bg-[var(--background)] px-2.5 py-2 text-sm",
           "text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[#40C9A9]/35"

@@ -133,6 +133,11 @@ export const BlogRichTextBody = forwardRef<
         "[&_a]:text-[#40C9A9] [&_a]:underline",
         "[&_img]:my-4 [&_img]:max-w-full [&_img]:rounded-lg",
         "[&_p]:my-2",
+        "[&_table]:my-4 [&_table]:w-full [&_table]:min-w-[480px] [&_table]:border-collapse [&_table]:text-sm",
+        "[&_th]:border [&_th]:border-white/10 [&_th]:bg-white/5 [&_th]:px-3 [&_th]:py-2 [&_th]:text-left [&_th]:font-semibold",
+        "[&_td]:border [&_td]:border-white/10 [&_td]:px-3 [&_td]:py-2",
+        "[&_thead]:bg-white/5",
+        "[&_tr]:border-b [&_tr]:border-white/10",
         className
       )}
     />

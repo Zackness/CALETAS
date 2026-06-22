@@ -3,21 +3,22 @@ import { toFile } from "openai/uploads";
 
 import { assertCronogramaAiAccess } from "@/lib/cronograma-ai-access";
 import { logAiUsage } from "@/lib/ai-usage";
-import { coerceToDirectOpenAiModel } from "@/lib/ia-models";
+import { withIaGatewayRatesForRequest } from "@/lib/ia-gateway-rates-request";
+import { createWhisperClient, hasStudentIaLlmCredentials } from "@/lib/ia-llm-client";
 import {
   estimateCronogramaTranscribeTokenEquivalent,
   settleSubscribedIaAfterCall,
 } from "@/lib/ia-subscription-meter";
 import { settleNonSubscriptionIaAfterCall } from "@/lib/ia-non-sub-settle";
-import { resolveWhisperModelId } from "@/lib/ia-models";
-import { createDirectOpenAIForStudentIa } from "@/lib/vercel-ia-gateway";
+import { STUDENT_IA_GATEWAY_KEY_HELP } from "@/lib/vercel-ia-gateway";
 
 const MAX_BYTES = 24 * 1024 * 1024; // Whisper límite práctico ~25MB
 
 export async function POST(request: NextRequest) {
+  return withIaGatewayRatesForRequest(async () => {
   try {
-    if (!process.env.OPENAI_API_KEY?.trim()) {
-      return NextResponse.json({ error: "Configura OPENAI_API_KEY para usar tu API de ChatGPT." }, { status: 500 });
+    if (!hasStudentIaLlmCredentials()) {
+      return NextResponse.json({ error: STUDENT_IA_GATEWAY_KEY_HELP }, { status: 500 });
     }
 
     const formData = await request.formData();
@@ -54,11 +55,7 @@ export async function POST(request: NextRequest) {
     const ext = mime.includes("webm") ? "webm" : mime.includes("mp4") ? "m4a" : "webm";
     const file = await toFile(buf, `grabacion.${ext}`, { type: mime });
 
-    const whisperModel = coerceToDirectOpenAiModel(
-      resolveWhisperModelId(),
-      process.env.IA_OPENAI_MODEL_WHISPER?.trim() || "whisper-1",
-    );
-    const openai = createDirectOpenAIForStudentIa();
+    const { client: openai, model: whisperModel } = createWhisperClient();
 
     const transcription = await openai.audio.transcriptions.create({
       file,
@@ -112,4 +109,5 @@ export async function POST(request: NextRequest) {
     console.error("[cronograma-ai-transcribe:post]", e);
     return NextResponse.json({ error: "Error interno al transcribir" }, { status: 500 });
   }
+  });
 }

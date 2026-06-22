@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import type { IAChatMessage } from "@/lib/ia-chat-store";
 import { IaChatMarkdown } from "@/components/ia/chat-markdown";
+import { IaChatThinkingIndicator } from "@/components/ia/chat-thinking-indicator";
 
 export function ChatMessageBubble({
   message,
@@ -22,6 +23,8 @@ export function ChatMessageBubble({
   sending,
   canEdit,
   isStreaming = false,
+  streamStatus,
+  streamThinking,
 }: {
   message: IAChatMessage;
   isUser: boolean;
@@ -36,6 +39,8 @@ export function ChatMessageBubble({
   /** Solo mensajes de usuario (no el primero del hilo si es único saludo). */
   canEdit: boolean;
   isStreaming?: boolean;
+  streamStatus?: string | null;
+  streamThinking?: string | null;
 }) {
   const [hovered, setHovered] = useState(false);
   const isError = !isUser && message.error === true;
@@ -107,8 +112,29 @@ export function ChatMessageBubble({
                 {message.content}
               </div>
             ) : (
-              <div className="text-left">
-                <IaChatMarkdown content={message.content} streaming={isStreaming} />
+              <div className="text-left space-y-2">
+                {isStreaming && !message.content.trim() ? (
+                  <IaChatThinkingIndicator
+                    status={streamStatus ?? "Pensando en tu respuesta…"}
+                    thinking={streamThinking}
+                  />
+                ) : null}
+                {isStreaming && streamThinking?.trim() && message.content.trim() ? (
+                  <details
+                    open
+                    className="rounded-xl border border-[color-mix(in_oklab,var(--accent-hex)_25%,transparent)] bg-[color-mix(in_oklab,var(--accent-hex)_8%,#1C2D20)] px-3 py-2"
+                  >
+                    <summary className="cursor-pointer list-none text-xs font-medium text-[var(--accent-hex)] [&::-webkit-details-marker]:hidden">
+                      Ver razonamiento
+                    </summary>
+                    <p className="mt-2 max-h-32 overflow-y-auto text-xs leading-relaxed whitespace-pre-wrap text-white/60">
+                      {streamThinking}
+                    </p>
+                  </details>
+                ) : null}
+                {message.content.trim() || !isStreaming ? (
+                  <IaChatMarkdown content={message.content} streaming={isStreaming} />
+                ) : null}
               </div>
             )}
 

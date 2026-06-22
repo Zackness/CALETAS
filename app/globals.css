@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 @import "tw-animate-css";
 @import "katex/dist/katex.min.css";
 
@@ -1830,6 +1831,11 @@ html.theme-claro .hover\:bg-white\/10:hover {
 
 .blog-prose {
   color: rgba(255, 255, 255, 0.9);
+}
+
+.blog-prose table {
+  display: table;
+  width: 100%;
 }
 
 .caleta-notion-editor {

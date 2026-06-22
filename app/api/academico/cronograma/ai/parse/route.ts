@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { logAiUsage } from "@/lib/ai-usage";
 import { assertCronogramaAiAccess } from "@/lib/cronograma-ai-access";
 import { withIaGatewayRatesForRequest } from "@/lib/ia-gateway-rates-request";
-import { coerceToDirectOpenAiModel } from "@/lib/ia-models";
 import { settleSubscribedIaAfterCall } from "@/lib/ia-subscription-meter";
 import { settleNonSubscriptionIaAfterCall } from "@/lib/ia-non-sub-settle";
-import { resolveModelForIaCall } from "@/lib/ia-user-model";
-import { createDirectOpenAIForStudentIa } from "@/lib/vercel-ia-gateway";
+import { createLlmClientForModel, hasStudentIaLlmCredentials } from "@/lib/ia-llm-client";
+import { mapNonSubModeForModelResolve, resolveModelForIaCall } from "@/lib/ia-user-model";
+import { STUDENT_IA_GATEWAY_KEY_HELP } from "@/lib/vercel-ia-gateway";
 
 type ProposedEvent = {
   title: string;
@@ -20,8 +20,8 @@ type ProposedEvent = {
 export async function POST(request: NextRequest) {
   return withIaGatewayRatesForRequest(async () => {
   try {
-    if (!process.env.OPENAI_API_KEY?.trim()) {
-      return NextResponse.json({ error: "Configura OPENAI_API_KEY para usar tu API de ChatGPT." }, { status: 500 });
+    if (!hasStudentIaLlmCredentials()) {
+      return NextResponse.json({ error: STUDENT_IA_GATEWAY_KEY_HELP }, { status: 500 });
     }
 
     const body = (await request.json().catch(() => null)) as { text?: string; timezone?: string } | null;
@@ -48,17 +48,13 @@ export async function POST(request: NextRequest) {
     const tz = (body?.timezone || "America/Caracas").trim();
     const now = new Date();
 
-    const preferredModel = await resolveModelForIaCall({
+    const model = await resolveModelForIaCall({
       userId: access.userId,
       role: "cronograma",
-      nonSubMode: access.nonSubMode === "free_tier" ? "free_tier" : access.nonSubMode === "wallet" ? "wallet" : null,
+      nonSubMode: mapNonSubModeForModelResolve(access.nonSubMode),
       hint: { cronogramaText: text },
     });
-    const model = coerceToDirectOpenAiModel(
-      preferredModel,
-      process.env.IA_OPENAI_MODEL_CRONOGRAMA?.trim() || "gpt-4o-mini",
-    );
-    const openai = createDirectOpenAIForStudentIa();
+    const openai = createLlmClientForModel(model);
     const resp = await openai.chat.completions.create({
       model,
       temperature: 0.2,

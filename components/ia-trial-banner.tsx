@@ -5,8 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Crown, Sparkles, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-
-type AiTrialEndpoint = "ia/resumir" | "ia/fichas" | "ia/cuestionario" | "ia/chat";
+import type { AiTrialEndpoint } from "@/lib/ai-trial";
 
 type FreeTierStatus = {
   active: boolean;

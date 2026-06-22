@@ -1,4 +1,5 @@
 import TurndownService from "turndown";
+import { gfm } from "turndown-plugin-gfm";
 import { marked } from "marked";
 
 const turndown = new TurndownService({
@@ -7,10 +8,7 @@ const turndown = new TurndownService({
   codeBlockStyle: "fenced",
 });
 
-turndown.addRule("strikethrough", {
-  filter: ["del", "s"],
-  replacement: (content) => `~~${content}~~`,
-});
+turndown.use(gfm);
 
 marked.setOptions({ gfm: true, breaks: true });
 

@@ -583,6 +583,19 @@ export function CaletasSidebarNav({ userRole }: { userRole?: string | null }) {
               </SidebarMenuButton>
             </SidebarMenuItem>
 
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                isActive={currentPath.startsWith("/blog")}
+                className="text-white hover:bg-white/10 hover:text-white data-[active=true]:bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)] data-[active=true]:text-white"
+              >
+                <Link href="/blog" onClick={closeMobile} className="flex min-w-0 items-center gap-2">
+                  <FileText className="h-4 w-4 shrink-0 text-[var(--accent-hex)]" />
+                  <span className="truncate">Blog</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+
             <SidebarMenuItem className="sidebar-aprende-item relative z-[1] overflow-visible">
               <SidebarMenuButton
                 asChild

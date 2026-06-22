@@ -8,6 +8,7 @@ import { useSubscriptionRequired } from "@/hooks/use-subscription-required";
 import { IATrialBanner } from "@/components/ia-trial-banner";
 import { IaModelPicker } from "@/components/ia-model-picker";
 import { ChatMessageBubble } from "@/components/ia/chat-message";
+import { IaChatThinkingIndicator } from "@/components/ia/chat-thinking-indicator";
 import { CaletaContextPicker } from "@/components/ia/caleta-context-picker";
 import { readIaChatStream, isAbortError, IaChatStreamAbortedError } from "@/lib/ia-chat-stream";
 import {
@@ -38,6 +39,9 @@ export default function ChatIA() {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editDraft, setEditDraft] = useState("");
   const [streamDraft, setStreamDraft] = useState<string | null>(null);
+  const [streamStatus, setStreamStatus] = useState<string | null>(null);
+  const [streamThinking, setStreamThinking] = useState<string | null>(null);
+  const [streamConnected, setStreamConnected] = useState(false);
 
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -46,7 +50,7 @@ export default function ChatIA() {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, sending, editingIndex, streamDraft]);
+  }, [messages, sending, editingIndex, streamDraft, streamStatus, streamThinking]);
 
   useEffect(() => {
     const sync = () => {
@@ -63,6 +67,9 @@ export default function ChatIA() {
       setEditingIndex(null);
       setEditDraft("");
       setStreamDraft(null);
+      setStreamStatus(null);
+      setStreamThinking(null);
+      setStreamConnected(false);
     };
 
     sync();
@@ -127,7 +134,12 @@ export default function ChatIA() {
       history: ChatMessage[],
       thread: IAChatThread,
       signal: AbortSignal,
-      onDelta: (accumulated: string) => void,
+      callbacks: {
+        onStatus: (status: string) => void;
+        onThinking: (thinking: string) => void;
+        onDelta: (accumulated: string) => void;
+        onConnected: () => void;
+      },
     ): Promise<{ text: string; careerName: string | null }> => {
       const payload = apiMessages(history);
       if (!payload.some((m) => m.role === "user")) {
@@ -162,14 +174,18 @@ export default function ChatIA() {
         throw new Error("El servidor no devolvió stream");
       }
 
-      return readIaChatStream(
+      callbacks.onConnected();
+
+      const { text, careerName } = await readIaChatStream(
         res.body,
-        (accumulated) => {
-          streamDraftRef.current = accumulated;
-          onDelta(accumulated);
+        {
+          onStatus: callbacks.onStatus,
+          onThinking: callbacks.onThinking,
+          onDelta: callbacks.onDelta,
         },
         signal,
       );
+      return { text, careerName };
     },
     [getProjectContext],
   );
@@ -190,7 +206,10 @@ export default function ChatIA() {
 
       setSending(true);
       setMessages(history);
-      setStreamDraft("");
+      setStreamDraft(null);
+      setStreamStatus("Conectando con la IA…");
+      setStreamThinking(null);
+      setStreamConnected(false);
       streamDraftRef.current = "";
 
       try {
@@ -198,12 +217,22 @@ export default function ChatIA() {
           history,
           activeThread,
           controller.signal,
-          (accumulated) => {
-            setStreamDraft(accumulated);
+          {
+            onConnected: () => setStreamConnected(true),
+            onStatus: (status) => setStreamStatus(status),
+            onThinking: (thinking) => setStreamThinking(thinking || null),
+            onDelta: (accumulated) => {
+              streamDraftRef.current = accumulated;
+              setStreamDraft(accumulated);
+              setStreamStatus(null);
+            },
           },
         );
         const finalMessages: ChatMessage[] = [...history, { role: "assistant", content: answer }];
         setStreamDraft(null);
+        setStreamStatus(null);
+        setStreamThinking(null);
+        setStreamConnected(false);
         streamDraftRef.current = "";
         setMessages(finalMessages);
         persistThreadMessages(finalMessages);
@@ -214,6 +243,9 @@ export default function ChatIA() {
               ? e.partialText.trim()
               : streamDraftRef.current.trim();
           setStreamDraft(null);
+          setStreamStatus(null);
+          setStreamThinking(null);
+          setStreamConnected(false);
           streamDraftRef.current = "";
           if (partial) {
             const finalMessages: ChatMessage[] = [
@@ -230,6 +262,9 @@ export default function ChatIA() {
 
         const detail = e instanceof Error ? e.message : "Error al contactar la IA";
         setStreamDraft(null);
+        setStreamStatus(null);
+        setStreamThinking(null);
+        setStreamConnected(false);
         streamDraftRef.current = "";
         const withError: ChatMessage[] = [
           ...history,
@@ -355,6 +390,8 @@ export default function ChatIA() {
                     sending={sending}
                     canEdit={false}
                     isStreaming
+                    streamStatus={streamStatus}
+                    streamThinking={streamThinking}
                   />
                 ) : null}
 
@@ -363,11 +400,10 @@ export default function ChatIA() {
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/10 text-white/70">
                       <Sparkles className="h-4 w-4 animate-pulse text-[var(--accent-hex)]" />
                     </div>
-                    <div className="flex items-center gap-1.5 py-2 text-sm text-white/50">
-                      <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--accent-hex)]" />
-                      <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--accent-hex)] [animation-delay:150ms]" />
-                      <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--accent-hex)] [animation-delay:300ms]" />
-                    </div>
+                    <IaChatThinkingIndicator
+                      status={streamStatus ?? (streamConnected ? "Pensando en tu respuesta…" : "Conectando con la IA…")}
+                      thinking={streamThinking}
+                    />
                   </div>
                 ) : null}
 
