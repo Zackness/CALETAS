@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Eye, Heart, MessageCircle, Share2, Star } from "lucide-react";
+import { Eye, Download, Heart, MessageCircle, Share2, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TipoRecursoIcon, tipoEtiquetaCorta } from "@/components/caletas/recurso-tipo";
 import { RecursoFeedFilePreview } from "@/components/home/recurso-feed-file-preview";
@@ -213,6 +213,10 @@ export function HomeCaletaFeedCard({
               <Eye className="h-3.5 w-3.5 shrink-0 text-[var(--accent-hex)]/90" />
               {item.numVistas}
             </span>
+            <span className="inline-flex items-center gap-1" title="Descargas en la App de CALETA">
+              <Download className="h-3.5 w-3.5 shrink-0 text-[var(--accent-hex)]/90" />
+              {item.numDescargas}
+            </span>
             <span className="inline-flex items-center gap-1" title="Likes">
               <Heart className={cn("h-3.5 w-3.5 shrink-0", isLiked ? "fill-rose-400 text-rose-400" : "text-white/45")} />
               {likesCount}
@@ -329,6 +333,10 @@ export function HomeCaletaFeedCard({
             <span className="inline-flex items-center gap-1.5" title="Personas que lo vieron">
               <Eye className="h-4 w-4 text-[var(--accent-hex)]/90" />
               <span className="text-white/80">{item.numVistas}</span> vistas
+            </span>
+            <span className="inline-flex items-center gap-1.5" title="Descargas en la App de CALETA">
+              <Download className="h-4 w-4 text-[var(--accent-hex)]/90" />
+              <span className="text-white/80">{item.numDescargas}</span> descargas
             </span>
             <span className="inline-flex items-center gap-1.5" title="Likes">
               <Heart className={cn("h-4 w-4", isLiked ? "fill-rose-400 text-rose-400" : "text-white/45")} />

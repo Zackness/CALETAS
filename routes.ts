@@ -19,6 +19,8 @@ export const publicRoutes = [
   "/api/zeno-notes/workspace/local/.*",
   "/api/aprende-pic18/.*",
   "/aprende-pic18/connect",
+  "/api/aprende-cpp-poo/.*",
+  "/aprende-cpp-poo/connect",
   "/api/stripe/webhook",
   "/api/stripe-url",
   "/new-verification",
@@ -49,3 +51,6 @@ export const apiAuthPrefix = "/api/auth";
  * @type {string}
  */
 export const DEFAULT_LOGIN_REDIRECT = "/home";
+
+export const ADMIN_PATH = "/admin";
+export const BLOG_PATH = "/blog";

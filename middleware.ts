@@ -62,6 +62,12 @@ export function middleware(request: NextRequest) {
     return withCors(request, res);
   }
 
+  // AprendeC++ POO (cpp.caleta.top): APIs publicas con CORS propio en cada ruta
+  if (nextUrl.pathname.startsWith("/api/aprende-cpp-poo/")) {
+    const res = NextResponse.next();
+    return withCors(request, res);
+  }
+
   const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
   const isAuthRoute = authRoutes.includes(nextUrl.pathname);
   const isPublic = isPublicRoute(nextUrl.pathname);

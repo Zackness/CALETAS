@@ -11,8 +11,10 @@ import { Button } from "@/components/ui/button";
 import { ResetSchema } from "@/schemas";
 import { FormError } from "@/components/form-error";
 import { FormSucces } from "@/components/form-succes";
-import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
+import { Mail } from "lucide-react";
+import { AuthFormActions } from "@/app/(auth)/components/auth-form-actions";
+import { requestPasswordResetWithEmailCheck } from "@/lib/actions/password-reset";
 
 export const ResetForm = () => {
   const [error, setError] = useState<string | undefined>("");
@@ -23,7 +25,7 @@ export const ResetForm = () => {
   const form = useForm<z.infer<typeof ResetSchema>>({
     resolver: zodResolver(ResetSchema),
     defaultValues: {
-      email: ""
+      email: "",
     },
   });
 
@@ -35,30 +37,38 @@ export const ResetForm = () => {
       (async () => {
         try {
           const redirectTo = `${window.location.origin}/new-password`;
-          const { error: requestError } =
-            await authClient.requestPasswordReset({
-              email: values.email,
-              redirectTo,
-            });
+          const result = await requestPasswordResetWithEmailCheck(
+            values.email,
+            redirectTo,
+          );
 
-          if (requestError) {
-            setError(requestError.message || "Algo ha salido mal!");
+          if (!result.ok) {
+            setError(result.error);
             return;
           }
 
-          setSucces("La solicitud ha sido enviada correctamente");
+          setSucces(result.message);
+          form.reset();
         } catch {
-          setError("Algo ha salido mal!");
+          setError("Algo ha salido mal. Intenta de nuevo en unos minutos.");
         }
       })();
     });
   };
 
   return (
-    <CardWrapper headerLabel="¿Olvidaste la contraseña?">
-      <h2 className="text-3xl mb-4 text-white text-center font-special pb-4">
-        ¿Olvidaste la contraseña?
-      </h2>
+    <CardWrapper>
+      <div className="mb-4 flex items-start gap-3 rounded-xl border border-white/10 bg-[#1C2D20] p-4">
+        <Mail className="mt-0.5 h-5 w-5 shrink-0 text-[var(--caleta-accent)]" />
+        <p className="text-sm leading-relaxed text-white/75">
+          Solo enviamos el enlace si el correo está registrado con contraseña. Si no tienes cuenta, puedes{" "}
+          <Link href="/register" className="font-semibold text-[var(--caleta-accent)] hover:text-white">
+            registrarte aquí
+          </Link>
+          .
+        </p>
+      </div>
+
       <div className="flex flex-col gap-4">
         <Form {...form}>
           <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
@@ -72,7 +82,7 @@ export const ResetForm = () => {
                       <Input
                         {...field}
                         disable={isPending}
-                        label="Email"
+                        label="Correo de tu cuenta"
                         id="email"
                         type="email"
                       />
@@ -84,23 +94,26 @@ export const ResetForm = () => {
             </div>
             <FormError message={error} />
             <FormSucces message={succes} />
-            <Button 
-              disabled={isPending} 
-              className="w-full mt-2 font-special text-white" 
-              size="sm"
-              type="submit"
-            >
-              Resetear contraseña
-            </Button>
+            <AuthFormActions>
+              <Button
+                disabled={isPending}
+                className="chalk-hero-btn chalk-hero-btn-primary"
+                size="sm"
+                type="submit"
+              >
+                Enviar enlace de recuperación
+              </Button>
+            </AuthFormActions>
           </form>
         </Form>
       </div>
-      <div className="flex items-center justify-center mt-6">
-        <p className="text-sm text-white">
-          ¿Ya conoces el camino?
-        </p>
-        <Link href="/login" className="ml-2 hover:underline cursor-pointer font-semibold text-sm text-white hover:text-blue-200">
-          Inicia sesión ahora
+      <div className="mt-6 flex flex-col items-center justify-center gap-1 text-center sm:flex-row">
+        <p className="text-sm text-white/75">¿Recordaste tu contraseña?</p>
+        <Link
+          href="/login"
+          className="text-sm font-semibold text-[var(--caleta-accent)] transition-colors hover:text-white"
+        >
+          Volver a iniciar sesión
         </Link>
       </div>
     </CardWrapper>

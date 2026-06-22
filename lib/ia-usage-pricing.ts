@@ -87,6 +87,7 @@ const WALLET_HOLD_TOKENS: Record<IaWalletBillableEndpoint, { prompt: number; com
   "ia/resumir": { prompt: 130_000, completion: 4_500 },
   "ia/fichas": { prompt: 130_000, completion: 4_500 },
   "ia/cuestionario": { prompt: 130_000, completion: 4_500 },
+  "tareas/ai": { prompt: 8_000, completion: 1_200 },
   /** Parse de texto en calendario (el hold total compara con audio máx. vía Whisper en la misma ruta lógica). */
   "academico/cronograma/ai": { prompt: 24_000, completion: 4_000 },
 };

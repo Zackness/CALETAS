@@ -12,19 +12,19 @@ import { RegisterSchema } from "@/schemas";
 import { FormError } from "@/components/form-error";
 import { FormSucces } from "@/components/form-succes";
 import { authClient } from "@/lib/auth-client";
-import { Eye, EyeOff, Info } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { AuthFormActions } from "@/app/(auth)/components/auth-form-actions";
+import { AuthPasswordHint } from "@/app/(auth)/components/auth-password-hint";
+import { AuthRecoverPasswordLink } from "@/app/(auth)/components/auth-recover-password-link";
 
 export const RegisterForm = () => {
   const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  
   useEffect(() => {
     setIsMounted(true);
   }, []);
-  
+
   const [error, setError] = useState<string | undefined>("");
   const [succes, setSucces] = useState<string | undefined>("");
 
@@ -58,7 +58,6 @@ export const RegisterForm = () => {
             return;
           }
 
-          // Enviar código para verificar dentro del onboarding (no bloquea login)
           try {
             await fetch("/api/user/email/verification-code/send", { method: "POST" });
           } catch {
@@ -80,13 +79,7 @@ export const RegisterForm = () => {
   }
 
   return (
-    <CardWrapper 
-    headerLabel="Bienvenido" 
-    showSocial
-    >
-      <h2 className="text-3xl mb-4 text-white text-center font-special pb-4">
-        Registrarse
-      </h2>
+    <CardWrapper showSocial>
       <div className="flex flex-col gap-4">
         <Form {...form}>
           <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
@@ -132,63 +125,49 @@ export const RegisterForm = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <div className="relative">
-                        <Input
-                          {...field}
-                          disable={isPending}
-                          label="Contraseña"
-                          id="password"
-                          type={showPassword ? "text" : "password"}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
-                        >
-                          {showPassword ? (
-                            <EyeOff className="h-5 w-5" />
-                          ) : (
-                            <Eye className="h-5 w-5" />
-                          )}
-                        </button>
-                      </div>
+                      <Input
+                        {...field}
+                        disable={isPending}
+                        label="Contraseña"
+                        id="password"
+                        type="password"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
+
+            <AuthPasswordHint />
+
             <FormError message={error} />
             <FormSucces message={succes} />
-            
-            {/* Campo oculto para acceptTerms - siempre true */}
+
             <input type="hidden" name="acceptTerms" value="true" />
-            
-            <Button 
-              disabled={isPending} 
-              className="w-full mt-2 font-special text-white" 
-              size="sm"
-              type="submit"
-            >
-              Registrarse
-            </Button>
-            
-            {/* Mensaje de requisitos de contraseña - sutil */}
-            <div className="flex items-start gap-2 mt-3 p-3 bg-white/5 rounded-lg border border-white/10">
-              <Info className="h-4 w-4 text-white/60 mt-0.5 flex-shrink-0" />
-              <div className="text-xs text-white/70 leading-relaxed">
-                <span className="font-medium">Requisitos:</span> Mínimo 6 caracteres, una mayúscula, una minúscula y un número.
-              </div>
-            </div>
+
+            <AuthFormActions>
+              <Button
+                disabled={isPending}
+                className="chalk-hero-btn chalk-hero-btn-primary !w-full sm:!min-w-0"
+                size="sm"
+                type="submit"
+              >
+                Crear cuenta
+              </Button>
+            </AuthFormActions>
+
+            <AuthRecoverPasswordLink className="pt-1" />
           </form>
         </Form>
       </div>
-      <div className="flex items-center justify-center mt-6">
-        <p className="text-sm text-white">
-          ¿Ya conoces el camino?
-        </p>
-        <Link href="/login" className="ml-2 hover:underline cursor-pointer font-semibold text-sm text-white hover:text-blue-200">
-          Inicia sesión ahora
+      <div className="mt-6 flex flex-col items-center justify-center gap-1 text-center sm:flex-row">
+        <p className="text-sm text-white/75">¿Ya tienes cuenta?</p>
+        <Link
+          href="/login"
+          className="text-sm font-semibold text-[var(--caleta-accent)] transition-colors hover:text-white"
+        >
+          Inicia sesión
         </Link>
       </div>
     </CardWrapper>

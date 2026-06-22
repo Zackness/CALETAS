@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { createNotification } from "@/lib/notifications";
+import { buildFavoriteNotification } from "@/lib/notifications/payload";
+import { userPublicProfileHref } from "@/lib/profile/public-profile";
+import { recursoToExploreHref } from "@/lib/recurso-view-href";
 
 const ANON_AUTHOR = {
   id: "anon",
@@ -76,7 +79,7 @@ export async function POST(request: NextRequest) {
 
     const actor = await db.user.findUnique({
       where: { id: session.user.id },
-      select: { id: true, name: true },
+      select: { id: true, name: true, image: true, username: true },
     });
     if (!actor) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
@@ -108,7 +111,18 @@ export async function POST(request: NextRequest) {
     if (favorito.recurso.autorId && favorito.recurso.autorId !== session.user.id) {
       await createNotification(
         favorito.recurso.autorId,
-        `${actor.name} agregó tu caleta "${favorito.recurso.titulo}" a favoritos.`
+        buildFavoriteNotification({
+          actor: {
+            id: actor.id,
+            name: actor.name,
+            image: actor.image,
+            href: userPublicProfileHref(actor.username),
+          },
+          target: {
+            label: favorito.recurso.titulo,
+            href: recursoToExploreHref(favorito.recurso),
+          },
+        }),
       );
     }
 

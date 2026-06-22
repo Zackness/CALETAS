@@ -27,6 +27,7 @@ const privateRoutePrefixes = [
 
 const nonIndexablePublicRoutes = new Set([
   '/aprende-pic18/connect',
+  '/aprende-cpp-poo/connect',
   '/error',
   '/login',
   '/new-password',
@@ -42,7 +43,7 @@ async function loadDynamicPublicPaths() {
     const prisma = new PrismaClient();
     const [posts, users] = await Promise.all([
       prisma.blogPost.findMany({
-        where: { isPublished: true, slug: { not: null } },
+        where: { status: 'PUBLISHED', publishedAt: { not: null } },
         select: { slug: true, updatedAt: true },
         orderBy: { updatedAt: 'desc' },
         take: 500,
@@ -88,6 +89,7 @@ module.exports = {
     '/admin/*',
     '/academico/*',
     '/aprende-pic18/connect',
+  '/aprende-cpp-poo/connect',
     '/editor/*',
     '/error',
     '/login',

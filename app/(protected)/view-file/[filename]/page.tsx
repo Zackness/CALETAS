@@ -2,15 +2,27 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, FileImage, FileText } from "lucide-react";
+import { ArrowLeft, FileImage, FileText, MessageSquare } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import FullscreenPDFViewer from "@/components/fullscreen-pdf-viewer";
 import FullscreenImageViewer from "@/components/fullscreen-image-viewer";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { CaletaComentariosSection } from "@/components/caletas/caleta-comentarios-section";
 
 type ResolvedFile = {
+  id: string;
   name: string;
   url: string;
+  titulo?: string;
+  numDescargas?: number;
 };
 
 function getExt(name: string) {
@@ -65,7 +77,13 @@ export default function ViewFilePage() {
         if (!res.ok || !data?.file?.url) {
           throw new Error(data?.error || "No se pudo resolver la URL del archivo");
         }
-        setFile({ name: decodedFilename, url: data.file.url });
+        setFile({
+          id: data.file.id,
+          name: decodedFilename,
+          url: data.file.url,
+          titulo: data.file.titulo,
+          numDescargas: data.file.numDescargas ?? 0,
+        });
       } catch (err) {
         console.error("Error cargando información del archivo:", err);
         setError("Error al cargar el archivo");
@@ -123,18 +141,45 @@ export default function ViewFilePage() {
             </Button>
 
             <div className="min-w-0 text-white">
-              <h1 className="font-special text-lg truncate">{file.name}</h1>
-              <p className="text-white/70 text-sm">
+              <h1 className="truncate font-special text-lg">{file.titulo || file.name}</h1>
+              <p className="text-sm text-white/70">
                 {kind === "pdf"
-                  ? "Visualizando PDF en modo seguro - Sin descarga"
+                  ? "Vista segura en web · Descarga disponible en la App de CALETA"
                   : kind === "image"
-                    ? "Visualizando imagen - Zoom habilitado"
+                    ? "Visualizando imagen · Descarga en la App de CALETA"
                     : "Visualizando archivo"}
+                {typeof file.numDescargas === "number" ? ` · ${file.numDescargas} descargas` : ""}
               </p>
             </div>
           </div>
 
-          <div className="hidden sm:flex items-center gap-2 text-white/60 text-sm">
+          <div className="flex shrink-0 items-center gap-2">
+            {file.id ? (
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-white/15 bg-[var(--mygreen-dark)] text-white hover:bg-white/10"
+                  >
+                    <MessageSquare className="mr-2 h-4 w-4" />
+                    Comentarios
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-full overflow-y-auto border-white/10 bg-[var(--mygreen-dark)] sm:max-w-md">
+                  <SheetHeader>
+                    <SheetTitle className="font-special text-white">Comentarios</SheetTitle>
+                    <SheetDescription className="text-white/65">
+                      Conversa sobre esta caleta con otros estudiantes.
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="mt-4">
+                    <CaletaComentariosSection recursoId={file.id} compact />
+                  </div>
+                </SheetContent>
+              </Sheet>
+            ) : null}
+            <div className="hidden sm:flex items-center gap-2 text-white/60 text-sm">
             {kind === "pdf" ? (
               <>
                 <FileText className="h-4 w-4 text-[var(--accent-hex)]" />
@@ -146,6 +191,7 @@ export default function ViewFilePage() {
                 <span>Imagen</span>
               </>
             ) : null}
+            </div>
           </div>
         </div>
       </div>

@@ -7,6 +7,7 @@ import { recursoToExploreHref } from "@/lib/recurso-view-href";
 import { canViewerAccessRecurso } from "@/lib/caletas-visibility";
 import { getActiveSubscriptionForUser } from "@/lib/subscription";
 import { Button } from "@/components/ui/button";
+import { CaletaComentariosSection } from "@/components/caletas/caleta-comentarios-section";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +27,7 @@ export default async function CaletaDetallePorIdPage({ params }: { params: Promi
       descripcion: true,
       tipo: true,
       archivoUrl: true,
+      numDescargas: true,
       autorId: true,
       universidadId: true,
       materia: {
@@ -71,17 +73,17 @@ export default async function CaletaDetallePorIdPage({ params }: { params: Promi
 
   return (
     <div className="min-h-[calc(100dvh-4rem)] bg-gradient-to-t from-mygreen to-mygreen-light px-4 py-10">
-      <div className="mx-auto max-w-lg">
+      <div className="mx-auto max-w-2xl space-y-6">
         <Link
           href="/caletas"
-          className="mb-6 inline-flex items-center gap-2 text-sm text-white/80 hover:text-white"
+          className="inline-flex items-center gap-2 text-sm text-white/80 hover:text-white"
         >
           <ArrowLeft className="h-4 w-4" />
           Volver
         </Link>
         <div className="rounded-2xl border border-white/10 bg-white/5 p-8 text-white shadow-xl backdrop-blur-sm">
           <div className="mb-4 flex justify-center">
-            <FileQuestion className="h-14 w-14 text-[var(--accent-hex)] opacity-90" />
+            <FileQuestion className="h-14 w-14 text-[var(--caleta-accent)] opacity-90" />
           </div>
           <h1 className="text-center font-special text-2xl">{recurso.titulo}</h1>
           {recurso.materia ? (
@@ -92,6 +94,9 @@ export default async function CaletaDetallePorIdPage({ params }: { params: Promi
           {recurso.descripcion ? (
             <p className="mt-4 text-center text-sm text-white/75">{recurso.descripcion}</p>
           ) : null}
+          <p className="mt-4 text-center text-xs text-white/55">
+            {recurso.numDescargas} descarga{recurso.numDescargas === 1 ? "" : "s"} registradas en la App de CALETA
+          </p>
           <p className="mt-6 text-center text-sm text-white/60">
             Esta caleta no tiene un archivo asociado para vista previa. Si es tuya, puedes editarla y subir un documento.
           </p>
@@ -103,6 +108,8 @@ export default async function CaletaDetallePorIdPage({ params }: { params: Promi
             </div>
           ) : null}
         </div>
+
+        <CaletaComentariosSection recursoId={recurso.id} />
       </div>
     </div>
   );

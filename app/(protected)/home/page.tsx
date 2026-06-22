@@ -35,6 +35,7 @@ import {
   Trophy,
   Bookmark,
   Share2,
+  Sparkles,
   CalendarDays,
   BookMarked
 } from "lucide-react";
@@ -43,6 +44,10 @@ import { HomeHistoriasStrip } from "@/components/historias/home-historias-strip"
 import { HomeCaletaFeedColumns } from "@/components/home/home-caleta-feed-columns";
 import type { FeedCaleta } from "@/components/home/home-caleta-feed-card";
 import { CaletaTour } from "@/components/tutorial/caleta-tour";
+import { HomeNotificationsFeed } from "@/components/notifications/home-notifications-feed";
+import { HomeAprendeTab } from "@/components/home/home-aprende-tab";
+import { ProfileCompletionBanner } from "@/components/home/profile-completion-banner";
+import { hasPublicProfile } from "@/lib/profile/public-profile";
 
 // Suprimir warning de hidratación para extensiones del navegador
 export const dynamic = 'force-dynamic';
@@ -62,6 +67,7 @@ export default async function HomePage() {
       },
       select: {
         onboardingStatus: true,
+        username: true,
         carrera: {
           select: {
             nombre: true,
@@ -266,17 +272,24 @@ export default async function HomePage() {
     .filter(m => m.estado === "EN_CURSO")
     .slice(0, 5);
 
-  // Obtener notificaciones recientes
+  // Notificaciones recientes (leídas y no leídas, como en la campana)
   const notificaciones = await db.notification.findMany({
     where: {
       userId: session.user.id,
-      read: false,
     },
     orderBy: {
-      createdAt: 'desc',
+      createdAt: "desc",
     },
-    take: 5,
+    take: 12,
   });
+
+  const notificacionesFeed = notificaciones.map((n) => ({
+    id: n.id,
+    message: n.message,
+    read: n.read,
+    createdAt: n.createdAt.toISOString(),
+  }));
+  const notificacionesNoLeidas = notificaciones.filter((n) => !n.read).length;
 
   // Obtener metas académicas del usuario
   const metasAcademicas = await db.metaAcademica.findMany({
@@ -392,14 +405,15 @@ export default async function HomePage() {
   };
 
     return (
-    <div className="min-h-screen bg-gradient-to-t from-mygreen to-mygreen-light">
+    <div className="relative min-w-0">
       <CaletaTour />
       <div className="container mx-auto px-4 py-8">
       {/* Header del Dashboard */}
         <div className="mb-8">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-special text-white mb-2">
+              <p className="chalk-section-label mb-2 text-xs">Tu campus</p>
+              <h1 className="mb-2 font-special text-2xl text-white sm:text-3xl">
           ¡Bienvenido de vuelta, {session.user.name?.split(' ')[0] || 'Estudiante'}!
         </h1>
               <p className="text-sm sm:text-base text-white/70">
@@ -410,36 +424,51 @@ export default async function HomePage() {
         </p>
       </div>
                   <div className="flex items-center gap-2 self-start sm:self-auto">
-              <Badge className="bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] text-[var(--accent-hex)] border-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)]">
+              <Badge className="chalk-badge border-0">
                 <Bell className="w-3 h-3 mr-1" />
-                {notificaciones.length} nuevas
+                {notificacionesNoLeidas} nuevas
               </Badge>
             </div>
           </div>
         </div>
 
+        {!hasPublicProfile(user ?? {}) ? (
+          <div className="mb-6">
+            <ProfileCompletionBanner />
+          </div>
+        ) : null}
+
         <HomeHistoriasStrip />
 
         {/* Tabs principales */}
-        <Tabs defaultValue="caletas" className="space-y-6">
-          <TabsList className="flex w-full gap-0.5 overflow-x-auto border-white/10 bg-[var(--mygreen-light)] p-0.5">
+        <Tabs defaultValue="caletas" className="home-tabs-aprende space-y-6">
+          <TabsList className="chalk-panel-soft relative z-[2] grid w-full grid-cols-4 gap-0.5 overflow-hidden border border-white/10 p-0.5">
             <TabsTrigger
               value="caletas"
-              className="h-8 min-w-[5.5rem] flex-1 rounded-md px-2 text-xs text-white data-[state=active]:bg-[var(--accent-hex)] data-[state=active]:text-white sm:text-sm"
+              className="h-8 rounded-md px-1 text-xs text-white data-[state=active]:bg-[var(--accent-hex)] data-[state=active]:text-white sm:px-2 sm:text-sm"
             >
               Caletas
             </TabsTrigger>
             <TabsTrigger
               value="overview"
-              className="h-8 min-w-[6.5rem] flex-1 rounded-md px-2 text-xs text-white data-[state=active]:bg-[var(--accent-hex)] data-[state=active]:text-white sm:text-sm"
+              className="h-8 rounded-md px-1 text-xs text-white data-[state=active]:bg-[var(--accent-hex)] data-[state=active]:text-white sm:px-2 sm:text-sm"
             >
               Novedades
             </TabsTrigger>
             <TabsTrigger
               value="goals"
-              className="h-8 min-w-[5rem] flex-1 rounded-md px-2 text-xs text-white data-[state=active]:bg-[var(--accent-hex)] data-[state=active]:text-white sm:text-sm"
+              className="h-8 rounded-md px-1 text-xs text-white data-[state=active]:bg-[var(--accent-hex)] data-[state=active]:text-white sm:px-2 sm:text-sm"
             >
               Metas
+            </TabsTrigger>
+            <TabsTrigger
+              value="aprende"
+              className="chalk-tab-aprende h-8 rounded-md px-1 text-[11px] sm:px-2 sm:text-xs"
+            >
+              <span className="relative inline-flex items-center justify-center gap-1 truncate">
+                <Sparkles className="h-3 w-3 shrink-0 text-[var(--aprende-accent-bright)] sm:h-3.5 sm:w-3.5" aria-hidden />
+                <span className="truncate">Aprende</span>
+              </span>
             </TabsTrigger>
           </TabsList>
 
@@ -447,7 +476,7 @@ export default async function HomePage() {
           <TabsContent value="overview" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Materias Próximas */}
-              <Card className="bg-[var(--mygreen-light)] border-white/10">
+              <Card className="chalk-card border-white/10 shadow-none">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
                     <Clock3 className="w-5 h-5 text-[var(--accent-hex)]" />
@@ -460,7 +489,7 @@ export default async function HomePage() {
                 <CardContent>
                   <div className="space-y-3">
                     {materiasProximas.map((materia) => (
-                      <div key={materia.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-[var(--mygreen-dark)] rounded-lg">
+                      <div key={materia.id} className="chalk-panel-soft flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-lg p-3">
                         <div className="flex items-start sm:items-center gap-3 min-w-0">
                           {getEstadoIcon(materia.estado)}
                           <div className="min-w-0">
@@ -483,7 +512,7 @@ export default async function HomePage() {
                   <Button
                     asChild
                     variant="outline"
-                    className="mt-4 h-8 min-h-0 w-full rounded-lg border-0 bg-[var(--accent-hex)] px-3 py-0 text-xs font-medium text-white hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)]"
+                    className="chalk-hero-btn chalk-hero-btn-primary mt-4 h-8 min-h-0 w-full px-3 py-0 text-xs"
                   >
                     <Link href="/academico" className="inline-flex items-center justify-center gap-1.5">
                       Ver Panel Académico
@@ -494,7 +523,7 @@ export default async function HomePage() {
               </Card>
 
               {/* Notificaciones */}
-              <Card className="bg-[var(--mygreen-light)] border-white/10">
+              <Card className="chalk-card border-white/10 shadow-none">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
                     <Bell className="w-5 h-5 text-[var(--accent-hex)]" />
@@ -505,32 +534,14 @@ export default async function HomePage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    {notificaciones.map((notificacion) => (
-                      <div key={notificacion.id} className="flex items-start gap-3 p-3 bg-[var(--mygreen-dark)] rounded-lg">
-                        <div className="w-2 h-2 bg-[var(--accent-hex)] rounded-full mt-2 flex-shrink-0"></div>
-                        <div className="flex-1">
-                          <p className="text-white font-medium text-sm">{notificacion.message}</p>
-                          <p className="text-white/50 text-xs">
-                            {new Date(notificacion.createdAt).toLocaleDateString()}
-                          </p>
-                        </div>
-                </div>
-                    ))}
-                    {notificaciones.length === 0 && (
-                      <div className="text-center py-4 text-white/70">
-                        <Bell className="w-8 h-8 mx-auto mb-2 text-white/30" />
-                        <p>No tienes notificaciones nuevas</p>
-                </div>
-                    )}
-                  </div>
+                  <HomeNotificationsFeed initialItems={notificacionesFeed} />
                 </CardContent>
               </Card>
       </div>
 
             {/* Estadísticas Detalladas */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card className="bg-[var(--mygreen-light)] border-white/10">
+              <Card className="chalk-card border-white/10 shadow-none">
                 <CardHeader>
                   <CardTitle className="text-white text-center">Distribución de Materias</CardTitle>
                 </CardHeader>
@@ -556,7 +567,7 @@ export default async function HomePage() {
                 </CardContent>
               </Card>
 
-              <Card className="bg-[var(--mygreen-light)] border-white/10">
+              <Card className="chalk-card border-white/10 shadow-none">
                 <CardHeader>
                   <CardTitle className="text-white text-center">Progreso de Créditos</CardTitle>
                 </CardHeader>
@@ -578,7 +589,7 @@ export default async function HomePage() {
                 </CardContent>
               </Card>
 
-              <Card className="bg-[var(--mygreen-light)] border-white/10">
+              <Card className="chalk-card border-white/10 shadow-none">
                 <CardHeader>
                   <CardTitle className="text-white text-center">Actividad Reciente</CardTitle>
                 </CardHeader>
@@ -594,7 +605,7 @@ export default async function HomePage() {
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-white/70">Notificaciones</span>
-                      <span className="text-white font-medium">{notificaciones.length}</span>
+                      <span className="text-white font-medium">{notificacionesNoLeidas}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -613,7 +624,7 @@ export default async function HomePage() {
           <TabsContent value="goals" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Metas Activas */}
-              <Card className="bg-[var(--mygreen-light)] border-white/10">
+              <Card className="chalk-card border-white/10 shadow-none">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
                     <Target className="w-5 h-5 text-[var(--accent-hex)]" />
@@ -626,13 +637,13 @@ export default async function HomePage() {
                 <CardContent>
                   <div className="space-y-3">
                     {metasAcademicas.map((meta) => (
-                      <div key={meta.id} className="p-3 bg-[var(--mygreen-dark)] rounded-lg">
+                      <div key={meta.id} className="chalk-panel-soft rounded-lg p-3">
                         <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                             {getTipoIcon(meta.tipo)}
                             <p className="text-white font-medium">{meta.titulo}</p>
                           </div>
-                          <Badge className="bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] text-[var(--accent-hex)] border-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)]">
+                          <Badge className="chalk-badge border-0">
                             {getTipoNombre(meta.tipo)}
                           </Badge>
                         </div>
@@ -671,7 +682,7 @@ export default async function HomePage() {
                   <Button
                     asChild
                     variant="outline"
-                    className="mt-4 h-8 min-h-0 w-full rounded-lg border-0 bg-[var(--accent-hex)] px-3 py-0 text-xs font-medium text-white hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)]"
+                    className="chalk-hero-btn chalk-hero-btn-primary mt-4 h-8 min-h-0 w-full px-3 py-0 text-xs"
                   >
                     <Link href="/academico/metas" className="inline-flex items-center justify-center gap-1.5">
                       <Plus className="h-3 w-3 shrink-0" />
@@ -682,7 +693,7 @@ export default async function HomePage() {
               </Card>
 
               {/* Logros */}
-              <Card className="bg-[var(--mygreen-light)] border-white/10">
+              <Card className="chalk-card border-white/10 shadow-none">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
                     <Trophy className="w-5 h-5 text-[var(--accent-hex)]" />
@@ -696,7 +707,7 @@ export default async function HomePage() {
                   <div className="space-y-3">
                     {metasCompletadas.length > 0 ? (
                       metasCompletadas.map((meta) => (
-                        <div key={meta.id} className="p-3 bg-[var(--mygreen-dark)] rounded-lg">
+                        <div key={meta.id} className="chalk-panel-soft rounded-lg p-3">
                           <div className="flex items-center gap-2 mb-2">
                             <Trophy className="w-4 h-4 text-yellow-400" />
                             <p className="text-white font-medium">{meta.titulo}</p>
@@ -717,14 +728,14 @@ export default async function HomePage() {
                       ))
                     ) : (
                       <>
-                        <div className="p-3 bg-[var(--mygreen-dark)] rounded-lg">
+                        <div className="chalk-panel-soft rounded-lg p-3">
                           <div className="flex items-center gap-2 mb-2">
                             <Target className="w-4 h-4 text-[var(--accent-hex)]" />
                             <p className="text-white font-medium">Primera Meta</p>
                           </div>
                           <p className="text-white/70 text-sm">¡Crea tu primera meta académica para comenzar!</p>
                         </div>
-                        <div className="p-3 bg-[var(--mygreen-dark)] rounded-lg">
+                        <div className="chalk-panel-soft rounded-lg p-3">
                           <div className="flex items-center gap-2 mb-2">
                             <TrendingUp className="w-4 h-4 text-blue-400" />
                             <p className="text-white font-medium">Progreso Académico</p>
@@ -738,10 +749,16 @@ export default async function HomePage() {
               </Card>
             </div>
           </TabsContent>
+
+          {/* Tab: Aprende */}
+          <TabsContent value="aprende" className="home-tabs-aprende-panel space-y-6">
+            <HomeAprendeTab userId={session.user.id} />
+          </TabsContent>
         </Tabs>
 
         {/* Acciones Rápidas */}
         <div className="mt-8">
+          <p className="chalk-section-label mb-3 text-xs">Accesos rápidos</p>
           <h2 className="mb-1 font-special text-lg text-white sm:text-xl">¿Qué quieres hacer hoy?</h2>
           <p className="mb-3 text-xs text-white/70 sm:text-sm">
             Accede rápido a lo más usado. Todo está a 1 toque, como en una app social.
@@ -751,10 +768,10 @@ export default async function HomePage() {
             <Link
               href="/caletas"
               data-tutorial="caletas-explorar"
-              className="group rounded-xl border border-white/10 bg-[var(--mygreen-light)] p-3 transition-colors hover:border-[color-mix(in_oklab,var(--accent-hex)_35%,transparent)] hover:bg-white/5"
+              className="chalk-card group p-3 shadow-none transition-colors hover:border-[color-mix(in_oklab,var(--accent-hex)_35%,transparent)]"
             >
               <div className="flex items-start gap-2.5">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[color-mix(in_oklab,var(--accent-hex)_15%,transparent)] text-[var(--accent-hex)]">
+                <div className="chalk-icon-wrap !h-8 !w-8 !rounded-lg !p-0">
                   <BookOpen className="h-4 w-4" />
                 </div>
                 <div className="min-w-0">
@@ -768,10 +785,10 @@ export default async function HomePage() {
 
             <Link
               href="/academico/historial"
-              className="group rounded-xl border border-white/10 bg-[var(--mygreen-light)] p-3 transition-colors hover:border-[color-mix(in_oklab,var(--accent-hex)_35%,transparent)] hover:bg-white/5"
+              className="chalk-card group p-3 shadow-none transition-colors hover:border-[color-mix(in_oklab,var(--accent-hex)_35%,transparent)]"
             >
               <div className="flex items-start gap-2.5">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[color-mix(in_oklab,var(--accent-hex)_15%,transparent)] text-[var(--accent-hex)]">
+                <div className="chalk-icon-wrap !h-8 !w-8 !rounded-lg !p-0">
                   <History className="h-4 w-4" />
                 </div>
                 <div className="min-w-0">
@@ -785,10 +802,10 @@ export default async function HomePage() {
 
             <Link
               href="/academico"
-              className="group rounded-xl border border-white/10 bg-[var(--mygreen-light)] p-3 transition-colors hover:border-[color-mix(in_oklab,var(--accent-hex)_35%,transparent)] hover:bg-white/5"
+              className="chalk-card group p-3 shadow-none transition-colors hover:border-[color-mix(in_oklab,var(--accent-hex)_35%,transparent)]"
             >
               <div className="flex items-start gap-2.5">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[color-mix(in_oklab,var(--accent-hex)_15%,transparent)] text-[var(--accent-hex)]">
+                <div className="chalk-icon-wrap !h-8 !w-8 !rounded-lg !p-0">
                   <GraduationCap className="h-4 w-4" />
                 </div>
                 <div className="min-w-0">
@@ -817,9 +834,9 @@ export default async function HomePage() {
     }
     console.error("[home] Error cargando dashboard:", error);
     return (
-      <div className="min-h-screen bg-gradient-to-t from-mygreen to-mygreen-light">
-        <div className="container mx-auto px-4 py-10">
-          <Card className="bg-[var(--mygreen-light)] border-white/10">
+      <div className="relative min-w-0 py-10">
+        <div className="container mx-auto px-4">
+          <Card className="chalk-card border-white/10 shadow-none">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
                 <AlertCircle className="h-5 w-5 text-[var(--accent-hex)]" />
@@ -836,7 +853,7 @@ export default async function HomePage() {
               <Button
                 asChild
                 variant="outline"
-                className="h-8 min-h-0 rounded-lg border-0 bg-[var(--accent-hex)] px-4 py-0 text-xs font-medium text-white hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)]"
+                className="chalk-hero-btn chalk-hero-btn-primary h-8 min-h-0 px-4 py-0 text-xs"
               >
                 <Link href="/home">Reintentar</Link>
               </Button>

@@ -1,0 +1,357 @@
+{
+  "total": 44,
+  "lessons": [
+    {
+      "id": "c01-l0",
+      "quizSlug": "introduccion/conceptos-basicos",
+      "autoSkillSeries": null,
+      "autoPracticeSlug": null,
+      "practiceSteps": 0,
+      "skillSteps": 0
+    },
+    {
+      "id": "c01-l1",
+      "quizSlug": "introduccion/pic18f4550",
+      "autoSkillSeries": null,
+      "autoPracticeSlug": null,
+      "practiceSteps": 0,
+      "skillSteps": 0
+    },
+    {
+      "id": "c01-l2",
+      "quizSlug": "introduccion/comparaciones",
+      "autoSkillSeries": null,
+      "autoPracticeSlug": null,
+      "practiceSteps": 0,
+      "skillSteps": 0
+    },
+    {
+      "id": "c02-l1",
+      "quizSlug": "fundamentos/arquitectura",
+      "autoSkillSeries": null,
+      "autoPracticeSlug": null,
+      "practiceSteps": 0,
+      "skillSteps": 0
+    },
+    {
+      "id": "c02-l2",
+      "quizSlug": "fundamentos/registros",
+      "autoSkillSeries": null,
+      "autoPracticeSlug": null,
+      "practiceSteps": 0,
+      "skillSteps": 0
+    },
+    {
+      "id": "c02-l3",
+      "quizSlug": "fundamentos/bits-hex",
+      "autoSkillSeries": null,
+      "autoPracticeSlug": null,
+      "practiceSteps": 0,
+      "skillSteps": 0
+    },
+    {
+      "id": "c03-l1",
+      "quizSlug": "fundamentos/ensamblador",
+      "autoSkillSeries": null,
+      "autoPracticeSlug": null,
+      "practiceSteps": 0,
+      "skillSteps": 0
+    },
+    {
+      "id": "c03-l2",
+      "quizSlug": "fundamentos/config-bits",
+      "autoSkillSeries": null,
+      "autoPracticeSlug": null,
+      "practiceSteps": 0,
+      "skillSteps": 0
+    },
+    {
+      "id": "c03-l3",
+      "quizSlug": "fundamentos/mplab-proteus",
+      "autoSkillSeries": null,
+      "autoPracticeSlug": null,
+      "practiceSteps": 0,
+      "skillSteps": 0
+    },
+    {
+      "id": "c03-l4g",
+      "quizSlug": "tutoriales/guias/puertos",
+      "autoSkillSeries": "puertos",
+      "autoPracticeSlug": null,
+      "practiceSteps": 0,
+      "skillSteps": 11
+    },
+    {
+      "id": "c03-l5",
+      "quizSlug": null,
+      "autoSkillSeries": null,
+      "autoPracticeSlug": "primer-led",
+      "practiceSteps": 5,
+      "skillSteps": 0
+    },
+    {
+      "id": "c04-l1",
+      "quizSlug": "parcial/parcial-1",
+      "autoSkillSeries": null,
+      "autoPracticeSlug": null,
+      "practiceSteps": 0,
+      "skillSteps": 0
+    },
+    {
+      "id": "c04-l2",
+      "quizSlug": null,
+      "autoSkillSeries": null,
+      "autoPracticeSlug": null,
+      "practiceSteps": 0,
+      "skillSteps": 0
+    },
+    {
+      "id": "c05-l1",
+      "quizSlug": "gpio",
+      "autoSkillSeries": null,
+      "autoPracticeSlug": null,
+      "practiceSteps": 0,
+      "skillSteps": 0
+    },
+    {
+      "id": "c05-l2",
+      "quizSlug": "gpio/botones",
+      "autoSkillSeries": null,
+      "autoPracticeSlug": null,
+      "practiceSteps": 0,
+      "skillSteps": 0
+    },
+    {
+      "id": "c06-l0g",
+      "quizSlug": null,
+      "autoSkillSeries": "alu",
+      "autoPracticeSlug": null,
+      "practiceSteps": 0,
+      "skillSteps": 5
+    },
+    {
+      "id": "c06-l1",
+      "quizSlug": null,
+      "autoSkillSeries": null,
+      "autoPracticeSlug": "practica-1",
+      "practiceSteps": 6,
+      "skillSteps": 0
+    },
+    {
+      "id": "c07-l1",
+      "quizSlug": "parcial/parcial-2",
+      "autoSkillSeries": null,
+      "autoPracticeSlug": null,
+      "practiceSteps": 0,
+      "skillSteps": 0
+    },
+    {
+      "id": "c07-l2",
+      "quizSlug": null,
+      "autoSkillSeries": null,
+      "autoPracticeSlug": null,
+      "practiceSteps": 0,
+      "skillSteps": 0
+    },
+    {
+      "id": "c08-l1",
+      "quizSlug": "interrupciones",
+      "autoSkillSeries": null,
+      "autoPracticeSlug": null,
+      "practiceSteps": 0,
+      "skillSteps": 0
+    },
+    {
+      "id": "c08-l1g",
+      "quizSlug": null,
+      "autoSkillSeries": "interrupciones",
+      "autoPracticeSlug": null,
+      "practiceSteps": 0,
+      "skillSteps": 5
+    },
+    {
+      "id": "c08-l2",
+      "quizSlug": null,
+      "autoSkillSeries": null,
+      "autoPracticeSlug": "practica-5",
+      "practiceSteps": 5,
+      "skillSteps": 0
+    },
+    {
+      "id": "c09-l1",
+      "quizSlug": "comunicacion/lcd-teclado",
+      "autoSkillSeries": null,
+      "autoPracticeSlug": null,
+      "practiceSteps": 0,
+      "skillSteps": 0
+    },
+    {
+      "id": "c09-l2",
+      "quizSlug": null,
+      "autoSkillSeries": null,
+      "autoPracticeSlug": "practica-2",
+      "practiceSteps": 6,
+      "skillSteps": 0
+    },
+    {
+      "id": "c10-l1",
+      "quizSlug": "timers/timer0",
+      "autoSkillSeries": null,
+      "autoPracticeSlug": null,
+      "practiceSteps": 0,
+      "skillSteps": 0
+    },
+    {
+      "id": "c10-l2",
+      "quizSlug": "timers/timer1-timer2",
+      "autoSkillSeries": null,
+      "autoPracticeSlug": null,
+      "practiceSteps": 0,
+      "skillSteps": 0
+    },
+    {
+      "id": "c10-l3",
+      "quizSlug": null,
+      "autoSkillSeries": null,
+      "autoPracticeSlug": "practica-3",
+      "practiceSteps": 6,
+      "skillSteps": 0
+    },
+    {
+      "id": "c11-l1",
+      "quizSlug": "pwm",
+      "autoSkillSeries": null,
+      "autoPracticeSlug": null,
+      "practiceSteps": 0,
+      "skillSteps": 0
+    },
+    {
+      "id": "c11-l2",
+      "quizSlug": null,
+      "autoSkillSeries": null,
+      "autoPracticeSlug": "practica-4",
+      "practiceSteps": 5,
+      "skillSteps": 0
+    },
+    {
+      "id": "c11-l3",
+      "quizSlug": null,
+      "autoSkillSeries": null,
+      "autoPracticeSlug": "practica-6",
+      "practiceSteps": 5,
+      "skillSteps": 0
+    },
+    {
+      "id": "c12-l1",
+      "quizSlug": "parcial/parcial-3",
+      "autoSkillSeries": null,
+      "autoPracticeSlug": null,
+      "practiceSteps": 0,
+      "skillSteps": 0
+    },
+    {
+      "id": "c12-l2",
+      "quizSlug": null,
+      "autoSkillSeries": null,
+      "autoPracticeSlug": null,
+      "practiceSteps": 0,
+      "skillSteps": 0
+    },
+    {
+      "id": "c13-l1",
+      "quizSlug": "adc",
+      "autoSkillSeries": null,
+      "autoPracticeSlug": null,
+      "practiceSteps": 0,
+      "skillSteps": 0
+    },
+    {
+      "id": "c13-l2",
+      "quizSlug": null,
+      "autoSkillSeries": null,
+      "autoPracticeSlug": "practica-7",
+      "practiceSteps": 5,
+      "skillSteps": 0
+    },
+    {
+      "id": "c14-l1",
+      "quizSlug": "comunicacion/uart",
+      "autoSkillSeries": null,
+      "autoPracticeSlug": null,
+      "practiceSteps": 0,
+      "skillSteps": 0
+    },
+    {
+      "id": "c14-l2",
+      "quizSlug": "comunicacion/spi-i2c",
+      "autoSkillSeries": null,
+      "autoPracticeSlug": null,
+      "practiceSteps": 0,
+      "skillSteps": 0
+    },
+    {
+      "id": "c14-l3",
+      "quizSlug": "comunicacion/usb",
+      "autoSkillSeries": null,
+      "autoPracticeSlug": null,
+      "practiceSteps": 0,
+      "skillSteps": 0
+    },
+    {
+      "id": "c14-l4",
+      "quizSlug": null,
+      "autoSkillSeries": null,
+      "autoPracticeSlug": "practica-8",
+      "practiceSteps": 5,
+      "skillSteps": 0
+    },
+    {
+      "id": "c15-l1",
+      "quizSlug": "parcial/parcial-4",
+      "autoSkillSeries": null,
+      "autoPracticeSlug": null,
+      "practiceSteps": 0,
+      "skillSteps": 0
+    },
+    {
+      "id": "c15-l2",
+      "quizSlug": null,
+      "autoSkillSeries": null,
+      "autoPracticeSlug": null,
+      "practiceSteps": 0,
+      "skillSteps": 0
+    },
+    {
+      "id": "c15-l3",
+      "quizSlug": null,
+      "autoSkillSeries": null,
+      "autoPracticeSlug": "practica-9",
+      "practiceSteps": 5,
+      "skillSteps": 0
+    },
+    {
+      "id": "c16-l1",
+      "quizSlug": null,
+      "autoSkillSeries": null,
+      "autoPracticeSlug": null,
+      "practiceSteps": 0,
+      "skillSteps": 0
+    },
+    {
+      "id": "c16-l2",
+      "quizSlug": null,
+      "autoSkillSeries": null,
+      "autoPracticeSlug": null,
+      "practiceSteps": 0,
+      "skillSteps": 0
+    },
+    {
+      "id": "c16-l3",
+      "quizSlug": null,
+      "autoSkillSeries": null,
+      "autoPracticeSlug": null,
+      "practiceSteps": 0,
+      "skillSteps": 0
+    }
+  ]
+}

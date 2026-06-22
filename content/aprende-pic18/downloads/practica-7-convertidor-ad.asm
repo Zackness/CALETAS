@@ -10,18 +10,29 @@
 ;
 ; Cristal 20 MHz: ADCS = 101 (16 Tosc) en ADCON2
 ;
+; Estructura sandwich:
+;   Vectores -> Programa principal -> Subrutinas -> Fin
+;
 ; Alumno: _________________________  Seccion: ______  Fecha: __________
 ;==============================================================================
 
         LIST    P=18F4550
         #include <P18F4550.INC>
 
+;==============================================================================
+; CONFIGURACION
+;==============================================================================
+
         CONFIG  FOSC = HS
         CONFIG  WDT  = OFF
         CONFIG  LVP  = OFF
         CONFIG  PBADEN = OFF
 
-        cblock 0x20
+;==============================================================================
+; VARIABLES
+;==============================================================================
+
+        CBLOCK  0x20
             adc_l
             adc_h
             lcd_tmp
@@ -31,13 +42,26 @@
             dig1
             dig2
             dig3
-        endc
-
-        ORG     0x0000
-        GOTO    inicio
+        ENDC
 
 ;==============================================================================
-inicio:
+; VECTORES
+;==============================================================================
+
+        ORG     0x0000
+        GOTO    INICIO
+
+        ORG     0x0008
+        GOTO    ISR_VACIA
+
+        ORG     0x0018
+        RETFIE
+
+;==============================================================================
+; PROGRAMA PRINCIPAL
+;==============================================================================
+
+INICIO
         MOVLW   0x0E                ; RA0 analogico, resto digital
         MOVWF   ADCON1
         MOVLW   B'10100010'         ; ADFM=1, ADCS=101
@@ -55,121 +79,128 @@ inicio:
         BCF     TRISE, 0
         BCF     TRISE, 1
 
-        CALL    lcd_init
+        CALL    LCD_INIT
         MOVLW   0x80
-        CALL    lcd_cmd
+        CALL    LCD_CMD
         MOVLW   'A'
-        CALL    lcd_dat
+        CALL    LCD_DAT
         MOVLW   'D'
-        CALL    lcd_dat
+        CALL    LCD_DAT
         MOVLW   'C'
-        CALL    lcd_dat
+        CALL    LCD_DAT
         MOVLW   ':'
-        CALL    lcd_dat
+        CALL    LCD_DAT
 
-bucle:
-        CALL    leer_adc
-        CALL    mostrar_adc_lcd
-        GOTO    bucle
+BUCLE_PRINCIPAL
+        CALL    LEER_ADC
+        CALL    MOSTRAR_ADC_LCD
+        GOTO    BUCLE_PRINCIPAL
 
 ;==============================================================================
-leer_adc:
+; SUBRUTINAS
+;==============================================================================
+
+LEER_ADC
         BSF     ADCON0, GO
-espera:
+ESPERA_ADC
         BTFSC   ADCON0, GO
-        GOTO    espera
+        GOTO    ESPERA_ADC
         MOVF    ADRESL, W
         MOVWF   adc_l
         MOVF    ADRESH, W
         MOVWF   adc_h
         RETURN
 
-mostrar_adc_lcd:
-        ; Muestra valor 0-1023 (4 digitos simplificados en plantilla)
+MOSTRAR_ADC_LCD
         MOVLW   0xC0
-        CALL    lcd_cmd
+        CALL    LCD_CMD
         MOVF    adc_h, W
-        CALL    nibble_a_ascii
-        CALL    lcd_dat
+        CALL    NIBBLE_A_ASCII
+        CALL    LCD_DAT
         MOVF    adc_l, W
-        CALL    byte_a_ascii2
+        CALL    BYTE_A_ASCII2
         RETURN
 
-nibble_a_ascii:
+NIBBLE_A_ASCII
         ANDLW   0x0F
         ADDLW   '0'
         RETURN
 
-byte_a_ascii2:
+BYTE_A_ASCII2
         MOVWF   lcd_tmp
         SWAPF   lcd_tmp, W
-        CALL    nibble_a_ascii
-        CALL    lcd_dat
+        CALL    NIBBLE_A_ASCII
+        CALL    LCD_DAT
         MOVF    lcd_tmp, W
-        CALL    nibble_a_ascii
-        CALL    lcd_dat
+        CALL    NIBBLE_A_ASCII
+        CALL    LCD_DAT
         RETURN
 
-;==============================================================================
 ; LCD 4 bit en RB0-RB3, RS=RE0, E=RE1
-;==============================================================================
-lcd_init:
-        CALL    retardo_largo
+LCD_INIT
+        CALL    RETARDO_LARGO
         MOVLW   0x03
-        CALL    lcd_nibble
+        CALL    LCD_NIBBLE
         MOVLW   0x03
-        CALL    lcd_nibble
+        CALL    LCD_NIBBLE
         MOVLW   0x03
-        CALL    lcd_nibble
+        CALL    LCD_NIBBLE
         MOVLW   0x02
-        CALL    lcd_nibble
+        CALL    LCD_NIBBLE
         MOVLW   0x28
-        CALL    lcd_cmd
+        CALL    LCD_CMD
         MOVLW   0x0C
-        CALL    lcd_cmd
+        CALL    LCD_CMD
         MOVLW   0x01
-        CALL    lcd_cmd
+        CALL    LCD_CMD
         RETURN
 
-lcd_cmd:
+LCD_CMD
         BCF     LATE, 0
-        GOTO    lcd_write
+        GOTO    LCD_WRITE
 
-lcd_dat:
+LCD_DAT
         BSF     LATE, 0
 
-lcd_write:
+LCD_WRITE
         MOVWF   lcd_byte
         SWAPF   lcd_byte, W
-        CALL    lcd_nibble
+        CALL    LCD_NIBBLE
         MOVF    lcd_byte, W
-        CALL    lcd_nibble
+        CALL    LCD_NIBBLE
         RETURN
 
-lcd_nibble:
+LCD_NIBBLE
         ANDLW   0x0F
         MOVWF   lcd_tmp
         MOVF    lcd_tmp, W
         MOVWF   LATB
         BSF     LATE, 1
-        CALL    retardo_corto
+        CALL    RETARDO_CORTO
         BCF     LATE, 1
         RETURN
 
-retardo_corto:
+RETARDO_CORTO
         MOVLW   0x20
         MOVWF   dly
         DECFSZ  dly, F
-        GOTO    retardo_corto
+        GOTO    RETARDO_CORTO
         RETURN
 
-retardo_largo:
+RETARDO_LARGO
         MOVLW   0x10
         MOVWF   dig0
-rl:
-        CALL    retardo_corto
+RL
+        CALL    RETARDO_CORTO
         DECFSZ  dig0, F
-        GOTO    rl
+        GOTO    RL
         RETURN
+
+;==============================================================================
+; RUTINAS DE INTERRUPCION
+;==============================================================================
+
+ISR_VACIA
+        RETFIE
 
         END

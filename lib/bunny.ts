@@ -216,3 +216,169 @@ export const listBunnyFiles = async (subfolder: string = "") => {
       };
     });
 };
+
+// --- Funciones para galería de medios del blog (StartupVen) ---
+
+const IMAGE_EXT = /\.(jpe?g|png|gif|webp|svg|avif|bmp)$/i;
+
+function sanitizeBunnyFilename(name: string) {
+  return name.trim().replace(/\s+/g, "-").replace(/[^a-zA-Z0-9._-]/g, "");
+}
+
+export function bunnyPublicUrlForPath(path: string) {
+  ensureBunnyConfig();
+  const clean = path.replace(/^\/+/, "");
+  return `${getPublicBaseUrl()}/${clean}`;
+}
+
+export function bunnyPathFromPublicUrl(url: string): string | null {
+  try {
+    const publicBase = getPublicBaseUrl();
+    const u = new URL(url);
+    const publicBaseUrl = new URL(publicBase);
+    if (u.host !== publicBaseUrl.host) return null;
+    return u.pathname.replace(/^\/+/, "");
+  } catch {
+    return null;
+  }
+}
+
+export async function bunnyUploadBytes(opts: {
+  folder?: string;
+  filename: string;
+  bytes: Uint8Array;
+  contentType?: string;
+}) {
+  ensureBunnyConfig();
+  const folder = (opts.folder ?? "blog").replace(/^\/+|\/+$/g, "");
+  const safe = sanitizeBunnyFilename(opts.filename) || `file-${Date.now()}`;
+  const key = `${folder}/${Date.now()}-${safe}`.replace(/^\/+/, "");
+
+  const uploadUrl = `${bunnyConfig.baseUrl}/${bunnyConfig.storageZoneName}/${key}`;
+  const buffer = Buffer.from(opts.bytes);
+
+  const res = await fetch(uploadUrl, {
+    method: "PUT",
+    headers: {
+      AccessKey: bunnyConfig.apiKey,
+      "Content-Type": opts.contentType ?? "application/octet-stream",
+      "Content-Length": buffer.length.toString(),
+    },
+    body: buffer,
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Bunny upload failed (${res.status}): ${text}`);
+  }
+
+  return {
+    path: key,
+    url: bunnyPublicUrlForPath(key),
+  };
+}
+
+export async function bunnyDeleteByPath(path: string) {
+  ensureBunnyConfig();
+  const key = path.replace(/^\/+/, "");
+  const deleteUrl = `${bunnyConfig.baseUrl}/${bunnyConfig.storageZoneName}/${key}`;
+
+  const res = await fetch(deleteUrl, {
+    method: "DELETE",
+    headers: { AccessKey: bunnyConfig.apiKey },
+  });
+
+  if (res.status === 404) return { deleted: false };
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Bunny delete failed (${res.status}): ${text}`);
+  }
+  return { deleted: true };
+}
+
+export async function bunnyDeleteByPublicUrl(publicUrl: string) {
+  const path = bunnyPathFromPublicUrl(publicUrl);
+  if (!path) return { deleted: false };
+  return bunnyDeleteByPath(path);
+}
+
+type BunnyStorageItem = {
+  Guid: string;
+  StorageZoneName: string;
+  Path: string;
+  ObjectName: string;
+  IsDirectory: boolean;
+  Length?: number;
+  ContentType?: string;
+  DateCreated?: string;
+  LastChanged?: string;
+};
+
+export function bunnyStorageItemToPath(item: BunnyStorageItem): string {
+  const dir = (item.Path ?? "/").replace(/^\/+|\/+$/g, "");
+  const name = item.ObjectName.replace(/^\/+/, "");
+  return dir ? `${dir}/${name}` : name;
+}
+
+export function isBunnyImageItem(item: BunnyStorageItem): boolean {
+  if (item.IsDirectory) return false;
+  if (item.ContentType?.startsWith("image/")) return true;
+  return IMAGE_EXT.test(item.ObjectName);
+}
+
+export async function bunnyListFolder(folderPath = ""): Promise<BunnyStorageItem[]> {
+  ensureBunnyConfig();
+  const clean = folderPath.replace(/^\/+|\/+$/g, "");
+  const suffix = clean ? `${clean}/` : "";
+  const listUrl = `${bunnyConfig.baseUrl}/${bunnyConfig.storageZoneName}/${suffix}`;
+
+  const res = await fetch(listUrl, {
+    method: "GET",
+    headers: { AccessKey: bunnyConfig.apiKey, Accept: "application/json" },
+  });
+
+  if (res.status === 404) return [];
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Bunny list failed (${res.status}): ${text}`);
+  }
+
+  const data = (await res.json()) as BunnyStorageItem[];
+  return Array.isArray(data) ? data : [];
+}
+
+export async function bunnyListAllImages(rootFolder = "") {
+  const results: Array<{
+    path: string;
+    url: string;
+    mimeType: string | null;
+    sizeBytes: number | null;
+    filename: string;
+    folder: string;
+  }> = [];
+
+  async function walk(folder: string) {
+    const items = await bunnyListFolder(folder);
+    for (const item of items) {
+      if (item.IsDirectory) {
+        const sub = folder ? `${folder}/${item.ObjectName}` : item.ObjectName;
+        await walk(sub);
+        continue;
+      }
+      if (!isBunnyImageItem(item)) continue;
+      const path = folder ? `${folder}/${item.ObjectName}` : item.ObjectName;
+      const folderName = folder || "blog";
+      results.push({
+        path,
+        url: bunnyPublicUrlForPath(path),
+        mimeType: item.ContentType ?? null,
+        sizeBytes: item.Length ?? null,
+        filename: item.ObjectName,
+        folder: folderName,
+      });
+    }
+  }
+
+  await walk(rootFolder.replace(/^\/+|\/+$/g, ""));
+  return results;
+}

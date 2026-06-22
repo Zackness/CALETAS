@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { expandPic18ProgressPayload } from "@/lib/aprende-pic18/expand-progress-payload";
 import { db } from "@/lib/db";
 import { verifyMobileJwt } from "@/lib/zeno-mobile-auth";
 
@@ -32,9 +33,11 @@ export async function GET(request: Request) {
   );
 
   const row = rows[0];
+  const payload = expandPic18ProgressPayload(row?.payload ?? {});
+
   return NextResponse.json(
     {
-      payload: row?.payload ?? {},
+      payload,
       updatedAt: row?.updated_at ?? null,
     },
     { headers: CORS },
@@ -59,7 +62,7 @@ export async function PUT(request: Request) {
     userId,
   );
 
-  const merged = {
+  const merged = expandPic18ProgressPayload({
     ...(existing[0]?.payload ?? {}),
     ...incoming,
     quizzes: {
@@ -74,7 +77,11 @@ export async function PUT(request: Request) {
       ...((existing[0]?.payload?.checklists as object) ?? {}),
       ...((incoming.checklists as object) ?? {}),
     },
-  };
+    skillGuides: {
+      ...((existing[0]?.payload?.skillGuides as object) ?? {}),
+      ...((incoming.skillGuides as object) ?? {}),
+    },
+  });
 
   await db.$executeRawUnsafe(
     `INSERT INTO aprende_pic18_progress (user_id, payload, updated_at)

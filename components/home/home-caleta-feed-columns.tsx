@@ -34,7 +34,7 @@ export function HomeCaletaFeedColumns({ nuevas, populares }: Props) {
           size="icon"
           onClick={() => setViewMode("list")}
           className={cn(
-            "h-6 w-6 shrink-0 border-white/10 bg-[var(--mygreen-dark)] text-white hover:bg-white/10",
+            "h-6 w-6 shrink-0 border-white/10 chalk-panel-soft text-white hover:bg-white/10",
             viewMode === "list" &&
               "border-[color-mix(in_oklab,var(--accent-hex)_45%,transparent)] bg-[color-mix(in_oklab,var(--accent-hex)_18%,transparent)]",
           )}
@@ -50,7 +50,7 @@ export function HomeCaletaFeedColumns({ nuevas, populares }: Props) {
           size="icon"
           onClick={() => setViewMode("grid")}
           className={cn(
-            "h-6 w-6 shrink-0 border-white/10 bg-[var(--mygreen-dark)] text-white hover:bg-white/10",
+            "h-6 w-6 shrink-0 border-white/10 chalk-panel-soft text-white hover:bg-white/10",
             viewMode === "grid" &&
               "border-[color-mix(in_oklab,var(--accent-hex)_45%,transparent)] bg-[color-mix(in_oklab,var(--accent-hex)_18%,transparent)]",
           )}
@@ -64,7 +64,7 @@ export function HomeCaletaFeedColumns({ nuevas, populares }: Props) {
 
       {/* Siempre Nuevas arriba, Populares abajo (feed social) */}
       <div className="flex flex-col gap-5">
-        <Card className="overflow-hidden rounded-3xl border-white/10 bg-[var(--mygreen-light)] shadow-[0_8px_40px_-20px_rgba(0,0,0,0.35)]">
+        <Card className="chalk-card overflow-hidden border-white/10 shadow-none">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base text-white sm:text-lg">
               <Clock3 className="h-4 w-4 shrink-0 text-[var(--accent-hex)] sm:h-5 sm:w-5" />
@@ -94,7 +94,7 @@ export function HomeCaletaFeedColumns({ nuevas, populares }: Props) {
               <Button
                 asChild
                 variant="outline"
-                className="h-8 min-h-0 w-full rounded-lg border-0 bg-[var(--accent-hex)] px-3 py-0 text-xs font-medium text-white hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)]"
+                className="chalk-hero-btn chalk-hero-btn-primary h-8 min-h-0 w-full px-3 py-0 text-xs"
               >
                 <Link href="/caletas">Ver más</Link>
               </Button>
@@ -102,7 +102,7 @@ export function HomeCaletaFeedColumns({ nuevas, populares }: Props) {
           </CardContent>
         </Card>
 
-        <Card className="overflow-hidden rounded-3xl border-white/10 bg-[var(--mygreen-light)] shadow-[0_8px_40px_-20px_rgba(0,0,0,0.35)]">
+        <Card className="chalk-card overflow-hidden border-white/10 shadow-none">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base text-white sm:text-lg">
               <TrendingUp className="h-4 w-4 shrink-0 text-[var(--accent-hex)] sm:h-5 sm:w-5" />
@@ -130,7 +130,7 @@ export function HomeCaletaFeedColumns({ nuevas, populares }: Props) {
               <Button
                 asChild
                 variant="outline"
-                className="mt-1 h-8 min-h-0 w-full rounded-lg border-0 bg-[var(--accent-hex)] px-3 py-0 text-xs font-medium text-white hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)]"
+                className="chalk-hero-btn chalk-hero-btn-primary mt-1 h-8 min-h-0 w-full px-3 py-0 text-xs"
               >
                 <Link href="/caletas" className="inline-flex items-center justify-center gap-1.5">
                   Explorar todas

@@ -77,7 +77,7 @@ function backoffMsForAttempt(attempt: number, error: unknown): number {
 }
 
 async function runWithTransientRetry<T>(operation: string, fn: () => Promise<T>): Promise<T> {
-  const maxAttempts = process.env.NODE_ENV === "production" ? 8 : 10;
+  const maxAttempts = process.env.NODE_ENV === "production" ? 8 : 14;
   let lastError: unknown;
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
@@ -133,7 +133,20 @@ function createPrismaClient() {
 
 const prismaDevFresh = process.env.NODE_ENV === "development";
 
-export const db = prismaDevFresh ? createPrismaClient() : globalForPrisma.prisma ?? createPrismaClient();
+function getPrismaClient(): PrismaClient {
+  if (!globalForPrisma.prisma) {
+    globalForPrisma.prisma = createPrismaClient();
+  }
+  return globalForPrisma.prisma;
+}
+
+/** En dev, opcionalmente forzar cliente nuevo (p. ej. tras cambiar schema). */
+export function resetPrismaClientForDev() {
+  if (process.env.NODE_ENV !== "development") return;
+  globalForPrisma.prisma = createPrismaClient();
+}
+
+export const db = prismaDevFresh ? getPrismaClient() : globalForPrisma.prisma ?? createPrismaClient();
 
 if (!prismaDevFresh && !globalForPrisma.prisma) {
   globalForPrisma.prisma = db;

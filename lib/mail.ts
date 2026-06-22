@@ -362,3 +362,32 @@ export const sendCalendarReminderEmail = async (params: {
     html: baseTemplate(content),
   });
 };
+
+export const sendNewCursoAnnouncementEmail = async (params: {
+  email: string;
+  userName?: string | null;
+  cursoTitulo: string;
+  cursoUrl: string;
+  descripcion?: string | null;
+}) => {
+  const content = `
+      <h2 style="color:#5BA4E8;">Nuevo curso en Aprende</h2>
+      <p>Hola ${params.userName?.trim() || "estudiante"},</p>
+      <p>Acabamos de publicar un nuevo curso en <strong>Aprende</strong>, la sección de formación de CALETAS.</p>
+      <div class="highlight" style="border-left-color:#5BA4E8;background:#eef6ff;">
+          <p style="color:#1e3a5f;margin:0;"><strong>${params.cursoTitulo}</strong></p>
+          ${params.descripcion?.trim() ? `<p style="color:#334155;margin:8px 0 0;">${params.descripcion.trim().slice(0, 220)}</p>` : ""}
+      </div>
+      <p style="text-align: center;">
+          <a href="${params.cursoUrl}" class="button" style="background:linear-gradient(135deg,#3d8fd4 0%,#5BA4E8 100%);">Explorar curso</a>
+      </p>
+      <p>También verás esta novedad en tu campana de notificaciones dentro de la plataforma.</p>
+  `;
+
+  await resend.emails.send({
+    from: "Caletas <bienvenido@caleta.top>",
+    to: params.email,
+    subject: `Nuevo curso en Aprende: ${params.cursoTitulo}`,
+    html: baseTemplate(content),
+  });
+};

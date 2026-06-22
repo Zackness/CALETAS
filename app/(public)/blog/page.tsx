@@ -1,95 +1,54 @@
-import Link from "next/link";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Header } from "../(root)/components/Header";
-import { CalendarDays, Clock } from "lucide-react";
+import { getPublishedBlogPosts } from "@/lib/actions/blog";
+import { blogCategoryFromSlug, getBlogCategoryMeta } from "@/lib/blog/categories";
+import { BlogArchiveSection } from "@/components/blog/blog-archive-section";
+import { PublicPageShell } from "@/app/(public)/components/PublicPageShell";
+import { PublicPageHero } from "@/app/(public)/components/PublicPageHero";
+import { BookOpen } from "lucide-react";
 
-import { db } from "@/lib/db";
+export const metadata = {
+  title: "Blog | Caletas",
+  description: "Consejos, estrategias y recursos para mejorar tu vida estudiantil.",
+};
 
-export default async function BlogPage() {
-  const posts = await db.blogPost.findMany({
-    where: { isPublished: true, slug: { not: null } },
-    orderBy: { createdAt: "desc" },
-    include: {
-      author: { select: { name: true } },
-      category: { select: { name: true } },
-    },
-    take: 100,
+export default async function BlogPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ categoria?: string; page?: string }>;
+}) {
+  const { categoria, page: pageParam } = await searchParams;
+  const page = Math.max(1, parseInt(pageParam ?? "1", 10) || 1);
+  const activeCategory = blogCategoryFromSlug(categoria);
+  const activeMeta = activeCategory ? getBlogCategoryMeta(activeCategory) : null;
+
+  const { items, totalPages, page: currentPage, total } = await getPublishedBlogPosts({
+    categorySlug: categoria,
+    page,
   });
 
-  const categories = Array.from(new Set(posts.map((p) => p.category?.name).filter(Boolean)));
-
   return (
-    <div className="min-h-screen bg-gradient-to-t from-mygreen to-mygreen-light">
-      <Header />
-
-      <div className="container mx-auto px-4 py-10 sm:py-12">
-        <div className="text-center mb-12">
-          <h1 className="text-3xl sm:text-4xl md:text-6xl font-special text-white mb-4 sm:mb-6">
-            Blog de Caletas
-          </h1>
-
-          <p className="text-base sm:text-lg md:text-xl text-white/80 max-w-3xl mx-auto mb-6 leading-relaxed">
-            Consejos, estrategias y recursos para mejorar tu vida universitaria.
-          </p>
-
-          <div className="flex flex-wrap justify-center gap-2">
-            {categories.length ? (
-              categories.map((cat) => (
-                <Badge key={cat} className="bg-white/10 text-white border-white/20">
-                  {cat}
-                </Badge>
-              ))
-            ) : (
-              <Badge className="bg-white/10 text-white/80 border-white/20">Sin categorías aún</Badge>
-            )}
-          </div>
+    <PublicPageShell>
+      <PublicPageHero
+        title={activeMeta ? activeMeta.label.toUpperCase() : "BLOG DE CALETAS"}
+        description={
+          activeMeta?.description ??
+          "Consejos, estrategias y recursos para mejorar tu vida estudiantil."
+        }
+      >
+        <div className="inline-flex items-center gap-2 chalk-badge">
+          <BookOpen className="h-4 w-4" />
+          {total} artículo{total === 1 ? "" : "s"}
         </div>
+      </PublicPageHero>
 
-        {posts.length === 0 ? (
-          <Card className="bg-[var(--mygreen-light)] border-white/10">
-            <CardContent className="p-8 text-center text-white/70">
-              Todavía no hay artículos publicados. Pronto verás contenido nuevo aquí.
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {posts.map((post) => (
-              <Card key={post.id} className="bg-[var(--mygreen-light)] border-white/10 hover:border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] transition-colors">
-                <CardHeader className="pb-2">
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <Badge className="bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)] text-[var(--accent-hex)] border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)]">
-                      {post.category?.name || "General"}
-                    </Badge>
-                    <span className="text-xs text-white/60 inline-flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      {Math.max(1, Math.ceil((post.content?.length || 200) / 900))} min
-                    </span>
-                  </div>
-                  <CardTitle className="text-white text-xl">{post.title}</CardTitle>
-                  <CardDescription className="text-white/70">
-                    {post.description || "Sin descripción"}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="text-xs text-white/60 inline-flex items-center gap-1">
-                    <CalendarDays className="h-3 w-3" />
-                    {new Date(post.createdAt).toLocaleDateString("es")}
-                    <span className="mx-1">·</span>
-                    {post.author?.name || "Equipo Caletas"}
-                  </div>
-                  <Link
-                    href={`/blog/${post.slug ?? ""}`}
-                    className="inline-flex items-center rounded-md bg-[var(--accent-hex)] px-3 py-2 text-sm font-medium text-white hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)]"
-                  >
-                    Leer artículo
-                  </Link>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+      <div className="chalk-container min-w-0 pb-14 sm:pb-16 md:pb-20 chalk-public-blog">
+        <BlogArchiveSection
+          items={items}
+          total={total}
+          totalPages={totalPages}
+          currentPage={currentPage}
+          categoria={categoria}
+        />
       </div>
-    </div>
+    </PublicPageShell>
   );
 }

@@ -1,22 +1,19 @@
-import { LoginForm } from './components/login-form';
-import { Suspense } from 'react';
-import { Logo } from '@/components/marca/Logo';
+import type { Metadata } from "next";
+import { LoginForm } from "./components/login-form";
+import { AuthPageShell } from "@/app/(auth)/components/auth-page-shell";
 
-const Login = () => {
-    return (
-      <main className="relative h-full bg-gradient-to-t from-mygreen to-mygreen-light min-h-screen w-full m-0 text-white">
-        <div className="w-full h-full">
-          <nav className="flex items-center justify-center py-10">
-            <Logo width={200} height={27} color="white" />
-          </nav>
-          <section className="flex justify-center w-full">
-            <Suspense fallback={<div>Loading...</div>}>
-              <LoginForm/>
-            </Suspense>
-          </section>
-        </div>
-      </main>
-    );
-  }
+export const metadata: Metadata = {
+  title: "Iniciar sesión",
+  description: "Inicia sesión en tu cuenta de CALETAS.",
+};
 
-  export default Login;
+export default function LoginPage() {
+  return (
+    <AuthPageShell
+      title="INICIAR SESIÓN"
+      description="Accede a tu cuenta para compartir caletas, usar la IA y seguir tu progreso académico."
+    >
+      <LoginForm />
+    </AuthPageShell>
+  );
+}

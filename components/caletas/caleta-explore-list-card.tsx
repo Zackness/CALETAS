@@ -3,6 +3,7 @@
 import Link from "next/link";
 import {
   Clock,
+  Download,
   Eye,
   Heart,
   Share2,
@@ -99,6 +100,10 @@ export function CaletaExploreListCard({ recurso, href, onOpen, onToggleFavorito,
           <span className="inline-flex items-center gap-1.5 text-sm text-white/65">
             <Eye className="h-4 w-4 shrink-0 text-[var(--accent-hex)]" />
             {recurso.numVistas}
+          </span>
+          <span className="inline-flex items-center gap-1.5 text-sm text-white/65" title="Descargas en la App de CALETA">
+            <Download className="h-4 w-4 shrink-0 text-[var(--caleta-accent)]" />
+            {recurso.numDescargas}
           </span>
           <span className={cn("inline-flex items-center gap-1.5 text-sm", recurso.isLiked ? "text-white/85" : "text-white/55")}>
             <Heart className={cn("h-4 w-4 shrink-0", recurso.isLiked ? "fill-rose-400 text-rose-400" : "text-white/45")} />

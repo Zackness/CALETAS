@@ -43,26 +43,19 @@ export const NewVerificationForm = () => {
   }
 
   return (
-    <CardWrapper 
-      headerLabel="Verificación de correo"
-      showSocial
-    >
+    <CardWrapper showSocial>
       <div className="flex flex-col items-center text-center">
         <div className="mb-6">
-          <div className="w-16 h-16 bg-gradient-to-r from-mygreen to-mygreen-light rounded-full flex items-center justify-center mb-4 mx-auto">
-            <Mail className="h-8 w-8 text-white" />
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-white/10 bg-[color-mix(in_oklab,var(--caleta-accent)_15%,transparent)]">
+            <Mail className="h-8 w-8 text-[var(--caleta-accent)]" />
           </div>
-          <h2 className="text-3xl mb-4 text-white text-center font-special pb-4">
-            Verificando tu correo
-          </h2>
         </div>
 
-        {/* Mensaje informativo */}
-        <div className="bg-gradient-to-r from-mygreen/20 to-mygreen-light/20 border border-mygreen/30 rounded-xl p-4 mb-6 max-w-md">
+        <div className="mb-6 max-w-md rounded-xl border border-white/10 bg-[#1C2D20] p-4">
           <div className="flex items-start gap-3">
-            <CheckCircle className="h-5 w-5 text-mygreen mt-0.5 flex-shrink-0" />
-            <div className="text-sm text-white/90 leading-relaxed">
-              <p>Una vez verificado el correo electrónico, podrás acceder a toda la plataforma de Caletas.</p>
+            <CheckCircle className="mt-0.5 h-5 w-5 shrink-0 text-[var(--caleta-accent)]" />
+            <div className="text-sm leading-relaxed text-white/85">
+              <p>Una vez verificado el correo electrónico, podrás acceder a toda la plataforma de CALETAS.</p>
             </div>
           </div>
         </div>
@@ -71,7 +64,7 @@ export const NewVerificationForm = () => {
         <div className="w-full max-w-md space-y-4">
           {!succes && !error && (
             <div className="flex flex-col items-center gap-3 p-6 bg-white/5 rounded-xl border border-white/10">
-              <BeatLoader color="var(--mygreen-light)" size={8} />
+              <BeatLoader color="#40C9A9" size={8} />
               <p className="text-sm text-white/70">Verificando tu correo...</p>
             </div>
           )}
@@ -87,7 +80,7 @@ export const NewVerificationForm = () => {
               <p className="text-sm text-white">¡Es momento de acceder!</p>
               <Link 
                 href="/login" 
-                className="text-mygreen hover:text-mygreen-light font-semibold text-sm transition-colors"
+                className="text-sm font-semibold text-[var(--caleta-accent)] transition-colors hover:text-white"
               >
                 Inicia aquí
               </Link>
@@ -99,7 +92,7 @@ export const NewVerificationForm = () => {
               <p className="text-sm text-white">Vuelve al formulario para</p>
               <Link 
                 href="/register" 
-                className="text-mygreen hover:text-mygreen-light font-semibold text-sm transition-colors"
+                className="text-sm font-semibold text-[var(--caleta-accent)] transition-colors hover:text-white"
               >
                 obtener un token
               </Link>

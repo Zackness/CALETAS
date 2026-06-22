@@ -10,45 +10,72 @@
 ;
 ; Envia mensaje de bienvenida y hace eco de bytes recibidos.
 ;
+; Estructura sandwich:
+;   Vectores -> Programa principal -> Subrutinas -> Fin
+;
 ; Alumno: _________________________  Seccion: ______  Fecha: __________
 ;==============================================================================
 
         LIST    P=18F4550
         #include <P18F4550.INC>
 
+;==============================================================================
+; CONFIGURACION
+;==============================================================================
+
         CONFIG  FOSC = HS
         CONFIG  WDT  = OFF
         CONFIG  LVP  = OFF
         CONFIG  PBADEN = OFF
 
-        cblock 0x20
-            dato_rx
-        endc
+;==============================================================================
+; VARIABLES
+;==============================================================================
 
-        ORG     0x0000
-        GOTO    inicio
+        CBLOCK  0x20
+            dato_rx
+        ENDC
 
 ;==============================================================================
-inicio:
+; VECTORES
+;==============================================================================
+
+        ORG     0x0000
+        GOTO    INICIO
+
+        ORG     0x0008
+        GOTO    ISR_VACIA
+
+        ORG     0x0018
+        RETFIE
+
+;==============================================================================
+; PROGRAMA PRINCIPAL
+;==============================================================================
+
+INICIO
         MOVLW   0x0F
         MOVWF   ADCON1
 
         BSF     TRISC, 7            ; RX entrada
         BCF     TRISC, 6            ; TX salida
 
-        CALL    uart_init
-        CALL    enviar_saludo
+        CALL    UART_INIT
+        CALL    ENVIAR_SALUDO
 
-bucle:
+BUCLE_PRINCIPAL
         BTFSS   PIR1, RCIF
-        GOTO    bucle
+        GOTO    BUCLE_PRINCIPAL
         MOVFF   RCREG, dato_rx
         MOVF    dato_rx, W
-        CALL    uart_tx
-        GOTO    bucle
+        CALL    UART_TX
+        GOTO    BUCLE_PRINCIPAL
 
 ;==============================================================================
-uart_init:
+; SUBRUTINAS
+;==============================================================================
+
+UART_INIT
         BCF     TXSTA, SYNC
         BSF     TXSTA, BRGH
         MOVLW   D'129'
@@ -58,37 +85,44 @@ uart_init:
         BSF     RCSTA, CREN
         RETURN
 
-uart_tx:
+UART_TX
         BTFSS   PIR1, TXIF
-        GOTO    uart_tx
+        GOTO    UART_TX
         MOVWF   TXREG
         RETURN
 
-enviar_saludo:
+ENVIAR_SALUDO
         MOVLW   'P'
-        CALL    uart_tx
+        CALL    UART_TX
         MOVLW   'I'
-        CALL    uart_tx
+        CALL    UART_TX
         MOVLW   'C'
-        CALL    uart_tx
+        CALL    UART_TX
         MOVLW   '1'
-        CALL    uart_tx
+        CALL    UART_TX
         MOVLW   '8'
-        CALL    uart_tx
+        CALL    UART_TX
         MOVLW   ' '
-        CALL    uart_tx
+        CALL    UART_TX
         MOVLW   'U'
-        CALL    uart_tx
+        CALL    UART_TX
         MOVLW   'A'
-        CALL    uart_tx
+        CALL    UART_TX
         MOVLW   'R'
-        CALL    uart_tx
+        CALL    UART_TX
         MOVLW   'T'
-        CALL    uart_tx
+        CALL    UART_TX
         MOVLW   0x0D
-        CALL    uart_tx
+        CALL    UART_TX
         MOVLW   0x0A
-        CALL    uart_tx
+        CALL    UART_TX
         RETURN
+
+;==============================================================================
+; RUTINAS DE INTERRUPCION
+;==============================================================================
+
+ISR_VACIA
+        RETFIE
 
         END

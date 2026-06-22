@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { hash } from "bcryptjs";
+import {
+  formatTipoInstitucionDb,
+  getCategoriaInstitucion,
+  labelCategoriaInstitucion,
+  type CaracterInstitucion,
+} from "@/lib/instituciones-educativas";
 
 interface Estudiante {
   id: string;
@@ -22,15 +28,25 @@ export async function POST(request: NextRequest) {
     
     const universidad = formData.get("universidad") as string;
     const siglasUniversidad = formData.get("siglasUniversidad") as string;
-    const tipoUniversidad = formData.get("tipoUniversidad") as string;
+    const categoriaInstitucion = getCategoriaInstitucion(
+      (formData.get("categoriaInstitucion") as string) || "UNIVERSIDAD",
+    );
+    const caracterInstitucion = (
+      (formData.get("caracterInstitucion") as string) ||
+      (formData.get("tipoUniversidad") as string) ||
+      "PUBLICA"
+    ) as CaracterInstitucion;
     const carrera = formData.get("carrera") as string;
     const descripcionCarrera = formData.get("descripcionCarrera") as string;
     const estudiantesJson = formData.get("estudiantes") as string;
     const pensum = formData.get("pensum") as File;
 
-    if (!universidad || !siglasUniversidad || !tipoUniversidad || !carrera || !estudiantesJson || !pensum) {
+    if (!universidad || !siglasUniversidad || !carrera || !estudiantesJson || !pensum) {
       return NextResponse.json({ error: "Datos requeridos faltantes" }, { status: 400 });
     }
+
+    const tipoInstitucionDb = formatTipoInstitucionDb(categoriaInstitucion, caracterInstitucion);
+    const etiquetaInstitucion = labelCategoriaInstitucion(categoriaInstitucion);
 
     const estudiantes: Estudiante[] = JSON.parse(estudiantesJson);
 
@@ -75,16 +91,16 @@ export async function POST(request: NextRequest) {
         data: {
           nombre: universidad,
           siglas: siglasUniversidad,
-          tipo: tipoUniversidad,
+          tipo: tipoInstitucionDb,
           direccion: "Por definir",
           telefono: "Por definir",
           email: "contacto@" + siglasUniversidad.toLowerCase() + ".edu.ve",
           estado: "ACTIVA",
-          ciudad: "Por definir"
-        }
+          ciudad: "Por definir",
+        },
       });
       universidadId = nuevaUniversidad.id;
-      console.log("✅ Nueva universidad creada:", universidad, "(", siglasUniversidad, ")");
+      console.log("✅ Nueva institución creada:", universidad, "(", siglasUniversidad, ")", tipoInstitucionDb);
     }
 
     // Verificar si la carrera ya existe en esta universidad
@@ -98,8 +114,8 @@ export async function POST(request: NextRequest) {
     });
 
     if (carreraExistente) {
-      return NextResponse.json({ 
-        error: "Esta carrera ya existe en la universidad especificada" 
+      return NextResponse.json({
+        error: `Este programa ya existe en la ${etiquetaInstitucion.toLowerCase()} especificada`,
       }, { status: 400 });
     }
 
@@ -176,8 +192,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: "¡Universidad y carrera integradas exitosamente!",
+      message: `¡${etiquetaInstitucion} y programa integrados exitosamente!`,
       detalles: {
+        categoriaInstitucion,
+        caracterInstitucion,
         universidad: universidadExistente ? "existente" : "nueva",
         carrera: "nueva",
         universidadId,
@@ -186,9 +204,9 @@ export async function POST(request: NextRequest) {
         cuentasExistentes: cuentasExistentes.length,
         estudiantes: {
           nuevos: cuentasCreadas,
-          existentes: cuentasExistentes
-        }
-      }
+          existentes: cuentasExistentes,
+        },
+      },
     });
 
   } catch (error) {

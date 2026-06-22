@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { summarizePic18Progress } from "@/lib/aprende-pic18-progress-summary";
+import { attachCourseProgressBundle } from "@/lib/cursos/attach-course-progress";
+import { dedupeCursosByPlatform } from "@/lib/cursos/dedupe-cursos";
+import { getAprendeProgressForUser } from "@/lib/aprende-progress-db";
 import { db } from "@/lib/db";
 
 export async function GET(request: NextRequest) {
@@ -31,24 +33,15 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const pic18Progress = await db.aprendePic18Progress.findUnique({
-      where: { userId: session.user.id },
-      select: { payload: true, updatedAt: true },
-    });
-    const pic18Summary = summarizePic18Progress(pic18Progress?.payload);
+    const { pic18, cpp } = await getAprendeProgressForUser(session.user.id);
+
+    const unique = dedupeCursosByPlatform(cursos);
 
     return NextResponse.json({
-      cursos: cursos.map((curso) => {
-        const isPic18 =
-          curso.slug === "aprende-pic18" ||
-          curso.externalUrl?.includes("pic18.caleta.top") ||
-          curso.titulo.toLowerCase().includes("pic18");
-        return {
-          ...curso,
-          progress: isPic18 ? pic18Summary : null,
-          progressUpdatedAt: isPic18 ? pic18Progress?.updatedAt ?? null : null,
-        };
-      }),
+      cursos: unique.map((curso) => ({
+        ...curso,
+        ...attachCourseProgressBundle(curso, pic18, cpp),
+      })),
     });
   } catch (error) {
     console.error("Error listing cursos:", error);

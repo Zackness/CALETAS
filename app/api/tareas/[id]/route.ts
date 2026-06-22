@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { CaletaTaskPriority, CaletaTaskStatus } from "@prisma/client";
+import { CaletaTaskPriority } from "@prisma/client";
+import { validateCaletaTaskStatusForUser } from "@/lib/tareas/board-config-service";
 
 function unauthorized() {
   return NextResponse.json({ error: "No autorizado" }, { status: 401 });
@@ -18,7 +19,7 @@ export async function PATCH(
   const body = (await request.json().catch(() => null)) as {
     title?: string;
     description?: string | null;
-    status?: CaletaTaskStatus;
+    status?: string;
     priority?: CaletaTaskPriority;
     dueAt?: string | null;
     icon?: string | null;
@@ -27,14 +28,21 @@ export async function PATCH(
   const existing = await db.caletaTask.findFirst({ where: { id, userId: session.user.id } });
   if (!existing) return NextResponse.json({ error: "Tarea no encontrada" }, { status: 404 });
 
+  let nextStatus: string | undefined;
+  if (body?.status !== undefined) {
+    const ok = await validateCaletaTaskStatusForUser(session.user.id, body.status);
+    if (!ok) {
+      return NextResponse.json({ error: "Estado de tarea no válido." }, { status: 400 });
+    }
+    nextStatus = body.status;
+  }
+
   const task = await db.caletaTask.update({
     where: { id },
     data: {
       title: body?.title?.trim() || undefined,
       description: body?.description === undefined ? undefined : body.description?.trim() || null,
-      status: Object.values(CaletaTaskStatus).includes(body?.status as CaletaTaskStatus)
-        ? (body?.status as CaletaTaskStatus)
-        : undefined,
+      status: nextStatus,
       priority: Object.values(CaletaTaskPriority).includes(body?.priority as CaletaTaskPriority)
         ? (body?.priority as CaletaTaskPriority)
         : undefined,

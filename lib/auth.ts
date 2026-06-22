@@ -5,7 +5,7 @@ import { twoFactor } from "better-auth/plugins";
 import { passkey } from "@better-auth/passkey";
 import { expo } from "@better-auth/expo";
 import { headers } from "next/headers";
-import { unstable_rethrow } from "next/navigation";
+import { redirect, unstable_rethrow } from "next/navigation";
 import bcrypt from "bcryptjs";
 import { createAuthMiddleware } from "better-auth/api";
 import { verifyPassword as scryptVerifyPassword } from "better-auth/crypto";
@@ -235,3 +235,20 @@ export const currentUser = async () => {
   const session = await getSession();
   return session?.user ?? null;
 };
+
+/** Rol desde la BD: la sesión de Better Auth no incluye `role` por defecto. */
+export async function requireAdminUserId(message = "Solo administradores pueden acceder.") {
+  const session = await getSession();
+  if (!session?.user?.id) redirect("/login");
+
+  const user = await db.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true },
+  });
+
+  if (user?.role !== "ADMIN") {
+    throw new Error(message);
+  }
+
+  return session.user.id;
+}

@@ -1,5 +1,4 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { 
   BookOpen, 
   GraduationCap, 
@@ -20,45 +19,38 @@ import {
   Search,
   Bell,
   Lightbulb,
-  ArrowRight
+  ArrowRight,
+  Sparkles,
+  PenLine,
 } from "lucide-react";
 import Link from "next/link";
-import { Header } from "../components/Header";
+import { PublicPageShell } from "@/app/(public)/components/PublicPageShell";
+import { PublicPageHero } from "@/app/(public)/components/PublicPageHero";
+import { PublicSectionHeader } from "@/app/(public)/components/PublicSectionHeader";
 
 export default function CaracteristicasPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-t from-mygreen to-mygreen-light">
-      <Header />
-      
-      {/* Header */}
-      <div className="container mx-auto px-4 py-10 sm:py-14 md:py-16">
-        <div className="text-center mb-10 sm:mb-14 md:mb-16">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-special text-white mb-4 sm:mb-6">
-            Características de Caletas
-          </h1>
-          <p className="text-base sm:text-lg md:text-xl text-white/80 max-w-3xl mx-auto">
-            Descubre todas las herramientas y funcionalidades que hacen de Caletas la plataforma académica colaborativa más completa para estudiantes universitarios.
-          </p>
-        </div>
+    <PublicPageShell>
+      <PublicPageHero
+        title="CARACTERÍSTICAS DE CALETAS"
+        description="Descubre todas las herramientas y funcionalidades que hacen de Caletas la plataforma académica colaborativa más completa para estudiantes de universidades, colegios, liceos, institutos y otras instituciones educativas."
+      />
 
+      <div className="chalk-container min-w-0 pb-14 sm:pb-16 md:pb-20">
         {/* Sistema Académico */}
         <section className="mb-20">
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-3 mb-4">
-              <GraduationCap className="h-8 w-8 text-[var(--accent-hex)]" />
-              <h2 className="text-3xl font-special text-white">Sistema Académico Integral</h2>
-            </div>
-            <p className="text-white/70 text-lg">
-              Gestiona tu progreso académico de manera inteligente y eficiente
-            </p>
-          </div>
+          <PublicSectionHeader
+            icon={GraduationCap}
+            title="Sistema académico integral"
+            description="Gestiona tu progreso académico de manera inteligente y eficiente"
+          />
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card className="bg-[var(--mygreen-light)] border-white/10 hover:border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] transition-all">
+            <Card className="chalk-card">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-lg">
-                    <BarChart3 className="h-6 w-6 text-[var(--accent-hex)]" />
+                  <div className="p-2 bg-[color-mix(in_oklab,var(--caleta-accent)_10%,transparent)] rounded-lg">
+                    <BarChart3 className="h-6 w-6 text-[var(--caleta-accent)]" />
                   </div>
                   <CardTitle className="text-white">Panel de Control</CardTitle>
                 </div>
@@ -69,26 +61,26 @@ export default function CaracteristicasPage() {
                 </CardDescription>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Progreso visual por semestre</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Estadísticas de rendimiento</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Resumen de materias actuales</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-[var(--mygreen-light)] border-white/10 hover:border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] transition-all">
+            <Card className="chalk-card">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-lg">
-                    <Target className="h-6 w-6 text-[var(--accent-hex)]" />
+                  <div className="p-2 bg-[color-mix(in_oklab,var(--caleta-accent)_10%,transparent)] rounded-lg">
+                    <Target className="h-6 w-6 text-[var(--caleta-accent)]" />
                   </div>
                   <CardTitle className="text-white">Metas Académicas</CardTitle>
                 </div>
@@ -99,26 +91,26 @@ export default function CaracteristicasPage() {
                 </CardDescription>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Metas por GPA, materias o créditos</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Seguimiento automático de progreso</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Notificaciones de logros</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-[var(--mygreen-light)] border-white/10 hover:border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] transition-all">
+            <Card className="chalk-card">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-lg">
-                    <BookOpen className="h-6 w-6 text-[var(--accent-hex)]" />
+                  <div className="p-2 bg-[color-mix(in_oklab,var(--caleta-accent)_10%,transparent)] rounded-lg">
+                    <BookOpen className="h-6 w-6 text-[var(--caleta-accent)]" />
                   </div>
                   <CardTitle className="text-white">Historial Académico</CardTitle>
                 </div>
@@ -129,26 +121,26 @@ export default function CaracteristicasPage() {
                 </CardDescription>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Registro de materias aprobadas</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Gestión de estados (cursando, retirada)</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Validación automática de prerrequisitos</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-[var(--mygreen-light)] border-white/10 hover:border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] transition-all">
+            <Card className="chalk-card">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-lg">
-                    <Lightbulb className="h-6 w-6 text-[var(--accent-hex)]" />
+                  <div className="p-2 bg-[color-mix(in_oklab,var(--caleta-accent)_10%,transparent)] rounded-lg">
+                    <Lightbulb className="h-6 w-6 text-[var(--caleta-accent)]" />
                   </div>
                   <CardTitle className="text-white">Recomendaciones</CardTitle>
                 </div>
@@ -159,26 +151,26 @@ export default function CaracteristicasPage() {
                 </CardDescription>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Análisis de prerrequisitos</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Sugerencias optimizadas</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Planificación semestral</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-[var(--mygreen-light)] border-white/10 hover:border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] transition-all">
+            <Card className="chalk-card">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-lg">
-                    <TrendingUp className="h-6 w-6 text-[var(--accent-hex)]" />
+                  <div className="p-2 bg-[color-mix(in_oklab,var(--caleta-accent)_10%,transparent)] rounded-lg">
+                    <TrendingUp className="h-6 w-6 text-[var(--caleta-accent)]" />
                   </div>
                   <CardTitle className="text-white">Estadísticas Avanzadas</CardTitle>
                 </div>
@@ -189,26 +181,26 @@ export default function CaracteristicasPage() {
                 </CardDescription>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Gráficos de rendimiento</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Comparación con otros estudiantes</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Proyecciones académicas</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-[var(--mygreen-light)] border-white/10 hover:border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] transition-all">
+            <Card className="chalk-card">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-lg">
-                    <Bell className="h-6 w-6 text-[var(--accent-hex)]" />
+                  <div className="p-2 bg-[color-mix(in_oklab,var(--caleta-accent)_10%,transparent)] rounded-lg">
+                    <Bell className="h-6 w-6 text-[var(--caleta-accent)]" />
                   </div>
                   <CardTitle className="text-white">Notificaciones</CardTitle>
                 </div>
@@ -219,15 +211,15 @@ export default function CaracteristicasPage() {
                 </CardDescription>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Recordatorios de metas</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Alertas de materias próximas a vencer</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Notificaciones de logros</span>
                   </div>
                 </div>
@@ -238,22 +230,18 @@ export default function CaracteristicasPage() {
 
         {/* Plataforma Colaborativa */}
         <section className="mb-20">
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-3 mb-4">
-              <Share2 className="h-8 w-8 text-[var(--accent-hex)]" />
-              <h2 className="text-3xl font-special text-white">Plataforma Colaborativa</h2>
-            </div>
-            <p className="text-white/70 text-lg">
-              Comparte y descubre recursos académicos con la comunidad estudiantil
-            </p>
-          </div>
+          <PublicSectionHeader
+            icon={Share2}
+            title="Plataforma colaborativa"
+            description="Comparte y descubre recursos académicos con la comunidad estudiantil"
+          />
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card className="bg-[var(--mygreen-light)] border-white/10 hover:border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] transition-all">
+            <Card className="chalk-card">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-lg">
-                    <FileText className="h-6 w-6 text-[var(--accent-hex)]" />
+                  <div className="p-2 bg-[color-mix(in_oklab,var(--caleta-accent)_10%,transparent)] rounded-lg">
+                    <FileText className="h-6 w-6 text-[var(--caleta-accent)]" />
                   </div>
                   <CardTitle className="text-white">Subir Caletas</CardTitle>
                 </div>
@@ -264,26 +252,26 @@ export default function CaracteristicasPage() {
                 </CardDescription>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Subida de PDFs e imágenes</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Moderación automática con IA</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Organización por materias</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-[var(--mygreen-light)] border-white/10 hover:border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] transition-all">
+            <Card className="chalk-card">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-lg">
-                    <Search className="h-6 w-6 text-[var(--accent-hex)]" />
+                  <div className="p-2 bg-[color-mix(in_oklab,var(--caleta-accent)_10%,transparent)] rounded-lg">
+                    <Search className="h-6 w-6 text-[var(--caleta-accent)]" />
                   </div>
                   <CardTitle className="text-white">Descubrir Recursos</CardTitle>
                 </div>
@@ -294,26 +282,26 @@ export default function CaracteristicasPage() {
                 </CardDescription>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Búsqueda avanzada por materias</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Filtros por tipo de contenido</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Recursos populares y destacados</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-[var(--mygreen-light)] border-white/10 hover:border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] transition-all">
+            <Card className="chalk-card">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-lg">
-                    <Heart className="h-6 w-6 text-[var(--accent-hex)]" />
+                  <div className="p-2 bg-[color-mix(in_oklab,var(--caleta-accent)_10%,transparent)] rounded-lg">
+                    <Heart className="h-6 w-6 text-[var(--caleta-accent)]" />
                   </div>
                   <CardTitle className="text-white">Favoritos</CardTitle>
                 </div>
@@ -324,86 +312,87 @@ export default function CaracteristicasPage() {
                 </CardDescription>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Marcar recursos como favoritos</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Organización personalizada</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Acceso rápido desde dashboard</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-[var(--mygreen-light)] border-white/10 hover:border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] transition-all">
+            <Card className="chalk-card">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-lg">
-                    <MessageSquare className="h-6 w-6 text-[var(--accent-hex)]" />
+                  <div className="p-2 bg-[color-mix(in_oklab,var(--caleta-accent)_10%,transparent)] rounded-lg">
+                    <MessageSquare className="h-6 w-6 text-[var(--caleta-accent)]" />
                   </div>
                   <CardTitle className="text-white">Comentarios</CardTitle>
                 </div>
               </CardHeader>
               <CardContent>
                 <CardDescription className="text-white/70 mb-4">
-                  Interactúa con otros estudiantes a través de comentarios y valoraciones.
+                  Comenta en cada caleta desde la web y conversa con otros estudiantes sobre el material.
                 </CardDescription>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
-                    <span>Sistema de comentarios</span>
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
+                    <span>Comentarios en la ficha de cada caleta</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
-                    <span>Valoraciones con estrellas</span>
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
+                    <span>Notificaciones al autor cuando comentan</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
-                    <span>Comunidad colaborativa</span>
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
+                    <span>Comunidad colaborativa en torno a los apuntes</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-[var(--mygreen-light)] border-white/10 hover:border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] transition-all">
+            <Card className="chalk-card">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-lg">
-                    <Download className="h-6 w-6 text-[var(--accent-hex)]" />
+                  <div className="p-2 bg-[color-mix(in_oklab,var(--caleta-accent)_10%,transparent)] rounded-lg">
+                    <Download className="h-6 w-6 text-[var(--caleta-accent)]" />
                   </div>
-                  <CardTitle className="text-white">Descargas</CardTitle>
+                  <CardTitle className="text-white">Descargas en la app</CardTitle>
                 </div>
               </CardHeader>
               <CardContent>
                 <CardDescription className="text-white/70 mb-4">
-                  Descarga recursos académicos para uso offline y estudio personal.
+                  En la web consultas las caletas en modo seguro. Para guardar archivos offline, usa la App de
+                  CALETA (antes Zeno Notes).
                 </CardDescription>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
-                    <span>Descarga directa de archivos</span>
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
+                    <span>Descarga de caletas solo desde la app móvil</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
-                    <span>Almacenamiento seguro</span>
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
+                    <span>Contador de descargas visible en la plataforma web</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
-                    <span>Acceso sin conexión</span>
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
+                    <span>Misma cuenta CALETAS en web y app</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-[var(--mygreen-light)] border-white/10 hover:border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] transition-all">
+            <Card className="chalk-card">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-lg">
-                    <Shield className="h-6 w-6 text-[var(--accent-hex)]" />
+                  <div className="p-2 bg-[color-mix(in_oklab,var(--caleta-accent)_10%,transparent)] rounded-lg">
+                    <Shield className="h-6 w-6 text-[var(--caleta-accent)]" />
                   </div>
                   <CardTitle className="text-white">Moderación IA</CardTitle>
                 </div>
@@ -414,15 +403,15 @@ export default function CaracteristicasPage() {
                 </CardDescription>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Análisis automático de contenido</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Filtrado de contenido inapropiado</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Comunidad académica segura</span>
                   </div>
                 </div>
@@ -433,22 +422,49 @@ export default function CaracteristicasPage() {
 
         {/* Herramientas de IA */}
         <section className="mb-20">
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-3 mb-4">
-              <Brain className="h-8 w-8 text-[var(--accent-hex)]" />
-              <h2 className="text-3xl font-special text-white">Herramientas de Inteligencia Artificial</h2>
-            </div>
-            <p className="text-white/70 text-lg">
-              Potencia tu aprendizaje con herramientas de IA avanzadas
-            </p>
-          </div>
+          <PublicSectionHeader
+            icon={Brain}
+            title="Herramientas de inteligencia artificial"
+            description="Chat con GPT, Claude y Gemini, además de fichas, resúmenes y cuestionarios para estudiar mejor"
+          />
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card className="bg-[var(--mygreen-light)] border-white/10 hover:border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] transition-all">
+            <Card className="chalk-card chalk-card-featured">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-lg">
-                    <FileText className="h-6 w-6 text-[var(--accent-hex)]" />
+                  <div className="p-2 bg-[color-mix(in_oklab,var(--caleta-accent)_10%,transparent)] rounded-lg">
+                    <Sparkles className="h-6 w-6 text-[var(--caleta-accent)]" />
+                  </div>
+                  <CardTitle className="text-white">Chat de IA</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-white/70 mb-4">
+                  Conversa con las IAs más conocidas del mercado desde CALETAS: elige modelo, adjunta tus caletas y
+                  mantén el historial de cada chat.
+                </CardDescription>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm text-white/60">
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
+                    <span>GPT-5, Claude y Gemini disponibles</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-white/60">
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
+                    <span>Modo automático que elige el mejor modelo según tu pregunta</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-white/60">
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
+                    <span>Contexto con tus caletas y conversaciones guardadas</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="chalk-card">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-[color-mix(in_oklab,var(--caleta-accent)_10%,transparent)] rounded-lg">
+                    <FileText className="h-6 w-6 text-[var(--caleta-accent)]" />
                   </div>
                   <CardTitle className="text-white">Fichas de Estudio</CardTitle>
                 </div>
@@ -459,26 +475,26 @@ export default function CaracteristicasPage() {
                 </CardDescription>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Generación automática de flashcards</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Basado en tus caletas favoritas</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Personalización por materia</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-[var(--mygreen-light)] border-white/10 hover:border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] transition-all">
+            <Card className="chalk-card">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-lg">
-                    <BookOpen className="h-6 w-6 text-[var(--accent-hex)]" />
+                  <div className="p-2 bg-[color-mix(in_oklab,var(--caleta-accent)_10%,transparent)] rounded-lg">
+                    <BookOpen className="h-6 w-6 text-[var(--caleta-accent)]" />
                   </div>
                   <CardTitle className="text-white">Resúmenes de PDF</CardTitle>
                 </div>
@@ -489,26 +505,26 @@ export default function CaracteristicasPage() {
                 </CardDescription>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Análisis completo de documentos</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Extracción de puntos clave</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Resúmenes estructurados</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-[var(--mygreen-light)] border-white/10 hover:border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] transition-all">
+            <Card className="chalk-card">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-lg">
-                    <Target className="h-6 w-6 text-[var(--accent-hex)]" />
+                  <div className="p-2 bg-[color-mix(in_oklab,var(--caleta-accent)_10%,transparent)] rounded-lg">
+                    <Target className="h-6 w-6 text-[var(--caleta-accent)]" />
                   </div>
                   <CardTitle className="text-white">Cuestionarios</CardTitle>
                 </div>
@@ -519,15 +535,15 @@ export default function CaracteristicasPage() {
                 </CardDescription>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Generación automática de preguntas</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Diferentes tipos de preguntas</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Guardado opcional de cuestionarios</span>
                   </div>
                 </div>
@@ -538,67 +554,63 @@ export default function CaracteristicasPage() {
 
         {/* Características Técnicas */}
         <section className="mb-20">
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-3 mb-4">
-              <Zap className="h-8 w-8 text-[var(--accent-hex)]" />
-              <h2 className="text-3xl font-special text-white">Características Técnicas</h2>
-            </div>
-            <p className="text-white/70 text-lg">
-              Tecnología de vanguardia para una experiencia excepcional
-            </p>
-          </div>
+          <PublicSectionHeader
+            icon={Zap}
+            title="Características técnicas"
+            description="Tecnología de vanguardia para una experiencia excepcional"
+          />
 
           <div className="grid md:grid-cols-2 gap-8">
             <div className="space-y-6">
-              <Card className="bg-[var(--mygreen-light)] border-white/10">
+              <Card className="chalk-card">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
-                    <Shield className="h-5 w-5 text-[var(--accent-hex)]" />
+                    <Shield className="h-5 w-5 text-[var(--caleta-accent)]" />
                     Seguridad y Privacidad
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex items-center gap-2 text-sm text-white/70">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
-                    <span>Autenticación segura con NextAuth.js</span>
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
+                    <span>Autenticación segura con Better Auth</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/70">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Protección de rutas y datos</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/70">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Almacenamiento seguro en la nube</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/70">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Cumplimiento de estándares de privacidad</span>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="bg-[var(--mygreen-light)] border-white/10">
+              <Card className="chalk-card">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5 text-[var(--accent-hex)]" />
+                    <TrendingUp className="h-5 w-5 text-[var(--caleta-accent)]" />
                     Rendimiento
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex items-center gap-2 text-sm text-white/70">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Optimización con Next.js 15</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/70">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Base de datos PostgreSQL (Neon)</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/70">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Carga rápida de archivos</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/70">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Interfaz responsive y fluida</span>
                   </div>
                 </CardContent>
@@ -606,55 +618,55 @@ export default function CaracteristicasPage() {
             </div>
 
             <div className="space-y-6">
-              <Card className="bg-[var(--mygreen-light)] border-white/10">
+              <Card className="chalk-card">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
-                    <Users className="h-5 w-5 text-[var(--accent-hex)]" />
+                    <Users className="h-5 w-5 text-[var(--caleta-accent)]" />
                     Experiencia de Usuario
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex items-center gap-2 text-sm text-white/70">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Interfaz moderna y intuitiva</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/70">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Diseño responsive para todos los dispositivos</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/70">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Navegación fluida y accesible</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/70">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Feedback visual en tiempo real</span>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="bg-[var(--mygreen-light)] border-white/10">
+              <Card className="chalk-card">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-[var(--accent-hex)]" />
+                    <Calendar className="h-5 w-5 text-[var(--caleta-accent)]" />
                     Integración y Compatibilidad
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex items-center gap-2 text-sm text-white/70">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Compatible con múltiples navegadores</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/70">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>Funciona en dispositivos móviles</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/70">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>IA con Vercel AI Gateway (múltiples modelos)</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white/70">
-                    <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                    <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                     <span>API RESTful para futuras integraciones</span>
                   </div>
                 </CardContent>
@@ -664,37 +676,40 @@ export default function CaracteristicasPage() {
         </section>
 
         {/* CTA Final */}
-        <section className="text-center">
-          <Card className="bg-[var(--mygreen-light)] border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] max-w-2xl mx-auto">
-            <CardHeader>
-              <CardTitle className="text-2xl font-special text-white mb-4">
-                ¿Listo para transformar tu experiencia académica?
-              </CardTitle>
-              <CardDescription className="text-white/70 text-lg">
-                Únete a miles de estudiantes que ya están aprovechando el poder de Caletas para mejorar su rendimiento académico.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/auth/register">
-                  <Button className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white px-8 py-3 text-lg">
-                    Comenzar Ahora
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </Link>
-                <Link href="/">
-                  <Button variant="outline" className="border-white/20 text-mygreen hover:bg-white/10 px-8 py-3 text-lg">
-                    Volver al Inicio
-                  </Button>
-                </Link>
-              </div>
-              <p className="text-sm text-white/60">
-                Costo simbólico • Tarifas establecidas con universidades • Sin compromisos
-              </p>
-            </CardContent>
-          </Card>
+        <section className="pb-6 pt-2">
+          <div className="chalk-card chalk-card-featured relative mx-auto max-w-3xl overflow-hidden px-6 py-10 text-center sm:px-10 sm:py-14 md:px-14">
+            <span className="chalk-section-label mx-auto justify-center">
+              <PenLine className="h-4 w-4" />
+              Tu próximo paso
+            </span>
+
+            <h2 className="chalk-title mx-auto mt-5 max-w-2xl font-special text-balance text-[1.55rem] leading-[1.12] sm:text-[2rem] md:text-[2.35rem]">
+              ¿LISTO PARA{" "}
+              <span className="text-[var(--caleta-accent)]">CALETEAR</span>?
+            </h2>
+
+            <p className="mx-auto mt-5 max-w-xl text-base font-semibold leading-relaxed text-white/78 sm:text-lg">
+              Crea tu cuenta, accede a apuntes de tu institución y usa el chat de IA, fichas y
+              cuestionarios desde un solo lugar.
+            </p>
+
+            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Link href="/register" className="chalk-hero-btn chalk-hero-btn-secondary sm:min-w-[260px]">
+                <span>Crear cuenta gratis</span>
+                <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
+              </Link>
+              <Link href="/" className="chalk-hero-btn chalk-hero-btn-primary sm:min-w-[240px]">
+                <span>Volver al inicio</span>
+                <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
+              </Link>
+            </div>
+
+            <p className="mx-auto mt-6 max-w-lg text-center text-sm text-white/55">
+              Costo simbólico • Tarifas acordadas con instituciones educativas • Sin compromisos
+            </p>
+          </div>
         </section>
       </div>
-    </div>
+    </PublicPageShell>
   );
 } 

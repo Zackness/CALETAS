@@ -75,6 +75,19 @@ export async function POST(request: NextRequest) {
       },
       include: { autor: { select: { name: true } } },
     });
+
+    try {
+      const { announceNewCurso } = await import("@/lib/notifications/announce-curso");
+      const result = await announceNewCurso({
+        id: curso.id,
+        titulo: curso.titulo,
+        descripcion: curso.descripcion,
+      });
+      console.info("[admin/cursos] announceNewCurso:", result);
+    } catch (notifyError) {
+      console.error("[admin/cursos] Error notificando curso nuevo:", notifyError);
+    }
+
     return NextResponse.json({ curso }, { status: 201 });
   } catch (error) {
     console.error("Error creating curso:", error);

@@ -57,6 +57,23 @@
     --mygreen: #203324;
     --mygreen-dark: #1C2D20;
     --accent-hex: #40C9A9;
+
+    /* Ecosistema: campus CALETA (verde) + productos Aprende (azul) */
+    --caleta-accent: #40C9A9;
+    --caleta-accent-soft: color-mix(in oklab, #40C9A9 14%, transparent);
+    --surface-elevated: #1a2620;
+    --surface-overlay: rgba(255, 255, 255, 0.035);
+    --border-refined: rgba(255, 255, 255, 0.09);
+
+    --aprende-accent: #5BA4E8;
+    --aprende-accent-bright: #7CB8FF;
+    --aprende-accent-soft: color-mix(in oklab, #5BA4E8 14%, transparent);
+    --aprende-surface: #0f1419;
+    --aprende-surface-card: #151d28;
+    --aprende-surface-card-hover: #1a2433;
+    --aprende-border: color-mix(in oklab, #5BA4E8 28%, transparent);
+    --aprende-glow: color-mix(in oklab, #5BA4E8 18%, transparent);
+
     /* UI secundarios (para reemplazar hex sueltos en componentes) */
     --soft-panel-bg: #e8f3ed;
     --prose-pre-bg: #0f1a24;
@@ -198,14 +215,16 @@ body {
 
 body {
     min-height: 100vh;
-    background: linear-gradient(to top, var(--mygreen), var(--mygreen-light));
+    background: linear-gradient(to top, var(--mygreen-dark), var(--mygreen));
     color: white;
+    overflow-x: clip;
 }
 
 .chalkboard-shell {
   position: relative;
   isolation: isolate;
-  overflow: hidden;
+  overflow-x: clip;
+  overflow-y: visible;
 }
 
 .chalkboard-shell::before {
@@ -215,10 +234,10 @@ body {
   z-index: -2;
   pointer-events: none;
   background:
-    radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.08) 0, transparent 32%),
-    radial-gradient(circle at 84% 22%, rgba(64, 201, 169, 0.12) 0, transparent 34%),
-    radial-gradient(circle at 76% 80%, rgba(255, 255, 255, 0.07) 0, transparent 30%),
-    linear-gradient(180deg, color-mix(in srgb, var(--mygreen-light) 93%, white 7%), var(--mygreen));
+    radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.05) 0, transparent 32%),
+    radial-gradient(circle at 84% 22%, rgba(64, 201, 169, 0.08) 0, transparent 34%),
+    radial-gradient(circle at 76% 80%, rgba(255, 255, 255, 0.04) 0, transparent 30%),
+    linear-gradient(180deg, var(--mygreen-dark), var(--mygreen));
 }
 
 .chalkboard-shell::after {
@@ -227,13 +246,1005 @@ body {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  opacity: 0.45;
+  opacity: 0.32;
   background-image:
-    radial-gradient(rgba(255, 255, 255, 0.12) 0.6px, transparent 0.6px),
-    radial-gradient(rgba(0, 0, 0, 0.12) 0.8px, transparent 0.8px),
-    repeating-linear-gradient(165deg, rgba(255, 255, 255, 0.035) 0 2px, transparent 2px 8px);
+    radial-gradient(rgba(255, 255, 255, 0.1) 0.6px, transparent 0.6px),
+    radial-gradient(rgba(0, 0, 0, 0.1) 0.8px, transparent 0.8px),
+    repeating-linear-gradient(165deg, rgba(255, 255, 255, 0.025) 0 2px, transparent 2px 8px);
   background-size: 3px 3px, 7px 7px, auto;
   background-position: 0 0, 18px 9px, 0 0;
+}
+
+/* Landing + app protegida: campus verde más pulido */
+.landing-home .chalk-card,
+.protected-app .chalk-card {
+  border-color: var(--border-refined);
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--surface-elevated) 96%, white 4%), var(--mygreen-dark));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 20px 40px -28px rgba(0, 0, 0, 0.88);
+  backdrop-filter: blur(6px);
+}
+
+.landing-home .chalk-card:hover,
+.protected-app .chalk-card:hover {
+  border-color: color-mix(in oklab, var(--caleta-accent) 36%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.09),
+    0 24px 48px -24px rgba(0, 0, 0, 0.92),
+    0 0 0 1px color-mix(in oklab, var(--caleta-accent) 8%, transparent);
+}
+
+.landing-home .chalk-card-featured,
+.protected-app .chalk-card-featured {
+  background:
+    radial-gradient(circle at 88% 0%, var(--caleta-accent-soft), transparent 48%),
+    linear-gradient(155deg, var(--surface-elevated), var(--mygreen-dark));
+}
+
+.landing-home .chalk-nav-bar,
+.protected-app .chalk-nav-bar {
+  border-color: var(--border-refined);
+  background: color-mix(in srgb, var(--mygreen-dark) 88%, black 12%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 16px 40px -24px rgba(0, 0, 0, 0.85);
+}
+
+.landing-home .chalk-section-label,
+.protected-app .chalk-section-label {
+  color: var(--caleta-accent);
+  letter-spacing: 0.18em;
+}
+
+.landing-home .chalk-badge,
+.protected-app .chalk-badge {
+  border-color: color-mix(in oklab, var(--caleta-accent) 38%, transparent);
+  background: var(--caleta-accent-soft);
+  color: var(--caleta-accent);
+}
+
+.landing-home .chalk-divider,
+.protected-app .chalk-divider {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.12) 18%,
+    color-mix(in oklab, var(--caleta-accent) 40%, transparent) 50%,
+    rgba(255, 255, 255, 0.12) 82%,
+    transparent
+  );
+}
+
+.landing-home .chalk-stat,
+.protected-app .chalk-stat {
+  border-color: var(--border-refined);
+  background: color-mix(in srgb, var(--surface-elevated) 88%, black 12%);
+}
+
+.landing-home .chalk-stat-aprende,
+.protected-app .chalk-stat-aprende {
+  border-color: var(--aprende-border);
+  background: color-mix(in srgb, var(--aprende-surface-card) 75%, var(--mygreen-dark) 25%);
+}
+
+.landing-home .chalk-stat-aprende:hover,
+.protected-app .chalk-stat-aprende:hover {
+  border-color: color-mix(in oklab, var(--aprende-accent) 40%, transparent);
+}
+
+.landing-home .chalk-stat-aprende .chalk-stat-value,
+.protected-app .chalk-stat-aprende .chalk-stat-value {
+  color: var(--aprende-accent-bright);
+}
+
+.landing-home .chalk-stat-value-accent,
+.protected-app .chalk-stat-value-accent {
+  color: var(--caleta-accent);
+}
+
+.landing-home .chalk-card.bg-card,
+.protected-app .chalk-card.bg-card {
+  color: white;
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--surface-elevated) 96%, white 4%), var(--mygreen-dark));
+}
+
+/* App protegida: sidebar limpio, sin líneas duras ni rejilla de pizarra */
+.protected-app [data-sidebar="sidebar"] {
+  position: relative;
+  isolation: isolate;
+  background: linear-gradient(
+    180deg,
+    var(--mygreen-dark) 0%,
+    color-mix(in srgb, var(--mygreen) 94%, var(--mygreen-dark)) 100%
+  ) !important;
+  backdrop-filter: none;
+  box-shadow: 6px 0 28px -16px rgba(0, 0, 0, 0.55);
+}
+
+.protected-app [data-sidebar="rail"] {
+  display: none !important;
+}
+
+.protected-app [data-sidebar="header"],
+.protected-app [data-sidebar="footer"] {
+  border-color: transparent !important;
+}
+
+.protected-app .chalk-sidebar-brand {
+  border-color: var(--border-refined);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 12px 32px -20px rgba(0, 0, 0, 0.75);
+}
+
+.protected-app .chalk-sidebar-panel {
+  border-color: var(--border-refined);
+  background: color-mix(in srgb, var(--surface-elevated) 88%, var(--mygreen-dark) 12%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Sidebar: el texto permanece blanco al hover (sin accent-foreground de ShadCN) */
+.protected-app [data-sidebar="sidebar"] [data-sidebar="menu-button"],
+.protected-app [data-sidebar="sidebar"] [data-sidebar="menu-sub-button"] {
+  color: white;
+}
+
+.protected-app [data-sidebar="sidebar"] [data-sidebar="menu-button"]:hover,
+.protected-app [data-sidebar="sidebar"] [data-sidebar="menu-button"]:active,
+.protected-app [data-sidebar="sidebar"] [data-sidebar="menu-button"]:focus-visible,
+.protected-app [data-sidebar="sidebar"] [data-sidebar="menu-button"][data-active="true"],
+.protected-app [data-sidebar="sidebar"] [data-sidebar="menu-button"][data-state="open"]:hover,
+.protected-app [data-sidebar="sidebar"] [data-sidebar="menu-sub-button"]:hover,
+.protected-app [data-sidebar="sidebar"] [data-sidebar="menu-sub-button"]:active,
+.protected-app [data-sidebar="sidebar"] [data-sidebar="menu-sub-button"]:focus-visible,
+.protected-app [data-sidebar="sidebar"] [data-sidebar="menu-sub-button"][data-active="true"] {
+  color: white !important;
+}
+
+.protected-app [data-sidebar="sidebar"] [data-sidebar="menu-sub-button"] {
+  color: rgb(255 255 255 / 0.9);
+}
+
+.protected-app [data-sidebar="sidebar"] [data-sidebar="menu-sub-button"]:hover,
+.protected-app [data-sidebar="sidebar"] [data-sidebar="menu-sub-button"][data-active="true"] {
+  color: rgb(255 255 255 / 0.9) !important;
+}
+
+.protected-app [data-sidebar="sidebar"] [data-sidebar="menu-button"] span:not([aria-hidden]),
+.protected-app [data-sidebar="sidebar"] [data-sidebar="menu-sub-button"] span:not([aria-hidden]) {
+  color: inherit;
+}
+
+/* Zona Aprende — sub-marca azul; transición gradual hacia/desde campus verde */
+.aprende-zone {
+  position: relative;
+  margin-top: 0;
+  isolation: isolate;
+  background: transparent;
+}
+
+/* Capa azul original, difuminada en los bordes y extendida hacia secciones vecinas */
+.aprende-zone::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -6rem;
+  bottom: -6rem;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 80% 58% at 50% 42%, var(--aprende-glow), transparent 55%),
+    linear-gradient(
+      180deg,
+      var(--aprende-surface) 0%,
+      color-mix(in srgb, var(--mygreen-dark) 38%, var(--aprende-surface) 62%) 100%
+    );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.12) 5%,
+    rgba(0, 0, 0, 0.45) 12%,
+    rgba(0, 0, 0, 0.82) 20%,
+    black 30%,
+    black 70%,
+    rgba(0, 0, 0, 0.82) 80%,
+    rgba(0, 0, 0, 0.45) 88%,
+    rgba(0, 0, 0, 0.12) 95%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.12) 5%,
+    rgba(0, 0, 0, 0.45) 12%,
+    rgba(0, 0, 0, 0.82) 20%,
+    black 30%,
+    black 70%,
+    rgba(0, 0, 0, 0.82) 80%,
+    rgba(0, 0, 0, 0.45) 88%,
+    rgba(0, 0, 0, 0.12) 95%,
+    transparent 100%
+  );
+}
+
+.aprende-zone::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -6rem;
+  bottom: -6rem;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.35;
+  background-image:
+    linear-gradient(rgba(91, 164, 232, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(91, 164, 232, 0.04) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.2) 10%,
+    black 22%,
+    black 78%,
+    rgba(0, 0, 0, 0.2) 90%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.2) 10%,
+    black 22%,
+    black 78%,
+    rgba(0, 0, 0, 0.2) 90%,
+    transparent 100%
+  );
+}
+
+.aprende-section-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--aprende-accent);
+}
+
+.aprende-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 9999px;
+  border: 1px solid var(--aprende-border);
+  background: var(--aprende-accent-soft);
+  padding: 0.35rem 0.85rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--aprende-accent-bright);
+}
+
+.aprende-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.25rem;
+  border: 1px solid var(--aprende-border);
+  background: linear-gradient(160deg, var(--aprende-surface-card), color-mix(in srgb, var(--aprende-surface) 90%, black));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 22px 44px -28px rgba(0, 0, 0, 0.9);
+  transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.aprende-card:hover {
+  border-color: color-mix(in oklab, var(--aprende-accent) 45%, transparent);
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 26px 52px -24px rgba(0, 0, 0, 0.92),
+    0 0 24px -8px var(--aprende-glow);
+}
+
+.aprende-card-header {
+  position: relative;
+  height: 9rem;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 20% 20%, var(--aprende-glow), transparent 45%),
+    linear-gradient(135deg, #0d1218 0%, var(--aprende-surface-card) 55%, #1a2840 100%);
+}
+
+.aprende-card-header::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, var(--aprende-surface-card) 0%, transparent 62%);
+}
+
+.aprende-chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 0.3rem 0.75rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.68);
+}
+
+.aprende-btn {
+  display: inline-flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border-radius: 0.85rem;
+  border: 1px solid var(--aprende-border);
+  background: color-mix(in srgb, var(--aprende-surface) 80%, transparent);
+  padding: 0.65rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--aprende-accent-bright);
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.aprende-btn:hover {
+  border-color: color-mix(in oklab, var(--aprende-accent) 55%, transparent);
+  background: color-mix(in oklab, var(--aprende-accent) 12%, transparent);
+  color: white;
+}
+
+.aprende-btn-primary {
+  justify-content: center;
+  border-color: color-mix(in oklab, var(--aprende-accent) 45%, transparent);
+  background: var(--aprende-accent);
+  color: #0f1419;
+  font-weight: 700;
+}
+
+.aprende-btn-primary:hover {
+  border-color: color-mix(in oklab, var(--aprende-accent) 70%, white);
+  background: color-mix(in oklab, var(--aprende-accent) 88%, white);
+  color: #0a0f14;
+}
+
+@media (min-width: 640px) {
+  .aprende-btn {
+    width: auto;
+    min-width: 13.5rem;
+  }
+}
+
+/* Home / app: pestaña Aprende con bloom azul que invade el verde */
+.protected-app .chalk-tab-aprende {
+  position: relative;
+  isolation: isolate;
+  overflow: visible;
+  z-index: 2;
+  border: 1px solid transparent;
+  background: transparent !important;
+  transition:
+    color 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.protected-app .chalk-tab-aprende::before {
+  content: "";
+  position: absolute;
+  inset: -2px -1px;
+  border-radius: inherit;
+  opacity: 0.58;
+  transition: opacity 0.3s ease, filter 0.3s ease;
+  pointer-events: none;
+  z-index: -1;
+  filter: blur(0.5px);
+  background:
+    radial-gradient(ellipse 180% 240% at 50% 120%, var(--aprende-glow), transparent 52%),
+    radial-gradient(ellipse 120% 160% at 18% 20%, color-mix(in oklab, var(--aprende-accent) 45%, transparent), transparent 62%),
+    linear-gradient(
+      165deg,
+      color-mix(in oklab, var(--aprende-accent) 32%, transparent) 0%,
+      color-mix(in srgb, var(--aprende-surface-card) 62%, var(--mygreen-dark) 38%) 100%
+    );
+  mask-image: radial-gradient(ellipse 95% 88% at 50% 55%, black 35%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 95% 88% at 50% 55%, black 35%, transparent 100%);
+}
+
+.protected-app .chalk-tab-aprende::after {
+  content: "";
+  position: absolute;
+  left: 5%;
+  right: 5%;
+  bottom: -12px;
+  height: 22px;
+  border-radius: 9999px;
+  opacity: 0.42;
+  transition: opacity 0.3s ease, filter 0.3s ease;
+  pointer-events: none;
+  z-index: -2;
+  filter: blur(12px);
+  background: color-mix(in oklab, var(--aprende-accent) 62%, transparent);
+}
+
+.protected-app .chalk-tab-aprende[data-state="inactive"] {
+  color: color-mix(in oklab, var(--aprende-accent-bright) 88%, white);
+  border-color: color-mix(in oklab, var(--aprende-accent) 22%, transparent);
+  box-shadow:
+    inset 0 0 28px -10px var(--aprende-glow),
+    0 0 18px -12px var(--aprende-glow);
+}
+
+.protected-app .chalk-tab-aprende[data-state="active"] {
+  color: white !important;
+  border-color: color-mix(in oklab, var(--aprende-accent) 55%, transparent);
+  box-shadow:
+    0 0 36px -6px var(--aprende-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 0 32px -8px color-mix(in oklab, var(--aprende-accent) 35%, transparent);
+}
+
+.protected-app .chalk-tab-aprende[data-state="active"]::before {
+  opacity: 1;
+  filter: blur(0);
+  background:
+    radial-gradient(ellipse 200% 260% at 50% 125%, var(--aprende-glow), transparent 48%),
+    radial-gradient(ellipse 140% 180% at 12% 15%, color-mix(in oklab, var(--aprende-accent) 58%, transparent), transparent 58%),
+    linear-gradient(
+      165deg,
+      color-mix(in oklab, var(--aprende-accent) 48%, transparent) 0%,
+      color-mix(in srgb, var(--aprende-surface-card) 78%, var(--aprende-accent) 22%) 100%
+    );
+}
+
+.protected-app .chalk-tab-aprende[data-state="active"]::after {
+  opacity: 1;
+  filter: blur(14px);
+  background: color-mix(in oklab, var(--aprende-accent) 72%, transparent);
+}
+
+/* Sidebar: enlace Aprende con mancha azul invasiva (mismo lenguaje que la pestaña) */
+.protected-app .sidebar-aprende-item {
+  overflow: visible;
+}
+
+.protected-app .sidebar-link-aprende {
+  position: relative;
+  isolation: isolate;
+  overflow: visible;
+  z-index: 1;
+  border: 1px solid transparent !important;
+  background: transparent !important;
+  transition:
+    color 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.protected-app .sidebar-link-aprende::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  opacity: 0.58;
+  transition: opacity 0.3s ease, filter 0.3s ease;
+  pointer-events: none;
+  z-index: -1;
+  filter: blur(0.5px);
+  background:
+    radial-gradient(ellipse 130% 200% at 8% 42%, color-mix(in oklab, var(--aprende-accent) 48%, transparent), transparent 58%),
+    radial-gradient(ellipse 170% 230% at 55% 118%, var(--aprende-glow), transparent 52%),
+    linear-gradient(
+      128deg,
+      color-mix(in oklab, var(--aprende-accent) 34%, transparent) 0%,
+      color-mix(in srgb, var(--aprende-surface-card) 58%, var(--mygreen-dark) 42%) 100%
+    );
+  mask-image: radial-gradient(ellipse 96% 92% at 48% 52%, black 36%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 96% 92% at 48% 52%, black 36%, transparent 100%);
+}
+
+.protected-app .sidebar-link-aprende::after {
+  content: "";
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: -10px;
+  height: 20px;
+  border-radius: 9999px;
+  opacity: 0.4;
+  transition: opacity 0.3s ease, filter 0.3s ease;
+  pointer-events: none;
+  z-index: -2;
+  filter: blur(11px);
+  background: color-mix(in oklab, var(--aprende-accent) 60%, transparent);
+}
+
+.protected-app .sidebar-link-aprende:hover {
+  background: transparent !important;
+}
+
+.protected-app .sidebar-link-aprende,
+.protected-app .sidebar-link-aprende:hover,
+.protected-app .sidebar-link-aprende[data-active="true"] {
+  color: color-mix(in oklab, var(--aprende-accent-bright) 90%, white);
+}
+
+.protected-app .sidebar-link-aprende {
+  border-color: color-mix(in oklab, var(--aprende-accent) 24%, transparent) !important;
+  box-shadow:
+    inset 0 0 26px -11px var(--aprende-glow),
+    0 0 16px -14px var(--aprende-glow);
+}
+
+.protected-app .sidebar-link-aprende:hover::before {
+  opacity: 0.72;
+}
+
+.protected-app .sidebar-link-aprende[data-active="true"],
+.protected-app .sidebar-link-aprende.sidebar-link-aprende--active {
+  color: white !important;
+  border-color: color-mix(in oklab, var(--aprende-accent) 52%, transparent) !important;
+  box-shadow:
+    0 0 32px -8px var(--aprende-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 0 30px -9px color-mix(in oklab, var(--aprende-accent) 36%, transparent);
+}
+
+.protected-app .sidebar-link-aprende[data-active="true"]::before,
+.protected-app .sidebar-link-aprende.sidebar-link-aprende--active::before {
+  opacity: 1;
+  filter: blur(0);
+  background:
+    radial-gradient(ellipse 145% 210% at 6% 38%, color-mix(in oklab, var(--aprende-accent) 56%, transparent), transparent 56%),
+    radial-gradient(ellipse 190% 250% at 52% 122%, var(--aprende-glow), transparent 48%),
+    linear-gradient(
+      128deg,
+      color-mix(in oklab, var(--aprende-accent) 46%, transparent) 0%,
+      color-mix(in srgb, var(--aprende-surface-card) 74%, var(--aprende-accent) 26%) 100%
+    );
+}
+
+.protected-app .sidebar-link-aprende[data-active="true"]::after,
+.protected-app .sidebar-link-aprende.sidebar-link-aprende--active::after {
+  opacity: 1;
+  filter: blur(13px);
+  background: color-mix(in oklab, var(--aprende-accent) 70%, transparent);
+}
+
+/* Panel Aprende en home — zona azul difuminada invadiendo Caleta */
+.aprende-zone-inset {
+  position: relative;
+  isolation: isolate;
+  margin: -0.5rem -1rem 0;
+  padding: 1.75rem 1.15rem 2rem;
+  border-radius: 1.35rem;
+  overflow: hidden;
+}
+
+@media (min-width: 640px) {
+  .aprende-zone-inset {
+    margin-left: -0.35rem;
+    margin-right: -0.35rem;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+.aprende-zone-inset::before {
+  content: "";
+  position: absolute;
+  left: -12%;
+  right: -12%;
+  top: -4.5rem;
+  bottom: -2.5rem;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 72% 62% at 18% 28%, color-mix(in oklab, var(--aprende-accent) 38%, transparent), transparent 58%),
+    radial-gradient(ellipse 85% 70% at 82% 72%, var(--aprende-glow), transparent 55%),
+    linear-gradient(
+      128deg,
+      color-mix(in srgb, var(--aprende-surface) 88%, black) 0%,
+      color-mix(in srgb, var(--mygreen-dark) 42%, var(--aprende-surface) 58%) 52%,
+      color-mix(in srgb, var(--mygreen) 55%, var(--aprende-surface-card) 45%) 100%
+    );
+  mask-image: radial-gradient(ellipse 95% 88% at 50% 48%, black 42%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 95% 88% at 50% 48%, black 42%, transparent 100%);
+}
+
+.aprende-zone-inset::after {
+  content: "";
+  position: absolute;
+  left: -8%;
+  right: -8%;
+  top: -3.5rem;
+  bottom: -2rem;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.42;
+  background-image:
+    linear-gradient(rgba(91, 164, 232, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(91, 164, 232, 0.05) 1px, transparent 1px);
+  background-size: 26px 26px;
+  mask-image: radial-gradient(ellipse 90% 82% at 50% 50%, black 35%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 90% 82% at 50% 50%, black 35%, transparent 100%);
+}
+
+.aprende-zone-inset > * {
+  position: relative;
+  z-index: 1;
+}
+
+.protected-app .home-tabs-aprende {
+  overflow: visible;
+}
+
+.protected-app .home-tabs-aprende-panel {
+  overflow: visible;
+  margin-top: 0.35rem;
+}
+
+/* Zona Aprende en app: invade shell, sidebar, header y main (sigue siendo CALETAS) */
+.protected-app[data-zone="aprende"].chalkboard-shell::before {
+  background:
+    radial-gradient(ellipse 55% 42% at 0% 38%, rgba(91, 164, 232, 0.22) 0, transparent 58%),
+    radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.05) 0, transparent 32%),
+    radial-gradient(circle at 84% 22%, rgba(64, 201, 169, 0.06) 0, transparent 34%),
+    radial-gradient(circle at 76% 80%, rgba(91, 164, 232, 0.08) 0, transparent 30%),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--aprende-surface) 28%, var(--mygreen-dark) 72%) 0%,
+      var(--mygreen-dark) 42%,
+      var(--mygreen) 100%
+    );
+}
+
+.protected-app[data-zone="aprende"].chalkboard-shell::after {
+  opacity: 0.28;
+  background-image:
+    linear-gradient(rgba(91, 164, 232, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(91, 164, 232, 0.035) 1px, transparent 1px),
+    radial-gradient(rgba(255, 255, 255, 0.1) 0.6px, transparent 0.6px),
+    radial-gradient(rgba(0, 0, 0, 0.1) 0.8px, transparent 0.8px);
+  background-size: 32px 32px, 32px 32px, 3px 3px, 7px 7px;
+}
+
+.protected-app[data-zone="aprende"] [data-sidebar="sidebar"] {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--aprende-surface) 48%, var(--mygreen-dark) 52%) 0%,
+    color-mix(in srgb, var(--aprende-surface-card) 22%, var(--mygreen) 78%) 100%
+  ) !important;
+  box-shadow:
+    6px 0 28px -16px rgba(0, 0, 0, 0.55),
+    inset -1px 0 0 color-mix(in oklab, var(--aprende-accent) 22%, transparent),
+    8px 0 32px -12px color-mix(in oklab, var(--aprende-accent) 28%, transparent);
+}
+
+.protected-app[data-zone="aprende"] [data-sidebar="sidebar"]::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: -1px;
+  bottom: 0;
+  width: 3px;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    color-mix(in oklab, var(--aprende-accent) 55%, transparent) 18%,
+    color-mix(in oklab, var(--aprende-accent-bright) 75%, transparent) 50%,
+    color-mix(in oklab, var(--aprende-accent) 55%, transparent) 82%,
+    transparent 100%
+  );
+  filter: blur(0.5px);
+  opacity: 0.85;
+}
+
+.protected-app[data-zone="aprende"] [data-sidebar="sidebar"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.85;
+  background:
+    radial-gradient(ellipse 120% 55% at -8% 18%, rgba(91, 164, 232, 0.28) 0, transparent 52%),
+    radial-gradient(ellipse 90% 40% at 100% 88%, rgba(91, 164, 232, 0.12) 0, transparent 48%);
+}
+
+.protected-app[data-zone="aprende"] [data-sidebar="sidebar"] > * {
+  position: relative;
+  z-index: 1;
+}
+
+.protected-app .aprende-sidebar-brand {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-color: var(--aprende-border) !important;
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--aprende-surface-card) 82%, var(--mygreen-dark) 18%),
+    color-mix(in srgb, var(--aprende-surface) 55%, var(--mygreen-dark) 45%)
+  ) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 12px 32px -20px rgba(0, 0, 0, 0.75),
+    inset 0 0 28px -12px var(--aprende-glow) !important;
+}
+
+.protected-app .aprende-sidebar-brand::before {
+  content: "";
+  position: absolute;
+  inset: -20% -30% auto -20%;
+  height: 120%;
+  pointer-events: none;
+  background: radial-gradient(ellipse 70% 80% at 20% 50%, var(--aprende-glow), transparent 62%);
+  opacity: 0.9;
+}
+
+.protected-app .aprende-sidebar-panel {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1rem;
+  border: 1px solid var(--aprende-border);
+  background: color-mix(in srgb, var(--aprende-surface-card) 72%, var(--mygreen-light) 28%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.protected-app .aprende-sidebar-back {
+  position: relative;
+  isolation: isolate;
+}
+
+/* Menú lateral Aprende — zona invadida */
+.protected-app .aprende-sidebar-content {
+  overflow: visible;
+}
+
+.protected-app .aprende-sidebar-zone {
+  position: relative;
+  isolation: isolate;
+  overflow: visible;
+  padding: 0.15rem 0.1rem 0.5rem;
+}
+
+.protected-app .aprende-sidebar-zone__glow {
+  position: absolute;
+  inset: -0.5rem -1.25rem -0.5rem -0.75rem;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 1.25rem;
+  background:
+    radial-gradient(ellipse 90% 70% at 0% 35%, rgba(91, 164, 232, 0.22) 0, transparent 58%),
+    radial-gradient(ellipse 60% 45% at 100% 80%, rgba(91, 164, 232, 0.1) 0, transparent 55%);
+  mask-image: linear-gradient(to right, black 0%, black 72%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, black 0%, black 72%, transparent 100%);
+}
+
+.protected-app .aprende-sidebar-zone > *:not(.aprende-sidebar-zone__glow) {
+  position: relative;
+  z-index: 1;
+}
+
+.protected-app .aprende-sidebar-brand-header {
+  overflow: hidden;
+}
+
+.protected-app .aprende-sidebar-brand__beam {
+  position: absolute;
+  top: -40%;
+  left: -25%;
+  width: 55%;
+  height: 180%;
+  pointer-events: none;
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    color-mix(in oklab, var(--aprende-accent) 35%, transparent) 45%,
+    transparent 100%
+  );
+  animation: aprende-sidebar-beam 6s ease-in-out infinite;
+}
+
+.protected-app .aprende-sidebar-brand__icon {
+  box-shadow: 0 0 20px -6px var(--aprende-glow);
+}
+
+@keyframes aprende-sidebar-beam {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: translateX(0);
+  }
+  50% {
+    opacity: 0.75;
+    transform: translateX(12%);
+  }
+}
+
+.protected-app .aprende-sidebar-courses {
+  position: relative;
+}
+
+.protected-app .aprende-sidebar-course {
+  border: 1px solid transparent;
+  background: color-mix(in srgb, var(--aprende-surface-card) 35%, transparent);
+}
+
+.protected-app .aprende-sidebar-course:hover {
+  background: color-mix(in srgb, var(--aprende-surface-card) 55%, transparent);
+}
+
+.protected-app .aprende-sidebar-course--active {
+  background: color-mix(in srgb, var(--aprende-surface-card) 62%, var(--mygreen-dark) 38%);
+}
+
+.protected-app .aprende-sidebar-course--skeleton {
+  border-color: var(--aprende-border);
+  background: color-mix(in srgb, var(--aprende-surface-card) 40%, transparent);
+}
+
+.protected-app .aprende-sidebar-invasion-note {
+  position: relative;
+  padding: 0.75rem 0.85rem;
+  border-radius: 0.85rem;
+  border: 1px dashed color-mix(in oklab, var(--aprende-accent) 28%, transparent);
+  background: color-mix(in oklab, var(--aprende-accent) 6%, transparent);
+}
+
+.protected-app .aprende-sidebar-invasion-note::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(ellipse 80% 100% at 0% 50%, var(--aprende-glow), transparent 65%);
+  opacity: 0.5;
+}
+
+.protected-app .chalk-nav-bar-aprende {
+  border-color: var(--aprende-border) !important;
+  background: color-mix(in srgb, var(--aprende-surface-card) 58%, var(--mygreen-dark) 42%) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 16px 40px -24px rgba(0, 0, 0, 0.85),
+    inset 0 0 32px -18px var(--aprende-glow) !important;
+}
+
+.protected-app .aprende-header-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 9999px;
+  border: 1px solid var(--aprende-border);
+  background: color-mix(in oklab, var(--aprende-accent) 14%, transparent);
+  padding: 0.25rem 0.65rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--aprende-accent-bright);
+}
+
+.protected-app .aprende-main-inset {
+  padding-top: 0.75rem;
+}
+
+.aprende-zone-layout {
+  min-height: calc(100dvh - 7.5rem);
+  margin-left: -0.75rem;
+  margin-right: -0.75rem;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .aprende-zone-layout {
+    margin-left: -2rem;
+    margin-right: -2rem;
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+.aprende-zone-layout::before {
+  top: -4rem;
+  bottom: -4rem;
+}
+
+.aprende-zone-layout::after {
+  top: -4rem;
+  bottom: -4rem;
+}
+
+/* Notificaciones especiales Aprende — mancha azul invadiendo el verde */
+.notification-aprende-stain {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid color-mix(in oklab, var(--aprende-accent) 14%, transparent);
+}
+
+.notification-aprende-stain::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.68;
+  transition: opacity 0.25s ease;
+  background:
+    radial-gradient(ellipse 88% 100% at 8% 42%, color-mix(in oklab, var(--aprende-accent) 34%, transparent), transparent 58%),
+    radial-gradient(ellipse 92% 85% at 92% 62%, var(--aprende-glow), transparent 54%),
+    linear-gradient(
+      128deg,
+      color-mix(in srgb, var(--aprende-surface-card) 52%, var(--mygreen-dark) 48%) 0%,
+      color-mix(in srgb, var(--mygreen) 38%, var(--aprende-surface) 62%) 100%
+    );
+  mask-image: radial-gradient(ellipse 96% 92% at 50% 50%, black 38%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 96% 92% at 50% 50%, black 38%, transparent 100%);
+}
+
+.notification-aprende-stain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.35;
+  background-image:
+    linear-gradient(rgba(91, 164, 232, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(91, 164, 232, 0.06) 1px, transparent 1px);
+  background-size: 22px 22px;
+  mask-image: radial-gradient(ellipse 90% 85% at 50% 50%, black 30%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 90% 85% at 50% 50%, black 30%, transparent 100%);
+}
+
+.notification-aprende-stain--unread::before {
+  opacity: 1;
+}
+
+.notification-aprende-stain--unread {
+  border-color: color-mix(in oklab, var(--aprende-accent) 32%, transparent);
+  box-shadow:
+    inset 0 0 32px -14px var(--aprende-glow),
+    0 0 24px -18px var(--aprende-glow);
+}
+
+.notification-aprende-stain:hover::before {
+  opacity: 0.92;
+}
+
+.notification-aprende-stain > * {
+  position: relative;
+  z-index: 1;
+}
+
+.notification-aprende-inline-badge {
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in oklab, var(--aprende-accent) 38%, transparent);
+  background: color-mix(in oklab, var(--aprende-accent) 22%, #1C2D20);
+  padding: 0.1rem 0.45rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--aprende-accent-bright);
+  box-shadow: 0 0 12px -6px var(--aprende-glow);
+  vertical-align: middle;
 }
 
 .chalk-panel {
@@ -483,4 +1494,361 @@ html.theme-claro .hover\:bg-white\/10:hover {
 
 .animate-fadeInDown {
   animation: fadeInDown 0.3s ease-out;
+}
+
+/* ===== Landing CALETA — pizarra moderna ===== */
+
+.chalk-container {
+  width: 100%;
+  max-width: 1180px;
+  margin-inline: auto;
+  padding-inline: 1rem;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+@media (min-width: 640px) {
+  .chalk-container {
+    padding-inline: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .chalk-container {
+    padding-inline: 2rem;
+  }
+}
+
+.chalk-section-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: 100%;
+  flex-wrap: wrap;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent-hex);
+}
+
+.chalk-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  max-width: 100%;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in oklab, var(--accent-hex) 35%, transparent);
+  background: color-mix(in oklab, var(--accent-hex) 10%, transparent);
+  padding: 0.35rem 0.85rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent-hex);
+}
+
+.chalk-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: color-mix(in srgb, var(--mygreen-dark) 92%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 24px 48px -32px rgba(0, 0, 0, 0.85);
+  transition:
+    border-color 0.25s ease,
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.chalk-card:hover {
+  border-color: color-mix(in oklab, var(--accent-hex) 32%, transparent);
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 28px 56px -28px rgba(0, 0, 0, 0.9);
+}
+
+.chalk-card-featured {
+  background:
+    radial-gradient(circle at top right, color-mix(in oklab, var(--accent-hex) 10%, transparent), transparent 42%),
+    color-mix(in srgb, var(--mygreen-dark) 96%, transparent);
+}
+
+.chalk-icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.85rem;
+  border: 1px solid color-mix(in oklab, var(--accent-hex) 22%, transparent);
+  background: color-mix(in oklab, var(--accent-hex) 10%, transparent);
+  padding: 0.65rem;
+  color: var(--accent-hex);
+}
+
+.chalk-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  min-height: 5.5rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: color-mix(in srgb, var(--mygreen-dark) 88%, black 12%);
+  padding: 0.85rem 0.9rem;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.chalk-stat:hover {
+  border-color: color-mix(in oklab, var(--accent-hex) 22%, transparent);
+  background: color-mix(in srgb, var(--mygreen-dark) 82%, black 18%);
+}
+
+.chalk-stat-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.15;
+  color: white;
+  word-break: break-word;
+}
+
+@media (min-width: 640px) {
+  .chalk-stat-value {
+    font-size: 1.15rem;
+  }
+}
+
+.chalk-stat-value-accent {
+  font-family: var(--font-special);
+  font-size: 1.35rem;
+  line-height: 1;
+  color: var(--accent-hex);
+}
+
+.chalk-stat-label {
+  margin-top: auto;
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: rgba(255, 255, 255, 0.58);
+}
+
+@media (min-width: 640px) {
+  .chalk-stat-label {
+    font-size: 0.72rem;
+  }
+}
+
+.chalk-hero-btn {
+  display: inline-flex;
+  min-height: 3.25rem;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 1rem;
+  padding: 0.75rem 1.15rem;
+  font-family: var(--font-special);
+  font-size: 0.75rem;
+  line-height: 1.1;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+}
+
+@media (min-width: 640px) {
+  .chalk-hero-btn {
+    min-height: 3.5rem;
+    width: auto;
+    min-width: 13.5rem;
+    font-size: 0.85rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .chalk-hero-btn {
+    min-height: 3.75rem;
+    min-width: 14.75rem;
+    font-size: 0.95rem;
+  }
+}
+
+.chalk-hero-btn-primary {
+  border: 2px solid rgba(255, 255, 255, 0.72);
+  background: transparent;
+  color: white;
+}
+
+.chalk-hero-btn-primary:hover {
+  border-color: white;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.chalk-hero-btn-secondary {
+  border: 2px solid color-mix(in oklab, var(--accent-hex) 85%, transparent);
+  background: color-mix(in oklab, var(--accent-hex) 8%, transparent);
+  color: var(--accent-hex);
+}
+
+.chalk-hero-btn-secondary:hover {
+  border-color: var(--accent-hex);
+  background: color-mix(in oklab, var(--accent-hex) 14%, transparent);
+  color: white;
+}
+
+/* Botones de auth: ancho contenido, texto largo en varias líneas */
+.auth-form-actions .chalk-hero-btn {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100%;
+  white-space: normal;
+  text-wrap: balance;
+  line-height: 1.25;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.chalk-nav-bar {
+  border-radius: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: color-mix(in srgb, var(--mygreen-dark) 92%, black 8%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 18px 40px -28px rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(10px);
+}
+
+.chalk-hero-visual {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: color-mix(in srgb, var(--mygreen-dark) 94%, black 6%);
+  box-shadow: 0 28px 56px -32px rgba(0, 0, 0, 0.88);
+  padding: 1.25rem 1rem 1rem;
+}
+
+@media (min-width: 640px) {
+  .chalk-hero-visual {
+    padding: 1.5rem 1.25rem 1.25rem;
+  }
+}
+
+.chalk-hero-visual::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  transform: rotate(-0.35deg);
+  pointer-events: none;
+}
+
+.chalk-underline {
+  position: relative;
+  display: inline-block;
+}
+
+.chalk-underline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.15em;
+  height: 0.18em;
+  border-radius: 9999px;
+  background: color-mix(in oklab, var(--accent-hex) 55%, transparent);
+  transform: rotate(-1deg) scaleX(1.02);
+  opacity: 0.85;
+}
+
+.chalk-divider {
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.16) 20%,
+    color-mix(in oklab, var(--accent-hex) 35%, transparent) 50%,
+    rgba(255, 255, 255, 0.16) 80%,
+    transparent
+  );
+}
+
+@keyframes chalkFloat {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-7deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(-5deg);
+  }
+}
+
+.chalk-formula-float {
+  animation: chalkFloat 7s ease-in-out infinite;
+}
+
+@keyframes chalkFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.chalk-animate-in {
+  animation: chalkFadeUp 0.65s ease-out both;
+}
+
+.chalk-animate-in-delay-1 {
+  animation-delay: 0.1s;
+}
+
+.chalk-animate-in-delay-2 {
+  animation-delay: 0.2s;
+}
+
+.chalk-animate-in-delay-3 {
+  animation-delay: 0.3s;
+}
+
+.admin-blog-surface,
+.chalk-public-blog {
+  --background: #203324;
+  --foreground: #ffffff;
+  --muted-foreground: rgba(255, 255, 255, 0.7);
+  --border: rgba(255, 255, 255, 0.1);
+  --muted: #354b3a;
+  --card: #354b3a;
+  --card-foreground: #ffffff;
+}
+
+.blog-prose {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.caleta-notion-editor {
+  caret-color: var(--accent-hex);
+}
+
+.caleta-notion-editor:focus {
+  outline: none;
+}
+
+.caleta-notion-editor::selection {
+  background: color-mix(in oklab, var(--accent-hex) 35%, transparent);
+}
+
+[data-blog-slash-menu] {
+  --background: #203324;
+  --foreground: #ffffff;
+  --muted-foreground: rgba(255, 255, 255, 0.7);
+  --border: rgba(255, 255, 255, 0.1);
+  --muted: #354b3a;
+  --card: #354b3a;
 }

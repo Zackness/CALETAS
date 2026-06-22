@@ -1,3 +1,9 @@
+import { expandPic18ProgressPayload, isPic18LessonComplete } from "@/lib/aprende-pic18/expand-progress-payload";
+import {
+  PIC18_LESSON_CATALOG,
+  PIC18_LESSON_TOTAL,
+} from "@/lib/aprende-pic18/lesson-catalog";
+
 export type Pic18ProgressSummary = {
   percent: number;
   lessonsCompleted: number;
@@ -21,29 +27,45 @@ function countDoneDeep(value: unknown): { done: number; total: number } {
   );
 }
 
+/**
+ * Misma lógica que la barra global de AprendePIC18:
+ * lecciones completadas / total de lecciones de la ruta de estudio.
+ */
 export function summarizePic18Progress(payload: unknown): Pic18ProgressSummary | null {
   if (!payload || typeof payload !== "object") return null;
-  const data = payload as Record<string, unknown>;
-  const studyPath = data.studyPath && typeof data.studyPath === "object" ? (data.studyPath as Record<string, unknown>) : {};
-  const quizzes = data.quizzes && typeof data.quizzes === "object" ? (data.quizzes as Record<string, unknown>) : {};
-  const checklists = data.checklists && typeof data.checklists === "object" ? data.checklists : {};
 
-  const lessons = Object.values(studyPath).filter((v) => typeof v === "boolean");
-  const lessonsCompleted = lessons.filter(Boolean).length;
+  const expanded = expandPic18ProgressPayload(payload);
+  const studyPath =
+    expanded.studyPath && typeof expanded.studyPath === "object"
+      ? (expanded.studyPath as Record<string, boolean>)
+      : {};
+  const quizzes =
+    expanded.quizzes && typeof expanded.quizzes === "object"
+      ? (expanded.quizzes as Record<string, { passed?: boolean; score?: number }>)
+      : {};
+  const checklists =
+    expanded.checklists && typeof expanded.checklists === "object" ? expanded.checklists : {};
+  const skillGuides =
+    expanded.skillGuides && typeof expanded.skillGuides === "object"
+      ? (expanded.skillGuides as Record<string, boolean>)
+      : {};
+
+  const lessonsCompleted = PIC18_LESSON_CATALOG.filter((lesson) =>
+    isPic18LessonComplete(lesson, studyPath, quizzes, checklists as Record<string, unknown>, skillGuides),
+  ).length;
+
+  if (PIC18_LESSON_TOTAL === 0) return null;
+
   const quizRows = Object.values(quizzes).filter((v): v is Record<string, unknown> => !!v && typeof v === "object");
   const quizzesPassed = quizRows.filter((q) => q.passed === true).length;
   const scores = quizRows.map((q) => Number(q.score)).filter((n) => Number.isFinite(n));
   const averageScore = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null;
   const checklist = countDoneDeep(checklists);
 
-  const doneSignals = lessonsCompleted + quizzesPassed + checklist.done;
-  const totalSignals = lessons.length + quizRows.length + checklist.total;
-  if (totalSignals === 0) return null;
-
   return {
-    percent: Math.round((doneSignals / totalSignals) * 100),
+    percent: Math.round((lessonsCompleted / PIC18_LESSON_TOTAL) * 100),
     lessonsCompleted,
-    lessonsTracked: lessons.length,
+    lessonsTracked: PIC18_LESSON_TOTAL,
     quizzesPassed,
     quizzesTracked: quizRows.length,
     averageScore,

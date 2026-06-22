@@ -632,7 +632,11 @@ export default function AdminPensumsPage() {
                 </SelectTrigger>
                 <SelectContent className="bg-[var(--mygreen)] border-white/10 text-white">
                   <SelectItem value="UNIVERSIDAD">Universidad</SelectItem>
-                  <SelectItem value="INSTITUTO">Instituto</SelectItem>
+                  <SelectItem value="INSTITUTO">Instituto universitario</SelectItem>
+                  <SelectItem value="COLEGIO">Colegio</SelectItem>
+                  <SelectItem value="LICEO">Liceo</SelectItem>
+                  <SelectItem value="ESCUELA_TECNICA">Escuela técnica</SelectItem>
+                  <SelectItem value="OTRO">Otra unidad educativa</SelectItem>
                 </SelectContent>
               </Select>
             </div>

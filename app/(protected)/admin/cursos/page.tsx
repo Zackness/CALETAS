@@ -19,7 +19,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Library, PlusCircle, Pencil, Trash2, ArrowLeft, Search } from "lucide-react";
+import { Library, PlusCircle, Pencil, Trash2, ArrowLeft, Search, Bell } from "lucide-react";
+import { CursoWebShowcasePreview } from "@/components/cursos/curso-web-showcase-preview";
 import { toast } from "sonner";
 
 type Curso = {
@@ -63,6 +64,7 @@ export default function AdminCursosPage() {
   const [mediaSubfolder, setMediaSubfolder] = useState("media");
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<"all" | "video" | "web">("all");
+  const [announcingId, setAnnouncingId] = useState<string | null>(null);
 
   const filteredCursos = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -174,6 +176,29 @@ export default function AdminCursosPage() {
       toast.error(e instanceof Error ? e.message : "Error");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const announce = async (c: Curso) => {
+    if (
+      !confirm(
+        `¿Enviar notificación a todos los usuarios sobre «${c.titulo}»?\n\nSe crearán notificaciones in-app y correos (si Resend está configurado).`
+      )
+    ) {
+      return;
+    }
+    setAnnouncingId(c.id);
+    try {
+      const res = await fetch(`/api/admin/cursos/${c.id}/announce`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "No se pudo anunciar");
+      toast.success(
+        `Anuncio enviado: ${data.notified ?? 0} notificaciones${data.emailed ? `, ${data.emailed} correos` : ""}`
+      );
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Error al anunciar");
+    } finally {
+      setAnnouncingId(null);
     }
   };
 
@@ -289,6 +314,17 @@ export default function AdminCursosPage() {
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center justify-end gap-1.5">
+                            <Button
+                              size="icon"
+                              variant="outline"
+                              className="h-8 w-8 border-[color-mix(in_oklab,var(--aprende-accent)_35%,transparent)] bg-[color-mix(in_oklab,var(--aprende-accent)_8%,transparent)] text-[var(--aprende-accent-bright)] hover:bg-[color-mix(in_oklab,var(--aprende-accent)_15%,transparent)]"
+                              onClick={() => void announce(c)}
+                              disabled={announcingId === c.id}
+                              title="Anunciar curso a todos"
+                              aria-label={`Anunciar ${c.titulo}`}
+                            >
+                              <Bell className="h-3.5 w-3.5" />
+                            </Button>
                             <Button
                               size="icon"
                               variant="outline"
@@ -414,18 +450,11 @@ export default function AdminCursosPage() {
               ) : form.externalUrl.trim() ? (
                 <div className="grid gap-2">
                   <Label className="text-white/80">Vista previa del sitio</Label>
-                  <div className="relative overflow-hidden rounded-xl border border-white/10 bg-[#1C2D20]">
-                    <iframe
-                      src={form.externalUrl.trim()}
-                      className="h-56 w-full scale-[1.03] pointer-events-none select-none"
-                      title="Preview del curso web"
-                      tabIndex={-1}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-black/10" />
-                    <div className="absolute bottom-3 right-3 rounded-full border border-white/10 bg-black/55 px-3 py-1 text-xs text-white/80 backdrop-blur-sm">
-                      Preview no interactivo
-                    </div>
-                  </div>
+                  <CursoWebShowcasePreview
+                    title={form.titulo.trim() || "Curso web"}
+                    url={form.externalUrl.trim()}
+                  />
+                  <p className="text-xs text-white/45">Preview no interactivo — escala tipo captura de pantalla.</p>
                 </div>
               ) : null}
               <div className="grid gap-2">

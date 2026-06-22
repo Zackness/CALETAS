@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
-import { getUserNotifications, createNotification } from "@/lib/notifications";
+import {
+  getUserNotifications,
+  createNotification,
+  markAllNotificationsRead,
+} from "@/lib/notifications";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 
@@ -27,4 +31,15 @@ export async function POST(req: Request) {
   }
   const notification = await createNotification(session.user.id, message);
   return NextResponse.json(notification);
-} 
+}
+
+export async function PATCH() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  await markAllNotificationsRead(session.user.id);
+  return NextResponse.json({ success: true });
+}

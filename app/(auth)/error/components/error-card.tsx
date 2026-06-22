@@ -1,31 +1,28 @@
 "use client";
 
+import Link from "next/link";
 import { CardWrapper } from "@/components/card-wrapper";
 
 export const ErrorCard = () => {
   return (
-    <CardWrapper 
-      headerLabel="Bienvenido" 
-      showSocial
-    >
-      <div className="flex items-baseline flex-col">
-        <img src="/images/meme1.png" className="w-full mb-[-100px] mt-[-80px]" alt="Logo" />
-        <h2 className="text-4xl mb-8 font-semibold text-white">
-          Oops! Algo ha salido mal
-        </h2>
-      </div>
-      <div className="flex flex-col gap-4 bg-fm-red-2 p-4 rounded-xl text-white">
+    <CardWrapper>
+      <h2 className="mb-4 text-center font-special text-2xl text-white sm:text-3xl">
+        Algo salió mal
+      </h2>
+      <div className="rounded-xl border border-white/10 bg-[#1C2D20] p-4 text-sm leading-relaxed text-white/80">
         <p>
-          Para confirmar tu identidad, debes iniciar sesion con la cuenta que usaste originalmente (Franky, Google, o Twitch)
+          No pudimos completar el inicio de sesión. Intenta de nuevo con el mismo método que usaste
+          al registrarte (correo, Google o Twitch).
         </p>
       </div>
-      <div className="flex items-baseline">
-        <p className="mt-12 text-sm text-white">
-          Iniciar sesion con
-        </p>
-        <span className="ml-2 hover:underline cursor-pointer font-semibold text-sm text-white">
-          <a href="/auth/register">Franky Account</a>
-        </span>
+      <div className="mt-6 flex flex-col items-center gap-2 text-center sm:flex-row sm:justify-center">
+        <p className="text-sm text-white/70">¿Ya tienes cuenta?</p>
+        <Link
+          href="/login"
+          className="text-sm font-semibold text-[var(--caleta-accent)] transition-colors hover:text-white"
+        >
+          Iniciar sesión
+        </Link>
       </div>
     </CardWrapper>
   );

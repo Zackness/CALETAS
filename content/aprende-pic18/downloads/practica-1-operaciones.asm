@@ -15,33 +15,57 @@
 ;   0 Suma  1 Resta  2 Multiplicacion  3 Division (software)
 ;   4 OR    5 AND    6 XOR             7 Complemento  8 Rotar izq. sin acarreo
 ;
+; Estructura sandwich:
+;   Vectores -> Programa principal -> Subrutinas -> Fin
+;
 ; Alumno: _________________________  Seccion: ______  Fecha: __________
 ;==============================================================================
 
         LIST    P=18F4550
         #include <P18F4550.INC>
 
+;==============================================================================
+; CONFIGURACION
+;==============================================================================
+
         CONFIG  FOSC = HS
         CONFIG  WDT  = OFF
         CONFIG  LVP  = OFF
         CONFIG  PBADEN = OFF
 
-        cblock 0x20
+;==============================================================================
+; VARIABLES
+;==============================================================================
+
+        CBLOCK  0x20
             modo
             oper_a
             oper_b
             resto           ; dividendo restante en division software
             cociente
             btn_prev
-        endc
+        ENDC
 
 #define MODO_MAX        8
 
+;==============================================================================
+; VECTORES
+;==============================================================================
+
         ORG     0x0000
-        GOTO    inicio
+        GOTO    INICIO
+
+        ORG     0x0008
+        GOTO    ISR_VACIA
+
+        ORG     0x0018
+        RETFIE
 
 ;==============================================================================
-inicio:
+; PROGRAMA PRINCIPAL
+;==============================================================================
+
+INICIO
         MOVLW   0x0F
         MOVWF   ADCON1            ; pines RA/RE digitales
 
@@ -58,159 +82,155 @@ inicio:
         CLRF    TRISC             ; LEDs resultado bajo
         CLRF    TRISE             ; LEDs resultado alto
 
-bucle_principal:
-        CALL    leer_operandos
-        CALL    ejecutar_modo
-        CALL    mostrar_resultado
-        CALL    revisar_pulsador
-        GOTO    bucle_principal
+BUCLE_PRINCIPAL
+        CALL    LEER_OPERANDOS
+        CALL    EJECUTAR_MODO
+        CALL    MOSTRAR_RESULTADO
+        CALL    REVISAR_PULSADOR
+        GOTO    BUCLE_PRINCIPAL
 
 ;==============================================================================
-leer_operandos:
+; SUBRUTINAS
+;==============================================================================
+
+LEER_OPERANDOS
         MOVF    PORTB, W
         MOVWF   oper_a
         MOVF    PORTD, W
         MOVWF   oper_b
         RETURN
 
-;==============================================================================
 ; Tabla de saltos por modo (0..8)
-;==============================================================================
-ejecutar_modo:
+EJECUTAR_MODO
         MOVF    modo, W
         BTFSC   STATUS, Z
-        GOTO    op_suma
+        GOTO    OP_SUMA
         MOVF    modo, W
         XORLW   1
         BTFSC   STATUS, Z
-        GOTO    op_resta
+        GOTO    OP_RESTA
         MOVF    modo, W
         XORLW   2
         BTFSC   STATUS, Z
-        GOTO    op_mul
+        GOTO    OP_MUL
         MOVF    modo, W
         XORLW   3
         BTFSC   STATUS, Z
-        GOTO    op_div
+        GOTO    OP_DIV
         MOVF    modo, W
         XORLW   4
         BTFSC   STATUS, Z
-        GOTO    op_or
+        GOTO    OP_OR
         MOVF    modo, W
         XORLW   5
         BTFSC   STATUS, Z
-        GOTO    op_and
+        GOTO    OP_AND
         MOVF    modo, W
         XORLW   6
         BTFSC   STATUS, Z
-        GOTO    op_xor
+        GOTO    OP_XOR
         MOVF    modo, W
         XORLW   7
         BTFSC   STATUS, Z
-        GOTO    op_compl
-        GOTO    op_rot
+        GOTO    OP_COMPL
+        GOTO    OP_ROT
 
-op_suma:
+OP_SUMA
         MOVF    oper_b, W
         ADDWF   oper_a, W
         CLRF    PRODH
         MOVWF   PRODL
         RETURN
 
-op_resta:
+OP_RESTA
         MOVF    oper_a, W
         SUBWF   oper_b, W         ; W = oper_a - oper_b
         CLRF    PRODH
         MOVWF   PRODL
         RETURN
 
-op_mul:
+OP_MUL
         MOVF    oper_b, W
         MULWF   oper_a            ; PRODH:PRODL = A * B
         RETURN
 
-op_div:
-        CALL    division_software
+OP_DIV
+        CALL    DIVISION_SOFTWARE
         CLRF    PRODH
         MOVWF   PRODL
         RETURN
 
-op_or:
+OP_OR
         MOVF    oper_b, W
         IORWF   oper_a, W
         CLRF    PRODH
         MOVWF   PRODL
         RETURN
 
-op_and:
+OP_AND
         MOVF    oper_b, W
         ANDWF   oper_a, W
         CLRF    PRODH
         MOVWF   PRODL
         RETURN
 
-op_xor:
+OP_XOR
         MOVF    oper_b, W
         XORWF   oper_a, W
         CLRF    PRODH
         MOVWF   PRODL
         RETURN
 
-op_compl:
+OP_COMPL
         COMF    oper_a, W
         CLRF    PRODH
         MOVWF   PRODL
         RETURN
 
-op_rot:
+OP_ROT
         MOVF    oper_a, W
         RLNCF   WREG, W           ; rotacion izquierda sin acarreo
         CLRF    PRODH
         MOVWF   PRODL
         RETURN
 
-;==============================================================================
 ; oper_a / oper_b -> WREG (cociente). Divisor 0 -> 0xFF
 ; Algoritmo: restas repetidas (division por software)
-;==============================================================================
-division_software:
+DIVISION_SOFTWARE
         MOVF    oper_b, W
-        BZ      div_error
+        BZ      DIV_ERROR
         CLRF    cociente
         MOVF    oper_a, W
         MOVWF   resto
-div_loop:
+DIV_LOOP
         MOVF    resto, W
         SUBWF   oper_b, W         ; W = resto - oper_b
         BTFSS   STATUS, C
-        GOTO    div_fin
+        GOTO    DIV_FIN
         MOVF    oper_b, W
         COMF    WREG, W
         ADDLW   1                 ; W = -oper_b
         ADDWF   resto, F          ; resto = resto - oper_b
         INCF    cociente, F
-        GOTO    div_loop
-div_fin:
+        GOTO    DIV_LOOP
+DIV_FIN
         MOVF    cociente, W
         RETURN
-div_error:
+DIV_ERROR
         MOVLW   0xFF
         RETURN
 
-;==============================================================================
-mostrar_resultado:
+MOSTRAR_RESULTADO
         MOVF    PRODL, W
         MOVWF   LATC
         MOVF    PRODH, W
         MOVWF   LATE
         RETURN
 
-;==============================================================================
 ; Flanco de bajada en RA0 (pulsador con pull-up interno/externo)
-;==============================================================================
-revisar_pulsador:
+REVISAR_PULSADOR
         BTFSC   PORTA, 0          ; 1 = pulsador suelto (pull-up)
-        GOTO    btn_liberado
+        GOTO    BTN_LIBERADO
         BTFSC   btn_prev, 0       ; ya se conto este pulso
         RETURN
         BCF     btn_prev, 0
@@ -220,8 +240,15 @@ revisar_pulsador:
         BTFSC   STATUS, Z
         CLRF    modo
         RETURN
-btn_liberado:
+BTN_LIBERADO
         BSF     btn_prev, 0
         RETURN
+
+;==============================================================================
+; RUTINAS DE INTERRUPCION
+;==============================================================================
+
+ISR_VACIA
+        RETFIE
 
         END

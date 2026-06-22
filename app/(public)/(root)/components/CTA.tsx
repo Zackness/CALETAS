@@ -1,33 +1,46 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { ArrowRight, PenLine } from "lucide-react";
 
 export function CTA() {
   return (
-    <section className="px-4 sm:px-6 md:px-12 lg:px-24 py-10 sm:py-14 md:py-20 flex flex-col items-center">
-      <div className="w-full max-w-4xl px-2 sm:px-4">
-        <h3 className="chalk-title font-special text-center text-[1.8rem] sm:text-[2.2rem] md:text-[3rem] lg:text-[3.4rem] pb-4 sm:pb-6 leading-[1.08]">
-            ¿LISTO PARA COMPARTIR
-            TU CONOCIMIENTO?
+    <section className="chalk-container min-w-0 py-14 sm:py-16 md:py-20">
+      <div className="chalk-divider mb-12" />
+
+      <div className="chalk-card chalk-card-featured relative overflow-hidden px-6 py-10 text-center sm:px-10 sm:py-14 md:px-14">
+        <span className="chalk-formula chalk-formula-float left-[6%] top-[12%] hidden opacity-60 md:block" aria-hidden>
+          suma()
+        </span>
+        <span
+          className="chalk-formula right-[8%] bottom-[14%] hidden !rotate-[6deg] opacity-60 md:block"
+          aria-hidden
+        >
+          share()
+        </span>
+
+        <span className="chalk-section-label mx-auto justify-center">
+          <PenLine className="h-4 w-4" />
+          Tu turno en la pizarra
+        </span>
+
+        <h3 className="chalk-title mx-auto mt-5 max-w-3xl font-special text-balance text-[1.55rem] leading-[1.1] sm:text-[2rem] md:text-[2.5rem]">
+          ¿LISTO PARA COMPARTIR TU CONOCIMIENTO?
         </h3>
-        <p className="mx-auto font-semibold text-center text-[1.05rem] sm:text-xl md:text-2xl pb-6 sm:pb-8 max-w-3xl leading-[1.55] px-2 sm:px-4">
-            Únete a tu comunidad estudiantil o crea la tuya junto a tus compañeros y comienza
-            a compartir tus CALETAS. Es momento de aprovechar el conocimiento colectivo
+
+        <p className="mx-auto mt-5 max-w-2xl text-base font-semibold leading-relaxed text-white/78 sm:text-lg md:text-xl">
+          Únete a tu comunidad estudiantil o crea la tuya junto a tus compañeros y comienza a
+          compartir tus CALETAS. Es momento de aprovechar el conocimiento colectivo.
         </p>
-        <div className="flex justify-center w-full pt-1">
-            <a 
-                href="/register"
-                className="font-special w-full sm:w-auto"
-            >
-                <Button 
-                    size="lg"
-                    variant="secondary"
-                    className="!h-14 !w-full sm:!w-[420px] !rounded-2xl !px-6 !text-sm sm:!text-base md:!text-lg !leading-none"
-                >
-                    COMIENZA A CALETEAR
-                </Button>
-            </a>
+
+        <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <a href="/register" className="chalk-hero-btn chalk-hero-btn-secondary sm:min-w-[320px]">
+            <span>Comienza a caletear</span>
+            <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
+          </a>
+          <a href="/caracteristicas" className="chalk-hero-btn chalk-hero-btn-primary sm:min-w-[260px]">
+            <span>Ver características</span>
+            <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
+          </a>
         </div>
       </div>
     </section>
   );
-} 
+}

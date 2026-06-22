@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
         id: true,
         titulo: true,
         archivoUrl: true,
+        numDescargas: true,
       },
     });
     if (!recurso) {
@@ -33,6 +34,7 @@ export async function GET(request: NextRequest) {
           id: true,
           titulo: true,
           archivoUrl: true,
+          numDescargas: true,
         },
       });
     }
@@ -47,6 +49,7 @@ export async function GET(request: NextRequest) {
         name: filename,
         url: recurso.archivoUrl,
         titulo: recurso.titulo,
+        numDescargas: recurso.numDescargas,
       },
     });
   } catch (error) {

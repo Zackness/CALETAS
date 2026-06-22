@@ -14,16 +14,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Header } from "../(root)/components/Header";
+import { PublicPageShell } from "@/app/(public)/components/PublicPageShell";
+import { PublicPageHero } from "@/app/(public)/components/PublicPageHero";
+import {
+  CATEGORIAS_INSTITUCION,
+  CARACTERES_INSTITUCION,
+  getEtiquetasInstitucion,
+  type CategoriaInstitucion,
+  type CaracterInstitucion,
+} from "@/lib/instituciones-educativas";
 import { 
   GraduationCap, 
   Users, 
   FileText, 
-  Mail, 
-  User, 
   Building2,
-  BookOpen,
-  Upload,
   Plus,
   Trash2,
   AlertCircle,
@@ -43,12 +47,17 @@ export default function AgregarUniversidadPage() {
   const [estudiantes, setEstudiantes] = useState<Estudiante[]>([
     { id: "1", nombre: "", email: "", carnet: "" }
   ]);
-  const [universidad, setUniversidad] = useState("");
-  const [siglasUniversidad, setSiglasUniversidad] = useState("");
-  const [tipoUniversidad, setTipoUniversidad] = useState<string>("PUBLICA");
-  const [carrera, setCarrera] = useState("");
-  const [descripcionCarrera, setDescripcionCarrera] = useState("");
+  const [categoriaInstitucion, setCategoriaInstitucion] =
+    useState<CategoriaInstitucion>("UNIVERSIDAD");
+  const [caracterInstitucion, setCaracterInstitucion] =
+    useState<CaracterInstitucion>("PUBLICA");
+  const [institucion, setInstitucion] = useState("");
+  const [siglasInstitucion, setSiglasInstitucion] = useState("");
+  const [programa, setPrograma] = useState("");
+  const [descripcionPrograma, setDescripcionPrograma] = useState("");
   const [pensum, setPensum] = useState<File | null>(null);
+
+  const etiquetas = getEtiquetasInstitucion(categoriaInstitucion);
   
   const { toast } = useToast();
 
@@ -111,28 +120,28 @@ export default function AgregarUniversidadPage() {
   };
 
   const validarFormulario = () => {
-    if (!universidad.trim()) {
+    if (!institucion.trim()) {
       toast({
-        title: "Universidad requerida",
-        description: "Por favor ingresa el nombre de la universidad",
+        title: "Nombre requerido",
+        description: `Por favor ingresa ${etiquetas.institucion.toLowerCase()}`,
         variant: "destructive",
       });
       return false;
     }
 
-    if (!siglasUniversidad.trim()) {
+    if (!siglasInstitucion.trim()) {
       toast({
         title: "Siglas requeridas",
-        description: "Por favor ingresa las siglas de la universidad",
+        description: `Por favor ingresa ${etiquetas.siglas.toLowerCase()}`,
         variant: "destructive",
       });
       return false;
     }
 
-    if (!carrera.trim()) {
+    if (!programa.trim()) {
       toast({
-        title: "Carrera requerida",
-        description: "Por favor ingresa el nombre de la carrera",
+        title: "Programa requerido",
+        description: `Por favor ingresa ${etiquetas.programa.toLowerCase()}`,
         variant: "destructive",
       });
       return false;
@@ -183,11 +192,12 @@ export default function AgregarUniversidadPage() {
 
     try {
       const formData = new FormData();
-      formData.append("universidad", universidad);
-      formData.append("siglasUniversidad", siglasUniversidad);
-      formData.append("tipoUniversidad", tipoUniversidad);
-      formData.append("carrera", carrera);
-      formData.append("descripcionCarrera", descripcionCarrera);
+      formData.append("universidad", institucion);
+      formData.append("siglasUniversidad", siglasInstitucion);
+      formData.append("categoriaInstitucion", categoriaInstitucion);
+      formData.append("caracterInstitucion", caracterInstitucion);
+      formData.append("carrera", programa);
+      formData.append("descripcionCarrera", descripcionPrograma);
       formData.append("pensum", pensum!);
       formData.append("estudiantes", JSON.stringify(estudiantes));
 
@@ -199,15 +209,14 @@ export default function AgregarUniversidadPage() {
       if (response.ok) {
         toast({
           title: "¡Integración exitosa!",
-          description: "Tu universidad ha sido integrada automáticamente. Los estudiantes pueden acceder inmediatamente con su carnet como contraseña.",
+          description: `Tu ${etiquetas.entidad} ha sido integrada. Los estudiantes pueden acceder con su carnet como contraseña inicial.`,
         });
         
-        // Limpiar formulario
-        setUniversidad("");
-        setSiglasUniversidad("");
-        setTipoUniversidad("PUBLICA");
-        setCarrera("");
-        setDescripcionCarrera("");
+        setInstitucion("");
+        setSiglasInstitucion("");
+        setCaracterInstitucion("PUBLICA");
+        setPrograma("");
+        setDescripcionPrograma("");
         setPensum(null);
         setEstudiantes([{ id: "1", nombre: "", email: "", carnet: "" }]);
       } else {
@@ -227,62 +236,49 @@ export default function AgregarUniversidadPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-t from-mygreen to-mygreen-light">
-      <Header />
-      
-      <div className="container mx-auto px-4 py-10 sm:py-12">
-        <div className="max-w-4xl mx-auto">
-          {/* Hero Section */}
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)] text-[var(--accent-hex)] px-4 py-2 rounded-full text-sm font-medium mb-6">
-              <GraduationCap className="h-4 w-4" />
-              Integración Automática
-            </div>
-            
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-special text-white mb-4 sm:mb-6">
-              Agrega tu Universidad
-            </h1>
-            
-            <p className="text-base sm:text-lg md:text-xl text-white/80 max-w-3xl mx-auto leading-relaxed">
-              ¿Tu universidad no está en Caletas? ¡Agrégala automáticamente! 
-              Con al menos 10 estudiantes interesados y el pensum de la carrera, 
-              tu universidad se integrará inmediatamente a la plataforma.
-            </p>
-          </div>
+    <PublicPageShell>
+      <PublicPageHero
+        label="Integración automática"
+        labelIcon={GraduationCap}
+        title="AGREGA TU INSTITUCIÓN EDUCATIVA"
+        description="¿Tu universidad, colegio, liceo, instituto u otra unidad educativa no está en Caletas? Con al menos 10 estudiantes interesados y el programa de estudios en PDF, se integrará automáticamente a la plataforma."
+      />
 
+      <div className="chalk-container min-w-0 pb-14 sm:pb-16 md:pb-20">
+        <div className="mx-auto max-w-4xl">
           {/* Información del proceso */}
-          <Card className="bg-[var(--mygreen-light)] border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] mb-8">
+          <Card className="chalk-card mb-8 chalk-card-featured">
             <CardContent className="p-6">
               <div className="flex items-start gap-3">
-                <Info className="w-5 h-5 text-[var(--accent-hex)] mt-0.5 flex-shrink-0" />
+                <Info className="w-5 h-5 text-[var(--caleta-accent)] mt-0.5 flex-shrink-0" />
                 <div>
                   <h3 className="text-white font-semibold mb-3">¿Cómo funciona?</h3>
                   <div className="grid md:grid-cols-2 gap-4 text-sm text-white/80">
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                        <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                         <span>Reúne al menos 10 estudiantes interesados</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
-                        <span>Proporciona el pensum de la carrera</span>
+                        <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
+                        <span>Proporciona el programa de estudios en PDF</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                        <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                         <span>Envía el formulario</span>
                       </div>
                     </div>
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                        <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                         <span>¡Integración automática inmediata!</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                        <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                         <span>Cuentas creadas automáticamente</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-[var(--accent-hex)]" />
+                        <CheckCircle className="h-4 w-4 text-[var(--caleta-accent)]" />
                         <span>¡Listo para usar Caletas!</span>
                       </div>
                     </div>
@@ -294,91 +290,131 @@ export default function AgregarUniversidadPage() {
 
           {/* Formulario */}
           <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Información de la universidad y carrera */}
-            <Card className="bg-[var(--mygreen-light)] border-white/10">
+            {/* Tipo de unidad educativa */}
+            <Card className="chalk-card">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
-                  <Building2 className="h-5 w-5 text-[var(--accent-hex)]" />
-                  Información de la Universidad y Carrera
+                  <GraduationCap className="h-5 w-5 text-[var(--caleta-accent)]" />
+                  Tipo de unidad educativa
                 </CardTitle>
                 <CardDescription className="text-white/70">
-                  Datos básicos de la universidad y carrera que quieres agregar
+                  Elige qué tipo de institución quieres agregar. El formulario se adapta según tu selección.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {CATEGORIAS_INSTITUCION.map((item) => {
+                    const selected = categoriaInstitucion === item.value;
+                    return (
+                      <button
+                        key={item.value}
+                        type="button"
+                        onClick={() => setCategoriaInstitucion(item.value)}
+                        className={`rounded-xl border p-4 text-left transition-colors ${
+                          selected
+                            ? "border-[var(--caleta-accent)] bg-[color-mix(in_oklab,var(--caleta-accent)_14%,transparent)]"
+                            : "border-white/10 bg-[var(--mygreen-dark)] hover:border-white/20"
+                        }`}
+                      >
+                        <p className="font-semibold text-white">{item.label}</p>
+                        <p className="mt-1 text-xs leading-relaxed text-white/65">{item.descripcion}</p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Información de la institución y programa */}
+            <Card className="chalk-card">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Building2 className="h-5 w-5 text-[var(--caleta-accent)]" />
+                  Información de la institución y programa
+                </CardTitle>
+                <CardDescription className="text-white/70">
+                  Datos básicos de la unidad educativa y del programa que quieres agregar
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="universidad" className="text-white/80">Nombre de la Universidad *</Label>
+                    <Label htmlFor="institucion" className="text-white/80">{etiquetas.institucion} *</Label>
                     <Input
-                      id="universidad"
-                      value={universidad}
-                      onChange={(e) => setUniversidad(e.target.value)}
-                      placeholder="Ej: Universidad Central de Venezuela"
-                      className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg mt-1"
+                      id="institucion"
+                      value={institucion}
+                      onChange={(e) => setInstitucion(e.target.value)}
+                      placeholder={etiquetas.institucionPlaceholder}
+                      className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--caleta-accent)] focus:ring-[var(--caleta-accent)] rounded-lg mt-1"
                       required
                     />
                   </div>
                   <div>
-                    <Label htmlFor="siglasUniversidad" className="text-white/80">Siglas de la Universidad *</Label>
+                    <Label htmlFor="siglasInstitucion" className="text-white/80">{etiquetas.siglas} *</Label>
                     <Input
-                      id="siglasUniversidad"
-                      value={siglasUniversidad}
-                      onChange={(e) => setSiglasUniversidad(e.target.value)}
-                      placeholder="Ej: UCV"
-                      className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg mt-1"
+                      id="siglasInstitucion"
+                      value={siglasInstitucion}
+                      onChange={(e) => setSiglasInstitucion(e.target.value.toUpperCase())}
+                      placeholder={etiquetas.siglasPlaceholder}
+                      className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--caleta-accent)] focus:ring-[var(--caleta-accent)] rounded-lg mt-1"
                       required
                     />
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="tipoUniversidad" className="text-white/80">Tipo de Universidad *</Label>
-                  <Select onValueChange={(value) => setTipoUniversidad(value)} defaultValue="PUBLICA">
-                    <SelectTrigger className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg mt-1">
-                      <SelectValue placeholder="Selecciona un tipo" />
+                  <Label htmlFor="caracterInstitucion" className="text-white/80">Carácter de la institución *</Label>
+                  <Select
+                    value={caracterInstitucion}
+                    onValueChange={(value) => setCaracterInstitucion(value as CaracterInstitucion)}
+                  >
+                    <SelectTrigger className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--caleta-accent)] focus:ring-[var(--caleta-accent)] rounded-lg mt-1">
+                      <SelectValue placeholder="Selecciona el carácter" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="PUBLICA">Pública</SelectItem>
-                      <SelectItem value="PRIVADA">Privada</SelectItem>
-                      <SelectItem value="OTRA">Otra</SelectItem>
+                      {CARACTERES_INSTITUCION.map((item) => (
+                        <SelectItem key={item.value} value={item.value}>
+                          {item.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <Label htmlFor="carrera" className="text-white/80">Nombre de la Carrera *</Label>
+                  <Label htmlFor="programa" className="text-white/80">{etiquetas.programa} *</Label>
                   <Input
-                    id="carrera"
-                    value={carrera}
-                    onChange={(e) => setCarrera(e.target.value)}
-                    placeholder="Ej: Ingeniería Informática"
-                    className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg mt-1"
+                    id="programa"
+                    value={programa}
+                    onChange={(e) => setPrograma(e.target.value)}
+                    placeholder={etiquetas.programaPlaceholder}
+                    className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--caleta-accent)] focus:ring-[var(--caleta-accent)] rounded-lg mt-1"
                     required
                   />
                 </div>
                 
                 <div>
-                  <Label htmlFor="descripcionCarrera" className="text-white/80">Descripción de la Carrera (opcional)</Label>
+                  <Label htmlFor="descripcionPrograma" className="text-white/80">Descripción del programa (opcional)</Label>
                   <Textarea
-                    id="descripcionCarrera"
-                    value={descripcionCarrera}
-                    onChange={(e) => setDescripcionCarrera(e.target.value)}
-                    placeholder="Información adicional sobre la carrera, especializaciones, etc."
+                    id="descripcionPrograma"
+                    value={descripcionPrograma}
+                    onChange={(e) => setDescripcionPrograma(e.target.value)}
+                    placeholder={etiquetas.programaDescripcion}
                     rows={3}
-                    className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg mt-1"
+                    className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--caleta-accent)] focus:ring-[var(--caleta-accent)] rounded-lg mt-1"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="pensum" className="text-white/80">Pensum de la Carrera (PDF) *</Label>
+                  <Label htmlFor="pensum" className="text-white/80">{etiquetas.documento} *</Label>
                   <Input
                     id="pensum"
                     type="file"
                     accept=".pdf"
                     onChange={handleFileChange}
-                    className="bg-white/10 border-white/20 text-white file:text-white file:bg-[var(--accent-hex)] file:border-0 file:rounded-lg file:px-4 file:py-2 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg mt-1"
+                    className="bg-white/10 border-white/20 text-white file:text-white file:bg-[var(--caleta-accent)] file:border-0 file:rounded-lg file:px-4 file:py-2 focus:border-[var(--caleta-accent)] focus:ring-[var(--caleta-accent)] rounded-lg mt-1"
                     required
                   />
                   {pensum && (
-                    <div className="text-[var(--accent-hex)] text-sm mt-1 flex items-center gap-2">
+                    <div className="text-[var(--caleta-accent)] text-sm mt-1 flex items-center gap-2">
                       <FileText className="h-4 w-4" />
                       Archivo seleccionado: {pensum.name}
                     </div>
@@ -388,14 +424,14 @@ export default function AgregarUniversidadPage() {
             </Card>
 
             {/* Lista de estudiantes */}
-            <Card className="bg-[var(--mygreen-light)] border-white/10">
+            <Card className="chalk-card">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
-                  <Users className="h-5 w-5 text-[var(--accent-hex)]" />
+                  <Users className="h-5 w-5 text-[var(--caleta-accent)]" />
                   Estudiantes Interesados ({estudiantes.length}/10)
                 </CardTitle>
                 <CardDescription className="text-white/70">
-                  Lista de estudiantes que quieren que se agregue su universidad. Mínimo 1, máximo 10.
+                  {etiquetas.estudiantesHint}. Mínimo 1, máximo 10.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -423,7 +459,7 @@ export default function AgregarUniversidadPage() {
                           value={estudiante.nombre}
                           onChange={(e) => actualizarEstudiante(estudiante.id, "nombre", e.target.value)}
                           placeholder="Nombre y apellido"
-                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg mt-1"
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--caleta-accent)] focus:ring-[var(--caleta-accent)] rounded-lg mt-1"
                           required
                         />
                       </div>
@@ -434,7 +470,7 @@ export default function AgregarUniversidadPage() {
                           value={estudiante.email}
                           onChange={(e) => actualizarEstudiante(estudiante.id, "email", e.target.value)}
                           placeholder="correo@ejemplo.com"
-                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg mt-1"
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--caleta-accent)] focus:ring-[var(--caleta-accent)] rounded-lg mt-1"
                           required
                         />
                       </div>
@@ -444,7 +480,7 @@ export default function AgregarUniversidadPage() {
                           value={estudiante.carnet}
                           onChange={(e) => actualizarEstudiante(estudiante.id, "carnet", e.target.value)}
                           placeholder="Número de carnet"
-                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--accent-hex)] focus:ring-[var(--accent-hex)] rounded-lg mt-1"
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[var(--caleta-accent)] focus:ring-[var(--caleta-accent)] rounded-lg mt-1"
                           required
                         />
                       </div>
@@ -456,7 +492,7 @@ export default function AgregarUniversidadPage() {
                   type="button"
                   onClick={agregarEstudiante}
                   variant="outline"
-                  className="w-full border-[var(--accent-hex)] text-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)]"
+                  className="w-full border-[var(--caleta-accent)] text-[var(--caleta-accent)] hover:bg-[color-mix(in_oklab,var(--caleta-accent)_10%,transparent)]"
                   disabled={estudiantes.length >= 10}
                 >
                   <Plus className="h-4 w-4 mr-2" />
@@ -466,10 +502,10 @@ export default function AgregarUniversidadPage() {
             </Card>
 
             {/* Información adicional */}
-            <Card className="bg-[var(--mygreen-dark)] border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)]">
+            <Card className="chalk-card chalk-card-featured">
               <CardContent className="p-6">
                 <div className="flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-[var(--accent-hex)] mt-0.5 flex-shrink-0" />
+                  <AlertCircle className="w-5 h-5 text-[var(--caleta-accent)] mt-0.5 flex-shrink-0" />
                   <div>
                     <h3 className="text-white font-semibold mb-2">Integración Automática</h3>
                     <ul className="text-white/70 text-sm space-y-1">
@@ -478,8 +514,8 @@ export default function AgregarUniversidadPage() {
                       <li>• Los correos se marcarán como verificados automáticamente</li>
                       <li>• No será necesario completar el onboarding</li>
                       <li>• Podrán cambiar su contraseña al ingresar por primera vez</li>
-                      <li>• La universidad y carrera estarán disponibles inmediatamente</li>
-                      <li>• El pensum se procesará para extraer materias automáticamente</li>
+                      <li>• La institución y el programa estarán disponibles inmediatamente</li>
+                      <li>• El documento PDF se procesará para extraer materias automáticamente</li>
                     </ul>
                   </div>
                 </div>
@@ -490,13 +526,13 @@ export default function AgregarUniversidadPage() {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white font-bold text-lg py-4 rounded-xl shadow-lg"
+              className="w-full bg-[var(--caleta-accent)] hover:bg-[color-mix(in_oklab,var(--caleta-accent)_80%,transparent)] text-white font-bold text-lg py-4 rounded-xl shadow-lg"
             >
-              {isSubmitting ? "Integrando..." : "Integrar Universidad"}
+              {isSubmitting ? "Integrando..." : etiquetas.submit}
             </Button>
           </form>
         </div>
       </div>
-    </div>
+    </PublicPageShell>
   );
 } 

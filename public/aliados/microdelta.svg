@@ -1,0 +1,7 @@
+<svg width="220" height="48" viewBox="0 0 220 48" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="MicroDelta">
+  <path d="M24 6L42 38H6L24 6Z" fill="#40C9A9"/>
+  <path d="M24 14L34 32H14L24 14Z" fill="#203324"/>
+  <circle cx="24" cy="24" r="3" fill="#FFFFFF"/>
+  <path d="M24 27V34M21 30H27" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/>
+  <text x="52" y="30" fill="#FFFFFF" font-family="Montserrat, Arial, sans-serif" font-size="18" font-weight="700" letter-spacing="0.04em">MicroDelta</text>
+</svg>

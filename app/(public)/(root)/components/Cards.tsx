@@ -1,29 +1,25 @@
 interface CardsProps {
-    titulo: string;
-    contenido: string;
-    picture: string;
-    alt: string;
+  titulo: string;
+  contenido: string;
+  picture: string;
+  alt: string;
+  index?: number;
 }
 
-export default function Cards({ titulo, contenido, picture, alt }: CardsProps) {
-    return (
-        <div className="chalk-sketch-border rounded-4xl p-4 sm:p-5 md:p-6 mb-4 sm:mb-6 md:mb-10 text-left content-between h-full flex flex-col">
-            <div className="justify-items-center items-start mb-3 sm:mb-4 flex-shrink-0">
-                <img
-                    src={ picture }
-                    alt={ alt }
-                    height={98}
-                    className="w-auto h-auto max-h-[60px] sm:max-h-[80px] md:max-h-[98px]"
-                />
-            </div>
-            <div className="flex-1 flex flex-col">
-                <h4 className="font-bold text-sm sm:text-base md:text-[18px] items-end mb-2 sm:mb-3">
-                    { titulo }
-                </h4>
-                <p className="text-xs sm:text-sm md:text-base leading-relaxed flex-1">
-                    { contenido }
-                </p>
-            </div>
+export default function Cards({ titulo, contenido, picture, alt, index = 0 }: CardsProps) {
+  return (
+    <article className="chalk-card group flex h-full flex-col p-5 sm:p-6">
+      <div className="mb-5 flex items-start justify-between gap-3">
+        <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-white/10 bg-[color-mix(in_srgb,var(--surface-elevated)_90%,black_10%)] p-2 transition-transform duration-300 group-hover:scale-105 sm:h-[4.5rem] sm:w-[4.5rem]">
+          <img src={picture} alt={alt} className="max-h-full max-w-full object-contain" />
         </div>
-    );
-}  
+        <span className="text-2xl font-bold leading-none text-white/12 tabular-nums">
+          {String(index + 1).padStart(2, "0")}
+        </span>
+      </div>
+
+      <h4 className="text-lg font-bold leading-snug tracking-tight text-white sm:text-xl">{titulo}</h4>
+      <p className="mt-3 flex-1 text-sm leading-relaxed text-white/72 sm:text-base">{contenido}</p>
+    </article>
+  );
+}

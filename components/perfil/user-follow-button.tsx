@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Loader2, UserMinus, UserPlus } from "lucide-react";
 
@@ -11,6 +13,7 @@ export function UserFollowButton({
   userId: string;
   initialFollowing: boolean;
 }) {
+  const router = useRouter();
   const [following, setFollowing] = useState(initialFollowing);
   const [loading, setLoading] = useState(false);
 
@@ -22,7 +25,15 @@ export function UserFollowButton({
         if (res.ok) setFollowing(false);
       } else {
         const res = await fetch(`/api/users/${encodeURIComponent(userId)}/follow`, { method: "POST" });
-        if (res.ok) setFollowing(true);
+        const data = (await res.json().catch(() => ({}))) as { code?: string; error?: string };
+        if (res.ok) {
+          setFollowing(true);
+        } else if (data.code === "PROFILE_REQUIRED") {
+          toast.error("Crea tu perfil público para seguir a otros");
+          router.push("/perfil");
+        } else if (data.error) {
+          toast.error(data.error);
+        }
       }
     } finally {
       setLoading(false);

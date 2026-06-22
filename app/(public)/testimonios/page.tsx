@@ -1,20 +1,26 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   Star, 
   Quote, 
   Users, 
-  TrendingUp, 
   Heart, 
   ArrowRight,
   BookOpen,
   Award,
-  MessageSquare
+  MessageSquare,
+  Building2,
+  PenLine,
 } from "lucide-react";
 import Link from "next/link";
-import { Header } from "../components/Header";
+import { PublicPageShell } from "@/app/(public)/components/PublicPageShell";
+import { PublicPageHero } from "@/app/(public)/components/PublicPageHero";
+import { PublicSectionHeader } from "@/app/(public)/components/PublicSectionHeader";
+import {
+  formatPublicStat,
+  getPublicPlatformStats,
+} from "@/lib/public-platform-stats";
 
 interface Testimonio {
   id: string;
@@ -100,7 +106,11 @@ const testimonios: Testimonio[] = [
   }
 ];
 
-export default function TestimoniosPage() {
+export const revalidate = 300;
+
+export default async function TestimoniosPage() {
+  const platformStats = await getPublicPlatformStats();
+  const experienciasCompartidas = testimonios.length;
   const renderStars = (calificacion: number) => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
@@ -126,60 +136,61 @@ export default function TestimoniosPage() {
   const testimoniosRegulares = testimonios.filter(t => !t.destacado);
 
   return (
-    <div className="min-h-screen bg-gradient-to-t from-mygreen to-mygreen-light">
-      <Header />
-      
-      {/* Header */}
-      <div className="container mx-auto px-4 py-10 sm:py-14 md:py-16">
-        <div className="text-center mb-10 sm:mb-14 md:mb-16">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-special text-white mb-4 sm:mb-6">
-            Testimonios de Estudiantes
-          </h1>
-          <p className="text-base sm:text-lg md:text-xl text-white/80 max-w-3xl mx-auto">
-            Descubre cómo Caletas está transformando la experiencia académica de estudiantes universitarios en Venezuela.
-          </p>
-        </div>
+    <PublicPageShell>
+      <PublicPageHero
+        title="TESTIMONIOS DE ESTUDIANTES"
+        description="Historias reales de quienes ya usan Caletas para estudiar, compartir apuntes y organizar su camino académico."
+      />
 
+      <div className="chalk-container min-w-0 pb-14 sm:pb-16 md:pb-20">
         {/* Estadísticas */}
         <section className="mb-20">
-          <div className="grid md:grid-cols-4 gap-6 mb-12">
-            <Card className="bg-[var(--mygreen-light)] border-white/10 text-center">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            <Card className="chalk-card text-center">
               <CardContent className="pt-6">
-                <div className="mx-auto p-3 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-full w-fit mb-4">
-                  <Users className="h-8 w-8 text-[var(--accent-hex)]" />
+                <div className="mx-auto p-3 bg-[color-mix(in_oklab,var(--caleta-accent)_10%,transparent)] rounded-full w-fit mb-4">
+                  <Users className="h-8 w-8 text-[var(--caleta-accent)]" />
                 </div>
-                <h3 className="text-2xl font-special text-white mb-2">500+</h3>
-                <p className="text-white/70">Estudiantes Activos</p>
+                <h3 className="text-2xl font-bold tabular-nums text-white mb-2">
+                  {formatPublicStat(platformStats.estudiantesRegistrados)}
+                </h3>
+                <p className="text-white/70">Estudiantes registrados</p>
               </CardContent>
             </Card>
 
-            <Card className="bg-[var(--mygreen-light)] border-white/10 text-center">
+            <Card className="chalk-card text-center">
               <CardContent className="pt-6">
-                <div className="mx-auto p-3 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-full w-fit mb-4">
-                  <Star className="h-8 w-8 text-[var(--accent-hex)]" />
+                <div className="mx-auto p-3 bg-[color-mix(in_oklab,var(--caleta-accent)_10%,transparent)] rounded-full w-fit mb-4">
+                  <BookOpen className="h-8 w-8 text-[var(--caleta-accent)]" />
                 </div>
-                <h3 className="text-2xl font-special text-white mb-2">4.9/5</h3>
-                <p className="text-white/70">Calificación Promedio</p>
+                <h3 className="text-2xl font-bold tabular-nums text-white mb-2">
+                  {formatPublicStat(platformStats.recursosPublicos)}
+                </h3>
+                <p className="text-white/70">Caletas compartidas</p>
               </CardContent>
             </Card>
 
-            <Card className="bg-[var(--mygreen-light)] border-white/10 text-center">
+            <Card className="chalk-card text-center">
               <CardContent className="pt-6">
-                <div className="mx-auto p-3 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-full w-fit mb-4">
-                  <BookOpen className="h-8 w-8 text-[var(--accent-hex)]" />
+                <div className="mx-auto p-3 bg-[color-mix(in_oklab,var(--caleta-accent)_10%,transparent)] rounded-full w-fit mb-4">
+                  <Building2 className="h-8 w-8 text-[var(--caleta-accent)]" />
                 </div>
-                <h3 className="text-2xl font-special text-white mb-2">1,200+</h3>
-                <p className="text-white/70">Recursos Compartidos</p>
+                <h3 className="text-2xl font-bold tabular-nums text-white mb-2">
+                  {formatPublicStat(platformStats.instituciones)}
+                </h3>
+                <p className="text-white/70">Instituciones en la plataforma</p>
               </CardContent>
             </Card>
 
-            <Card className="bg-[var(--mygreen-light)] border-white/10 text-center">
+            <Card className="chalk-card text-center">
               <CardContent className="pt-6">
-                <div className="mx-auto p-3 bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] rounded-full w-fit mb-4">
-                  <TrendingUp className="h-8 w-8 text-[var(--accent-hex)]" />
+                <div className="mx-auto p-3 bg-[color-mix(in_oklab,var(--caleta-accent)_10%,transparent)] rounded-full w-fit mb-4">
+                  <MessageSquare className="h-8 w-8 text-[var(--caleta-accent)]" />
                 </div>
-                <h3 className="text-2xl font-special text-white mb-2">85%</h3>
-                <p className="text-white/70">Mejora en Rendimiento</p>
+                <h3 className="text-2xl font-bold tabular-nums text-white mb-2">
+                  {formatPublicStat(experienciasCompartidas)}
+                </h3>
+                <p className="text-white/70">Experiencias en esta página</p>
               </CardContent>
             </Card>
           </div>
@@ -190,24 +201,24 @@ export default function TestimoniosPage() {
           <section className="mb-20">
             <div className="text-center mb-12">
               <div className="inline-flex items-center gap-3 mb-4">
-                <Award className="h-8 w-8 text-[var(--accent-hex)]" />
+                <Award className="h-8 w-8 text-[var(--caleta-accent)]" />
                 <h2 className="text-3xl font-special text-white">Testimonio Destacado</h2>
               </div>
             </div>
 
-            <Card className="bg-[var(--mygreen-light)] border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] max-w-4xl mx-auto">
+            <Card className="chalk-card chalk-card-featured max-w-4xl mx-auto">
               <CardHeader>
                 <div className="flex items-start gap-4">
                   <Avatar className="h-16 w-16">
                     <AvatarImage src={testimoniosDestacados[0].foto} />
-                    <AvatarFallback className="bg-[var(--accent-hex)] text-white text-lg font-medium">
+                    <AvatarFallback className="bg-[var(--caleta-accent)] text-white text-lg font-medium">
                       {getInitials(testimoniosDestacados[0].nombre)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <h3 className="text-xl font-special text-white">{testimoniosDestacados[0].nombre}</h3>
-                      <Badge className="bg-[color-mix(in_oklab,var(--accent-hex)_10%,transparent)] text-[var(--accent-hex)] border-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)]">
+                      <Badge className="bg-[color-mix(in_oklab,var(--caleta-accent)_10%,transparent)] text-[var(--caleta-accent)] border-[color-mix(in_oklab,var(--caleta-accent)_20%,transparent)]">
                         Destacado
                       </Badge>
                     </div>
@@ -218,7 +229,7 @@ export default function TestimoniosPage() {
                       {renderStars(testimoniosDestacados[0].calificacion)}
                     </div>
                   </div>
-                  <Quote className="h-8 w-8 text-[var(--accent-hex)] opacity-50" />
+                  <Quote className="h-8 w-8 text-[var(--caleta-accent)] opacity-50" />
                 </div>
               </CardHeader>
               <CardContent>
@@ -231,7 +242,7 @@ export default function TestimoniosPage() {
                   <div className="grid md:grid-cols-3 gap-2">
                     {testimoniosDestacados[0].beneficios.map((beneficio, index) => (
                       <div key={index} className="flex items-center gap-2 text-sm text-white/70">
-                        <Heart className="h-4 w-4 text-[var(--accent-hex)]" />
+                        <Heart className="h-4 w-4 text-[var(--caleta-accent)]" />
                         <span>{beneficio}</span>
                       </div>
                     ))}
@@ -250,7 +261,7 @@ export default function TestimoniosPage() {
         <section className="mb-20">
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-3 mb-4">
-              <MessageSquare className="h-8 w-8 text-[var(--accent-hex)]" />
+              <MessageSquare className="h-8 w-8 text-[var(--caleta-accent)]" />
               <h2 className="text-3xl font-special text-white">Más Experiencias</h2>
             </div>
             <p className="text-white/70 text-lg">
@@ -260,12 +271,12 @@ export default function TestimoniosPage() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {testimoniosRegulares.map((testimonio) => (
-              <Card key={testimonio.id} className="bg-[var(--mygreen-light)] border-white/10 hover:border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] transition-all">
+              <Card key={testimonio.id} className="chalk-card">
                 <CardHeader>
                   <div className="flex items-start gap-3">
                     <Avatar className="h-12 w-12">
                       <AvatarImage src={testimonio.foto} />
-                      <AvatarFallback className="bg-[var(--accent-hex)] text-white font-medium">
+                      <AvatarFallback className="bg-[var(--caleta-accent)] text-white font-medium">
                         {getInitials(testimonio.nombre)}
                       </AvatarFallback>
                     </Avatar>
@@ -289,7 +300,7 @@ export default function TestimoniosPage() {
                     <h4 className="text-white font-medium text-sm">Beneficios:</h4>
                     {testimonio.beneficios.map((beneficio, index) => (
                       <div key={index} className="flex items-center gap-2 text-xs text-white/60">
-                        <Heart className="h-3 w-3 text-[var(--accent-hex)]" />
+                        <Heart className="h-3 w-3 text-[var(--caleta-accent)]" />
                         <span>{beneficio}</span>
                       </div>
                     ))}
@@ -305,37 +316,36 @@ export default function TestimoniosPage() {
         </section>
 
         {/* CTA Final */}
-        <section className="text-center">
-          <Card className="bg-[var(--mygreen-light)] border-[color-mix(in_oklab,var(--accent-hex)_30%,transparent)] max-w-2xl mx-auto">
-            <CardHeader>
-              <CardTitle className="text-2xl font-special text-white mb-4">
-                ¿Listo para transformar tu experiencia académica?
-              </CardTitle>
-              <CardDescription className="text-white/70 text-lg">
-                Únete a cientos de estudiantes que ya están aprovechando el poder de Caletas para mejorar su rendimiento académico.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/auth/register">
-                  <Button className="bg-[var(--accent-hex)] hover:bg-[color-mix(in_oklab,var(--accent-hex)_80%,transparent)] text-white px-8 py-3 text-lg">
-                    Comenzar Ahora
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </Link>
-                <Link href="/caracteristicas">
-                  <Button variant="outline" className="border-white/20 text-mygreen hover:bg-white/10 px-8 py-3 text-lg">
-                    Conocer Más
-                  </Button>
-                </Link>
-              </div>
-              <p className="text-sm text-white/60">
-                Únete a la comunidad • Comparte tu experiencia • Mejora tu rendimiento
-              </p>
-            </CardContent>
-          </Card>
+        <section className="pb-6 pt-2">
+          <div className="chalk-card chalk-card-featured relative mx-auto max-w-3xl overflow-hidden px-6 py-10 text-center sm:px-10 sm:py-14">
+            <span className="chalk-section-label mx-auto justify-center">
+              <PenLine className="h-4 w-4" />
+              Tu turno
+            </span>
+            <h2 className="chalk-title mx-auto mt-5 max-w-2xl font-special text-balance text-[1.55rem] leading-[1.12] sm:text-[2rem] md:text-[2.35rem]">
+              ¿QUIERES COMPARTIR TU{" "}
+              <span className="text-[var(--caleta-accent)]">EXPERIENCIA</span>?
+            </h2>
+            <p className="mx-auto mt-5 max-w-xl text-base font-semibold leading-relaxed text-white/78 sm:text-lg">
+              Únete a la comunidad, explora las caletas disponibles y cuéntanos cómo te ha ayudado
+              la plataforma.
+            </p>
+            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Link href="/register" className="chalk-hero-btn chalk-hero-btn-secondary sm:min-w-[260px]">
+                <span>Crear cuenta</span>
+                <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
+              </Link>
+              <Link href="/caracteristicas" className="chalk-hero-btn chalk-hero-btn-primary sm:min-w-[240px]">
+                <span>Conocer más</span>
+                <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
+              </Link>
+            </div>
+            <p className="mx-auto mt-6 text-sm text-white/55">
+              De estudiantes para estudiantes • Comparte apuntes • Crece con la comunidad
+            </p>
+          </div>
         </section>
       </div>
-    </div>
+    </PublicPageShell>
   );
 } 

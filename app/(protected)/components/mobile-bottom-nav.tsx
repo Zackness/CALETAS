@@ -27,7 +27,7 @@ export function MobileBottomNav() {
   const pathname = usePathname() ?? "";
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-[color:var(--mygreen)]/95 backdrop-blur md:hidden">
+    <nav className="chalk-nav-bar fixed bottom-0 left-0 right-0 z-50 border-t md:hidden">
       <div className="mx-auto flex max-w-7xl items-stretch justify-between px-2 pb-[max(env(safe-area-inset-bottom),0px)]">
         {items.map((it) => {
           const active = it.match(pathname);

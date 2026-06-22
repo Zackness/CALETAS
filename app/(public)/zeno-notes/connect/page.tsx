@@ -22,8 +22,8 @@ export default async function ZenoNotesConnectPage({ searchParams }: PageProps) 
 
   if (!redirectUri || !validateZenoRedirectUri(redirectUri)) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-gradient-to-t from-mygreen to-mygreen-light px-6 text-white">
-        <div className="max-w-md rounded-xl border border-white/10 bg-[#354B3A] p-8 text-center">
+      <main className="landing-home flex min-h-screen items-center justify-center px-6 text-white">
+        <div className="chalk-card max-w-md p-8 text-center">
           <h1 className="font-special text-xl font-semibold">Enlace de retorno invalido</h1>
           <p className="mt-3 text-sm text-white/70">
             Vuelve a Zeno Notes e intenta iniciar sesion otra vez.

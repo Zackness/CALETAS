@@ -1,22 +1,19 @@
-import { Suspense } from 'react';
-import { Logo } from '@/components/marca/Logo';
-import { NewVerificationForm } from '../new-verification/components/new-verification-form';
+import type { Metadata } from "next";
+import { NewPasswordForm } from "./components/new-password-form";
+import { AuthPageShell } from "@/app/(auth)/components/auth-page-shell";
 
-const NewVerificationPage = () => {
-    return (
-        <main className="relative h-full bg-gradient-to-t from-mygreen to-mygreen-light min-h-screen w-full m-0 text-white">
-        <div className="w-full h-full">
-          <nav className="flex items-center justify-center py-10">
-            <Logo width={200} height={27} color="white" />
-          </nav>
-          <section className="flex justify-center w-full">
-            <Suspense fallback={<div>Loading...</div>}>
-              <NewVerificationForm />
-            </Suspense>
-          </section>
-        </div>
-      </main>
-    );
+export const metadata: Metadata = {
+  title: "Nueva contraseña",
+  description: "Establece una nueva contraseña para tu cuenta de CALETAS.",
+};
+
+export default function NewPasswordPage() {
+  return (
+    <AuthPageShell
+      title="NUEVA CONTRASEÑA"
+      description="Elige una contraseña segura para tu cuenta."
+    >
+      <NewPasswordForm />
+    </AuthPageShell>
+  );
 }
-
-export default NewVerificationPage;

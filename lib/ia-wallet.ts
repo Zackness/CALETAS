@@ -7,6 +7,7 @@ export type IaWalletBillableEndpoint =
   | "ia/resumir"
   | "ia/fichas"
   | "ia/cuestionario"
+  | "tareas/ai"
   | "academico/cronograma/ai";
 
 const MAX_DISCOUNT = 30;

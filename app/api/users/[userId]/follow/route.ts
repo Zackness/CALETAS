@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getCorsHeaders } from "@/lib/cors";
+import { buildFollowNotification, serializeNotificationPayload } from "@/lib/notifications/payload";
+import { hasPublicProfile, userPublicProfileHref } from "@/lib/profile/public-profile";
 
 function withCors(res: NextResponse, req: NextRequest) {
   Object.entries(getCorsHeaders(req)).forEach(([k, v]) => res.headers.set(k, v));
@@ -29,11 +31,23 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ userId
       }),
       db.user.findUnique({
         where: { id: followerId },
-        select: { id: true, name: true },
+        select: { id: true, name: true, image: true, username: true },
       }),
     ]);
     if (!follower) {
       return withCors(NextResponse.json({ error: "No autorizado" }, { status: 401 }), request);
+    }
+    if (!hasPublicProfile(follower)) {
+      return withCors(
+        NextResponse.json(
+          {
+            error: "Crea tu perfil público (username) para seguir a otros estudiantes",
+            code: "PROFILE_REQUIRED",
+          },
+          { status: 403 },
+        ),
+        request,
+      );
     }
     if (!target) {
       return withCors(NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 }), request);
@@ -50,7 +64,17 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ userId
       await db.$transaction(async (tx) => {
         await tx.userFollow.create({ data: { followerId, followingId } });
         await tx.notification.create({
-          data: { userId: followingId, message: `${follower.name} empezó a seguirte.` },
+          data: {
+            userId: followingId,
+            message: serializeNotificationPayload(
+              buildFollowNotification({
+                id: follower.id,
+                name: follower.name ?? "Alguien",
+                image: follower.image,
+                href: userPublicProfileHref(follower.username),
+              }),
+            ),
+          },
         });
       });
     }

@@ -130,7 +130,6 @@ async function clearDatabase() {
     () => db.user.deleteMany(),
     () => db.carrera.deleteMany(),
     () => db.universidad.deleteMany(),
-    () => db.blogCategory.deleteMany(),
     () => db.subscriptionType.deleteMany(),
     () => db.bibliotecaObra.deleteMany(),
   ];
@@ -170,11 +169,6 @@ async function main() {
   const subscriptionTypes = readJson<Record<string, unknown>>(dir, "SubscriptionType");
   await createManyBatched("SubscriptionType", subscriptionTypes, (b) =>
     db.subscriptionType.createMany({ data: b as never[], skipDuplicates: true })
-  );
-
-  const blogCategories = readJson<Record<string, unknown>>(dir, "BlogCategory");
-  await createManyBatched("BlogCategory", blogCategories, (b) =>
-    db.blogCategory.createMany({ data: b as never[], skipDuplicates: true })
   );
 
   const universidades = readJson<Record<string, unknown>>(dir, "Universidad").map((r) => ({

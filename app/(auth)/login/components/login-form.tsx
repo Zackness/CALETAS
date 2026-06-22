@@ -15,12 +15,12 @@ import { authClient } from "@/lib/auth-client";
 import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Eye, EyeOff, KeyRound } from "lucide-react";
+import { KeyRound } from "lucide-react";
+import { AuthFormActions } from "@/app/(auth)/components/auth-form-actions";
+import { AuthRecoverPasswordLink } from "@/app/(auth)/components/auth-recover-password-link";
 
 export const LoginForm = () => {
   const [isMounted, setIsMounted] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  
   useEffect(() => {
     setIsMounted(true);
     if (typeof window !== "undefined") {
@@ -153,12 +153,8 @@ export const LoginForm = () => {
 
   return (
     <CardWrapper 
-    headerLabel="Bienvenido" 
     showSocial
     >
-      <h2 className="text-3xl mb-4 text-white text-center font-special pb-4">
-        Inicia sesión
-      </h2>
       <div className="flex flex-col gap-4">
         <Form {...form}>
           <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
@@ -297,26 +293,13 @@ export const LoginForm = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <div className="relative">
-                            <Input
-                              {...field}
-                              disable={isPending}
-                              label="Contraseña"
-                              id="password"
-                              type={showPassword ? "text" : "password"}
-                            />
-                            <button
-                              type="button"
-                              onClick={() => setShowPassword(!showPassword)}
-                              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
-                            >
-                              {showPassword ? (
-                                <EyeOff className="h-5 w-5" />
-                              ) : (
-                                <Eye className="h-5 w-5" />
-                              )}
-                            </button>
-                          </div>
+                          <Input
+                            {...field}
+                            disable={isPending}
+                            label="Contraseña"
+                            id="password"
+                            type="password"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -327,54 +310,60 @@ export const LoginForm = () => {
             </div>
             <FormError message={error || urlError} />
             <FormSucces message={succes} />
-            <Button 
-              disabled={isPending} 
-              className="w-full mt-2 font-special text-white" 
-              size="sm"
-              type="submit"
-            >
-              {showTwoFactor ? "Confirmar código" : "Iniciar sesión"}
-            </Button>
             {!showTwoFactor ? (
-              <Button
-                type="button"
-                variant="outline"
-                disabled={isPending}
-                className="w-full mt-2 bg-white/10 border-white/20 text-white hover:bg-white/20"
-                onClick={async () => {
-                  setError("");
-                  setSucces("");
-                  const { error: passkeyError } = await authClient.signIn.passkey({
-                    fetchOptions: {
-                      onSuccess() {
-                        router.push(callbackUrl || DEFAULT_LOGIN_REDIRECT);
+              <AuthFormActions>
+                <Button
+                  disabled={isPending}
+                  className="chalk-hero-btn chalk-hero-btn-primary !w-full sm:!min-w-0"
+                  size="sm"
+                  type="submit"
+                >
+                  Iniciar sesión
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={isPending}
+                  className="chalk-hero-btn chalk-hero-btn-secondary !w-full sm:!min-w-0"
+                  onClick={async () => {
+                    setError("");
+                    setSucces("");
+                    const { error: passkeyError } = await authClient.signIn.passkey({
+                      fetchOptions: {
+                        onSuccess() {
+                          router.push(callbackUrl || DEFAULT_LOGIN_REDIRECT);
+                        },
                       },
-                    },
-                  });
-                  if (passkeyError) {
-                    const passkeyMessage: string =
-                      typeof passkeyError === "string"
-                        ? passkeyError
-                        : String(
-                            (passkeyError as { message?: unknown })?.message ??
-                              "No se pudo iniciar con passkey",
-                          );
-                    setError(passkeyMessage);
-                  }
-                }}
-              >
-                <KeyRound className="h-4 w-4 mr-2" />
-                Iniciar con Passkey
-              </Button>
-            ) : null}
-            <div className="text-center">
-              <a 
-                href="/reset" 
-                className="font-semibold text-sm text-white/80 hover:text-white transition-colors"
-              >
-                ¿Olvidaste tu contraseña?
-              </a>
-            </div>
+                    });
+                    if (passkeyError) {
+                      const passkeyMessage: string =
+                        typeof passkeyError === "string"
+                          ? passkeyError
+                          : String(
+                              (passkeyError as { message?: unknown })?.message ??
+                                "No se pudo iniciar con passkey",
+                            );
+                      setError(passkeyMessage);
+                    }
+                  }}
+                >
+                  <KeyRound className="h-4 w-4 shrink-0" />
+                  Iniciar con Passkey
+                </Button>
+              </AuthFormActions>
+            ) : (
+              <AuthFormActions>
+                <Button
+                  disabled={isPending}
+                  className="chalk-hero-btn chalk-hero-btn-primary !w-full sm:!min-w-0"
+                  size="sm"
+                  type="submit"
+                >
+                  Confirmar código
+                </Button>
+              </AuthFormActions>
+            )}
+            {!showTwoFactor ? <AuthRecoverPasswordLink className="pt-2" /> : null}
           </form>
         </Form>
       </div>
@@ -382,7 +371,7 @@ export const LoginForm = () => {
         <p className="text-sm text-white">
           ¿Nuevo en Caletas?
         </p>
-        <Link href="/register" className="ml-2 hover:underline cursor-pointer font-semibold text-sm text-white hover:text-blue-200">
+        <Link href="/register" className="ml-2 cursor-pointer text-sm font-semibold text-[var(--caleta-accent)] transition-colors hover:text-white">
           Regístrate ahora
         </Link>
       </div>

@@ -1,12 +1,15 @@
 "use client";
 
-import { Sidebar, SidebarInset, SidebarProvider, SidebarRail } from "@/components/ui/sidebar";
+import { usePathname } from "next/navigation";
+import { Sidebar, SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { CaletasSidebarNav } from "./caletas-sidebar-nav";
 import { DashboardHeader } from "./app-header";
 import { CalendarReminderHeartbeat } from "./calendar-reminder-heartbeat";
 import { EmailVerificationBanner } from "./email-verification-banner";
 import { MobileBottomNav } from "./mobile-bottom-nav";
 import { StudentComposeFab } from "@/components/caletas/caleta-share-fab";
+import { AdminBlogEditorShell } from "@/app/(protected)/admin/_components/admin-blog-editor-shell";
+import { cn } from "@/lib/utils";
 
 type SessionLike = {
   user?: {
@@ -17,6 +20,11 @@ type SessionLike = {
     role?: string | null;
   };
 };
+
+function isBlogEditorRoute(pathname: string) {
+  if (pathname === "/admin/blog/nuevo") return true;
+  return /^\/admin\/blog\/[^/]+\/editar$/.test(pathname);
+}
 
 export function ProtectedAppShell({
   children,
@@ -32,21 +40,41 @@ export function ProtectedAppShell({
   /** Aviso cuando el layout no pudo consultar la BD (p. ej. Neon dormido o red). */
   dbConnectionMessage?: string | null;
 }) {
+  const pathname = usePathname();
+  const isAprendeZone = pathname?.startsWith("/cursos") ?? false;
+
+  if (isBlogEditorRoute(pathname)) {
+    return (
+      <AdminBlogEditorShell
+        userName={session?.user?.name ?? "Usuario"}
+        roleLabel={session?.user?.role === "ADMIN" ? "Admin" : "Usuario"}
+      >
+        {children}
+      </AdminBlogEditorShell>
+    );
+  }
+
   return (
     <SidebarProvider
       defaultOpen
-      className="flex min-h-[100dvh] w-full min-w-0 items-stretch overflow-x-hidden bg-gradient-to-t from-mygreen to-mygreen-light"
+      data-zone={isAprendeZone ? "aprende" : undefined}
+      className={cn(
+        "chalkboard-shell protected-app flex min-h-[100dvh] w-full min-w-0 items-stretch overflow-x-hidden text-white",
+        isAprendeZone && "aprende-shell-active",
+      )}
     >
       <Sidebar
         collapsible="offcanvas"
-        className="border-white/10 text-white [&_[data-sidebar=sidebar]]:!bg-[var(--mygreen)] [&_[data-sidebar=sidebar]]:!bg-none"
+        className={cn(
+          "!border-r-0 bg-[var(--mygreen-dark)] text-white [&_[data-sidebar=sidebar]]:!bg-none",
+          isAprendeZone && "aprende-sidebar-shell",
+        )}
       >
         <CaletasSidebarNav userRole={session?.user?.role ?? null} />
-        <SidebarRail className="after:bg-white/20 hover:after:bg-[color-mix(in_oklab,var(--accent-hex)_50%,transparent)]" />
       </Sidebar>
-      <SidebarInset className="flex min-h-0 min-w-0 flex-1 flex-col border-l border-white/10 bg-transparent">
+      <SidebarInset className="flex min-h-0 min-w-0 flex-1 flex-col bg-transparent">
         <CalendarReminderHeartbeat />
-        <DashboardHeader session={session} />
+        <DashboardHeader session={session} isAprendeZone={isAprendeZone} />
         {dbConnectionMessage ? (
           <div
             role="alert"
@@ -58,7 +86,12 @@ export function ProtectedAppShell({
         {showVerificationBanner && userEmail ? (
           <EmailVerificationBanner email={userEmail} />
         ) : null}
-        <main className="mx-auto w-full min-w-0 max-w-7xl flex-1 px-3 py-4 pb-24 sm:px-4 sm:py-6 md:px-8 md:py-6 md:pb-6">
+        <main
+          className={cn(
+            "relative z-[1] mx-auto w-full min-w-0 max-w-7xl flex-1 px-3 py-4 pb-24 sm:px-4 sm:py-6 md:px-8 md:py-6 md:pb-6",
+            isAprendeZone && "aprende-main-inset",
+          )}
+        >
           {children}
         </main>
       </SidebarInset>

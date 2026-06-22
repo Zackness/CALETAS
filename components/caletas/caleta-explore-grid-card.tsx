@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Eye, Heart, Share2, Star } from "lucide-react";
+import { Eye, Download, Heart, Share2, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TipoRecursoIcon, tipoEtiquetaCorta } from "@/components/caletas/recurso-tipo";
 
@@ -88,6 +88,10 @@ export function CaletaExploreGridCard({
           <span className="inline-flex items-center gap-0.5">
             <Eye className="h-3 w-3 shrink-0 text-[color-mix(in_oklab,var(--accent-hex)_90%,transparent)]" />
             {recurso.numVistas}
+          </span>
+          <span className="inline-flex items-center gap-0.5" title="Descargas en la App de CALETA">
+            <Download className="h-3 w-3 shrink-0 text-[color-mix(in_oklab,var(--caleta-accent)_90%,transparent)]" />
+            {recurso.numDescargas}
           </span>
           <span className="inline-flex items-center gap-0.5">
             <Heart

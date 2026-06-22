@@ -40,6 +40,7 @@ model User {
   authTwoFactors         TwoFactor[]
   passkeys               Passkey[]
   blogPosts              BlogPost[]
+  mediaAssets            MediaAsset[]
   StripeCustomer         StripeCustomer?
   twoFactorConfirmation  TwoFactorConfirmation?
   universidad            Universidad?           @relation(fields: [universidadId], references: [id])
@@ -89,21 +90,15 @@ model User {
   iaLlmModeCronograma     String                 @default("manual")
   walletLedger             WalletLedger[]
   caletaTasks              CaletaTask[]
+  /** JSON: [{ status, label, colorKey }] — columnas personalizadas del tablero de tareas. */
+  caletaTaskBoardColumns   Json?
   iaFreeTierDaily          IaFreeTierDaily[]
   aprendePic18Progress     AprendePic18Progress?
+  aprendeCppPooProgress    AprendeCppPooProgress?
 
   @@index([role])
   @@index([universidadId])
   @@index([referredByUserId])
-}
-
-enum CaletaTaskStatus {
-  BACKLOG
-  PENDIENTE
-  EN_PROGRESO
-  EN_PAUSA
-  HECHO
-  CANCELADA
 }
 
 enum CaletaTaskPriority {
@@ -118,7 +113,7 @@ model CaletaTask {
   user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   title       String
   description String?            @db.Text
-  status      CaletaTaskStatus   @default(PENDIENTE)
+  status      String             @default("PENDIENTE")
   priority    CaletaTaskPriority @default(MEDIA)
   dueAt       DateTime?
   icon        String?
@@ -590,30 +585,63 @@ model MateriaEstudiante {
   @@index([materiaId])
 }
 
-model BlogPost {
-  id          String        @id @default(cuid())
-  title       String
-  slug        String?       @unique
-  content     String?       @db.Text
-  imageUrl    String?
-  isPublished Boolean       @default(false)
-  authorId    String
-  categoryId  String?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  description String?
-  titleMeta   String?
-  author      User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  category    BlogCategory? @relation(fields: [categoryId], references: [id])
-
-  @@index([authorId], map: "BlogPost_authorId_idx")
-  @@index([categoryId], map: "BlogPost_categoryId_idx")
+enum BlogPostStatus {
+  DRAFT
+  PUBLISHED
 }
 
-model BlogCategory {
-  id    String @id @default(cuid())
-  name  String @unique
-  posts BlogPost[]
+enum BlogCategory {
+  NOVEDADES
+  CONSEJOS_ESTUDIO
+  VIDA_UNIVERSITARIA
+  RECURSOS_ACADEMICOS
+  CARRERA
+  TECNOLOGIA
+  TUTORIALES
+  COMUNIDAD
+}
+
+model BlogPost {
+  id              String         @id @default(cuid())
+  slug            String         @unique
+  title           String
+  excerpt         String         @db.Text
+  content         String         @db.Text
+  metaTitle       String?
+  metaDescription String?        @db.Text
+  coverImage      String?
+  category        BlogCategory
+  status          BlogPostStatus @default(DRAFT)
+  publishedAt     DateTime?
+  authorId        String
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  author          User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([status, publishedAt])
+  @@index([category, status])
+  @@index([authorId], map: "BlogPost_authorId_idx")
+}
+
+/// Imagen almacenada en Bunny.net con metadatos para la galería de medios del blog.
+model MediaAsset {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  path         String   @unique
+  url          String
+  folder       String
+  filename     String
+  mimeType     String?
+  sizeBytes    Int?
+  title        String?  @db.VarChar(191)
+  altText      String?  @db.VarChar(191)
+  description  String?  @db.Text
+  uploadedById String?
+  uploadedBy   User?    @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  @@index([folder])
+  @@index([createdAt])
 }
 
 // Cursos y tutoriales subidos por admin para estudiantes
@@ -1008,4 +1036,14 @@ model AprendePic18Progress {
 
   @@index([updatedAt])
   @@map("aprende_pic18_progress")
+}
+
+model AprendeCppPooProgress {
+  userId    String   @id @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payload   Json     @default("{}")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([updatedAt])
+  @@map("aprende_cpp_poo_progress")
 }

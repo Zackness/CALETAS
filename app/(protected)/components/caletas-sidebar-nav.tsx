@@ -7,6 +7,7 @@ import {
   FileText,
   FolderKanban,
   HelpCircle,
+  Sparkles,
   History,
   Home,
   Library,
@@ -54,6 +55,7 @@ import {
   type IAChatThread,
 } from "@/lib/ia-chat-store";
 import { ChatThreadRow } from "@/components/ia/chat-thread-row";
+import { AprendeSidebarNavMenu } from "@/components/cursos/aprende-sidebar-nav-menu";
 import { toast } from "sonner";
 
 const sectionTint =
@@ -74,7 +76,6 @@ export function CaletasSidebarNav({ userRole }: { userRole?: string | null }) {
   const [threadDeleteId, setThreadDeleteId] = useState<string | null>(null);
   const [threadDeleteTitle, setThreadDeleteTitle] = useState("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [courseCategories, setCourseCategories] = useState<string[]>([]);
   const pathname = usePathname();
   const router = useRouter();
   const { isMobile, setOpenMobile } = useSidebar();
@@ -113,26 +114,6 @@ export function CaletasSidebarNav({ userRole }: { userRole?: string | null }) {
       window.removeEventListener(IA_STORE_EVENT, sync as EventListener);
     };
   }, []);
-
-  useEffect(() => {
-    if (!isCoursesMode) return;
-    fetch("/api/cursos")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        const cursos = Array.isArray(data?.cursos) ? data.cursos : [];
-        const categorias: string[] = Array.from(
-          new Set<string>(
-            cursos
-              .map((c: { tema?: string | null }) => c.tema?.trim())
-              .filter((t: string | undefined): t is string => !!t),
-          ),
-        ).sort((a, b) => a.localeCompare(b, "es"));
-        setCourseCategories(categorias);
-      })
-      .catch(() => {
-        setCourseCategories([]);
-      });
-  }, [isCoursesMode]);
 
   const visibleThreads = useMemo(() => {
     if (!chatStore.activeProjectId) return chatStore.threads;
@@ -243,7 +224,7 @@ export function CaletasSidebarNav({ userRole }: { userRole?: string | null }) {
   const renderIAMenu = () => {
     const itemBase =
       "flex w-full min-w-0 items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors";
-    const itemIdle = "text-white/75 hover:bg-white/10 hover:text-white";
+    const itemIdle = "text-white/75 hover:bg-white/10 hover:text-white/75";
     const itemActive =
       "border-l-2 border-[var(--accent-hex)] bg-[color-mix(in_oklab,var(--accent-hex)_14%,transparent)] pl-[calc(0.625rem-2px)] text-white";
 
@@ -255,7 +236,7 @@ export function CaletasSidebarNav({ userRole }: { userRole?: string | null }) {
             router.push("/home");
             closeMobile();
           }}
-          className="flex w-full items-center gap-2 rounded-lg border border-white/10 bg-[#354B3A] px-3 py-2 text-sm text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+          className="flex w-full items-center gap-2 rounded-lg border border-white/10 chalk-sidebar-panel px-3 py-2 text-sm text-white/80 transition-colors hover:bg-white/10 hover:text-white/80"
         >
           <ArrowLeft className="h-4 w-4 shrink-0 text-[var(--accent-hex)]" />
           <span>Volver al menú general</span>
@@ -270,7 +251,7 @@ export function CaletasSidebarNav({ userRole }: { userRole?: string | null }) {
           Nuevo chat
         </button>
 
-        <div className="overflow-hidden rounded-xl border border-white/10 bg-[#354B3A]">
+        <div className="chalk-card chalk-sidebar-panel overflow-hidden shadow-none">
           <div className="flex items-center justify-between gap-2 border-b border-white/10 px-3 py-2.5">
             <div className="flex min-w-0 items-center gap-2">
               <FolderKanban className="h-4 w-4 shrink-0 text-[var(--accent-hex)]" />
@@ -323,7 +304,7 @@ export function CaletasSidebarNav({ userRole }: { userRole?: string | null }) {
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-xl border border-white/10 bg-[#354B3A]">
+        <div className="chalk-card chalk-sidebar-panel overflow-hidden shadow-none">
           <div className="border-b border-white/10 px-3 py-2.5">
             <div className="flex items-center gap-2">
               <MessageCircle className="h-4 w-4 shrink-0 text-[var(--accent-hex)]" />
@@ -368,48 +349,7 @@ export function CaletasSidebarNav({ userRole }: { userRole?: string | null }) {
     );
   };
 
-  const renderCoursesMenu = () => (
-    <div className="flex flex-col gap-3 px-1">
-      <button
-        type="button"
-        onClick={() => {
-          router.push("/home");
-          closeMobile();
-        }}
-        className="w-full flex items-center gap-2 text-white/90 hover:text-white hover:bg-[var(--mygreen-light)] rounded-lg px-3 py-2 transition-colors"
-      >
-        <ArrowLeft className="h-4 w-4 text-[var(--accent-hex)]" />
-        <span>Volver al menú general</span>
-      </button>
-
-      <div className="space-y-1">
-        <Link onClick={closeMobile} href="/cursos" className={baseLinkClass}>
-          <Library className="h-5 w-5 text-[var(--accent-hex)]" />
-          <span>Inicio de Cursos</span>
-        </Link>
-      </div>
-
-      <div className="bg-[var(--mygreen-light)] border border-white/10 rounded-xl p-3 space-y-2">
-        <h3 className="text-sm font-semibold text-white">Categorías</h3>
-        {courseCategories.length > 0 ? (
-          <div className="space-y-1">
-            {courseCategories.map((cat) => (
-              <Link
-                key={cat}
-                href={`/cursos?tema=${encodeURIComponent(cat)}`}
-                onClick={closeMobile}
-                className="block rounded-md px-2 py-1.5 text-sm text-white/85 transition-colors hover:bg-white/10 hover:text-white"
-              >
-                {cat}
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <p className="text-xs text-white/60">Sin categorías publicadas por ahora.</p>
-        )}
-      </div>
-    </div>
-  );
+  const renderCoursesMenu = () => <AprendeSidebarNavMenu onNavigate={closeMobile} />;
 
   const renderAdminMenu = () => {
     const adminLink =
@@ -425,7 +365,7 @@ export function CaletasSidebarNav({ userRole }: { userRole?: string | null }) {
             router.push("/home");
             closeMobile();
           }}
-          className="w-full flex items-center gap-2 text-white/90 hover:text-white hover:bg-[var(--mygreen-light)] rounded-lg px-3 py-2 transition-colors"
+          className="w-full flex items-center gap-2 rounded-lg px-3 py-2 text-white/90 transition-colors hover:bg-[var(--mygreen-light)] hover:text-white/90"
         >
           <ArrowLeft className="h-4 w-4 text-[var(--accent-hex)]" />
           <span>Volver al menú general</span>
@@ -553,7 +493,7 @@ export function CaletasSidebarNav({ userRole }: { userRole?: string | null }) {
     const inAdminNav = currentPath.startsWith("/admin");
 
     const subLink =
-      "flex min-w-0 items-center gap-2 rounded-xl px-2 py-1.5 text-sm text-white/90 transition-colors hover:bg-white/10";
+      "flex min-w-0 items-center gap-2 rounded-xl px-2 py-1.5 text-sm text-white/90 transition-colors hover:bg-white/10 hover:text-white/90";
 
     return (
       <SidebarGroup>
@@ -563,7 +503,7 @@ export function CaletasSidebarNav({ userRole }: { userRole?: string | null }) {
               <SidebarMenuButton
                 asChild
                 isActive={pathname === "/home"}
-                className="text-white hover:bg-white/10 data-[active=true]:bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)] data-[active=true]:text-white"
+                className="text-white hover:bg-white/10 hover:text-white data-[active=true]:bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)] data-[active=true]:text-white"
               >
                 <Link href="/home" onClick={closeMobile} className="flex min-w-0 items-center gap-2">
                   <Home className="h-4 w-4 shrink-0 text-[var(--accent-hex)]" />
@@ -582,7 +522,7 @@ export function CaletasSidebarNav({ userRole }: { userRole?: string | null }) {
                 <CollapsibleTrigger asChild>
                   <SidebarMenuButton
                     isActive={inCaletas}
-                    className="rounded-2xl text-white hover:bg-white/10 data-[active=true]:bg-transparent data-[active=true]:text-white"
+                    className="rounded-2xl text-white hover:bg-white/10 hover:text-white data-[active=true]:bg-transparent data-[active=true]:text-white"
                   >
                     <Search className="h-4 w-4 shrink-0 text-[var(--accent-hex)]" />
                     <span className={sectionDot} aria-hidden />
@@ -621,7 +561,7 @@ export function CaletasSidebarNav({ userRole }: { userRole?: string | null }) {
               <SidebarMenuButton
                 asChild
                 isActive={currentPath.startsWith("/tareas")}
-                className="text-white hover:bg-white/10 data-[active=true]:bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)] data-[active=true]:text-white"
+                className="text-white hover:bg-white/10 hover:text-white data-[active=true]:bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)] data-[active=true]:text-white"
               >
                 <Link href="/tareas" onClick={closeMobile} className="flex min-w-0 items-center gap-2">
                   <Target className="h-4 w-4 shrink-0 text-[var(--accent-hex)]" />
@@ -634,7 +574,7 @@ export function CaletasSidebarNav({ userRole }: { userRole?: string | null }) {
               <SidebarMenuButton
                 asChild
                 isActive={currentPath.startsWith("/biblioteca")}
-                className="text-white hover:bg-white/10 data-[active=true]:bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)] data-[active=true]:text-white"
+                className="text-white hover:bg-white/10 hover:text-white data-[active=true]:bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)] data-[active=true]:text-white"
               >
                 <Link href="/biblioteca" onClick={closeMobile} className="flex min-w-0 items-center gap-2">
                   <Library className="h-4 w-4 shrink-0 text-[var(--accent-hex)]" />
@@ -643,36 +583,18 @@ export function CaletasSidebarNav({ userRole }: { userRole?: string | null }) {
               </SidebarMenuButton>
             </SidebarMenuItem>
 
-            <Collapsible defaultOpen={inCursos} className="group/collapsible">
-              <SidebarMenuItem
-                className={cn(
-                  "rounded-2xl border border-transparent",
-                  inCursos && sectionTint,
-                )}
+            <SidebarMenuItem className="sidebar-aprende-item relative z-[1] overflow-visible">
+              <SidebarMenuButton
+                asChild
+                isActive={inCursos}
+                className="sidebar-link-aprende h-9 rounded-xl border border-transparent bg-transparent text-white shadow-none hover:bg-transparent hover:text-white data-[active=true]:bg-transparent data-[active=true]:text-white"
               >
-                <CollapsibleTrigger asChild>
-                  <SidebarMenuButton
-                    isActive={inCursos}
-                    className="rounded-2xl text-white hover:bg-white/10 data-[active=true]:bg-transparent data-[active=true]:text-white"
-                  >
-                    <Library className="h-4 w-4 shrink-0 text-[var(--accent-hex)]" />
-                    <span className={sectionDot} aria-hidden />
-                    <span className="truncate">Cursos</span>
-                  </SidebarMenuButton>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <SidebarMenuSub>
-                    <SidebarMenuSubItem>
-                      <SidebarMenuButton asChild isActive={currentPath === "/cursos" || currentPath.startsWith("/cursos?")}>
-                        <Link href="/cursos" onClick={closeMobile} className={cn(subLink, (currentPath === "/cursos" || currentPath.startsWith("/cursos?")) && "bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)] text-white")}>
-                          <span className="truncate">Catálogo de cursos</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuSubItem>
-                  </SidebarMenuSub>
-                </CollapsibleContent>
-              </SidebarMenuItem>
-            </Collapsible>
+                <Link href="/cursos" onClick={closeMobile} className="relative z-[1] flex min-w-0 items-center gap-2">
+                  <Sparkles className="h-3.5 w-3.5 shrink-0 text-[var(--aprende-accent-bright)]" aria-hidden />
+                  <span className="truncate font-medium">Aprende</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
 
             <Collapsible defaultOpen={inAcademico} className="group/collapsible">
               <SidebarMenuItem
@@ -684,7 +606,7 @@ export function CaletasSidebarNav({ userRole }: { userRole?: string | null }) {
                 <CollapsibleTrigger asChild>
                   <SidebarMenuButton
                     isActive={inAcademico}
-                    className="rounded-2xl text-white hover:bg-white/10 data-[active=true]:bg-transparent data-[active=true]:text-white"
+                    className="rounded-2xl text-white hover:bg-white/10 hover:text-white data-[active=true]:bg-transparent data-[active=true]:text-white"
                   >
                     <Target className="h-4 w-4 shrink-0 text-[var(--accent-hex)]" />
                     <span className={sectionDot} aria-hidden />
@@ -743,7 +665,7 @@ export function CaletasSidebarNav({ userRole }: { userRole?: string | null }) {
                 <CollapsibleTrigger asChild>
                   <SidebarMenuButton
                     isActive={inIA}
-                    className="rounded-2xl text-white hover:bg-white/10 data-[active=true]:bg-transparent data-[active=true]:text-white"
+                    className="rounded-2xl text-white hover:bg-white/10 hover:text-white data-[active=true]:bg-transparent data-[active=true]:text-white"
                   >
                     <MessageCircle className="h-4 w-4 shrink-0 text-[var(--accent-hex)]" />
                     <span className={sectionDot} aria-hidden />
@@ -789,7 +711,7 @@ export function CaletasSidebarNav({ userRole }: { userRole?: string | null }) {
               <SidebarMenuButton
                 asChild
                 isActive={currentPath.startsWith("/academico/calendario")}
-                className="text-white hover:bg-white/10 data-[active=true]:bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)] data-[active=true]:text-white"
+                className="text-white hover:bg-white/10 hover:text-white data-[active=true]:bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)] data-[active=true]:text-white"
               >
                 <Link href="/academico/calendario" onClick={closeMobile} className="flex min-w-0 items-center gap-2">
                   <CalendarDays className="h-4 w-4 shrink-0 text-[var(--accent-hex)]" />
@@ -802,7 +724,7 @@ export function CaletasSidebarNav({ userRole }: { userRole?: string | null }) {
               <SidebarMenuButton
                 asChild
                 isActive={currentPath.startsWith("/billetera")}
-                className="text-white hover:bg-white/10 data-[active=true]:bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)] data-[active=true]:text-white"
+                className="text-white hover:bg-white/10 hover:text-white data-[active=true]:bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)] data-[active=true]:text-white"
               >
                 <Link href="/billetera" onClick={closeMobile} className="flex min-w-0 items-center gap-2">
                   <Wallet className="h-4 w-4 shrink-0 text-[var(--accent-hex)]" />
@@ -815,7 +737,7 @@ export function CaletasSidebarNav({ userRole }: { userRole?: string | null }) {
               <SidebarMenuButton
                 asChild
                 isActive={currentPath.startsWith("/ajustes")}
-                className="text-white hover:bg-white/10 data-[active=true]:bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)] data-[active=true]:text-white"
+                className="text-white hover:bg-white/10 hover:text-white data-[active=true]:bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)] data-[active=true]:text-white"
               >
                 <Link href="/ajustes" onClick={closeMobile} className="flex min-w-0 items-center gap-2">
                   <Settings className="h-4 w-4 shrink-0 text-[var(--accent-hex)]" />
@@ -835,7 +757,7 @@ export function CaletasSidebarNav({ userRole }: { userRole?: string | null }) {
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton
                       isActive={inAdminNav}
-                      className="rounded-2xl text-white hover:bg-white/10 data-[active=true]:bg-transparent data-[active=true]:text-white"
+                      className="rounded-2xl text-white hover:bg-white/10 hover:text-white data-[active=true]:bg-transparent data-[active=true]:text-white"
                     >
                       <ShieldCheck className="h-4 w-4 shrink-0 text-[var(--accent-hex)]" />
                       <span className={sectionDot} aria-hidden />
@@ -1034,27 +956,44 @@ export function CaletasSidebarNav({ userRole }: { userRole?: string | null }) {
         </DialogContent>
       </Dialog>
 
-      <SidebarHeader className="border-b border-white/10">
+      <SidebarHeader className="pb-0">
         <SidebarMenu>
           <SidebarMenuItem>
             <div className="px-2 py-1">
-              <div className="rounded-xl border border-white/10 bg-[color-mix(in_oklab,var(--mygreen-light)_80%,transparent)] p-3 backdrop-blur-sm">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[color-mix(in_oklab,var(--accent-hex)_20%,transparent)] text-[var(--accent-hex)]">
-                    <BookOpen className="h-6 w-6" />
-                  </div>
-                  <div className="min-w-0 leading-tight">
-                    <p className="font-special text-sm font-semibold text-white">Caletas</p>
-                    <p className="truncate text-xs text-white/55">Panel estudiantil</p>
+              {isCoursesMode ? (
+                <div className="aprende-sidebar-brand aprende-sidebar-brand-header chalk-card p-3 shadow-none">
+                  <div className="aprende-sidebar-brand__beam" aria-hidden />
+                  <div className="relative flex items-center gap-3">
+                    <div className="aprende-sidebar-brand__icon flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[color-mix(in_oklab,var(--aprende-accent)_45%,transparent)] bg-[color-mix(in_oklab,var(--aprende-accent)_18%,#0f1419)] text-[var(--aprende-accent-bright)]">
+                      <Sparkles className="h-5 w-5" aria-hidden />
+                    </div>
+                    <div className="min-w-0 leading-tight">
+                      <p className="font-special text-sm font-semibold tracking-wide text-white">Aprende</p>
+                      <p className="truncate text-[11px] text-[var(--aprende-accent-bright)]/80">
+                        Invasión azul · CALETAS
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              ) : (
+                <div className="chalk-card chalk-sidebar-brand p-3 shadow-none">
+                  <div className="flex items-center gap-3">
+                    <div className="chalk-icon-wrap !h-10 !w-10 !p-0">
+                      <BookOpen className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0 leading-tight">
+                      <p className="font-special text-sm font-semibold text-white">Caletas</p>
+                      <p className="truncate text-xs text-white/55">Panel estudiantil</p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent className="text-white">
+      <SidebarContent className={cn("text-white", isCoursesMode && "aprende-sidebar-content")}>
         <div className="px-1 pb-4 pt-1">
           {isIAChatMode
             ? renderIAMenu()
@@ -1066,12 +1005,12 @@ export function CaletasSidebarNav({ userRole }: { userRole?: string | null }) {
         </div>
       </SidebarContent>
 
-      <SidebarFooter className="mt-auto border-t border-white/10">
+      <SidebarFooter className="mt-auto pt-2">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
-              className="text-white/80 hover:bg-white/10 hover:text-white"
+              className="text-white/80 hover:bg-white/10 hover:text-white/80"
             >
               <Link href="/" onClick={closeMobile} className="flex min-w-0 items-center gap-2">
                 <span className="truncate text-sm">Sitio público</span>

@@ -3,6 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { createNotification } from "@/lib/notifications";
+import { buildLikeNotification } from "@/lib/notifications/payload";
+import { userPublicProfileHref } from "@/lib/profile/public-profile";
+import { recursoToExploreHref } from "@/lib/recurso-view-href";
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,11 +31,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Ya le diste like a esta caleta" }, { status: 400 });
     }
 
-    const actor = await db.user.findUnique({ where: { id: session.user.id }, select: { name: true } });
+    const actor = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: { id: true, name: true, image: true, username: true },
+    });
     await db.likeRecurso.create({ data: { usuarioId: session.user.id, recursoId } });
 
     if (recurso.autorId !== session.user.id) {
-      await createNotification(recurso.autorId, `${actor?.name || "Alguien"} le dio like a tu caleta "${recurso.titulo}".`);
+      await createNotification(
+        recurso.autorId,
+        buildLikeNotification({
+          actor: {
+            id: actor?.id,
+            name: actor?.name ?? "Alguien",
+            image: actor?.image,
+            href: userPublicProfileHref(actor?.username),
+          },
+          target: {
+            label: recurso.titulo,
+            href: recursoToExploreHref(recurso),
+          },
+        }),
+      );
     }
 
     return NextResponse.json({ success: true, message: "Like agregado" }, { status: 201 });
