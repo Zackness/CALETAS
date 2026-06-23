@@ -39,6 +39,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const misRecursos = searchParams.get("misRecursos") === "true";
+    const comunidad = searchParams.get("comunidad") === "true";
 
     const user = await db.user.findUnique({
       where: { id: userId },
@@ -48,7 +49,9 @@ export async function GET(request: NextRequest) {
     const hasFullCaletasPlan = canAccessFullCaletasPlan(subscription);
 
     let whereClause: object;
-    if (misRecursos) {
+    if (comunidad) {
+      whereClause = { esPublico: true };
+    } else if (misRecursos) {
       whereClause = { autorId: userId };
     } else if (hasFullCaletasPlan) {
       whereClause = {};
@@ -121,7 +124,9 @@ export async function GET(request: NextRequest) {
           },
         },
       },
-      orderBy: [{ createdAt: "desc" }],
+      orderBy: comunidad
+        ? [{ calificacion: "desc" }, { numVistas: "desc" }, { createdAt: "desc" }]
+        : [{ createdAt: "desc" }],
     });
 
     const recursosConFavorito = recursos.map(({ favoritos, likes, _count, ...r }) => {

@@ -17,6 +17,7 @@ export const publicRoutes = [
   "/zeno-notes/connect",
   "/api/zeno-notes/workspace",
   "/api/zeno-notes/workspace/local/.*",
+  "/api/zeno-notes/caletas/.*",
   "/api/aprende-pic18/.*",
   "/aprende-pic18/connect",
   "/api/aprende-cpp-poo/.*",

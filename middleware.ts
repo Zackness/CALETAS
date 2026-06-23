@@ -68,6 +68,18 @@ export function middleware(request: NextRequest) {
     return withCors(request, res);
   }
 
+  // Zeno Notes (app Flutter): JWT Bearer en cada ruta API, no cookie de sesion web
+  if (
+    nextUrl.pathname.startsWith("/api/zeno-notes/caletas/") ||
+    nextUrl.pathname.startsWith("/api/caletas/recursos") ||
+    nextUrl.pathname.startsWith("/api/caletas/upload-cpanel") ||
+    nextUrl.pathname.startsWith("/api/user/academico/") ||
+    nextUrl.pathname.startsWith("/api/notifications")
+  ) {
+    const res = NextResponse.next();
+    return withCors(request, res);
+  }
+
   const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
   const isAuthRoute = authRoutes.includes(nextUrl.pathname);
   const isPublic = isPublicRoute(nextUrl.pathname);
