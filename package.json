@@ -6,7 +6,7 @@
     "postinstall": "prisma generate",
     "dev": "NODE_OPTIONS=--dns-result-order=ipv4first next dev",
     "build": "rm -rf .next-build && prisma generate && NEXT_DIST_DIR=.next-build NEXT_PRIVATE_WORKER_THREADS=false NODE_OPTIONS=--dns-result-order=ipv4first next build",
-    "vercel-build": "prisma db push --accept-data-loss && prisma generate && NEXT_PRIVATE_WORKER_THREADS=false NODE_OPTIONS=--dns-result-order=ipv4first next build",
+    "vercel-build": "bash scripts/vercel-build.sh",
     "export": "next build && next export",
     "start": "NODE_OPTIONS=--dns-result-order=ipv4first next start",
     "lint": "next lint",
