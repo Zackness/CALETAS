@@ -610,7 +610,7 @@ model BlogPost {
   metaTitle       String?
   metaDescription String?        @db.Text
   coverImage      String?
-  category        BlogCategory
+  category        BlogCategory @default(NOVEDADES)
   status          BlogPostStatus @default(DRAFT)
   publishedAt     DateTime?
   authorId        String
