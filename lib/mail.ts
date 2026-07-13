@@ -1,6 +1,12 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+function createResend() {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) return null;
+  return new Resend(apiKey);
+}
+
+const resend = createResend();
 
 const domain = process.env.NEXT_PUBLIC_APP_URL;
 
@@ -164,6 +170,7 @@ export const sendTwoFactorTokenEmail = async (
         <p>¡Gracias por usar Caletas!</p>
     `;
 
+    if (!resend) return;
     await resend.emails.send({
         from: "Caletas <bienvenido@caleta.top>",
         to: email,
@@ -193,6 +200,7 @@ export const sendPasswordResetEmail = async (
         <p>¡Gracias por usar Caletas!</p>
     `;
 
+    if (!resend) return;
     await resend.emails.send({
         from: "Caletas <bienvenido@caleta.top>",
         to: email,
@@ -220,6 +228,7 @@ export const sendBetterAuthResetPasswordEmail = async (
         <p>¡Gracias por usar Caletas!</p>
     `;
 
+    if (!resend) return;
     await resend.emails.send({
         from: "Caletas <bienvenido@caleta.top>",
         to: email,
@@ -250,6 +259,7 @@ export const sendVerificationEmail = async (
         <p>¡Nos vemos en la comunidad!</p>
     `;
 
+    if (!resend) return;
     await resend.emails.send({
         from: "Caletas <bienvenido@caleta.top>",
         to: email,
@@ -277,6 +287,7 @@ export const sendBetterAuthVerificationEmail = async (
         <p>¡Nos vemos en la comunidad!</p>
     `;
 
+    if (!resend) return;
     await resend.emails.send({
         from: "Caletas <bienvenido@caleta.top>",
         to: email,
@@ -297,6 +308,7 @@ export const sendEmailVerificationCodeEmail = async (email: string, code: string
         <p>Si no fuiste tú, ignora este correo.</p>
   `;
 
+  if (!resend) return;
   await resend.emails.send({
     from: "Caletas <bienvenido@caleta.top>",
     to: email,
@@ -322,6 +334,7 @@ export const sendManualPaymentRejectedEmail = async (
         <p>Si necesitas ayuda, contacta al soporte de Caletas.</p>
     `;
 
+    if (!resend) return;
     await resend.emails.send({
         from: "Caletas <bienvenido@caleta.top>",
         to: email,
@@ -355,6 +368,7 @@ export const sendCalendarReminderEmail = async (params: {
       <p>Si cambias la fecha del evento, el próximo recordatorio se ajustará automáticamente.</p>
   `;
 
+  if (!resend) return;
   await resend.emails.send({
     from: "Caletas <bienvenido@caleta.top>",
     to: params.email,
@@ -384,6 +398,7 @@ export const sendNewCursoAnnouncementEmail = async (params: {
       <p>También verás esta novedad en tu campana de notificaciones dentro de la plataforma.</p>
   `;
 
+  if (!resend) return;
   await resend.emails.send({
     from: "Caletas <bienvenido@caleta.top>",
     to: params.email,
