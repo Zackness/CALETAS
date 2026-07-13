@@ -4,8 +4,8 @@ set -e
 echo "=== Vercel Build: Prisma db push ==="
 # Try db push; if it fails due to conflicting types, drop them and retry
 if ! npx prisma db push --accept-data-loss 2>&1; then
-  echo "db push failed, likely conflicting type. Cleaning up..."
-  npx prisma db execute --stdin <<< "DROP TYPE IF EXISTS \"BlogCategory\" CASCADE;" 2>/dev/null || true
+  echo "db push failed, likely conflicting type. Dropping BlogCategory type via Prisma client..."
+  node scripts/drop-blog-category-type.cjs || true
   echo "Retrying db push..."
   npx prisma db push --accept-data-loss
 fi
