@@ -11,6 +11,7 @@ export const publicRoutes = [
   "/aliados",
   "/agregar-universidad",
   "/terminos-y-condiciones",
+  "/ads.txt",
   "/blog",
   "/blog/.*",
   "/u/.*",
